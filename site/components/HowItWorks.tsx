@@ -1,5 +1,5 @@
 import { Typography } from '@/components/ui/Typography';
-import { STEPS } from '@/lib/content';
+import { EXTRAS, STEPS } from '@/lib/content';
 
 /*
  * Three steps read like an instruction page: oversized step numbers carry
@@ -26,6 +26,22 @@ const HowItWorks = () => (
         </li>
       ))}
     </ol>
+    <div className="border-rule grid gap-4 border-t pt-6">
+      <Typography variant="tag" as="h3">
+        Add-ons, if you want them
+      </Typography>
+      <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-5">
+        {EXTRAS.map((x) => (
+          <li
+            key={x.label}
+            className="border-rule bg-surface grid content-start gap-1 rounded-md border p-4"
+          >
+            <span className="condensed font-mono text-[13px] font-semibold">{x.label}</span>
+            <span className="text-steel text-sm leading-snug">{x.hint}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   </section>
 );
 

@@ -85,7 +85,7 @@ export const STEPS: { label: string; title: string; body: string; artifact: stri
   {
     label: 'Paste',
     title: 'Paste one command',
-    body: 'In a terminal, inside your website’s folder. A few questions follow: what the site is for, and how many designs you want.',
+    body: 'In a terminal, inside your website’s folder. A short wizard asks how many designs, which pages (just the home page to start), and any extras.',
     artifact: 'npx variantly',
   },
   {
@@ -154,8 +154,27 @@ export const CHECKLIST: { id: string; need: string; how: string; prompt: string 
   {
     id: 'run',
     need: 'The site runs on your computer',
-    how: 'Something like npm run dev opens it in your browser. Node.js 20.11 or newer.',
+    how: 'You can start it and open it in your browser. Node.js 20.11 or newer.',
     prompt:
       'Get this website running locally. Check Node.js is 20.11 or newer, install its dependencies and start the dev server, then tell me the address to open.',
   },
+];
+
+// Optional Impeccable passes the wizard offers on top of a redesign. Mirrors
+// EXTRAS in src/brief.mjs.
+export const EXTRAS: { label: string; hint: string }[] = [
+  {
+    label: 'Rewrite the copy',
+    hint: 'Sharper headlines, buttons and labels. Facts, prices and names stay.',
+  },
+  {
+    label: 'Add motion',
+    hint: 'Purposeful transitions and entrances, with reduced motion respected.',
+  },
+  { label: 'Add delight', hint: 'Small moments of personality: empty states, hovers, details.' },
+  {
+    label: 'Polish for phones',
+    hint: 'Check every chosen page at phone width and fix what breaks.',
+  },
+  { label: 'Harden', hint: 'Accessibility, focus states, long text and error states.' },
 ];

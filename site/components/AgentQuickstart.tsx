@@ -74,9 +74,9 @@ const AgentQuickstart = () => (
           Nothing touches their working tree until keep; the change lands unstaged for them to
           review.
         </li>
-        <li>
-          For one element instead of the whole page, use{' '}
-          <code className="condensed font-mono text-sm">/impeccable live</code>.
+        <li className="grid gap-2">
+          For one element instead of the whole page, use Impeccable live in their agent:
+          <CommandCopy command="/impeccable live" size="sm" />
         </li>
       </ul>
     </div>
@@ -87,11 +87,13 @@ const AgentQuickstart = () => (
         <Link href="/SKILLS.md" className="text-ink underline">
           /SKILLS.md
         </Link>{' '}
-        · Claude Code plugin:{' '}
-        <code className="condensed font-mono text-[13px]">
-          /plugin marketplace add highnet/ProjectHusky
-        </code>
+        · Claude Code plugin:
       </Typography>
+      <CommandCopy
+        command="/plugin marketplace add highnet/ProjectHusky"
+        size="sm"
+        className="mt-3"
+      />
     </footer>
   </main>
 );

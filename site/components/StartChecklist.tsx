@@ -74,10 +74,9 @@ const StartChecklist = () => (
       </div>
 
       <Typography variant="small" color="steel-on-slate">
-        Stuck?{' '}
-        <code className="condensed text-surface font-mono text-[13px]">npx variantly doctor</code>{' '}
-        says what&apos;s missing.
+        Stuck? This says what&apos;s missing:
       </Typography>
+      <CommandCopy command="npx variantly doctor" tone="slate" />
     </div>
   </section>
 );
