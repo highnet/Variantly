@@ -133,6 +133,12 @@ ${b.brief ? `What the owner asked for, in their words:\n\n> ${b.brief.replace(/\
 7. Verify by reading your code, not by screenshots: there is no browser for
    you here. Run the project's type check or linter if it is quick.
 
+## As soon as you have chosen the world
+
+Print one line that starts with \`DIRECTION:\` and names it in two to four words
+(for example \`DIRECTION: Night-shift field manual\`). The person watching the
+board sees it right away.
+
 ## When you are done
 
 End your final message with one line that starts with \`SUMMARY:\` and says, in

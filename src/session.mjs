@@ -56,6 +56,8 @@ const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  * @property {number} [finishedAt]
  * @property {number} [costUsd]   what the agent reported the session cost (Claude Code only)
  * @property {import('./agent-output.mjs').Usage} [usage]  tokens, as the agent reported them
+ * @property {string} [picked]    the world Impeccable picked, as the agent named it
+ * @property {number} [credits]   AI credits / premium requests, when the agent reports them (Copilot)
  */
 
 /**
@@ -255,8 +257,10 @@ export class Session extends EventEmitter {
     const adapter = adapterById(config.stackId);
     const agent = agentById(config.agent);
     const log = new LineBuffer(2000);
-    /** @type {{ child?: import('node:child_process').ChildProcess, log: LineBuffer, cancelled?: boolean, costUsd?: number, usage?: import('./agent-output.mjs').Usage }} */
+    /** @type {{ child?: import('node:child_process').ChildProcess, log: LineBuffer, cancelled?: boolean, costUsd?: number, credits?: number, picked?: string, usage?: import('./agent-output.mjs').Usage }} */
     const run = { log };
+    /** @type {ReturnType<typeof setInterval> | undefined} */
+    let liveUsage;
     this.runs.set(v.n, run);
     const say = (/** @type {string} */ line) => {
       log.push(line + '\n');
@@ -299,6 +303,15 @@ export class Session extends EventEmitter {
       );
 
       await update({ status: 'running' });
+      // Copy the agent's running usage onto the variant every few seconds.
+      let lastUsage = '';
+      liveUsage = setInterval(() => {
+        const now = JSON.stringify([run.usage, run.costUsd, run.credits, run.picked]);
+        if (now === lastUsage) return;
+        lastUsage = now;
+        Object.assign(v, { usage: run.usage && { ...run.usage }, costUsd: run.costUsd, credits: run.credits, picked: run.picked });
+        this.save().catch(() => {});
+      }, 3000);
       const inv = agent.invocation({ cwd: wt, briefPath, model: config.model || undefined, permissions: config.permissions });
       inv.file = await agentFile(agent);
       say(`$ ${inv.file === agent.bin ? agent.bin : JSON.stringify(inv.file)} ${inv.args.map((a) => (/\s/.test(a) ? JSON.stringify(a) : a)).join(' ')}`);
@@ -313,7 +326,7 @@ export class Session extends EventEmitter {
         throw new Error(['The agent finished without changing any files.', ...tailLines(tail)].join('\n'));
       }
       say(`Committed ${files.length} changed file${files.length === 1 ? '' : 's'}.`);
-      await update({ status: 'done', files, summary: extractSummary(output), finishedAt: Date.now(), costUsd: run.costUsd, usage: run.usage });
+      await update({ status: 'done', files, summary: extractSummary(output), finishedAt: Date.now(), costUsd: run.costUsd, usage: run.usage, credits: run.credits, picked: run.picked });
       // Warm the first finished variant so there is something to compare.
       if (this.state.variants.filter((x) => x.status === 'done').length === 1) {
         this.pool.ensure(`v${v.n}`).catch(() => {});
@@ -323,9 +336,10 @@ export class Session extends EventEmitter {
       const message = err instanceof Error ? err.message : String(err);
       if (err instanceof AgentUnavailable) halt.reason ??= message;
       say(`Failed: ${message}`);
-      await update({ status: 'failed', error: message.split('\n').slice(0, 8).join('\n'), finishedAt: Date.now() });
+      await update({ status: 'failed', error: message.split('\n').slice(0, 8).join('\n'), finishedAt: Date.now(), usage: run.usage, costUsd: run.costUsd, credits: run.credits });
     } finally {
       run.child = undefined;
+      clearInterval(liveUsage);
     }
   }
 
@@ -388,7 +402,7 @@ export class Session extends EventEmitter {
   }
 
   /**
-   * @param {{ child?: import('node:child_process').ChildProcess, cancelled?: boolean, costUsd?: number, usage?: import('./agent-output.mjs').Usage }} run
+   * @param {{ child?: import('node:child_process').ChildProcess, cancelled?: boolean, costUsd?: number, credits?: number, picked?: string, usage?: import('./agent-output.mjs').Usage }} run
    * @param {import('./agents.mjs').AgentRun} inv
    * @param {string} cwd
    * @param {number} timeoutMin
@@ -404,7 +418,15 @@ export class Session extends EventEmitter {
       const parser = createParser(inv.output, { cwd });
       let partial = '';
       const onLine = (/** @type {string} */ line) => {
-        for (const msg of parser.push(line)) say(msg);
+        for (const msg of parser.push(line)) {
+          say(msg);
+          const named = msg.match(/DIRECTION:\s*\**([^*\n]{2,60})/);
+          if (named) run.picked = named[1].trim().replace(/[.`]+$/, '');
+        }
+        // Live usage: the board shows spend while the agent works.
+        run.usage = parser.usage();
+        run.costUsd = parser.costUsd();
+        run.credits = parser.credits?.();
       };
       const onData = (/** @type {Buffer} */ chunk) => {
         const parts = (partial + chunk.toString()).split(/\r?\n/);
@@ -429,6 +451,7 @@ export class Session extends EventEmitter {
         if (partial) onLine(partial);
         run.costUsd = parser.costUsd();
         run.usage = parser.usage();
+        run.credits = parser.credits?.();
         const result = { text: parser.text(), tail: parser.tail(), unavailable: parser.unavailable() };
         if (run.cancelled || code === 0) return resolve(result);
         if (result.unavailable) return reject(new AgentUnavailable(`The agent exited with code ${code}: ${result.unavailable}`));

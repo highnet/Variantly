@@ -30,6 +30,7 @@ import path from 'node:path';
  * @property {() => string} text                the agent's own words, for the SUMMARY line
  * @property {() => number | undefined} costUsd  only Claude Code reports a dollar figure
  * @property {() => Usage | undefined} usage
+ * @property {() => number | undefined} credits  Copilot's AI credits, when reported
  * @property {() => string | undefined} error   a fatal error the agent reported, if any
  * @property {() => string | undefined} unavailable  set when the output says the agent can't run
  *                                                    at all (not installed, not signed in)
@@ -65,6 +66,7 @@ export function createParser(kind, opts = {}) {
     /** @type {string[]} */ text: [],
     /** @type {number | undefined} */ costUsd: undefined,
     /** @type {Usage | undefined} */ usage: undefined,
+    /** @type {number | undefined} */ credits: undefined,
     /** @type {string | undefined} */ error: undefined,
     /** @type {string | undefined} */ unavailable: undefined,
     /** @type {string[]} */ tail: [],
@@ -114,12 +116,13 @@ export function createParser(kind, opts = {}) {
     text: () => state.text.join('\n'),
     costUsd: () => state.costUsd,
     usage: () => state.usage,
+    credits: () => state.credits,
     error: () => state.error,
   };
 }
 
 /**
- * @typedef {{ text: string[], costUsd?: number, usage?: Usage, error?: string }} ParseState
+ * @typedef {{ text: string[], costUsd?: number, credits?: number, usage?: Usage, error?: string }} ParseState
  * @typedef {(p: unknown) => string} Rel
  * @typedef {(input: number, output: number, cached: number) => void} AddUsage
  */
@@ -237,6 +240,10 @@ function copilot(event, state, rel, addUsage) {
       const changed = d.codeChanges?.filesModified?.length ?? 0;
       const lines = typeof d.codeChanges?.linesAdded === 'number' ? ` (+${d.codeChanges.linesAdded} −${num(d.codeChanges.linesRemoved)})` : '';
       if (d.errorReason) state.error ??= d.errorReason;
+      // Copilot bills in AI credits / premium requests; keep whatever figure it reports.
+      for (const [k, val] of Object.entries(d)) {
+        if (typeof val === 'number' && /credit|premium/i.test(k)) state.credits = val;
+      }
       const secs = Math.round(num(d.totalApiDurationMs) / 1000);
       return [`Finished: ${changed} file${changed === 1 ? '' : 's'} changed${lines}, ${secs}s of model time, ${tokens(state.usage)}`];
     }

@@ -110,7 +110,8 @@ const S = {
 
 const variants = () => S.snap?.variants ?? [];
 const done = () => variants().filter((v) => v.status === 'done');
-const directionLabel = (dir) => (dir && dir.trim() ? dir.trim() : 'Impeccable’s pick');
+/** A pinned direction in the owner's words, else the world Impeccable picked (once the agent names it). */
+const directionLabel = (dir, picked) => (dir && dir.trim() ? dir.trim() : picked ? `${picked} (Impeccable’s pick)` : 'Impeccable’s pick');
 const server = (id) => (S.snap?.servers ?? []).find((s) => s?.id === id);
 
 const STATUS = {
@@ -676,6 +677,7 @@ const mountBoardView = (main) => {
             h('th', { class: 'label' }, 'Status'),
             h('th', { class: 'label' }, 'Time'),
             h('th', { class: 'label hide-compact' }, 'Files'),
+            h('th', { class: 'label' }, 'Usage'),
             h('th', { class: 'label' }, 'Latest'),
           ])),
           h('tbody', { id: 'board-rows', 'aria-live': 'polite' }),
@@ -684,6 +686,23 @@ const mountBoardView = (main) => {
     ]),
   );
 };
+
+/** Compact token count: 12k, 1.4M. */
+const compactTokens = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n));
+
+/** One variant's spend, as its agent reported it: dollars, credits, or tokens. */
+const usageText = (v) => {
+  const parts = [];
+  if (v.usage) parts.push(`${compactTokens(v.usage.inputTokens + v.usage.outputTokens)} tok`);
+  if (typeof v.credits === 'number') parts.push(`${v.credits} cr`);
+  if (typeof v.costUsd === 'number') parts.push(`${v.costUsd.toFixed(2)}`);
+  return parts.join(' · ') || '—';
+};
+
+const usageTitle = (v) =>
+  v.usage
+    ? `${v.usage.inputTokens.toLocaleString()} in (${(v.usage.cachedInputTokens ?? 0).toLocaleString()} cached) · ${v.usage.outputTokens.toLocaleString()} out`
+    : 'No usage reported yet';
 
 /** The board head's live readout: agent, elapsed run time, ready count, cost so far. */
 const renderReadout = (el) => {
@@ -698,11 +717,14 @@ const renderReadout = (el) => {
   const cost = vs.reduce((sum, v) => sum + (typeof v.costUsd === 'number' ? v.costUsd : 0), 0);
   // Codex and Copilot report tokens, not dollars; show what was reported.
   const tokens = vs.reduce((sum, v) => sum + (v.usage ? v.usage.inputTokens + v.usage.outputTokens : 0), 0);
+  const credits = vs.reduce((sum, v) => sum + (typeof v.credits === 'number' ? v.credits : 0), 0);
   const parts = [
     agentShort[agent] ?? agent ?? '',
     `Elapsed ${Math.floor(s / 60)}:${pad(s % 60)}`,
     `${done().length} of ${vs.length} ready`,
-    cost > 0 ? `${cost.toFixed(2)} so far` : tokens > 0 ? `${tokens >= 1e6 ? `${(tokens / 1e6).toFixed(1)}M` : `${Math.round(tokens / 1e3)}k`} tokens so far` : null,
+    tokens > 0 ? `${compactTokens(tokens)} tokens` : null,
+    credits > 0 ? `${credits} AI credits` : null,
+    cost > 0 ? `${cost.toFixed(2)}` : null,
   ].filter(Boolean);
   el.replaceChildren(...parts.map((p) => h('span', {}, p)));
 };
@@ -751,15 +773,16 @@ const renderBoardRows = (tbody, list) => {
       },
       [
         h('td', { class: 'var figure' }, vname(v.n)),
-        h('td', { class: 'dir' }, directionLabel(v.direction), v.summary ? h('span', { class: 'summary' }, v.summary) : v.error ? h('span', { class: 'summary' }, v.error.split('\n')[0]) : null),
+        h('td', { class: 'dir' }, directionLabel(v.direction, v.picked), v.summary ? h('span', { class: 'summary' }, v.summary) : v.error ? h('span', { class: 'summary' }, v.error.split('\n')[0]) : null),
         h('td', {}, statusEl),
         h('td', { class: 'num data', 'data-elapsed': key }, elapsed(v)),
         h('td', { class: 'num data hide-compact' }, v.files?.length ? String(v.files.length) : '—'),
+        h('td', { class: 'num data', title: usageTitle(v) }, usageText(v)),
         h('td', { class: 'lastline' }, logLines.at(-1) ?? ''),
       ],
     );
     tbody.append(tr);
-    if (open) tbody.append(h('tr', { class: 'rowlog' }, h('td', { colspan: 6 }, logPanel(v))));
+    if (open) tbody.append(h('tr', { class: 'rowlog' }, h('td', { colspan: 7 }, logPanel(v))));
   }
   for (const tr of $$('tr[data-n]', tbody)) {
     const was = before.get(tr.dataset.n);
@@ -986,7 +1009,7 @@ const updateCompare = () => {
   if (mode !== 'single' || S.sel === 'original') showIn('before', 'original');
   if (variantTarget && (mode !== 'single' || S.sel !== 'original')) showIn('after', variantTarget);
   const v = variants().find((x) => x.n === S.sel);
-  $('#tag-after').textContent = v ? `${vname(v.n)} · ${directionLabel(v.direction)}` : '';
+  $('#tag-after').textContent = v ? `${vname(v.n)} · ${directionLabel(v.direction, v.picked)}` : '';
   renderDock();
   if (S.infoOpen) renderInfo();
 };
@@ -1009,7 +1032,7 @@ const showFlag = () => {
     flag.classList.add('gone');
     return;
   }
-  flag.replaceChildren(h('span', {}, h('strong', {}, directionLabel(v.direction)), v.summary ? ` — ${v.summary}` : ''));
+  flag.replaceChildren(h('span', {}, h('strong', {}, directionLabel(v.direction, v.picked)), v.summary ? ` — ${v.summary}` : ''));
   flag.classList.remove('gone');
   clearTimeout(flagTimer);
   flagTimer = setTimeout(() => flag.classList.add('gone'), 4500);
@@ -1031,7 +1054,7 @@ const renderDock = () => {
     const v = vs.find((x) => x.n === S.sel);
     dock.replaceChildren(
       h('div', { class: 'confirm', role: 'alertdialog', 'aria-label': 'Keep this variant?' }, [
-        h('span', {}, ['Apply ', h('strong', {}, vname(v.n)), ` (${directionLabel(v.direction)}) to your working tree? `, h('span', { class: 'muted' }, `${plural(v.files.length, 'file')}. The others stay as branches.`)]),
+        h('span', {}, ['Apply ', h('strong', {}, vname(v.n)), ` (${directionLabel(v.direction, v.picked)}) to your working tree? `, h('span', { class: 'muted' }, `${plural(v.files.length, 'file')}. The others stay as branches.`)]),
         h('button', { class: 'btn outline small', type: 'button', onClick: () => ((S.confirming = false), renderDock()) }, 'Cancel'),
         h('button', { class: 'btn primary', type: 'button', id: 'apply', onClick: () => keep(v.n) }, `Apply ${vname(v.n)}`),
       ]),
@@ -1057,8 +1080,8 @@ const renderDock = () => {
             'data-n': v.n,
             disabled: !ready,
             'aria-current': String(S.sel === v.n),
-            'aria-label': `${vname(v.n)} ${directionLabel(v.direction)}, ${STATUS[v.status]}`,
-            title: `${vname(v.n)} · ${directionLabel(v.direction)} · ${STATUS[v.status]}${v.n <= 10 ? ` (${v.n % 10})` : ''}`,
+            'aria-label': `${vname(v.n)} ${directionLabel(v.direction, v.picked)}, ${STATUS[v.status]}`,
+            title: `${vname(v.n)} · ${directionLabel(v.direction, v.picked)} · ${STATUS[v.status]}${v.n <= 10 ? ` (${v.n % 10})` : ''}`,
             onClick: () => select(v.n),
           },
           pad(v.n),
@@ -1126,7 +1149,7 @@ const renderInfo = async () => {
     } catch {}
   }
   el.replaceChildren(
-    h('header', {}, [h('div', {}, [h('div', { class: 'figure' }, vname(v.n)), h('div', { class: 'label' }, directionLabel(v.direction))]), closeInfoBtn()]),
+    h('header', {}, [h('div', {}, [h('div', { class: 'figure' }, vname(v.n)), h('div', { class: 'label' }, directionLabel(v.direction, v.picked))]), closeInfoBtn()]),
     h('div', { class: 'body' }, [
       v.summary ? h('p', { style: { margin: 0 } }, v.summary) : null,
       h('div', {}, [h('div', { class: 'label' }, `${plural(v.files.length, 'file')} changed`), h('ul', {}, v.files.map((f) => h('li', {}, f)))]),
@@ -1187,7 +1210,7 @@ const mountKept = (main) => {
       h('section', { class: 'pass', 'aria-labelledby': 'kept-title' }, [
         h('div', { class: 'pass-main' }, [
           h('h1', { id: 'kept-title', class: 'figure big', style: { margin: 0 } }, vname(n)),
-          h('div', {}, [h('h2', {}, directionLabel(v?.direction ?? '')), v?.summary ? h('p', { class: 'hint', style: { fontSize: '15px' } }, v.summary) : null]),
+          h('div', {}, [h('h2', {}, directionLabel(v?.direction ?? '', v?.picked)), v?.summary ? h('p', { class: 'hint', style: { fontSize: '15px' } }, v.summary) : null]),
           r.conflicts.length ? h('p', { class: 'note bad' }, `Merged with your own edits, with conflicts in ${r.conflicts.join(', ')}. Resolve the conflict markers in those files.`) : null,
           r.depsChanged ? h('p', { class: 'note alert' }, 'This variant changed dependency files. Run your install command.') : null,
           h('div', {}, [h('div', { class: 'label', style: { marginBottom: '8px' } }, `Applied to your working tree, unstaged: ${plural(r.files.length, 'file')}`), h('ul', {}, r.files.map((f) => h('li', {}, f)))]),
