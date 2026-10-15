@@ -56,7 +56,7 @@ file in place. Claude Code can also use the plugin:
 - Node 20.11 or newer, git, and a repository with at least one commit.
 - One agent CLI on `PATH`, signed in: `claude`, `codex` or `copilot`.
 - The Impeccable skill installed for that agent:
-  `npx impeccable install --providers=<claude|codex|copilot> --scope=global`.
+  `npx impeccable install --providers=<claude|codex|copilot> --scope=global --yes --no-hooks`.
   The wizard checks this and can run it. Where each agent looks: Claude Code
   `~/.claude/skills`, `.claude/skills`; Codex `~/.agents/skills`,
   `.agents/skills`; Copilot `~/.copilot/skills`, `~/.agents/skills`,

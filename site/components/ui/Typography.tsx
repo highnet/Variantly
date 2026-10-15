@@ -8,8 +8,11 @@ const typographyVariants = cva('', {
     variant: {
       // Gate-display figures: the board's large condensed values.
       display: 'figure text-[clamp(2.5rem,6.2vw,6rem)] text-balance',
-      headline: 'figure text-[clamp(2.25rem,5vw,4rem)] text-balance',
-      title: 'figure text-[clamp(1.5rem,2.6vw,2.25rem)]',
+      // One step below the hero: DESIGN.md's headline scale.
+      headline: 'figure text-[clamp(1.75rem,3vw,2.5rem)] text-balance',
+      title: 'figure text-[1.375rem]',
+      tag: 'font-mono condensed text-[10px] font-semibold uppercase tracking-[0.08em]',
+      caption: 'text-[15px] leading-relaxed text-pretty',
       figure: 'figure text-2xl',
       // Field labels on a pass: small tracked mono caps.
       label:
@@ -38,6 +41,8 @@ const defaultTag = {
   headline: 'h2',
   title: 'h3',
   figure: 'span',
+  tag: 'span',
+  caption: 'p',
   label: 'span',
   data: 'span',
   lead: 'p',

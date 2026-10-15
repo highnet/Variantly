@@ -14,7 +14,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createParser } from './agent-output.mjs';
 import { agentById, agentFile } from './agents.mjs';
-import { defaultDirections, extractSummary, writeBrief } from './brief.mjs';
+import { defaultDirections, extractSummary, hasAnswers, productMarkdown, writeBrief } from './brief.mjs';
 import * as git from './git.mjs';
 import { LineBuffer, killTree, runOk, spawnArgs } from './proc.mjs';
 import { ServerPool } from './servers.mjs';
@@ -33,7 +33,8 @@ const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  * @property {'safe' | 'full'} permissions
  * @property {'redesign' | 'refine'} approach
  * @property {number} count
- * @property {string[]} directions
+ * @property {string[]} directions   the owner's words per variant; '' = Impeccable decides
+ * @property {import('./brief.mjs').ProductAnswers} [product]  answers to Impeccable's init questions
  * @property {string} brief
  * @property {string[]} routes
  * @property {number} concurrency
@@ -88,6 +89,8 @@ export class Session extends EventEmitter {
     this.state = { version: 1, phase: 'setup', runId: '', base: '', config: null, variants: [], chosen: null, result: null };
     /** @type {Map<number, { child?: import('node:child_process').ChildProcess, log: LineBuffer, cancelled?: boolean }>} */
     this.runs = new Map();
+    /** @type {Promise<unknown> | undefined} */
+    this.gitQueue = undefined;
     this.pool = new ServerPool({
       inject: (id) => frameScriptTag(id),
       local: opts.local,
@@ -132,6 +135,17 @@ export class Session extends EventEmitter {
     };
   }
 
+  /**
+   * Git keeps one lock per repository for worktree bookkeeping; parallel
+   * `worktree add/remove/prune` calls race on it. Run them one at a time.
+   * @template T @param {() => Promise<T>} fn @returns {Promise<T>}
+   */
+  gitLock(fn) {
+    const next = (this.gitQueue ?? Promise.resolve()).then(fn, fn);
+    this.gitQueue = next.catch(() => {});
+    return next;
+  }
+
   /** @param {number} n */
   worktreeFor(n) {
     return path.join(this.dir, `v${n}`);
@@ -159,7 +173,7 @@ export class Session extends EventEmitter {
       throw new Error('This repository has no commits yet. Commit once so variantly has a base to branch from.');
     }
     const count = Math.max(1, Math.min(10, Math.round(config.count)));
-    const directions = config.directions.length >= count ? config.directions.slice(0, count) : defaultDirections(config.approach, count);
+    const directions = config.directions.length >= count ? config.directions.slice(0, count) : defaultDirections(count);
     const snap = await git.snapshotBase(this.repo);
     this.state = {
       version: 1,
@@ -207,6 +221,9 @@ export class Session extends EventEmitter {
   async retry(n) {
     const v = this.state.variants.find((x) => x.n === n);
     if (!v || this.state.phase === 'finalized') return;
+    // A variant that is still queued or running must not be started twice:
+    // the second run would delete the first one's worktree under it.
+    if (!['failed', 'cancelled'].includes(v.status)) return;
     v.status = 'queued';
     v.error = undefined;
     v.summary = '';
@@ -255,7 +272,7 @@ export class Session extends EventEmitter {
       await update({ status: 'preparing', startedAt: Date.now() });
       const wt = this.worktreeFor(v.n);
       say(`Creating worktree ${wt}`);
-      await git.addWorktree(this.repo, wt, this.branchFor(v.n), this.state.base);
+      await this.gitLock(() => git.addWorktree(this.repo, wt, this.branchFor(v.n), this.state.base));
       const placed = await this.#prepareWorktree(wt, config, adapter, say);
       if (run.cancelled) return;
 
@@ -340,6 +357,13 @@ export class Session extends EventEmitter {
       }
     }
     if (placed.length) say(`Linked or copied: ${placed.join(', ')}`);
+    // The owner's answers become PRODUCT.md in the variant itself (committed
+    // with it), so the kept variant brings its design files home.
+    const productPath = path.join(appDst, 'PRODUCT.md');
+    if (hasAnswers(config.product) && !existsSync(productPath) && !existsSync(path.join(wt, 'PRODUCT.md'))) {
+      await writeFile(productPath, productMarkdown(path.basename(this.repo), /** @type {import('./brief.mjs').ProductAnswers} */ (config.product)));
+      say('Wrote PRODUCT.md from your answers.');
+    }
     if (install) {
       const pm = packageRunner(appSrc, this.repo);
       say(`$ ${pm.install}`);
@@ -453,7 +477,7 @@ export class Session extends EventEmitter {
     // The change is already applied: a worktree Windows won't release yet is
     // left for `variantly clean` rather than failing the keep.
     for (const other of this.state.variants) {
-      await git.removeWorktree(this.repo, this.worktreeFor(other.n)).catch(() => {});
+      await this.gitLock(() => git.removeWorktree(this.repo, this.worktreeFor(other.n))).catch(() => {});
     }
     this.state.phase = 'finalized';
     this.state.chosen = n;
@@ -474,7 +498,7 @@ export class Session extends EventEmitter {
     /** @type {string[]} */
     const leftovers = [];
     for (const v of this.state.variants) {
-      await git.removeWorktree(this.repo, this.worktreeFor(v.n)).catch(() => leftovers.push(this.worktreeFor(v.n)));
+      await this.gitLock(() => git.removeWorktree(this.repo, this.worktreeFor(v.n))).catch(() => leftovers.push(this.worktreeFor(v.n)));
     }
     if (leftovers.length) {
       this.emit('error', new Error(`Could not remove ${leftovers.join(', ')} yet; \`variantly clean\` will.`));

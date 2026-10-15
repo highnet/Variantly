@@ -21,7 +21,7 @@ Below, `<agent>` is the id of the agent you are: `claude` (Claude Code),
 `codex` (Codex CLI) or `copilot` (GitHub Copilot CLI).
 
 1. `npx variantly doctor`; fix anything marked ✗ (git commit, agent CLI,
-   `npx impeccable install --providers=<agent> --scope=global`).
+   `npx impeccable install --providers=<agent> --scope=global --yes --no-hooks`).
 2. With the user present, run `npx variantly` in the background and give them
    the URL it prints (default http://localhost:4477). The wizard does the rest.
    To skip the wizard: `npx variantly --yes --agent <agent> --count 4 --brief "<their words>"`.

@@ -17,10 +17,7 @@ know what variantly does (N whole-page redesigns, live, keep one), see it, and
 leave with `npx variantly`. An agent should leave with the exact commands and
 the rule never to choose for the user.
 
-Proof and content: real demo-agent output on the Oak & Iron example
-(site/public/demo/oak-and-iron/v0–v6, labelled as crude demo-agent output, no
-AI); real CLI commands; the real stack list. No testimonials, counts,
-benchmarks or invented timings.
+Proof and content: six whole-page redesigns of the Oak & Iron example (site/public/demo/oak-and-iron/v1-v6), made by Claude Code with the Impeccable skill from the brief variantly writes, each brief shipped next to it as BRIEF.md; real CLI commands; the real stack list; the owner's selling points under the hero. No testimonials, counts, benchmarks or invented timings.
 
 Constraints: Next.js 16 + Tailwind v4 + shadcn-style CVA Button/Typography
 (site/AGENTS.md conventions); tokens from DESIGN.md; works without JS for
@@ -28,14 +25,14 @@ reading; keyboard-operable slider and fork; WCAG 2.2 AA.
 
 ## Direction contract
 
-THESIS: Scrolling is travelling. The page is the app's own journey in four counters (check-in, board, compare, keep), each a working miniature of the real tool, so the visitor has used variantly before they install it; it refuses the feature-grid landing page with a screenshot hero.
+THESIS: The page cycles itself. A split-flap headline names a direction while the before/after beneath swaps to that redesign in sync, so the first viewport shows six whole-page redesigns of one site without a click; it refuses the feature-section landing page and the tour of the app's screens (the check-in desk was built and rejected).
 
-OWN-WORLD: The Gate Board world as recorded in DESIGN.md: panel ground, white passes, slate board, ink, one alert yellow for change and the one primary action per screen, Martian Mono condensed figures and labels, system sans prose, perforated stubs and the scan barcode.
+OWN-WORLD: The Gate Board world from DESIGN.md: panel ground, white surfaces, slate dock, ink, one alert yellow for change and the single primary action, Martian Mono condensed figures and labels, system sans prose. Stack and agent logos in one ink colour.
 
-STORY: The visitor reads one plain promise, then checks in Oak & Iron on a real pass (FROM static HTML, VIA Claude, TO redesign, 04 variants), presses the yellow Generate, watches the board flip rows to READY with the demo run's real summaries, drags the before/after across real variants with the 1…N dock, and is issued a kept pass whose stub carries the install command, then the honest fine print: agents, stacks, cost, what it is not.
+STORY: The visitor reads "Oak & Iron, as EDITORIAL" flip to SWISS, WARM, TECHNICAL while the right side of a large, real before/after keeps changing; they grab the divider or press 1–6 and the cycle stops; they see each variant was made by Claude Code with Impeccable from variantly's own brief (linked); then a three-step how-it-works strip, the stacks and agents as logos, and the install.
 
-FIRST VIEWPORT: Header strip: wordmark left, the human/agent fork as two tabs centre, GitHub right. Left 7/12: headline as a gate-display figure "N redesigns. Keep one." with one lead sentence and the install command chip; right 5/12 begins counter 1, the check-in pass for Oak & Iron, its stub's yellow "Generate 4 variants" the only yellow on screen.
+FIRST VIEWPORT: Header strip with wordmark, the human/agent fork, GitHub. One line of flap headline across the top ("Oak & Iron, as" + the flapping direction word). Under it, 70% of the viewport height, the before/after with a refined grip and pane tags; directly beneath, the slate dock: 01–06 cells with the active direction name, a "Read the brief" link and the install chip; the yellow is the install's copy action only.
 
-FORM: Check-in Desk, dealt structure 6 of my ordered list (seed key 5dded72f), locked by the user over Terminal + Board (the roll's lead) and Departures Hall. Signature interaction: pressing Generate on the pass scrolls to the board, which flips its rows SCHEDULED → WORKING → READY in order (split-flap, held yellow until hovered), then the compare counter's dock lights up. Motion: one orchestrated run sequence, nothing else animates.
+FORM: Flip Headline, dealt structure 3 of my re-rolled list (seed 5dded72f, reroll 1), chosen by the user over Compare Is the Hero and Diptych Spreads. Signature interaction: the split-flap word flips character by character in sync with the right pane cross-fading to the next variant every ~5s; any pointer, key or drag hands control to the visitor and the cycle stops for good. Motion: that one cycle; everything else static.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

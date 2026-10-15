@@ -15,9 +15,9 @@ import { createReadStream, existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { detectAgents, impeccableInstallCommand, AGENTS } from './agents.mjs';
-import { REDESIGN_DIRECTIONS, REFINE_DIRECTIONS, defaultDirections } from './brief.mjs';
+import { defaultDirections } from './brief.mjs';
 import * as git from './git.mjs';
-import { LineBuffer, isUp, run, spawnShell } from './proc.mjs';
+import { LineBuffer, isUp, run, runOk, spawnShell } from './proc.mjs';
 import { ADAPTERS, detect, packageRunner, projectInfo as projectInfoFor } from './stacks.mjs';
 import { Session } from './session.mjs';
 
@@ -159,6 +159,10 @@ export const startApp = async (opts) => {
         return session.discard();
       case 'POST install-impeccable':
         return installImpeccable(String(body.agent ?? 'claude'));
+      case 'POST install-agent':
+        return installAgent(String(body.agent ?? ''));
+      case 'POST commit':
+        return firstCommit();
       case 'GET install-log':
         return { lines: installLog.tail(100) };
       case 'POST shutdown':
@@ -167,6 +171,37 @@ export const startApp = async (opts) => {
       default:
         throw new Error(`No route ${method} /api/${name}`);
     }
+  };
+
+  /**
+   * Run a setup command the person asked for with a click, streaming its
+   * output to the page; 'installed' fires with the exit code.
+   * @param {string} command @param {string} agent
+   */
+  const runSetup = (command, agent) => {
+    installLog.push(`$ ${command}
+`);
+    const child = spawnShell(command, { cwd: opts.repo });
+    const relay = (/** @type {Buffer} */ d) => send('log', { target: 'install', lines: installLog.push(d) });
+    child.stdout?.on('data', relay);
+    child.stderr?.on('data', relay);
+    child.on('exit', (code) => send('installed', { agent, code, what: command, tail: installLog.tail(4) }));
+    return { command };
+  };
+
+  /** @param {string} agent */
+  const installAgent = (agent) => {
+    const a = AGENTS.find((x) => x.id === agent);
+    if (!a) throw new Error('Unknown agent.');
+    return runSetup(a.install, a.name);
+  };
+
+  /** The first commit, for a repository that has none. */
+  const firstCommit = async () => {
+    if (await git.hasCommits(opts.repo)) return { ok: true };
+    await runOk('git', ['add', '-A'], { cwd: opts.repo });
+    await runOk('git', ['commit', '-q', '-m', 'Before variantly'], { cwd: opts.repo });
+    return { ok: true };
   };
 
   /** @param {string} agent */
@@ -178,7 +213,7 @@ export const startApp = async (opts) => {
     const relay = (/** @type {Buffer} */ d) => send('log', { target: 'install', lines: installLog.push(d) });
     child.stdout?.on('data', relay);
     child.stderr?.on('data', relay);
-    child.on('exit', (code) => send('installed', { agent, code }));
+    child.on('exit', (code) => send('installed', { agent, code, what: command, tail: installLog.tail(4) }));
     return { command };
   };
 
@@ -246,7 +281,8 @@ export const detectProject = async (repo, defaults = {}) => {
     candidates,
     stacks: ADAPTERS.map((a) => ({ id: a.id, name: a.name, stack: a.stack, command: a.command(projectInfoFor(repo)) })),
     agents,
-    directions: { redesign: REDESIGN_DIRECTIONS, refine: REFINE_DIRECTIONS },
+    hasProduct: ['PRODUCT.md', path.join(best?.rel ?? '', 'PRODUCT.md')].some((p) => existsSync(path.join(repo, p))),
+    hasDesign: ['DESIGN.md', path.join(best?.rel ?? '', 'DESIGN.md')].some((p) => existsSync(path.join(repo, p))),
     suggested: {
       appRel: best?.rel ?? '',
       stackId: best?.adapter.id ?? 'custom',
@@ -257,7 +293,8 @@ export const detectProject = async (repo, defaults = {}) => {
       permissions: 'safe',
       approach: 'redesign',
       count: 4,
-      directions: defaultDirections('redesign', 10),
+      directions: defaultDirections(10),
+      product: { users: '', purpose: '', keep: '' },
       brief: '',
       routes: [],
       concurrency: 2,
@@ -292,7 +329,12 @@ export const normalizeConfig = (body) => {
     permissions: body.permissions === 'full' ? 'full' : 'safe',
     approach: body.approach === 'refine' ? 'refine' : 'redesign',
     count: num(body.count, 4, 1, 10),
-    directions: Array.isArray(body.directions) ? body.directions.map(String).slice(0, 10) : [],
+    directions: Array.isArray(body.directions) ? body.directions.map((/** @type {unknown} */ d) => String(d).slice(0, 200)).slice(0, 10) : [],
+    product: {
+      users: str(body.product?.users).slice(0, 2000),
+      purpose: str(body.product?.purpose).slice(0, 2000),
+      keep: str(body.product?.keep).slice(0, 2000),
+    },
     brief: str(body.brief).slice(0, 4000),
     routes: Array.isArray(body.routes) ? body.routes.map(String).filter(Boolean).slice(0, 20) : [],
     concurrency: num(body.concurrency, 2, 1, 10),

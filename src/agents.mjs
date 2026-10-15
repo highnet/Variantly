@@ -327,5 +327,5 @@ export async function detectAgents(projectRoot) {
  * @param {string} agentId
  */
 export function impeccableInstallCommand(agentId) {
-  return `npx impeccable install --providers=${agentId} --scope=global`;
+  return `npx --yes impeccable install --providers=${agentId} --scope=global --yes --no-hooks`;
 }

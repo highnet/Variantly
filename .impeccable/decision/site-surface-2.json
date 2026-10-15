@@ -1,0 +1,58 @@
+{
+  "title": "variantly.tools — choose the page structure (round 2)",
+  "question": "Earlier structures are out (no check-in pass, board or keep sections). All three lead with the before/after of real Impeccable redesigns, keep the human/agent fork, and show the stacks with logos. Lock one, steer, or re-roll.",
+  "options": [
+    {
+      "id": "flip-headline",
+      "label": "Flip Headline",
+      "kicker": "THE ROLL",
+      "thesis": "The page cycles itself: the headline is a split-flap line that flips through the variants' directions while the before/after beneath swaps in sync, so the first viewport shows six redesigns without a click.",
+      "palette": ["#e6e8eb", "#ffffff", "#0d0d10", "#1c2127", "#ffd400"],
+      "materials": ["split-flap headline", "full-width live before/after", "1–6 strip"],
+      "viewport": "Header with fork. A one-line flap headline (e.g. 'Oak & Iron, as EDITORIAL'). Under it, nearly full-viewport, the live before/after; the flap and the right pane change together every few seconds; hover or 1–6 takes control. Install chip at the bottom edge.",
+      "risk": "Auto-cycling can feel like a carousel; it must stop the moment you touch anything.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "wordmark · human / agent fork", "x": 0, "y": 0, "w": 12, "h": 1 },
+        { "label": "flap headline: Oak & Iron, as EDITORIAL", "x": 0, "y": 1, "w": 12, "h": 1, "accent": true },
+        { "label": "live before/after (cycles 1→6)", "x": 0, "y": 2, "w": 12, "h": 6 },
+        { "label": "1–6 strip · install chip", "x": 0, "y": 8, "w": 12, "h": 1, "accent": true },
+        { "label": "how it works · stacks with logos", "x": 0, "y": 9, "w": 12, "h": 1 }
+      ] }
+    },
+    {
+      "id": "compare-hero",
+      "label": "Compare Is the Hero",
+      "thesis": "No preamble: the first viewport is the before/after itself, full-bleed, with the headline and install sitting on it as small board tags, exactly like the app's own compare view.",
+      "palette": ["#0d0d10", "#ffffff", "#ffd400", "#e6e8eb"],
+      "materials": ["full-bleed live panes", "board tags", "the app's dock"],
+      "viewport": "Edge-to-edge before/after of Oak & Iron; top-left tag 'N redesigns. Keep one.'; bottom dock with 1–6, the install chip and Keep; scroll down for the short story, stacks and install.",
+      "risk": "Visitors who don't drag may not grasp it's interactive; the grip and dock must say so.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "fork as a small tag row", "x": 0, "y": 0, "w": 12, "h": 1 },
+        { "label": "full-bleed before/after with headline tag", "x": 0, "y": 1, "w": 12, "h": 7, "accent": true },
+        { "label": "dock: 1–6 · install · keep", "x": 2, "y": 8, "w": 8, "h": 1, "accent": true },
+        { "label": "story · stacks · install", "x": 0, "y": 9, "w": 12, "h": 1 }
+      ] }
+    },
+    {
+      "id": "diptychs",
+      "label": "Diptych Spreads",
+      "thesis": "A catalogue of transformations: after a short hero, each variant gets its own spread, original and redesign side by side at the same scroll, with what changed listed in the margin.",
+      "palette": ["#e6e8eb", "#ffffff", "#0d0d10", "#ffd400"],
+      "materials": ["paired frames", "margin notes of changed files", "spread numbers"],
+      "viewport": "Headline and install on the left, the first spread (original | V01 Editorial) already on the right; each scroll step is the next spread.",
+      "risk": "Six spreads is a long page; the compare becomes passive viewing instead of a tool you play with.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "wordmark · fork", "x": 0, "y": 0, "w": 12, "h": 1 },
+        { "label": "headline · install", "x": 0, "y": 1, "w": 4, "h": 3, "accent": true },
+        { "label": "original", "x": 4, "y": 1, "w": 4, "h": 4 },
+        { "label": "V01 Editorial", "x": 8, "y": 1, "w": 4, "h": 4 },
+        { "label": "next spreads…", "x": 0, "y": 5, "w": 12, "h": 4 },
+        { "label": "stacks · install", "x": 0, "y": 9, "w": 12, "h": 1, "accent": true }
+      ] }
+    }
+  ],
+  "reroll": true,
+  "buildPath": { "value": "code", "toggle": false },
+  "steer": true
+}

@@ -68,7 +68,7 @@ You need **one** of these, signed in:
 and Impeccable installed for it (the wizard offers to run this for you):
 
 ```sh
-npx impeccable install --providers=claude --scope=global   # or codex, or copilot
+npx impeccable install --providers=claude --scope=global --yes --no-hooks   # or codex, or copilot
 ```
 
 No agent yet? `npx variantly --demo` runs the whole flow with a built-in demo

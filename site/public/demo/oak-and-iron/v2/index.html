@@ -4,12 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Oak &amp; Iron Furniture | Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="topbar">Free delivery in Styria on orders over €500!!</div>
-    <nav class="navbar">
-      <a class="logo" href="index.html">🪵 Oak &amp; Iron</a>
+
+    <nav class="navbar grid" aria-label="Main">
+      <a class="logo" href="index.html">Oak &amp; Iron</a>
       <ul>
         <li><a href="index.html" class="active">Home</a></li>
         <li><a href="#shop">Shop</a></li>
@@ -18,68 +25,91 @@
       </ul>
     </nav>
 
-    <header class="hero">
+    <header class="hero grid">
+      <div class="square" aria-hidden="true"></div>
       <h1>Welcome to Oak &amp; Iron Furniture!</h1>
-      <p>Handmade furniture for real homes. Quality you can trust since 2019.</p>
-      <a class="btn" href="#shop">Browse the collection</a>
-      <a class="btn btn-outline" href="#contact">Contact us</a>
+      <p class="intro">Handmade furniture for real homes. Quality you can trust since 2019.</p>
+      <div class="actions">
+        <a class="btn" href="#shop">Browse the collection</a>
+        <a class="btn btn-outline" href="#contact">Contact us</a>
+      </div>
+      <svg class="hero-plan" viewBox="0 0 400 200" fill="none" stroke="currentColor" aria-hidden="true">
+        <rect x="0" y="60" width="400" height="14" fill="currentColor" stroke="none" />
+        <path d="M40 74v126M70 74v126M330 74v126M360 74v126" stroke-width="10" />
+        <path d="M40 140h30M330 140h30" stroke-width="6" />
+      </svg>
     </header>
 
-    <section class="features">
+    <section class="features grid" aria-label="How we work">
       <div class="feature">
-        <span class="icon">✔</span>
+        <span class="idx">01</span>
         <h3>Handmade</h3>
         <p>Every piece is built by hand in our workshop outside Graz.</p>
       </div>
       <div class="feature">
-        <span class="icon">♻</span>
+        <span class="idx">02</span>
         <h3>Reclaimed oak</h3>
         <p>We use reclaimed oak and forged steel wherever we can.</p>
       </div>
       <div class="feature">
-        <span class="icon">🚚</span>
+        <span class="idx">03</span>
         <h3>Personal delivery</h3>
         <p>Delivered by the person who built it. Lead time 6–8 weeks.</p>
       </div>
     </section>
 
-    <section id="shop" class="shop">
+    <section id="shop" class="shop grid">
       <h2>This Month's Products</h2>
       <div class="cards">
-        <div class="card">
-          <div class="card-img img1"></div>
+        <article class="card">
+          <div class="card-img">
+            <svg viewBox="0 0 240 120" fill="none" stroke="currentColor" aria-hidden="true">
+              <rect x="0" y="28" width="240" height="10" fill="currentColor" stroke="none" />
+              <path d="M30 38v82M48 38v82M192 38v82M210 38v82" stroke-width="7" />
+            </svg>
+          </div>
           <h3>The Long Table</h3>
           <p>2.4 m of reclaimed oak on steel trestles.</p>
           <p class="price">€ 2.890,-</p>
           <button type="button">Add to cart</button>
-        </div>
-        <div class="card">
-          <div class="card-img img2"></div>
+        </article>
+        <article class="card">
+          <div class="card-img">
+            <svg viewBox="0 0 240 120" fill="none" stroke="currentColor" aria-hidden="true">
+              <rect x="80" y="28" width="80" height="12" fill="currentColor" stroke="none" />
+              <path d="M92 40v80M148 40v80M92 84h56" stroke-width="7" />
+            </svg>
+          </div>
           <h3>Smithy Stool</h3>
           <p>Hand-forged legs, oiled seat.</p>
           <p class="price">€ 340,-</p>
           <button type="button">Add to cart</button>
-        </div>
-        <div class="card">
-          <div class="card-img img3"></div>
+        </article>
+        <article class="card">
+          <div class="card-img">
+            <svg viewBox="0 0 240 120" fill="none" stroke="currentColor" aria-hidden="true">
+              <path d="M60 0v120" stroke-width="7" />
+              <path d="M60 22h120M60 60h120M60 98h120" stroke-width="9" />
+            </svg>
+          </div>
           <h3>Wall Shelf No. 4</h3>
           <p>Three shelves, one bracket, no screws visible.</p>
           <p class="price">€ 410,-</p>
           <button type="button">Add to cart</button>
-        </div>
+        </article>
       </div>
     </section>
 
-    <section class="newsletter">
+    <section class="newsletter grid">
       <h2>Sign up for our Newsletter</h2>
       <p>Get news about new products and workshop days.</p>
       <form id="newsletter">
-        <input type="email" placeholder="Your email address" required />
+        <input type="email" placeholder="Your email address" required aria-label="Email address" />
         <button>Subscribe</button>
       </form>
     </section>
 
-    <footer id="contact">
+    <footer id="contact" class="grid">
       <p>Oak &amp; Iron Furniture · Werkstattgasse 4 · 8010 Graz · hello@oak-and-iron.example</p>
       <p class="small">© 2026 Oak &amp; Iron. A fictional shop: demo content for variantly.</p>
     </footer>

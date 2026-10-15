@@ -9,10 +9,12 @@ import { cn } from '@/lib/utils';
 type CommandCopyProps = {
   command: string;
   tone?: 'light' | 'slate';
+  /** The copy button carries the page's one yellow action. */
+  accent?: boolean;
   className?: string;
 };
 
-const CommandCopy = ({ command, tone = 'light', className }: CommandCopyProps) => {
+const CommandCopy = ({ command, tone = 'light', accent, className }: CommandCopyProps) => {
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -38,7 +40,7 @@ const CommandCopy = ({ command, tone = 'light', className }: CommandCopyProps) =
     >
       <span
         aria-hidden="true"
-        className={cn('font-mono text-sm', tone === 'slate' ? 'text-alert' : 'text-steel')}
+        className={cn('font-mono text-sm', tone === 'slate' ? 'text-steel-on-slate' : 'text-steel')}
       >
         $
       </span>
@@ -46,7 +48,7 @@ const CommandCopy = ({ command, tone = 'light', className }: CommandCopyProps) =
         {command}
       </code>
       <Button
-        variant={tone === 'slate' ? 'outline-slate' : 'icon'}
+        variant={accent ? 'primary' : tone === 'slate' ? 'outline-slate' : 'icon'}
         size="icon"
         onClick={copy}
         aria-label={copied ? 'Copied' : `Copy ${command}`}
