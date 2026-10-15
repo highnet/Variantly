@@ -82,10 +82,14 @@ let auditQueue = Promise.resolve();
  * @returns {Promise<AuditResult>}
  */
 export const runAudit = (url, opts = {}) => {
-  const run = auditQueue.then(() => auditOnce(url, opts));
+  // npx's own install can fail transiently (on Windows, npm's cache renames
+  // race with antivirus); one retry, only for that, not for a failed audit.
+  const run = auditQueue.then(() => auditOnce(url, opts).catch((e) => (e instanceof NpxFailed ? auditOnce(url, opts) : Promise.reject(e))));
   auditQueue = run.then(() => {}, () => {});
   return run;
 };
+
+class NpxFailed extends Error {}
 
 /** @param {string} url @param {{ timeoutMs?: number }} opts @returns {Promise<AuditResult>} */
 const auditOnce = (url, opts) =>
@@ -111,6 +115,9 @@ const auditOnce = (url, opts) =>
         if (r.error) return reject(new Error(r.error));
         resolve(r);
       } catch {
+        // npm's last line only points at its log; the lines before say why.
+        const npm = err.split('\n').filter((l) => /^npm error/.test(l) && !/complete log/.test(l));
+        if (npm.length) return reject(new NpxFailed(`The audit tools could not be installed: ${npm.slice(-3).join(' ')}`));
         reject(new Error(`The audit printed no result. ${err.trim().split('\n').at(-1) ?? ''}`.trim()));
       }
     });
