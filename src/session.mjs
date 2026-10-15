@@ -12,6 +12,7 @@ import { existsSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createParser } from './agent-output.mjs';
 import { agentById } from './agents.mjs';
 import { defaultDirections, extractSummary, writeBrief } from './brief.mjs';
 import * as git from './git.mjs';
@@ -53,6 +54,7 @@ const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  * @property {number} [startedAt]
  * @property {number} [finishedAt]
  * @property {number} [costUsd]   what the agent reported the session cost (Claude Code only)
+ * @property {import('./agent-output.mjs').Usage} [usage]  tokens, as the agent reported them
  */
 
 /**
@@ -198,6 +200,8 @@ export class Session extends EventEmitter {
     v.error = undefined;
     v.summary = '';
     v.files = [];
+    v.costUsd = undefined;
+    v.usage = undefined;
     const wasIdle = this.state.phase !== 'generating';
     this.state.phase = 'generating';
     await this.save();
@@ -223,7 +227,7 @@ export class Session extends EventEmitter {
     const adapter = adapterById(config.stackId);
     const agent = agentById(config.agent);
     const log = new LineBuffer(2000);
-    /** @type {{ child?: import('node:child_process').ChildProcess, log: LineBuffer, cancelled?: boolean, costUsd?: number }} */
+    /** @type {{ child?: import('node:child_process').ChildProcess, log: LineBuffer, cancelled?: boolean, costUsd?: number, usage?: import('./agent-output.mjs').Usage }} */
     const run = { log };
     this.runs.set(v.n, run);
     const say = (/** @type {string} */ line) => {
@@ -250,6 +254,7 @@ export class Session extends EventEmitter {
       await writeFile(
         briefPath,
         writeBrief({
+          agent: agent.id,
           variant: v.n,
           count: config.count,
           approach: config.approach,
@@ -276,7 +281,7 @@ export class Session extends EventEmitter {
       const files = await git.commitAll(wt, `variantly: variant ${v.n} (${v.direction})`, exclude);
       if (!files.length) throw new Error('The agent finished without changing any files.');
       say(`Committed ${files.length} changed file${files.length === 1 ? '' : 's'}.`);
-      await update({ status: 'done', files, summary: extractSummary(output), finishedAt: Date.now(), costUsd: run.costUsd });
+      await update({ status: 'done', files, summary: extractSummary(output), finishedAt: Date.now(), costUsd: run.costUsd, usage: run.usage });
       // Warm the first finished variant so there is something to compare.
       if (this.state.variants.filter((x) => x.status === 'done').length === 1) {
         this.pool.ensure(`v${v.n}`).catch(() => {});
@@ -328,7 +333,7 @@ export class Session extends EventEmitter {
   }
 
   /**
-   * @param {{ child?: import('node:child_process').ChildProcess, cancelled?: boolean, costUsd?: number }} run
+   * @param {{ child?: import('node:child_process').ChildProcess, cancelled?: boolean, costUsd?: number, usage?: import('./agent-output.mjs').Usage }} run
    * @param {import('./agents.mjs').AgentRun} inv
    * @param {string} cwd
    * @param {number} timeoutMin
@@ -340,23 +345,10 @@ export class Session extends EventEmitter {
       const child = spawnArgs(inv.file, inv.args, { cwd, env: { ...process.env, ...inv.env } });
       run.child = child;
       child.stdin?.end();
-      let text = '';
+      const parser = createParser(inv.output, { cwd });
       let partial = '';
       const onLine = (/** @type {string} */ line) => {
-        if (!line.trim()) return;
-        if (inv.output === 'claude-stream') {
-          const event = parseJson(line);
-          if (!event) return say(line);
-          for (const msg of describeClaudeEvent(event)) say(msg);
-          if (event.type === 'result' && typeof event.result === 'string') text += '\n' + event.result;
-          if (event.type === 'result' && typeof event.total_cost_usd === 'number') run.costUsd = event.total_cost_usd;
-          if (event.type === 'assistant') {
-            for (const block of event.message?.content ?? []) if (block.type === 'text') text += '\n' + block.text;
-          }
-        } else {
-          text += line + '\n';
-          say(line);
-        }
+        for (const msg of parser.push(line)) say(msg);
       };
       const onData = (/** @type {Buffer} */ chunk) => {
         const parts = (partial + chunk.toString()).split(/\r?\n/);
@@ -376,9 +368,11 @@ export class Session extends EventEmitter {
       child.on('exit', (code) => {
         clearTimeout(timer);
         if (partial) onLine(partial);
-        if (run.cancelled) return resolve(text);
-        if (code === 0) resolve(text);
-        else reject(new Error(`The agent exited with code ${code}.`));
+        run.costUsd = parser.costUsd();
+        run.usage = parser.usage();
+        if (run.cancelled) return resolve(parser.text());
+        if (code === 0) resolve(parser.text());
+        else reject(new Error(parser.error() ? `The agent exited with code ${code}: ${parser.error()}` : `The agent exited with code ${code}.`));
       });
     });
   }
@@ -480,39 +474,3 @@ export class Session extends EventEmitter {
 
 /** @param {string} id */
 const frameScriptTag = (id) => `<script src="/__variantly/frame.js" data-variantly="${id}" defer></script>`;
-
-/** @param {string} line */
-const parseJson = (line) => {
-  try {
-    return JSON.parse(line);
-  } catch {
-    return null;
-  }
-};
-
-/**
- * Turn Claude Code's stream-json events into short human log lines.
- * @param {any} event
- * @returns {string[]}
- */
-const describeClaudeEvent = (event) => {
-  if (event.type === 'system' && event.subtype === 'init') return [`Claude Code session started (${event.model ?? 'default model'})`];
-  if (event.type === 'assistant') {
-    /** @type {string[]} */
-    const out = [];
-    for (const block of event.message?.content ?? []) {
-      if (block.type === 'text' && block.text.trim()) out.push(block.text.trim());
-      if (block.type === 'tool_use') {
-        const input = block.input ?? {};
-        const target = input.file_path ?? input.path ?? input.pattern ?? input.command ?? input.skill ?? '';
-        out.push(`→ ${block.name}${target ? ` ${String(target).slice(0, 140)}` : ''}`);
-      }
-    }
-    return out;
-  }
-  if (event.type === 'result') {
-    const cost = typeof event.total_cost_usd === 'number' ? `, $${event.total_cost_usd.toFixed(2)}` : '';
-    return [`Finished in ${Math.round((event.duration_ms ?? 0) / 1000)}s${cost}`];
-  }
-  return [];
-};
