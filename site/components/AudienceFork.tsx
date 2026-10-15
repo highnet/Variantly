@@ -82,7 +82,12 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
           <div className="flex justify-end">{aside}</div>
         </div>
       </header>
-      <div id="audience-panel" role="tabpanel" aria-labelledby={`fork-${audience}`}>
+      <div
+        id="audience-panel"
+        role="tabpanel"
+        aria-labelledby={`fork-${audience}`}
+        className="flex flex-1 flex-col"
+      >
         {audience === 'human' ? human : agent}
       </div>
     </>

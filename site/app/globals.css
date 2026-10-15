@@ -106,9 +106,15 @@
     color-scheme: light;
     accent-color: var(--ink);
     scroll-behavior: smooth;
+    /* Reserve the scrollbar's width on every page, so switching between the
+       long human page and the short agent page never shifts the header. */
+    scrollbar-gutter: stable;
   }
 
   body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
     background: var(--panel);
     color: var(--ink);
     font-family: var(--font-sans);

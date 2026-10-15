@@ -31,7 +31,7 @@ const STEPS = [
  * The agent's view: no pitch, the commands in order, and the one rule.
  */
 const AgentQuickstart = () => (
-  <main className="mx-auto grid max-w-[920px] gap-10 px-4 py-14 sm:px-6">
+  <main className="mx-auto flex w-full max-w-[920px] flex-1 flex-col gap-10 px-4 py-14 sm:px-6">
     <div className="grid gap-4">
       <Typography variant="data" color="steel" as="p">
         # variantly — agent quickstart
@@ -79,6 +79,9 @@ const AgentQuickstart = () => (
           <code className="condensed font-mono text-sm">/impeccable live</code>.
         </li>
       </ul>
+    </div>
+    {/* Pinned to the bottom of a short page, like the human view's fine print. */}
+    <footer className="border-rule mt-auto border-t pt-6">
       <Typography variant="small" color="steel">
         Full manual:{' '}
         <Link href="/SKILLS.md" className="text-ink underline">
@@ -89,7 +92,7 @@ const AgentQuickstart = () => (
           /plugin marketplace add highnet/ProjectHusky
         </code>
       </Typography>
-    </div>
+    </footer>
   </main>
 );
 
