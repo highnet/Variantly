@@ -39,6 +39,7 @@ import path from "node:path";
  * @property {string} styles       where the look lives, for the agent brief
  * @property {number} [bootTimeout] ms to wait for the first response
  * @property {boolean} [needsInstall] linked deps don't work; install instead
+ * @property {string} [install]   the install command, when not the lockfile's
  * @property {boolean} [fixedPorts] the stack can't be moved off its ports
  * @property {(command: string) => string | undefined} [readyFile]
  *           a file (relative to the app root) the dev command writes once
@@ -107,7 +108,13 @@ export const ADAPTERS = [
     detect: (p) => (p.has("main.wasp") || p.has("main.wasp.ts") || p.has(".wasproot") ? 95 : 0),
     command: () => "wasp start",
     defaultPort: 3000,
-    link: ["node_modules", ".wasp"],
+    // .wasp is the generated app each variant compiles its own copy of,
+    // and node_modules holds workspace links into it, so neither is shared:
+    // each variant gets its own `wasp install` (wasp start refuses to run
+    // without one).
+    link: [],
+    needsInstall: true,
+    install: "wasp install",
     copy: [".env.server", ".env.client"],
     fixedPorts: true,
     bootTimeout: 300_000,

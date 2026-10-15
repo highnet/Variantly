@@ -118,3 +118,10 @@ test('Rails runs its binstub through ruby on Windows, where cmd.exe cannot', () 
   const command = rails.command(/** @type {any} */ ({ has: () => true, read: () => '' }));
   assert.equal(command, process.platform === 'win32' ? 'ruby bin/rails server -p {port}' : 'bin/rails server -p {port}');
 });
+
+test('Wasp variants build their own .wasp: nothing is linked, each runs wasp install', () => {
+  const wasp = adapterById('wasp');
+  assert.deepEqual(wasp.link, []);
+  assert.equal(wasp.needsInstall, true);
+  assert.equal(wasp.install, 'wasp install');
+});
