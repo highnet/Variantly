@@ -4,6 +4,7 @@ import { Accessibility, Contrast, Moon, Palette, Sun, Type, ZoomIn } from 'lucid
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
 import { PREFS_EVENT, PREFS_KEY, readPrefs, savePrefs, type Prefs } from '@/lib/prefs';
+import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 const AIDS: {
@@ -71,6 +72,8 @@ const PrefsMenu = () => {
   const set = (patch: Partial<Prefs>) => {
     if (!prefs) return;
     savePrefs({ ...prefs, ...patch });
+    if (patch.theme)
+      toast(patch.theme === 'dark' ? 'Dark theme on' : 'Light theme on', { tone: 'info' });
   };
 
   const dark = prefs?.theme === 'dark';

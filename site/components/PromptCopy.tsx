@@ -3,6 +3,8 @@
 import { Check, ClipboardCopy } from 'lucide-react';
 import { useState } from 'react';
 
+import { Button } from '@/components/ui/Button';
+import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 type PromptCopyProps = {
@@ -14,7 +16,10 @@ type PromptCopyProps = {
   className?: string;
 };
 
-/* A prompt for the person's own AI assistant, one click from the clipboard. */
+/*
+ * A prompt for the person's own AI assistant, one click from the clipboard.
+ * Both labels sit in the same grid cell, so the button keeps one width.
+ */
 const PromptCopy = ({
   prompt,
   label = 'Copy prompt',
@@ -28,9 +33,10 @@ const PromptCopy = ({
     try {
       await navigator.clipboard.writeText(prompt);
       setCopied(true);
+      toast('Prompt copied', { body: 'Paste it into your AI assistant.' });
       setTimeout(() => setCopied(false), 1600);
     } catch {
-      setCopied(false);
+      toast('Couldn’t copy', { body: 'Select the text and copy it yourself.', tone: 'warn' });
     }
   };
 
@@ -49,27 +55,30 @@ const PromptCopy = ({
           {prompt}
         </blockquote>
       )}
-      <button
-        type="button"
+      <Button
+        variant={slate ? 'prompt-slate' : 'prompt'}
+        size="prompt"
         onClick={copy}
         title={preview ? undefined : prompt}
-        className={cn(
-          'inline-flex w-fit items-center gap-1.5 rounded-[4px] border px-2.5 py-1.5 text-[13px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2',
-          slate
-            ? 'border-slate-line text-surface hover:bg-ink focus-visible:outline-surface'
-            : 'border-rule text-ink hover:border-ink focus-visible:outline-ink',
-        )}
+        className="w-fit"
       >
-        {copied ? (
-          <Check className="animate-pop size-3.5" aria-hidden="true" />
-        ) : (
-          <ClipboardCopy className="size-3.5" aria-hidden="true" />
-        )}
-        {copied ? 'Copied, paste it into your AI' : label}
-      </button>
-      <span className="sr-only" role="status">
-        {copied ? 'Prompt copied to clipboard' : ''}
-      </span>
+        <span className="grid [grid-template-areas:'x'] *:[grid-area:x]">
+          <span className={cn('inline-flex items-center gap-1.5', copied && 'invisible')}>
+            <ClipboardCopy aria-hidden="true" />
+            {label}
+          </span>
+          <span
+            aria-hidden={!copied}
+            className={cn(
+              'inline-flex items-center justify-center gap-1.5',
+              !copied && 'invisible',
+            )}
+          >
+            <Check className="animate-pop" aria-hidden="true" />
+            Copied
+          </span>
+        </span>
+      </Button>
     </div>
   );
 };
