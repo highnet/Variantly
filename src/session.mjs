@@ -363,6 +363,14 @@ export class Session extends EventEmitter {
       const { text: output, tail, unavailable } = await launch(briefPath);
       if (run.cancelled) return;
 
+      // An agent that couldn't run or changed nothing has nothing to review.
+      const exclude = placed.map((p) => path.posix.join(config.appRel.replace(/\\/g, '/'), p));
+      const nothingChanged = () =>
+        unavailable
+          ? new AgentUnavailable(`${agent.name} can't run: ${unavailable}`)
+          : new Error(['The agent finished without changing any files.', ...tailLines(tail)].join('\n'));
+      if (!(await git.hasChanges(wt, exclude))) throw nothingChanged();
+
       // The review pass: Impeccable's critique and audit, fed the machine
       // scores, fixing what they find. Its failure keeps the build.
       let review = '';
@@ -386,12 +394,8 @@ export class Session extends EventEmitter {
       }
 
       await update({ status: 'committing' });
-      const exclude = placed.map((p) => path.posix.join(config.appRel.replace(/\\/g, '/'), p));
       const files = await git.commitAll(wt, `variantly: variant ${v.n} (${v.direction})`, exclude);
-      if (!files.length) {
-        if (unavailable) throw new AgentUnavailable(`${agent.name} can't run: ${unavailable}`);
-        throw new Error(['The agent finished without changing any files.', ...tailLines(tail)].join('\n'));
-      }
+      if (!files.length) throw nothingChanged();
       say(`Committed ${files.length} changed file${files.length === 1 ? '' : 's'}.`);
       await update({ status: 'done', files, summary: extractSummary(output), review: review || undefined, finishedAt: Date.now(), costUsd: run.costUsd, usage: run.usage, credits: run.credits, picked: run.picked });
       // Warm the first finished variant so there is something to compare.

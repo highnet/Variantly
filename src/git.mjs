@@ -170,6 +170,18 @@ async function unlinkShared(worktree) {
   await visit(worktree, 3);
 }
 
+/** @param {string[]} exclude */
+const changeSpec = (exclude) => [".", `:(exclude)${MARKER}`, `:(exclude)**/${MARKER}`, ...exclude.map((p) => `:(exclude)${p.replace(/\\/g, "/")}`)];
+
+/**
+ * Whether the agent changed anything, minus the files variantly placed. Reads only.
+ * @param {string} worktree
+ * @param {string[]} exclude  paths relative to the worktree root
+ */
+export async function hasChanges(worktree, exclude) {
+  return (await git(worktree, ["status", "--porcelain", "--untracked-files=all", "--", ...changeSpec(exclude)])).trim() !== "";
+}
+
 /**
  * Commit whatever the agent changed, minus the files variantly placed.
  * @param {string} worktree
@@ -178,8 +190,7 @@ async function unlinkShared(worktree) {
  * @returns {Promise<string[]>} changed files
  */
 export async function commitAll(worktree, message, exclude) {
-  const pathspec = [".", `:(exclude)${MARKER}`, `:(exclude)**/${MARKER}`, ...exclude.map((p) => `:(exclude)${p.replace(/\\/g, "/")}`)];
-  await git(worktree, ["add", "-A", "--", ...pathspec]);
+  await git(worktree, ["add", "-A", "--", ...changeSpec(exclude)]);
   const changed = (await git(worktree, ["diff", "--cached", "--name-only"])).split("\n").filter(Boolean);
   if (changed.length) {
     await git(worktree, [
