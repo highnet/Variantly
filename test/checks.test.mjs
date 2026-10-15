@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { extractReview, writeBrief, writeReviewBrief } from '../src/brief.mjs';
-import { auditMarkdown, findChrome, playwrightMcp } from '../src/checks.mjs';
+import { auditMarkdown, findChrome, NPX_HALF_INSTALLED, playwrightMcp } from '../src/checks.mjs';
 import { normalizeConfig } from '../src/server.mjs';
 
 const BASE = { variant: 1, count: 2, approach: /** @type {const} */ ('redesign'), direction: '', brief: '', routes: [], appRel: '', stackName: 'Static', stackId: 'static', styles: '', hasProduct: false, hasDesign: false };
@@ -64,4 +64,14 @@ test('auditMarkdown lists scores, violations and weak audits', () => {
   assert.match(md, /SEO –/);
   assert.match(md, /\*\*critical\*\* `image-alt`/);
   assert.match(md, /`image-alt` \(0\): Images lack alt/);
+});
+
+test('a half-finished npx install is recognised, other audit errors are not', () => {
+  assert.match(
+    "Cannot find package 'C:\\npm\\cache\\_npx\\226e9d75deb1597e\\node_modules\\debug\\index.js' imported from C:\\npm\\cache\\_npx\\226e9d75deb1597e\\node_modules\\lighthouse-logger\\index.js",
+    NPX_HALF_INSTALLED,
+  );
+  assert.match("Cannot find module '/home/u/.npm/_npx/abc/node_modules/axe-core/axe.min.js'", NPX_HALF_INSTALLED);
+  assert.doesNotMatch('Could not start the audit: spawn npx ENOENT', NPX_HALF_INSTALLED);
+  assert.doesNotMatch('net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4000/', NPX_HALF_INSTALLED);
 });
