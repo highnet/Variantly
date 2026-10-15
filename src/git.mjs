@@ -60,9 +60,11 @@ export async function addWorktree(root, dir, branch, base) {
 
 /** @param {string} root @param {string} dir */
 export async function removeWorktree(root, dir) {
-  await run("git", ["worktree", "remove", "--force", dir], { cwd: root });
-  // Junctions to node_modules must be unlinked, never recursed into.
+  // Junctions to node_modules must be unlinked, never recursed into, and
+  // that has to happen first: on Windows `git worktree remove --force`
+  // follows a junction and empties the user's real node_modules.
   await unlinkShared(dir);
+  await run("git", ["worktree", "remove", "--force", dir], { cwd: root });
   // Windows keeps a directory locked for a moment after the process that
   // had it as its working directory exits; retry instead of failing.
   await rm(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 });
@@ -162,7 +164,13 @@ async function unlinkShared(worktree) {
       return;
     }
     for (const e of entries) {
-      if (e.isDirectory() && !e.isSymbolicLink() && e.name !== ".git" && e.name !== "node_modules") {
+      // Any link here is one variantly placed (or one a stray marker lost
+      // track of); the worktree is about to go, so drop the link itself.
+      if (e.isSymbolicLink()) {
+        await unlink(path.join(dir, e.name)).catch(() => {});
+        continue;
+      }
+      if (e.isDirectory() && e.name !== ".git" && e.name !== "node_modules") {
         await visit(path.join(dir, e.name), depth - 1);
       }
     }
@@ -178,7 +186,14 @@ async function unlinkShared(worktree) {
  * @returns {Promise<string[]>} changed files
  */
 export async function commitAll(worktree, message, exclude) {
-  const pathspec = [".", `:(exclude)${MARKER}`, `:(exclude)**/${MARKER}`, ...exclude.map((p) => `:(exclude)${p.replace(/\\/g, "/")}`)];
+  const rels = exclude.map((p) => p.replace(/\\/g, "/"));
+  // `git add` refuses outright (exit 1) when an exclude pathspec names a path
+  // .gitignore already ignores, such as a linked node_modules; those are
+  // skipped anyway, so only the unignored ones need excluding.
+  const ignored = rels.length
+    ? new Set((await run("git", ["check-ignore", "--", ...rels], { cwd: worktree })).stdout.split("\n").map((s) => s.trim()))
+    : new Set();
+  const pathspec = [".", `:(exclude)${MARKER}`, `:(exclude)**/${MARKER}`, ...rels.filter((p) => !ignored.has(p)).map((p) => `:(exclude)${p}`)];
   await git(worktree, ["add", "-A", "--", ...pathspec]);
   const changed = (await git(worktree, ["diff", "--cached", "--name-only"])).split("\n").filter(Boolean);
   if (changed.length) {
