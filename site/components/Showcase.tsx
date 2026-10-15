@@ -200,10 +200,72 @@ const Showcase = () => {
     }
   }, []);
 
+  /* The fake scrollbar: it reads the visible pane and moves every pane. */
+  const track = useRef<HTMLDivElement>(null);
+  const thumbDrag = useRef<{ y: number; top: number } | null>(null);
+
+  const metrics = () => {
+    const doc = frames.current[selected]?.contentWindow?.document.scrollingElement;
+    if (!doc || !track.current) return null;
+    const view = doc.clientHeight;
+    const full = Math.max(doc.scrollHeight, view);
+    const trackH = track.current.clientHeight;
+    const thumbH = Math.max(40, (view / full) * trackH);
+    return { max: full - view, room: trackH - thumbH, thumbH };
+  };
+
+  const paintThumb = () => {
+    const m = metrics();
+    if (!m || !track.current) return;
+    const top = m.max > 0 ? (scrollPos.current.y / m.max) * m.room : 0;
+    track.current.style.setProperty('--thumb-h', `${m.thumbH}px`);
+    track.current.style.setProperty('--thumb-top', `${top}px`);
+    track.current.dataset.empty = String(m.max <= 0);
+    track.current.setAttribute(
+      'aria-valuenow',
+      String(m.max > 0 ? Math.round((scrollPos.current.y / m.max) * 100) : 0),
+    );
+  };
+
+  const scrollTo = (y: number) => {
+    const m = metrics();
+    if (!m) return;
+    scrollPos.current = { ...scrollPos.current, y: Math.max(0, Math.min(m.max, y)) };
+    quiet.current = Date.now() + 80;
+    for (const f of frames.current) applyScroll(f);
+    paintThumb();
+  };
+
+  const onTrackDown = (e: PointerEvent<HTMLDivElement>) => {
+    const m = metrics();
+    if (!m || !track.current || e.button !== 0) return;
+    e.preventDefault();
+    takeOver();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const r = track.current.getBoundingClientRect();
+    const at = e.clientY - r.top;
+    const top = m.max > 0 ? (scrollPos.current.y / m.max) * m.room : 0;
+    // A press on the track jumps the thumb there, centred under the pointer.
+    const start = at >= top && at <= top + m.thumbH ? top : at - m.thumbH / 2;
+    thumbDrag.current = { y: e.clientY, top: start };
+    scrollTo(m.room > 0 ? (start / m.room) * m.max : 0);
+  };
+  const onTrackMove = (e: PointerEvent<HTMLDivElement>) => {
+    const m = metrics();
+    if (!thumbDrag.current || !m || m.room <= 0) return;
+    const top = thumbDrag.current.top + (e.clientY - thumbDrag.current.y);
+    scrollTo((top / m.room) * m.max);
+  };
+  const onTrackUp = () => {
+    thumbDrag.current = null;
+  };
+
   // A pane that just became visible picks up where the others are.
+  const repaint = useEffectEvent(() => paintThumb());
   useEffect(() => {
     quiet.current = Date.now() + 80;
     applyScroll(frames.current[selected]);
+    repaint();
   }, [selected]);
 
   const onFrameLoad = (i: number) => {
@@ -214,8 +276,12 @@ const Showcase = () => {
     if (loaded.current.has(0) && loaded.current.has(1)) setReady(true);
     // The panes are objects on the counter, not embedded documents.
     win.document.documentElement.style.setProperty('scrollbar-width', 'none');
+    // The wheel scrolls the page around the demo, not the panes inside it;
+    // the fake scrollbar on the right is the one way down a pane.
+    win.document.documentElement.style.setProperty('overflow', 'hidden');
     applyScroll(f);
     win.addEventListener('scroll', () => syncFrom(f), { passive: true });
+    paintThumb();
     // Hover mode: the panes cover the stage edge to edge, so their own
     // clientX is the stage's. A held drag still wins.
     win.addEventListener('pointermove', (e) => {
@@ -410,6 +476,7 @@ const Showcase = () => {
       </div>
       <div
         ref={stage}
+        id="demo-stage"
         className={cn(
           'group/stage relative isolate h-[62svh] min-h-[380px] overflow-hidden transition-opacity duration-300 select-none lg:h-[78svh] lg:min-h-[560px]',
           ready ? 'opacity-100' : 'opacity-0',
@@ -467,6 +534,41 @@ const Showcase = () => {
           >
             After · {current.direction}
           </Typography>
+        </div>
+
+        <div
+          ref={track}
+          role="scrollbar"
+          aria-label="Scroll the pages"
+          aria-controls="demo-stage"
+          aria-orientation="vertical"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={0}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            const view = stage.current?.clientHeight ?? 600;
+            const by: Record<string, number> = {
+              ArrowDown: 60,
+              ArrowUp: -60,
+              PageDown: view * 0.9,
+              PageUp: -view * 0.9,
+            };
+            if (e.key === 'Home') scrollTo(0);
+            else if (e.key === 'End') scrollTo(Infinity);
+            else if (e.key in by) scrollTo(scrollPos.current.y + by[e.key]);
+            else return;
+            e.preventDefault();
+            takeOver();
+          }}
+          onPointerDown={onTrackDown}
+          onPointerMove={onTrackMove}
+          onPointerUp={onTrackUp}
+          onPointerCancel={onTrackUp}
+          title="Drag to scroll the pages"
+          className="group/track absolute inset-y-3 right-1.5 z-30 w-3 cursor-grab touch-none rounded-full bg-black/10 focus-visible:outline-2 focus-visible:outline-offset-2 active:cursor-grabbing data-[empty=true]:hidden"
+        >
+          <div className="bg-ink/70 group-hover/track:bg-ink group-active/track:bg-ink absolute inset-x-0.5 top-[var(--thumb-top,0px)] h-[var(--thumb-h,40px)] rounded-full shadow-[0_0_0_1px_rgb(255_255_255/.5)] transition-colors" />
         </div>
 
         <div
