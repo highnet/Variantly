@@ -89,7 +89,8 @@ test('rewrites loopback redirects to relative paths and forwards Host', async (t
   const res = await fetch(`http://127.0.0.1:${proxy.port}/`, { redirect: 'manual' });
   assert.equal(res.status, 302);
   assert.equal(res.headers.get('location'), '/login?next=%2F');
-  assert.equal(seenHost, new URL(up.url).host);
+  // Loopback upstreams see `localhost`: Next.js 16 rejects HMR from any other origin.
+  assert.equal(seenHost, `localhost:${new URL(up.url).port}`);
 });
 
 test('asks upstream for identity encoding', async (t) => {
