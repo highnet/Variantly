@@ -30,6 +30,12 @@ const fakeBin = (/** @type {string} */ dir, /** @type {string} */ name, /** @typ
 };
 const shim = fakeBin(shimDir, 'copilot', [SHIM_LINE]);
 const real = fakeBin(realDir, 'copilot', ['GitHub Copilot CLI 1.0.98.']);
+/** What a variant did, for a failure message that explains itself. */
+const story = async (/** @type {Session} */ session, /** @type {{ n: number, status: string, error?: string }} */ v) => {
+  const wt = session.worktreeFor(v.n);
+  const status = await runOk('git', ['status', '--porcelain', '--untracked-files=all'], { cwd: wt }).then((out) => out, (e) => String(e));
+  return `V${v.n} ${v.status}${v.error ? `: ${v.error}` : ''}\ngit status in ${wt}:\n${status}\nlog:\n${session.logFor(v.n).slice(-25).join('')}`;
+};
 const env = (/** @type {string[]} */ dirs) => ({ ...process.env, PATH: dirs.join(path.delimiter), APPDATA: path.join(tmp, 'appdata') });
 
 test.after(() => rmSync(tmp, { recursive: true, force: true, maxRetries: 3 }));
@@ -95,10 +101,10 @@ test('a run with the launcher fails once with its message and starts nothing els
     const end = Date.now() + 60_000;
     while (session.state.phase === 'generating' && Date.now() < end) await new Promise((r) => setTimeout(r, 150));
     const [first, ...rest] = session.state.variants;
-    assert.equal(first.status, 'failed');
+    assert.equal(first.status, 'failed', await story(session, first));
     assert.match(first.error ?? '', /GitHub Copilot CLI can't run: Cannot find GitHub Copilot CLI/);
     for (const v of rest) {
-      assert.equal(v.status, 'failed');
+      assert.equal(v.status, 'failed', await story(session, v));
       assert.match(v.error ?? '', /^Not started: GitHub Copilot CLI can't run/);
     }
   } finally {
@@ -127,9 +133,9 @@ test('an agent that changes nothing shows its last output in the error', async (
     await session.generate(normalizeConfig({ ...info.suggested, agent: 'copilot', count: 2, concurrency: 1 }));
     const end = Date.now() + 60_000;
     while (session.state.phase === 'generating' && Date.now() < end) await new Promise((r) => setTimeout(r, 150));
-    const errors = session.state.variants.map((v) => v.error ?? '');
-    for (const e of errors) {
-      assert.match(e, /^The agent finished without changing any files\.\nLast output:\n/);
+    for (const v of session.state.variants) {
+      const e = v.error ?? '';
+      assert.match(e, /^The agent finished without changing any files\.\nLast output:\n/, await story(session, v));
       assert.match(e, / {2}Giving up\./);
     }
   } finally {
