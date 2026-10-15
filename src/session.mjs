@@ -13,7 +13,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createParser } from './agent-output.mjs';
-import { agentById } from './agents.mjs';
+import { agentById, agentFile } from './agents.mjs';
 import { defaultDirections, extractSummary, writeBrief } from './brief.mjs';
 import * as git from './git.mjs';
 import { LineBuffer, killTree, runOk, spawnArgs } from './proc.mjs';
@@ -182,8 +182,19 @@ export class Session extends EventEmitter {
   async #runQueue() {
     const config = /** @type {Config} */ (this.state.config);
     const queue = this.state.variants.filter((v) => v.status === 'queued');
+    // Set when the agent itself can't run (missing, not signed in): the rest
+    // of the queue would fail the same way, so it isn't started.
+    /** @type {{ reason?: string }} */
+    const halt = {};
     const workers = Array.from({ length: Math.max(1, Math.min(config.concurrency, queue.length)) }, async () => {
-      for (let v = queue.shift(); v; v = queue.shift()) await this.#generateOne(v);
+      for (let v = queue.shift(); v; v = queue.shift()) {
+        if (halt.reason) {
+          Object.assign(v, { status: 'failed', error: `Not started: ${halt.reason}`, finishedAt: Date.now() });
+          await this.save();
+          continue;
+        }
+        await this.#generateOne(v, halt);
+      }
     });
     await Promise.all(workers);
     if (this.state.phase === 'generating') {
@@ -221,8 +232,8 @@ export class Session extends EventEmitter {
     await this.save();
   }
 
-  /** @param {Variant} v */
-  async #generateOne(v) {
+  /** @param {Variant} v @param {{ reason?: string }} [halt] */
+  async #generateOne(v, halt = {}) {
     const config = /** @type {Config} */ (this.state.config);
     const adapter = adapterById(config.stackId);
     const agent = agentById(config.agent);
@@ -272,14 +283,18 @@ export class Session extends EventEmitter {
 
       await update({ status: 'running' });
       const inv = agent.invocation({ cwd: wt, briefPath, model: config.model || undefined, permissions: config.permissions });
-      say(`$ ${agent.bin} ${inv.args.map((a) => (/\s/.test(a) ? JSON.stringify(a) : a)).join(' ')}`);
-      const output = await this.#runAgent(run, inv, wt, config.agentTimeoutMin, say);
+      inv.file = await agentFile(agent);
+      say(`$ ${inv.file === agent.bin ? agent.bin : JSON.stringify(inv.file)} ${inv.args.map((a) => (/\s/.test(a) ? JSON.stringify(a) : a)).join(' ')}`);
+      const { text: output, tail, unavailable } = await this.#runAgent(run, inv, wt, config.agentTimeoutMin, say);
       if (run.cancelled) return;
 
       await update({ status: 'committing' });
       const exclude = placed.map((p) => path.posix.join(config.appRel.replace(/\\/g, '/'), p));
       const files = await git.commitAll(wt, `variantly: variant ${v.n} (${v.direction})`, exclude);
-      if (!files.length) throw new Error('The agent finished without changing any files.');
+      if (!files.length) {
+        if (unavailable) throw new AgentUnavailable(`${agent.name} can't run: ${unavailable}`);
+        throw new Error(['The agent finished without changing any files.', ...tailLines(tail)].join('\n'));
+      }
       say(`Committed ${files.length} changed file${files.length === 1 ? '' : 's'}.`);
       await update({ status: 'done', files, summary: extractSummary(output), finishedAt: Date.now(), costUsd: run.costUsd, usage: run.usage });
       // Warm the first finished variant so there is something to compare.
@@ -289,6 +304,7 @@ export class Session extends EventEmitter {
     } catch (err) {
       if (run.cancelled) return;
       const message = err instanceof Error ? err.message : String(err);
+      if (err instanceof AgentUnavailable) halt.reason ??= message;
       say(`Failed: ${message}`);
       await update({ status: 'failed', error: message.split('\n').slice(0, 8).join('\n'), finishedAt: Date.now() });
     } finally {
@@ -338,7 +354,8 @@ export class Session extends EventEmitter {
    * @param {string} cwd
    * @param {number} timeoutMin
    * @param {(line: string) => void} say
-   * @returns {Promise<string>} the agent's final text
+   * @returns {Promise<{ text: string, tail: string[], unavailable?: string }>} the agent's final
+   *   text, its last output lines, and why it can't run at all if it said so
    */
   #runAgent(run, inv, cwd, timeoutMin, say) {
     return new Promise((resolve, reject) => {
@@ -356,7 +373,10 @@ export class Session extends EventEmitter {
         parts.forEach(onLine);
       };
       child.stdout?.on('data', onData);
-      child.stderr?.on('data', (d) => String(d).split(/\r?\n/).filter(Boolean).forEach((l) => say(l)));
+      child.stderr?.on('data', (d) => String(d).split(/\r?\n/).filter(Boolean).forEach((l) => {
+        parser.note(l);
+        say(l);
+      }));
       const timer = setTimeout(() => {
         say(`Timed out after ${timeoutMin} minutes.`);
         killTree(child);
@@ -370,9 +390,11 @@ export class Session extends EventEmitter {
         if (partial) onLine(partial);
         run.costUsd = parser.costUsd();
         run.usage = parser.usage();
-        if (run.cancelled) return resolve(parser.text());
-        if (code === 0) resolve(parser.text());
-        else reject(new Error(parser.error() ? `The agent exited with code ${code}: ${parser.error()}` : `The agent exited with code ${code}.`));
+        const result = { text: parser.text(), tail: parser.tail(), unavailable: parser.unavailable() };
+        if (run.cancelled || code === 0) return resolve(result);
+        if (result.unavailable) return reject(new AgentUnavailable(`The agent exited with code ${code}: ${result.unavailable}`));
+        const error = parser.error();
+        reject(new Error(error ? `The agent exited with code ${code}: ${error}` : [`The agent exited with code ${code}.`, ...tailLines(result.tail)].join('\n')));
       });
     });
   }
@@ -471,6 +493,12 @@ export class Session extends EventEmitter {
     await this.pool.closeAll();
   }
 }
+
+/** The agent CLI can't do any work here (missing, a shim, not signed in). */
+export class AgentUnavailable extends Error {}
+
+/** The last few output lines, for an error that has to say why. @param {string[]} tail */
+const tailLines = (tail) => (tail.length ? ['Last output:', ...tail.slice(-5).map((l) => `  ${l.slice(0, 200)}`)] : []);
 
 /** @param {string} id */
 const frameScriptTag = (id) => `<script src="/__variantly/frame.js" data-variantly="${id}" defer></script>`;

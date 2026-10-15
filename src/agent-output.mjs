@@ -31,7 +31,29 @@ import path from 'node:path';
  * @property {() => number | undefined} costUsd  only Claude Code reports a dollar figure
  * @property {() => Usage | undefined} usage
  * @property {() => string | undefined} error   a fatal error the agent reported, if any
+ * @property {() => string | undefined} unavailable  set when the output says the agent can't run
+ *                                                    at all (not installed, not signed in)
+ * @property {(line: string) => void} note       feed a stderr line (checked, not parsed)
+ * @property {() => string[]} tail               the last few things the agent said
  */
+
+/**
+ * Output that means the agent CLI can't do any work here, so no variant will
+ * succeed with it: a launcher shim with no real CLI behind it, or no sign-in.
+ * Matched against stdout and stderr, JSON or not.
+ */
+export const UNAVAILABLE = [
+  /Cannot find GitHub Copilot CLI/i,
+  /\b(?:not|isn't|is not) (?:logged|signed) in\b/i,
+  /\bplease (?:run )?`?(?:copilot|codex|claude)(?: auth)? login\b/i,
+  /\b401 Unauthorized\b/i,
+  /\binvalid api key\b/i,
+  /\bauthentication (?:is )?required\b/i,
+  /\bno authentication information found\b/i,
+];
+
+/** @param {string} line */
+export const unavailableReason = (line) => (UNAVAILABLE.some((re) => re.test(line)) ? clip(line, 300) : undefined);
 
 /**
  * @param {OutputKind} kind
@@ -44,6 +66,15 @@ export function createParser(kind, opts = {}) {
     /** @type {number | undefined} */ costUsd: undefined,
     /** @type {Usage | undefined} */ usage: undefined,
     /** @type {string | undefined} */ error: undefined,
+    /** @type {string | undefined} */ unavailable: undefined,
+    /** @type {string[]} */ tail: [],
+  };
+  const remember = (/** @type {string[]} */ lines) => {
+    state.tail.push(...lines.filter((l) => l.trim()));
+    if (state.tail.length > 8) state.tail.splice(0, state.tail.length - 8);
+  };
+  const check = (/** @type {string} */ line) => {
+    state.unavailable ??= unavailableReason(line);
   };
   const rel = (/** @type {unknown} */ p) => shortPath(String(p ?? ''), opts.cwd);
   const addUsage = (/** @type {number} */ input, /** @type {number} */ output, /** @type {number} */ cached) => {
@@ -59,15 +90,27 @@ export function createParser(kind, opts = {}) {
   return {
     push(line) {
       if (!line.trim()) return [];
+      check(line);
+      /** @type {string[]} */
+      let out;
       if (kind === 'text' || !describe) {
         state.text.push(line);
-        return [line];
+        out = [line];
+      } else {
+        const event = parseJson(line);
+        // Not every line is an event: warnings and banners pass through as-is.
+        out = !event || typeof event !== 'object' ? [line] : describe(event, state, rel, addUsage);
       }
-      const event = parseJson(line);
-      // Not every line is an event: warnings and banners pass through as-is.
-      if (!event || typeof event !== 'object') return [line];
-      return describe(event, state, rel, addUsage);
+      remember(out);
+      return out;
     },
+    note(line) {
+      if (!line.trim()) return;
+      check(line);
+      remember([line]);
+    },
+    unavailable: () => state.unavailable,
+    tail: () => [...state.tail],
     text: () => state.text.join('\n'),
     costUsd: () => state.costUsd,
     usage: () => state.usage,

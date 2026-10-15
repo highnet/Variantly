@@ -13,7 +13,8 @@ import { existsSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { run, which } from "./proc.mjs";
+import { unavailableReason } from "./agent-output.mjs";
+import { run } from "./proc.mjs";
 
 /**
  * @typedef {object} AgentRun
@@ -229,6 +230,82 @@ export function hasSkill(agent, name, where = {}) {
 }
 
 /**
+ * Launchers that sit on PATH under an agent's name but are not the agent:
+ * VS Code's Copilot Chat drops a `copilot` bootstrapper into its terminals'
+ * PATH that, run headless, prints "Cannot find GitHub Copilot CLI" and exits 0.
+ * @param {string} file
+ */
+export const isKnownShim = (file) => /[\\/]github\.copilot-chat[\\/]copilotCli[\\/]/i.test(file);
+
+/**
+ * Every file on PATH (and in npm's global bin) that would run `bin`, real
+ * agents first and known shims last.
+ * @param {string} bin
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export function binCandidates(bin, env = process.env) {
+  const win = process.platform === "win32";
+  const exts = win ? (env.PATHEXT ?? ".EXE;.CMD;.BAT;.COM").toLowerCase().split(";").filter(Boolean) : [""];
+  const npmBin = env.APPDATA && win ? [path.join(env.APPDATA, "npm")] : [];
+  const dirs = [...(env.PATH ?? env.Path ?? "").split(path.delimiter).filter(Boolean), ...npmBin];
+  /** @type {string[]} */
+  const found = [];
+  for (const dir of dirs) {
+    for (const ext of exts) {
+      const file = path.join(dir, bin + ext);
+      if (existsSync(file) && !found.some((f) => f.toLowerCase() === file.toLowerCase())) found.push(file);
+    }
+  }
+  return [...found.filter((f) => !isKnownShim(f)), ...found.filter(isKnownShim)];
+}
+
+/**
+ * The first line of `--version` output, when it looks like a version and not
+ * like a launcher apologising that the real CLI is missing.
+ * @param {string} output
+ */
+export function versionFrom(output) {
+  const first = output.trim().split(/\r?\n/)[0]?.trim() ?? "";
+  if (!/\d+\.\d+/.test(first) || unavailableReason(output)) return null;
+  return first.slice(0, 60);
+}
+
+/** @type {Map<string, string>} the binary that answered --version, per agent id */
+const resolved = new Map();
+
+/**
+ * Find the binary that really is this agent: the first candidate whose
+ * `--version` prints a version. Shims are tried last and reported.
+ * @param {AgentAdapter} agent
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export async function probeAgent(agent, env = process.env) {
+  let note = "";
+  for (const file of binCandidates(agent.bin, env)) {
+    const res = await run(file, ["--version"], { timeout: 15_000 });
+    const out = `${res.stdout}
+${res.stderr}`;
+    const version = res.code === 0 ? versionFrom(out) : null;
+    if (version) {
+      resolved.set(agent.id, file);
+      return { path: file, version, note };
+    }
+    note ||= `${file} is not ${agent.name}: ${(unavailableReason(out) ?? "`--version` printed no version").slice(0, 160)}`;
+  }
+  resolved.delete(agent.id);
+  return { path: "", version: "", note };
+}
+
+/**
+ * The file to run for an agent, probing once if detection hasn't yet.
+ * @param {AgentAdapter} agent
+ */
+export async function agentFile(agent) {
+  if (agent.id === "demo") return agent.bin;
+  return resolved.get(agent.id) ?? ((await probeAgent(agent)).path || agent.bin);
+}
+
+/**
  * Which agents are installed, their versions, and whether Impeccable is
  * installed where each one looks for skills.
  * @param {string} projectRoot
@@ -236,15 +313,10 @@ export function hasSkill(agent, name, where = {}) {
 export async function detectAgents(projectRoot) {
   return Promise.all(
     AGENTS.map(async (agent) => {
-      const binPath = which(agent.bin);
-      let version = "";
-      if (binPath) {
-        const res = await run(agent.bin, ["--version"], { timeout: 15_000 });
-        version = (res.stdout || res.stderr).trim().split("\n")[0].slice(0, 60);
-      }
+      const { path: binPath, version, note } = await probeAgent(agent);
       const impeccable = hasSkill(agent, "impeccable", { projectRoot });
       const variantlySkill = hasSkill(agent, "variantly", { projectRoot });
-      return { id: agent.id, name: agent.name, installed: Boolean(binPath), version, impeccable, variantlySkill, install: agent.install };
+      return { id: agent.id, name: agent.name, installed: Boolean(binPath), path: binPath, note, version, impeccable, variantlySkill, install: agent.install };
     }),
   );
 }

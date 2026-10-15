@@ -150,6 +150,8 @@ const doctor = async (repo) => {
   console.log('\nAgents');
   for (const a of info.agents) {
     console.log(`${ok(a.installed)} ${a.name.padEnd(20)} ${a.installed ? a.version : `install: ${a.install}`}`);
+    if (a.note) console.log('  · ' + a.note);
+    if (a.installed && a.path) console.log('  · ' + a.path);
     if (!a.installed) continue;
     console.log(`  ${ok(a.impeccable)} Impeccable skill ${a.impeccable ? 'found' : `missing: npx impeccable install --providers=${a.id} --scope=global`}`);
     console.log(`  ${a.variantlySkill ? '✓' : '·'} variantly skill ${a.variantlySkill ? 'found' : `not installed (optional): npx variantly install-skill --providers=${a.id}`}`);
