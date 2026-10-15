@@ -24,12 +24,26 @@
 /* Dark theme: the light grounds go dark and ink goes light. The slate board
    is already dark, so inside it (.on-slate) the light-theme values stay. */
 :root[data-theme='dark'] {
-  --ink: #eceef1;
-  --steel: #a1a8b0;
-  --rule: #353c45;
-  --panel: #12161a;
-  --surface: #181d22;
-  --fail: #ff8a80;
+  /* Night shift at the gate: a cool blue-black ground, passes lifted one step,
+     the board one step above that. Yellow is pulled back a touch so it reads
+     as a lamp, not a glare; status colours are lightened for dark grounds. */
+  --panel: #0e1114; /* ground */
+  --surface: #171b20; /* pass, +1 */
+  --slate: #1e242b; /* board, +2 */
+  --slate-raised: #29313a;
+  --slate-line: #3a434d;
+  --ink: #e8ebee; /* 15.6:1 on panel */
+  --steel: #9aa3ad; /* 7.4:1 on panel, 6.8:1 on surface */
+  --steel-on-slate: #aab2bb;
+  --rule: #2c333b;
+  --alert: #f2c94c;
+  --alert-hover: #f8d872;
+  --fail: #ff8f85; /* 7.0:1 on surface */
+  --fail-on-slate: #ff9a91;
+  --ok-on-slate: #84e3ad;
+  --shadow-lift: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 10px 28px -12px rgb(0 0 0 / 0.7);
+  --shadow-dock: 0 18px 44px -14px rgb(0 0 0 / 0.85);
+  --shadow-grip: 0 10px 30px -8px rgb(0 0 0 / 0.8);
 }
 
 :root[data-theme='dark'] .on-slate {
@@ -97,6 +111,7 @@
   --color-surface: var(--surface);
   --color-alert: var(--alert);
   --color-alert-hover: var(--alert-hover);
+  --color-on-alert: #0d0d10;
   --color-fail: var(--fail);
   --color-fail-on-slate: var(--fail-on-slate);
   --color-ok-on-slate: var(--ok-on-slate);
