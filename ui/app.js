@@ -1098,7 +1098,7 @@ const compactTokens = (n) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ?
 const usageText = (v) => {
   const parts = [];
   if (v.usage) parts.push(`${compactTokens(v.usage.inputTokens + v.usage.outputTokens)} tok`);
-  if (typeof v.credits === 'number') parts.push(`${v.credits} cr`);
+  if (typeof v.credits === 'number') parts.push(`${v.credits} premium req`);
   if (typeof v.costUsd === 'number') parts.push(`${v.costUsd.toFixed(2)}`);
   return parts.join(' · ') || '—';
 };
@@ -1127,7 +1127,7 @@ const renderReadout = (el) => {
     `Elapsed ${Math.floor(s / 60)}:${pad(s % 60)}`,
     `${done().length} of ${vs.length} ready`,
     tokens > 0 ? `${compactTokens(tokens)} tokens` : null,
-    credits > 0 ? `${credits} AI credits` : null,
+    credits > 0 ? `${credits} premium requests` : null,
     cost > 0 ? `${cost.toFixed(2)}` : null,
   ].filter(Boolean);
   el.replaceChildren(...parts.map((p) => h('span', {}, p)));

@@ -236,6 +236,19 @@ function copilot(event, state, rel, addUsage) {
       return [`Error: ${state.error}`];
     case 'session.warning':
       return d.message ? [`Warning: ${d.message}`] : [];
+    // Copilot CLI 1.0.9x reports no tokens: spend is premium requests, live
+    // in usage checkpoints and final in the top-level `result` event.
+    case 'session.usage_checkpoint':
+      if (typeof d.totalPremiumRequests === 'number') state.credits = d.totalPremiumRequests;
+      return [];
+    case 'result': {
+      const u = event.usage ?? {};
+      if (typeof u.premiumRequests === 'number') state.credits = u.premiumRequests;
+      const changed = u.codeChanges?.filesModified?.length ?? 0;
+      const secs = Math.round(num(u.totalApiDurationMs) / 1000);
+      const spend = typeof state.credits === 'number' ? `, ${state.credits} premium request${state.credits === 1 ? '' : 's'}` : '';
+      return [`Finished: ${changed} file${changed === 1 ? '' : 's'} changed, ${secs}s of model time${spend}`];
+    }
     case 'session.shutdown': {
       const changed = d.codeChanges?.filesModified?.length ?? 0;
       const lines = typeof d.codeChanges?.linesAdded === 'number' ? ` (+${d.codeChanges.linesAdded} −${num(d.codeChanges.linesRemoved)})` : '';
