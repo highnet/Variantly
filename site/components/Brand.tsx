@@ -7,7 +7,7 @@ import { BrandMark } from '@/components/BrandMark';
 const Brand = () => (
   <Link href="/" className="flex items-center gap-2.5 no-underline" aria-label="variantly home">
     <BrandMark className="size-7" />
-    <span className="figure hidden text-base sm:inline">variantly</span>
+    <span className="figure text-base">variantly</span>
   </Link>
 );
 

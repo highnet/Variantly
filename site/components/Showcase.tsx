@@ -610,11 +610,12 @@ const Showcase = () => {
           data-keep-cycle
           className="bg-slate shadow-grip rounded-chip absolute bottom-3 left-1/2 z-30 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-x-4 gap-y-2 px-2 py-2 font-mono [font-stretch:87.5%]"
         >
-          <div role="group" aria-label="Redesigns" className="flex gap-1">
+          <div role="group" aria-label="Redesigns" className="flex flex-wrap justify-center gap-1">
             <Button
               variant="cell"
               size="cell"
               aria-label="Previous redesign"
+              className="hidden sm:inline-flex"
               title="Previous"
               onClick={() =>
                 choose(((selected + DEMO_VARIANTS.length - 2) % DEMO_VARIANTS.length) + 1)
@@ -649,6 +650,7 @@ const Showcase = () => {
               variant="cell"
               size="cell"
               aria-label="Next redesign"
+              className="hidden sm:inline-flex"
               title="Next"
               onClick={() => choose((selected % DEMO_VARIANTS.length) + 1)}
             >
