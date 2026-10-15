@@ -6,6 +6,25 @@
     <title>variantly</title>
     <link rel="icon" href="/__variantly/icon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/__variantly/app.css" />
+    <script>
+      // Theme and reading aids before first paint, so nothing flashes.
+      (function () {
+        try {
+          var m = function (q) { return matchMedia(q).matches; };
+          var p = Object.assign(
+            { theme: m('(prefers-color-scheme: dark)') ? 'dark' : 'light', motion: m('(prefers-reduced-motion: reduce)') ? 'calm' : 'full' },
+            JSON.parse(localStorage.getItem('variantly:prefs') || '{}'),
+          );
+          var d = document.documentElement;
+          d.dataset.theme = p.theme;
+          d.dataset.motion = p.motion;
+          d.dataset.readable = !!p.readable;
+          d.dataset.large = !!p.large;
+          d.dataset.contrast = !!p.contrast;
+          d.dataset.calm = !!p.calm;
+        } catch (e) {}
+      })();
+    </script>
     <script type="module" src="/__variantly/app.js"></script>
   </head>
   <body>
@@ -18,6 +37,7 @@
       <span class="bar-project" id="project"></span>
       <span class="bar-phase" id="phase" aria-live="polite"></span>
       <span class="bar-spacer"></span>
+      <div class="prefs" id="prefs"></div>
     </header>
     <main id="view" tabindex="-1"></main>
     <ol id="toasts" class="toasts" aria-live="polite"></ol>
