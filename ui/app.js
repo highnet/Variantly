@@ -110,9 +110,7 @@ const S = {
 
 const variants = () => S.snap?.variants ?? [];
 const done = () => variants().filter((v) => v.status === 'done');
-const directionList = () => (S.detect?.directions?.[S.form?.approach ?? 'redesign'] ?? []);
-const directionLabel = (id, approach = S.snap?.config?.approach ?? S.form?.approach ?? 'redesign') =>
-  (S.detect?.directions?.[approach] ?? []).find((d) => d.id === id)?.label ?? id;
+const directionLabel = (dir) => (dir && dir.trim() ? dir.trim() : 'Impeccable’s pick');
 const server = (id) => (S.snap?.servers ?? []).find((s) => s?.id === id);
 
 const STATUS = {
@@ -178,42 +176,61 @@ const mountCheckin = (main) => {
     return;
   }
   const d = S.detect;
+  const productField = (key, label, placeholder) =>
+    h('label', { class: 'field' }, [
+      h('span', { class: 'label' }, label),
+      h('textarea', {
+        class: 'input',
+        rows: 2,
+        placeholder,
+        value: S.form.product?.[key] ?? '',
+        onInput: (e) => {
+          S.form.product = { ...(S.form.product ?? {}), [key]: e.target.value };
+        },
+      }),
+    ]);
   main.append(
-    h('div', { class: 'checkin' }, [
-      h('section', { class: 'pass', 'aria-labelledby': 'pass-title' }, [
-        h('div', { class: 'pass-main' }, [
-          h('header', { class: 'pass-head' }, [
-            h('div', { class: 'route' }, [h('h1', { id: 'pass-title', class: 'figure' }, d.name), h('span', { class: 'label' }, 'Check-in')]),
-            h('div', { class: 'meta' }, [
-              d.branch ? h('div', {}, [h('div', { class: 'label' }, 'Branch'), h('div', { class: 'data' }, d.branch)]) : null,
-              d.head ? h('div', {}, [h('div', { class: 'label' }, 'Base'), h('div', { class: 'data' }, d.head)]) : null,
-            ]),
-          ]),
-          h('div', { class: 'segments', role: 'group', 'aria-label': 'Run settings' }, [
-            segmentButton('from', 'From'),
-            segmentButton('via', 'Via'),
-            segmentButton('to', 'To'),
+    h('div', { class: 'setup' }, [
+      h('div', { class: 'setup-main' }, [
+        h('header', { class: 'setup-head' }, [
+          h('h1', { class: 'figure display' }, `Redesign ${d.name}`),
+          h('p', { class: 'setup-meta' }, [d.branch ? `${d.branch}` : null, d.head ? ` · ${d.head}` : null, ` · ${d.repo}`].filter(Boolean).join('')),
+        ]),
+        h('section', { class: 'panel', 'aria-label': 'Run settings' }, [
+          h('div', { class: 'segments', role: 'group' }, [
+            segmentButton('from', 'Your app'),
+            segmentButton('via', 'Your agent'),
+            segmentButton('to', 'Approach'),
             segmentButton('seats', 'Variants'),
           ]),
           h('div', { class: 'drawer', id: 'drawer', hidden: true }),
-          h('div', { class: 'remarks' }, [
-            h('label', { class: 'label', for: 'brief' }, 'Brief'),
-            h('p', { class: 'hint', id: 'brief-hint' }, 'Optional. What you want, in your own words; every agent reads it.'),
+        ]),
+        h('section', { class: 'panel about', 'aria-labelledby': 'about-title' }, [
+          h('h2', { id: 'about-title', class: 'figure title' }, 'About your site'),
+          d.hasProduct
+            ? h('p', { class: 'hint' }, 'PRODUCT.md found. Every agent reads it through Impeccable, so nothing to answer here.')
+            : [
+                h('p', { class: 'hint' }, "Impeccable's three questions. Your answers become PRODUCT.md in every variant, so the agents design for your audience instead of guessing. All optional."),
+                productField('users', 'Who is it for, and what do they come to do?', 'e.g. People furnishing a first home; they browse the collection and ask for a custom piece.'),
+                productField('purpose', 'What does it offer, and what makes it different?', 'e.g. Handmade oak and steel furniture, built and delivered by the maker.'),
+                productField('keep', 'What must stay? Brand, content, constraints', 'e.g. The logo and the name; prices in euros; no stock photos.'),
+              ],
+          h('label', { class: 'field' }, [
+            h('span', { class: 'label' }, 'Anything else for the agents'),
             h('textarea', {
               id: 'brief',
               class: 'input',
-              rows: 3,
-              'aria-describedby': 'brief-hint',
-              placeholder: 'e.g. Less corporate. It sells handmade furniture; it should feel like a workshop, not a SaaS.',
+              rows: 2,
+              placeholder: 'e.g. Less corporate. It should feel like a workshop, not a SaaS.',
               value: S.form.brief,
               onInput: (e) => (S.form.brief = e.target.value),
             }),
           ]),
         ]),
-        h('aside', { class: 'stub', 'aria-label': 'Summary' }, [h('div', { id: 'stub-body', class: 'stub-body' })]),
+        h('section', { class: 'action-dock', 'aria-label': 'Summary' }, [h('div', { id: 'stub-body', class: 'stub-body' })]),
       ]),
       h('section', { class: 'board compact', 'aria-labelledby': 'preview-title' }, [
-        h('header', { class: 'board-head' }, [h('h2', { id: 'preview-title', class: 'figure' }, 'Board'), h('span', { class: 'label', id: 'preview-count' })]),
+        h('header', { class: 'board-head' }, [h('h2', { id: 'preview-title', class: 'figure' }, 'Variants'), h('span', { class: 'label', id: 'preview-count' })]),
         h('table', {}, [
           h('thead', {}, h('tr', {}, [h('th', { class: 'label' }, 'Var'), h('th', { class: 'label' }, 'Direction'), h('th', { class: 'label' }, 'Status')])),
           h('tbody', { id: 'preview-rows' }),
@@ -245,7 +262,8 @@ const loadDetect = async () => {
     S.detect = await api('GET', 'detect');
     const saved = S.snap?.config;
     S.form = { ...S.detect.suggested, ...(saved ?? {}) };
-    if (!S.form.directions?.length) S.form.directions = S.detect.suggested.directions;
+    S.form.directions = Array.from({ length: 10 }, (_, i) => S.form.directions?.[i] ?? '');
+    S.form.product = S.form.product ?? { users: '', purpose: '', keep: '' };
     S.view = '';
     render();
   } catch (err) {
@@ -261,7 +279,7 @@ const segmentValues = () => {
   const cand = selectedCandidate();
   const stackName = cand?.name ?? S.detect.stacks.find((s) => s.id === f.stackId)?.name ?? 'Custom';
   const agent = selectedAgent();
-  const dirs = f.directions.slice(0, f.count).map((id) => directionLabel(id, f.approach));
+  const pinned = f.directions.slice(0, f.count).filter((d) => d.trim()).length;
   return {
     from: {
       figure: stackName,
@@ -273,7 +291,7 @@ const segmentValues = () => {
       sub: f.agent === 'demo' ? 'no AI, fixed restyles' : !agent?.installed ? 'not installed' : !agent.impeccable ? 'Impeccable missing' : agent.version || 'installed',
       warn: f.agent !== 'demo' && (!agent?.installed || !agent?.impeccable),
     },
-    to: { figure: f.approach === 'refine' ? 'Refine' : 'Redesign', sub: dirs.join(' · ') },
+    to: { figure: f.approach === 'refine' ? 'Refine' : 'Redesign', sub: pinned ? `${pinned} pinned by you · the rest by Impeccable` : 'Impeccable picks every world' },
     seats: { figure: pad(f.count), sub: `${f.concurrency} at a time · ${f.maxLive} servers live` },
   };
 };
@@ -444,8 +462,7 @@ const renderDrawer = () => {
   }
 
   if (S.openSegment === 'to') {
-    const list = directionList();
-    put(drawer, 
+    put(drawer,
       h('div', { class: 'field' }, [
         h('span', { class: 'label' }, 'Approach'),
         segToggle(
@@ -456,35 +473,32 @@ const renderDrawer = () => {
           f.approach,
           (v) => {
             f.approach = v;
-            f.directions = S.detect.directions[v].map((x) => x.id);
             updateCheckin(true);
           },
         ),
-        h('p', { class: 'hint' }, f.approach === 'refine' ? 'Keep your look. Each variant runs one Impeccable command on it.' : 'Replace your look. Each variant commits to a different visual world.'),
+        h('p', { class: 'hint' }, f.approach === 'refine' ? 'Keep your look. Impeccable finds what to improve in each variant.' : 'Replace your look. Impeccable picks a different visual world for every variant.'),
       ]),
       h('div', { class: 'field' }, [
-        h('span', { class: 'label' }, 'One direction per variant'),
+        h('span', { class: 'label' }, 'Your own directions (optional)'),
         h(
           'div',
           { class: 'directions' },
           Array.from({ length: f.count }, (_, i) =>
             h('label', { class: 'direction' }, [
               h('span', { class: 'num figure' }, vname(i + 1)),
-              h(
-                'select',
-                {
-                  'aria-label': `Direction for ${vname(i + 1)}`,
-                  onChange: (e) => {
-                    f.directions[i] = e.target.value;
-                    updateCheckin();
-                  },
+              h('input', {
+                'aria-label': `Direction for ${vname(i + 1)}`,
+                value: f.directions[i] ?? '',
+                placeholder: 'Impeccable picks',
+                onInput: (ev) => {
+                  f.directions[i] = ev.target.value;
+                  updateCheckin();
                 },
-                list.map((x) => h('option', { value: x.id, selected: f.directions[i] === x.id }, x.label)),
-              ),
+              }),
             ]),
           ),
         ),
-        h('p', { class: 'hint' }, list.find((x) => x.id === f.directions[0])?.detail ? `${directionLabel(f.directions[0], f.approach)}: ${list.find((x) => x.id === f.directions[0]).detail}.` : ''),
+        h('p', { class: 'hint' }, 'Leave a slot blank and Impeccable chooses that world itself. Type to pin one, in your words: "a 70s record sleeve", "like a Swiss train timetable".'),
       ]),
       h('label', { class: 'field' }, [
         h('span', { class: 'label' }, 'Pages that matter (optional)'),
@@ -498,7 +512,7 @@ const renderDrawer = () => {
       h('div', { class: 'field-row' }, [
         h('div', { class: 'field' }, [h('span', { class: 'label' }, 'Variants'), stepper(f.count, 1, 10, (n) => {
           f.count = n;
-          while (f.directions.length < n) f.directions.push(directionList()[f.directions.length % directionList().length].id);
+          while (f.directions.length < n) f.directions.push('');
           updateCheckin(true);
         })]),
         h('div', { class: 'field' }, [h('span', { class: 'label' }, 'At a time'), stepper(f.concurrency, 1, 6, (n) => {
@@ -536,14 +550,20 @@ const stepper = (value, min, max, onSet) =>
     h('button', { type: 'button', 'aria-label': 'More', disabled: value >= max, onClick: () => onSet(Math.min(max, value + 1)) }, icon('plus')),
   ]);
 
+// Each problem says what is wrong and, where variantly can, fixes it.
+const fixButton = (label, onClick) =>
+  h('button', { class: 'btn small', type: 'button', onClick: (ev) => ((ev.currentTarget.disabled = true), onClick()) }, label);
+
 const blockers = () => {
   const d = S.detect;
   const f = S.form;
   const list = [];
-  if (!d.hasCommits) list.push(['bad', 'This repository has no commits. Commit once so variants have a base: git add -A && git commit -m "Before variantly"']);
+  if (!d.hasCommits)
+    list.push(['bad', 'This repository has no commits yet, so variants have nothing to start from.', fixButton('Commit everything now', () => runFix('commit', {}, 'First commit made.'))]);
   const a = selectedAgent();
-  if (f.agent !== 'demo' && !a?.installed) list.push(['bad', `${a?.name ?? f.agent} isn't installed. ${a?.install ?? ''}`]);
-  if (!f.command && !f.originalUrl) list.push(['bad', 'Set a dev command (From).']);
+  if (f.agent !== 'demo' && !a?.installed)
+    list.push(['bad', `${a?.name ?? f.agent} isn't installed. Sign in to it once after installing.`, a?.install ? fixButton(`Install ${a.name}`, () => runFix('install-agent', { agent: a.id }, `Installing ${a.name}…`)) : null]);
+  if (!f.command && !f.originalUrl) list.push(['bad', 'Set a dev command under Your app.']);
   return list;
 };
 
@@ -552,10 +572,22 @@ const advisories = () => {
   const f = S.form;
   const list = [];
   const a = selectedAgent();
-  if (f.agent !== 'demo' && a?.installed && !a.impeccable) list.push(['alert', `Impeccable isn't installed for ${a.name}. The agents will design without it. Install it under Via.`]);
+  if (f.agent !== 'demo' && a?.installed && !a.impeccable)
+    list.push(['alert', `Impeccable isn't installed for ${a.name}, so the agents would design without it.`, fixButton('Install Impeccable', () => installImpeccable(a.id))]);
   if (d.dirty) list.push(['', 'Your uncommitted edits to tracked files are included in every variant.']);
-  if (d.untracked) list.push(['', `${plural(d.untracked, 'untracked file')} won't be in the variants. Commit or stage what the site needs.`]);
+  if (d.untracked) list.push(['', `${plural(d.untracked, 'untracked file')} won't be in the variants. Commit what the site needs.`]);
   return list;
+};
+
+const runFix = async (route, body, message) => {
+  try {
+    await api('POST', route, body);
+    toast(message);
+    if (route === 'commit') loadDetect();
+  } catch (err) {
+    toast(err.message, true);
+    renderStub();
+  }
 };
 
 const renderStub = () => {
@@ -567,24 +599,17 @@ const renderStub = () => {
   const agentName = f.agent === 'demo' ? 'the demo agent' : selectedAgent()?.name ?? f.agent;
   body.replaceChildren(
     ...[
-    h('dl', {}, [
-      h('div', {}, [h('dt', { class: 'label' }, 'Run'), h('dd', {}, `${plural(f.count, 'variant')} · ${f.approach}`)]),
-      h('div', {}, [h('dt', { class: 'label' }, 'Agent'), h('dd', {}, `${agentShort[f.agent] ?? f.agent}${f.model ? ` · ${f.model}` : ''}`)]),
-      h('div', {}, [h('dt', { class: 'label' }, 'Pace'), h('dd', {}, `${f.concurrency} at a time`)]),
-    ]),
-    notes.length ? h('ul', { class: 'notes' }, notes.map(([kind, text]) => h('li', { class: `note ${kind}` }, text))) : null,
-    h('div', { class: 'stub-action' }, [
-      h('div', {}, [
-        h(
-          'button',
-          { class: 'btn primary big', type: 'button', style: { width: '100%' }, disabled: blocks.length > 0, onClick: generate },
-          `Generate ${plural(f.count, 'variant')}`,
-          icon('arrow'),
-        ),
-        h('p', { class: 'cost' }, f.agent === 'demo' ? 'The demo agent costs nothing and uses no AI.' : `Each variant is one ${agentName} session on your account: ${plural(f.count, 'session')} in total.`),
+      notes.length
+        ? h('ul', { class: 'notes' }, notes.map(([kind, text, action]) => h('li', { class: `note ${kind}` }, [h('span', {}, text), action ?? null])))
+        : null,
+      h('div', { class: 'dock-row' }, [
+        h('p', { class: 'dock-summary' }, [
+          h('strong', {}, `${plural(f.count, 'variant')} · ${f.approach}`),
+          ` with ${agentName}, ${f.concurrency} at a time. `,
+          f.agent === 'demo' ? 'No AI, nothing spent.' : `${plural(f.count, 'session')} on your account.`,
+        ]),
+        h('button', { class: 'btn primary big', type: 'button', disabled: blocks.length > 0, onClick: generate }, `Generate ${plural(f.count, 'variant')}`, icon('arrow')),
       ]),
-      h('div', { class: 'scan', 'aria-hidden': 'true' }),
-    ]),
     ].filter(Boolean),
   );
 };
@@ -598,7 +623,7 @@ const renderPreviewRows = () => {
     ...Array.from({ length: f.count }, (_, i) =>
       h('tr', {}, [
         h('td', { class: 'var figure' }, vname(i + 1)),
-        h('td', { class: 'dir' }, directionLabel(f.directions[i], f.approach)),
+        h('td', { class: 'dir' }, directionLabel(f.directions[i])),
         h('td', {}, h('span', { class: 'status', 'data-s': 'scheduled' }, h('span', { class: 'flap-text' }, 'Scheduled'))),
       ]),
     ),
