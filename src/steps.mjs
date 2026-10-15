@@ -29,8 +29,11 @@ export const stepFrom = (line, current) => {
   let to = -1;
   if (/session started|^\$ /i.test(l)) to = index('read');
   if (/concept.?seed|DIRECTION:|direction contract|surface brief/i.test(l)) to = index('direction');
-  if (WRITE.test(l) && CODE.test(l)) to = index('build');
-  if (current >= index('build') && /\bdetect\b|critique|craft.?floor|finish review|\btsc\b|typecheck|lint/i.test(l)) to = index('check');
+  // Copilot reports edits as a bare `apply_patch`, with no file name.
+  if ((WRITE.test(l) && CODE.test(l)) || /^→\s*apply_patch\b/i.test(l)) to = index('build');
+  // Checking can follow the direction straight away (an agent may build and
+  // check in one go), and includes looking at its work in a browser.
+  if (current >= index('direction') && /\bdetect\b|critique|craft.?floor|finish review|\btsc\b|typecheck|\blint\b|playwright-browser|screenshot/i.test(l)) to = index('check');
   if (WRITE.test(l) && /DESIGN\.md/.test(l)) to = index('document');
   if (/^Committed \d+/.test(l)) to = index('save');
   return to > current ? to : -1;
