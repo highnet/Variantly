@@ -5,7 +5,10 @@
       "release-type": "node",
       "package-name": "variantly",
       "changelog-path": "CHANGELOG.md",
-      "exclude-paths": ["site"]
+      "exclude-paths": [
+        "site"
+      ],
+      "bump-minor-pre-major": true
     }
   }
 }
