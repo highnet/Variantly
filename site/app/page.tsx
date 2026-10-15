@@ -9,19 +9,40 @@ import { Showcase } from '@/components/Showcase';
 import { Stacks } from '@/components/Stacks';
 import { WithLive } from '@/components/WithLive';
 import { StartChecklist } from '@/components/StartChecklist';
+import { siGithub } from 'simple-icons';
+
 import { REPO_URL } from '@/lib/site';
 
 const GitHubLink = () => (
   <a
     href={REPO_URL}
-    className="text-steel condensed hover:text-ink hidden font-mono text-[11px] font-semibold tracking-[0.08em] uppercase no-underline sm:inline"
+    aria-label="variantly on GitHub"
+    title="GitHub"
+    className="text-steel hover:text-ink grid size-9 place-items-center rounded-md transition-colors"
   >
-    GitHub
+    <svg viewBox="0 0 24 24" className="size-5 fill-current" aria-hidden="true">
+      <path d={siGithub.path} />
+    </svg>
+  </a>
+);
+
+/*
+ * Agents read a page top-down, so the first words on the human view send
+ * them to the quickstart written for them.
+ */
+const AgentStrip = () => (
+  <a
+    href="#agent"
+    className="bg-ink text-surface hover:bg-slate block px-4 py-2.5 text-center font-mono text-[12px] font-semibold no-underline sm:px-6"
+  >
+    <span className="text-alert">AI agent or assistant?</span> Stop here and open the quickstart
+    written for you: variantly.tools/#agent. The full manual is at /SKILLS.md.
   </a>
 );
 
 const Human = () => (
   <main>
+    <AgentStrip />
     <Showcase />
     <div className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)] gap-24 px-4 pt-20 pb-16 sm:px-6">
       <HowItWorks />
