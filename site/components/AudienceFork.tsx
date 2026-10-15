@@ -51,7 +51,10 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
 
   return (
     <>
-      <header className="border-rule bg-panel/95 sticky top-0 z-20 border-b backdrop-blur-sm">
+      <header
+        data-audience={audience}
+        className="border-rule bg-panel/95 sticky top-0 z-20 border-b backdrop-blur-sm"
+      >
         <div className="mx-auto grid h-14 max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6">
           {brand}
           <div
