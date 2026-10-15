@@ -10,6 +10,7 @@
     "bin",
     "src",
     "ui",
+    "plugins/variantly/skills",
     "SKILLS.md",
     "README.md",
     "NOTICE.md",
