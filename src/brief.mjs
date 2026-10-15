@@ -73,7 +73,21 @@ export const hasAnswers = (a) => Boolean(a && (a.users.trim() || a.purpose.trim(
  * @property {boolean} hasDesign  DESIGN.md exists
  * @property {string} stackId
  * @property {string} [agent]     claude | codex | copilot | demo: how the skill is named
+ * @property {string} [previewUrl] the variant's live preview, when the agent has a browser
  */
+
+/** @param {string | undefined} agent */
+const skillCall = (agent) => SKILL_CALL[agent ?? ""] ?? "/impeccable";
+
+/** @param {string | undefined} previewUrl */
+const verifyRule = (previewUrl) =>
+  previewUrl
+    ? `7. Verify in the browser. You have Playwright browser tools (the
+   \`playwright\` MCP server); your variant is live at ${previewUrl}. Open
+   it, take screenshots at desktop (1280 wide) and phone (390 wide) widths,
+   and fix what looks wrong. If it doesn't answer, verify by reading code.`
+    : `7. Verify by reading your code, not by screenshots: there is no browser for
+   you here. Run the project's type check or linter if it is quick.`;
 
 /** How each agent's prompt names a skill. Codex mentions skills with a dollar sign. */
 const SKILL_CALL = /** @type {Record<string, string>} */ ({ codex: "$impeccable" });
@@ -105,7 +119,7 @@ isolated copy; edit anything in it.
 ## Task
 
 Use the **Impeccable** skill for all of the design work
-(\`${SKILL_CALL[b.agent ?? ""] ?? "/impeccable"}\`; load the skill before you start). ${task}
+(\`${skillCall(b.agent)}\`; load the skill before you start). ${task}
 
 ${b.brief ? `What the owner asked for, in their words:\n\n> ${b.brief.replace(/\n/g, '\n> ')}\n` : ''}
 ## The project
@@ -130,8 +144,7 @@ ${b.brief ? `What the owner asked for, in their words:\n\n> ${b.brief.replace(/\
    per variant and is already previewing yours; it reloads on its own.
 5. **Do not commit, branch or push.** variantly commits your work for you.
 6. Stay inside this working directory.
-7. Verify by reading your code, not by screenshots: there is no browser for
-   you here. Run the project's type check or linter if it is quick.
+${verifyRule(b.previewUrl)}
 
 ## As soon as you have chosen the world
 
@@ -145,6 +158,73 @@ End your final message with one line that starts with \`SUMMARY:\` and says, in
 under 30 words, what your variant is (the world, the type, the colour), so the
 person choosing can tell it apart.
 `;
+};
+
+/**
+ * @typedef {object} ReviewInput
+ * @property {number} variant
+ * @property {string} [agent]
+ * @property {string[]} routes
+ * @property {string} [previewUrl]  set when the agent has a browser
+ * @property {string} [audit]       axe-core and Lighthouse findings, as Markdown
+ */
+
+/**
+ * The second pass over a finished variant: Impeccable's own critique and
+ * audit, plus the machine scores, then fix what they find. A separate run
+ * so the reviewer judges the result instead of defending its own choices.
+ * @param {ReviewInput} r
+ */
+export const writeReviewBrief = (r) => {
+  const call = skillCall(r.agent);
+  const target = r.routes.length ? r.routes.join(', ') : 'the main pages, starting with the home page';
+  return `<!-- variantly ${JSON.stringify({ review: true, variant: r.variant })} -->
+# variantly review: variant ${r.variant}
+
+This working directory holds a finished redesign (variant ${r.variant}), not yet
+committed. Your job is quality control on it, not a new design. Use the
+**Impeccable** skill (\`${call}\`; load it before you start).
+
+## Task
+
+1. Run Impeccable's **critique** on ${target}: what a senior designer would
+   push back on (hierarchy, rhythm, type, colour, states, consistency).
+2. Run Impeccable's **audit**: accessibility, responsiveness, performance and
+   theming problems in the code.
+3. ${r.audit ? 'Read the automated scores below (axe-core and Lighthouse, measured on the live variant).' : 'There are no automated scores for this variant.'}
+4. Fix the most important problems you found, worst first. Every
+   critical or serious accessibility violation must go.
+
+${r.audit ? `## Automated scores
+
+${r.audit}
+` : ''}
+## Rules
+
+1. This run is **non-interactive**. Never ask a question or wait for an answer.
+2. **Keep the direction.** Do not change the visual world, palette or type
+   choices except where they cause a real problem (contrast, legibility).
+3. Change presentation, not behaviour. Keep every route, every piece of copy
+   and data, every form field and handler.
+4. Do not install packages, touch lockfiles, start servers, commit or push.
+5. Stay inside this working directory.
+${verifyRule(r.previewUrl).replace(/^7\./, '6.')}
+7. Update DESIGN.md if a fix changes a token or rule.
+
+## When you are done
+
+End your final message with one line that starts with \`REVIEW:\` and says,
+in under 30 words, what you found and fixed.
+`;
+};
+
+/**
+ * The REVIEW line from the review pass.
+ * @param {string} text
+ */
+export const extractReview = (text) => {
+  const last = [...text.matchAll(/REVIEW:\s*(.+)/g)].at(-1)?.[1]?.trim() ?? '';
+  return last.replace(/[*_`]+/g, '').replace(/\\n.*$/, '').slice(0, 240);
 };
 
 /**

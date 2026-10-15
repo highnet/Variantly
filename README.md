@@ -114,13 +114,34 @@ Run `npx variantly doctor` to check everything in one go.
    Impeccable command per variant in Refine mode), your own words, and rules
    (keep content and behaviour; don't install packages, start servers or
    commit). Two run at a time by default. You can watch each one's log live.
-4. **Preview.** Each finished variant gets its own dev server and a preview
+4. **Checks.** Three things around Impeccable, each on by default and each
+   a switch in the wizard:
+   - **A browser for the agent.** Each agent gets a headless browser through
+     [Playwright MCP](https://github.com/microsoft/playwright-mcp), pointed at
+     its own live variant, so it screenshots its work at desktop and phone
+     widths and fixes what it sees instead of guessing from code.
+   - **A review pass.** When the design is built, the same agent runs again
+     with a different brief: Impeccable's own **critique** and **audit**, plus
+     the scores below, then fixes the worst problems without changing the
+     direction. Its findings show on the board. This is a second session per
+     variant, so it costs roughly half as much again.
+   - **Scores.** [axe-core](https://github.com/dequelabs/axe-core) and
+     [Lighthouse](https://github.com/GoogleChrome/lighthouse) run against the
+     original and every finished variant (the first of your pages that
+     matter, or `/`), in one headless Chromium on your machine. The board and
+     the details panel show accessibility, performance, best practices, SEO
+     and axe violations, each against the original.
+
+   These run through `npx` at pinned versions, so they work with any stack
+   and variantly still has no dependencies. They need a Chromium or Chrome:
+   `$CHROME_PATH`, Playwright's browser cache, or a normal Chrome install.
+5. **Preview.** Each finished variant gets its own dev server and a preview
    proxy that injects a tiny script for scroll and navigation sync and strips
    the headers that stop framing. HMR websockets pass straight through. Only
    the original plus the last few variants you looked at run at once.
-5. **Compare.** Slider, single or side-by-side view. `1`–`9`, `0`, arrows to
+6. **Compare.** Slider, single or side-by-side view. `1`–`9`, `0`, arrows to
    switch; both panes stay on the same page at the same scroll position.
-6. **Keep.** The chosen variant's diff is applied to your working tree with
+7. **Keep.** The chosen variant's diff is applied to your working tree with
    git (three-way, so edits you made meanwhile are merged, not overwritten),
    unstaged for you to review. The other variants stay as `variantly/*`
    branches until `variantly clean`.
@@ -190,6 +211,12 @@ Permissions: by default
 "Full auto" in the wizard removes those limits
 (`--dangerously-skip-permissions`, `--dangerously-bypass-approvals-and-sandbox`,
 `--allow-all`); use it only in projects you trust.
+
+With the browser check on, each agent also gets the `playwright` MCP server
+(`--mcp-config` for Claude Code, where `mcp__playwright` is added to the
+allowed tools; `-c mcp_servers.playwright.*` for Codex;
+`--additional-mcp-config` for Copilot). It runs headless and `--isolated`,
+so variants never share a browser profile.
 
 ## Commands
 

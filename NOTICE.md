@@ -13,6 +13,19 @@ it to. Impeccable's own license, notices and trademarks remain its authors';
 variantly is an independent project and is not affiliated with or endorsed by
 Impeccable or its authors.
 
+## Checks
+
+With its checks on, variantly runs these through `npx`, fetched from npm at
+pinned versions; it does not bundle or modify them:
+
+- [Playwright MCP](https://github.com/microsoft/playwright-mcp) and
+  [Playwright](https://github.com/microsoft/playwright) (`playwright-core`),
+  by Microsoft, Apache License 2.0.
+- [Lighthouse](https://github.com/GoogleChrome/lighthouse), by Google,
+  Apache License 2.0.
+- [axe-core](https://github.com/dequelabs/axe-core), by Deque Systems,
+  Mozilla Public License 2.0.
+
 ## Agents
 
 Claude Code, Codex CLI and GitHub Copilot CLI are products of their respective

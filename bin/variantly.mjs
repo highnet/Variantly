@@ -28,6 +28,9 @@ Options
       --yes                  skip the wizard: generate with detected defaults
       --demo                 use the built-in demo agent (no AI, no account)
       --no-open              don't open the browser
+      --no-browser           don't give the agent a browser (Playwright MCP)
+      --no-review            skip the Impeccable critique and audit pass
+      --no-audit             skip the axe-core and Lighthouse scores
       --providers <ids>      install-skill: claude,codex,copilot (default: the
                              agents on your PATH)
       --scope <s>            install-skill: global (default, your user) or
@@ -53,6 +56,9 @@ const main = async () => {
         demo: { type: 'boolean' },
         open: { type: 'boolean', default: true },
         'no-open': { type: 'boolean' },
+        'no-browser': { type: 'boolean' },
+        'no-review': { type: 'boolean' },
+        'no-audit': { type: 'boolean' },
         providers: { type: 'string' },
         scope: { type: 'string' },
         help: { type: 'boolean', short: 'h' },
@@ -101,6 +107,9 @@ const main = async () => {
   if (typeof values.agent === 'string') defaults.agent = values.agent;
   if (typeof values.count === 'string') defaults.count = Number(values.count);
   if (typeof values.brief === 'string') defaults.brief = values.brief;
+  if (values['no-browser']) defaults.browser = false;
+  if (values['no-review']) defaults.review = false;
+  if (values['no-audit']) defaults.audit = false;
 
   const wanted = Number(values.port ?? 4477);
   const port = await freePort(wanted);

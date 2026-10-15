@@ -41,7 +41,7 @@ export class ServerPool extends EventEmitter {
     this.maxLive = opts.maxLive ?? 3;
     /** While true (a run is being torn down) nothing may start. */
     this.locked = false;
-    /** @type {Map<string, { spec: TargetSpec, state: ServerState, proxyPort: number, proxy: Awaited<ReturnType<typeof createProxy>>, child?: import('node:child_process').ChildProcess, log: LineBuffer, lastUsed: number, port?: number, error?: string, boot?: Promise<void> }>} */
+    /** @type {Map<string, { spec: TargetSpec, state: ServerState, proxyPort: number, proxy: Awaited<ReturnType<typeof createProxy>>, child?: import('node:child_process').ChildProcess, log: LineBuffer, lastUsed: number, port?: number, upstream?: string, error?: string, boot?: Promise<void> }>} */
     this.targets = new Map();
   }
 
@@ -66,6 +66,17 @@ export class ServerPool extends EventEmitter {
       lastUsed: 0,
     });
     return proxy.port;
+  }
+
+  /**
+   * The stable preview URL (through the proxy) and, once it is running, the
+   * dev server itself, which audits use so the proxy's script isn't scored.
+   * @param {string} id
+   */
+  urls(id) {
+    const t = this.targets.get(id);
+    if (!t) return null;
+    return { preview: `http://localhost:${t.proxyPort}`, upstream: t.state === 'ready' ? t.upstream : undefined };
   }
 
   /** @param {string} id */
@@ -105,6 +116,7 @@ export class ServerPool extends EventEmitter {
 
     if (t.spec.external) {
       t.proxy.setTarget(t.spec.external);
+      t.upstream = t.spec.external;
       if (await waitUp(t.spec.external, 10_000)) this.#set(id, 'ready');
       else this.#fail(id, `Nothing is answering at ${t.spec.external}.`);
       return;
@@ -154,6 +166,7 @@ export class ServerPool extends EventEmitter {
     if (t.child !== child) return; // stopped or crashed while booting
     if (url) {
       t.proxy.setTarget(url);
+      t.upstream = url;
       this.#set(id, 'ready');
     }
     else {

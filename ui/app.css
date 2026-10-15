@@ -1832,6 +1832,7 @@ body[data-view='compare'] .help {
 .status[data-s='scheduled']::after,
 .status[data-s='preparing']::after,
 .status[data-s='running']::after,
+.status[data-s='reviewing']::after,
 .status[data-s='committing']::after,
 .status[data-s='failed']::after,
 .status[data-s='cancelled']::after {
@@ -2140,4 +2141,73 @@ body[data-view='compare'] .help {
   .dock-row .btn {
     width: 100%;
   }
+}
+
+/* Checks: the browser, review and score toggles in the wizard. */
+.checks {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.check input {
+  margin-top: 3px;
+}
+
+.check .name {
+  display: block;
+  font-weight: 600;
+}
+
+.board .summary.scores {
+  font: 500 12px/1.4 var(--mono);
+  font-stretch: 87.5%;
+}
+
+.scores-panel {
+  display: grid;
+  gap: 8px;
+}
+
+.scores-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 2px 16px;
+  margin: 0;
+}
+
+.scores-grid dt,
+.scores-grid dd {
+  margin: 0;
+}
+
+.scores-grid dd {
+  font: 500 13px var(--mono);
+  font-stretch: 87.5%;
+  text-align: right;
+}
+
+.scores-panel ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+}
+
+.scores-panel .btn {
+  justify-self: start;
+}
+
+.info .scores-panel .btn.outline {
+  color: var(--surface);
+  border-color: var(--steel-on-slate);
 }

@@ -101,7 +101,12 @@ crude fixed restyles, for trying the flow), `--no-open`, `--port <n>`.
 3. Tell the person the URL and what they will see: their site on the left of a
    slider, a variant on the right, `1`–`9`/`0` to switch variants.
 4. Poll `npx variantly status` (a file read; cheap) until `phase` is `ready`.
-   Each variant has `status`, `summary`, `files` and `error`.
+   Each variant has `status` (`reviewing` during the Impeccable critique and
+   audit pass), `summary`, `review`, `files` and `error`, and once scored an
+   `audit` with Lighthouse scores and axe-core violations; the original's is
+   `baseline`. Quote the scores when the person asks which is best, but the
+   choice is still theirs. `--no-browser`, `--no-review` and `--no-audit` turn
+   the checks off.
 5. Let the person choose. Never choose for them unless they told you which.
    When they name one: `npx variantly keep <n>`, then stop the background
    `variantly` process. Their working tree now has that variant's changes,
@@ -158,6 +163,7 @@ POST /api/generate         start a run (body: the wizard's config)
 POST /api/ensure/v3        start variant 3's dev server
 POST /api/retry/3          retry a failed variant
 POST /api/cancel/3         stop a running variant
+POST /api/audit/v3         score variant 3 again (or audit/original)
 POST /api/finalize/3       keep variant 3
 POST /api/discard          throw the run away
 GET  /api/events           server-sent events: state, server, log

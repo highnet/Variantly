@@ -25,10 +25,13 @@ Below, `<agent>` is the id of the agent you are: `claude` (Claude Code),
 2. With the user present, run `npx variantly` in the background and give them
    the URL it prints (default http://localhost:4477). The wizard does the rest.
    To skip the wizard: `npx variantly --yes --agent <agent> --count 4 --brief "<their words>"`.
-3. Poll `npx variantly status` until `"phase": "ready"`.
+3. Poll `npx variantly status` until `"phase": "ready"`. Each variant gets a
+   review (Impeccable critique and audit) and axe-core/Lighthouse scores in
+   `audit`, against the original's `baseline`; quote them if asked.
 4. The user chooses by looking. When they name a number, run
    `npx variantly keep <n>`, stop the background process, and tell them the
    changes are unstaged in their working tree for review.
 
 Never pick a variant for the user. Each variant is a full agent session on
-their account; say so before starting a large run.
+their account, plus a review session unless `--no-review`; say so before
+starting a large run.

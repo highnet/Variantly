@@ -153,6 +153,9 @@ export const startApp = async (opts) => {
       case 'POST ensure':
         session.pool.ensure(arg).catch(() => {});
         return session.pool.status(arg);
+      case 'POST audit':
+        session.audit(arg).catch(() => {});
+        return { ok: true };
       case 'POST finalize':
         return session.finalize(n);
       case 'POST discard':
@@ -318,6 +321,9 @@ export const detectProject = async (repo, defaults = {}) => {
       maxLive: 3,
       deps: best?.adapter.needsInstall ? 'install' : 'link',
       agentTimeoutMin: 40,
+      browser: true,
+      review: true,
+      audit: true,
       ...defaults,
     },
   };
@@ -358,6 +364,9 @@ export const normalizeConfig = (body) => {
     maxLive: num(body.maxLive, 3, 2, 11),
     deps: body.deps === 'install' ? 'install' : 'link',
     agentTimeoutMin: num(body.agentTimeoutMin, 40, 5, 240),
+    browser: body.browser !== false,
+    review: body.review !== false,
+    audit: body.audit !== false,
   };
 };
 

@@ -8,6 +8,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { runOk } from '../src/proc.mjs';
 import { startApp, normalizeConfig, detectProject } from '../src/server.mjs';
+import { findChrome } from '../src/checks.mjs';
 
 const tmp = mkdtempSync(path.join(os.tmpdir(), 'variantly-flow-'));
 process.env.VARIANTLY_HOME = path.join(tmp, 'home');
@@ -70,7 +71,7 @@ test('requests with a foreign Host header are refused (DNS rebinding)', async ()
 
 test('generates two variants, serves them, and finalizes the chosen one', async () => {
   const info = await detectProject(repo);
-  const config = normalizeConfig({ ...info.suggested, agent: 'demo', count: 2, concurrency: 2 });
+  const config = normalizeConfig({ ...info.suggested, agent: 'demo', count: 2, concurrency: 2, audit: false });
   const gen = await api('POST', 'generate', config);
   assert.equal(gen.status, 200, JSON.stringify(gen.json));
 
@@ -120,7 +121,7 @@ test('generates two variants, serves them, and finalizes the chosen one', async 
 
 test('discard wins against the UI asking for servers at the same time', async () => {
   const info = await detectProject(repo);
-  await api('POST', 'generate', normalizeConfig({ ...info.suggested, agent: 'demo', count: 1 }));
+  await api('POST', 'generate', normalizeConfig({ ...info.suggested, agent: 'demo', count: 1, audit: false }));
   await until(() => app.session.state.phase === 'ready');
   await app.session.pool.ensure('v1');
   assert.equal(app.session.pool.status('v1')?.state, 'ready');
@@ -131,4 +132,24 @@ test('discard wins against the UI asking for servers at the same time', async ()
   await api('POST', 'ensure/v1', {});
   assert.equal(app.session.state.phase, 'setup');
   assert.equal(existsSync(wt), false);
+});
+
+// Fetches lighthouse, axe-core and playwright-core through npx, so it needs
+// the network and a Chromium; skipped without them.
+test('scores the original and each variant with axe-core and Lighthouse', { skip: !findChrome() || process.env.VARIANTLY_SKIP_AUDIT === '1', timeout: 300_000 }, async () => {
+  const info = await detectProject(repo);
+  await api('POST', 'generate', normalizeConfig({ ...info.suggested, agent: 'demo', count: 1 }));
+  await until(() => app.session.state.phase === 'ready');
+  await until(() => Boolean(app.session.state.baseline || app.session.state.baselineError), 240_000);
+  const v = app.session.state.variants[0];
+  await until(() => Boolean(v.audit || v.auditState === 'failed'), 240_000);
+  assert.equal(v.auditError, undefined);
+  assert.equal(app.session.state.baselineError, undefined);
+  for (const a of [app.session.state.baseline, v.audit]) {
+    assert.equal(typeof a?.lighthouse.accessibility, 'number');
+    assert.equal(typeof a?.axe.total, 'number');
+  }
+  // The page has no lang attribute, which axe always flags.
+  assert.ok(v.audit?.axe.violations.some((x) => x.id === 'html-has-lang'));
+  await api('POST', 'discard', {});
 });

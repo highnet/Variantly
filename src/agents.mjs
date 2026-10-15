@@ -42,6 +42,13 @@ import { run } from "./proc.mjs";
  * @property {"safe" | "full"} permissions
  * @property {string} [home]              defaults to the user's home
  * @property {NodeJS.ProcessEnv} [env]    defaults to process.env
+ * @property {Record<string, McpServer>} [mcp]  MCP servers to give the agent for this run
+ */
+
+/**
+ * @typedef {object} McpServer
+ * @property {string} command
+ * @property {string[]} args
  */
 
 /**
@@ -58,6 +65,10 @@ import { run } from "./proc.mjs";
 const pointer = (briefPath) =>
   `Read the file ${briefPath.replace(/\\/g, "/")} and carry out the brief in it exactly. It is your whole task.`;
 
+/** @param {Record<string, McpServer> | undefined} mcp */
+const mcpJson = (mcp, extra = {}) =>
+  JSON.stringify({ mcpServers: Object.fromEntries(Object.entries(mcp ?? {}).map(([k, v]) => [k, { ...extra, command: v.command, args: v.args }])) });
+
 /** @param {NodeJS.ProcessEnv} env @param {string} key @param {string} fallback */
 const dirFrom = (env, key, fallback) => (env[key] ? path.resolve(String(env[key])) : fallback);
 
@@ -72,7 +83,7 @@ export const AGENTS = [
       global: (home, env) => [path.join(dirFrom(env, "CLAUDE_CONFIG_DIR", path.join(home, ".claude")), "skills")],
       project: [".claude/skills"],
     },
-    invocation: ({ briefPath, model, permissions }) => ({
+    invocation: ({ briefPath, model, permissions, mcp }) => ({
       file: "claude",
       args: [
         "-p",
@@ -86,10 +97,12 @@ export const AGENTS = [
               "--permission-mode",
               "acceptEdits",
               "--allowedTools",
-              "Read,Edit,Write,MultiEdit,Glob,Grep,Skill,TodoWrite,WebFetch,Bash(*impeccable*),Bash(git status:*),Bash(git diff:*),Bash(ls:*)",
+              "Read,Edit,Write,MultiEdit,Glob,Grep,Skill,TodoWrite,WebFetch,Bash(*impeccable*),Bash(git status:*),Bash(git diff:*),Bash(ls:*)" +
+                Object.keys(mcp ?? {}).map((k) => `,mcp__${k}`).join(""),
               "--add-dir",
               path.dirname(briefPath),
             ]),
+        ...(mcp && Object.keys(mcp).length ? ["--mcp-config", mcpJson(mcp)] : []),
         ...(model ? ["--model", model] : []),
       ],
       output: "claude-stream",
@@ -112,7 +125,7 @@ export const AGENTS = [
       ],
       project: [".agents/skills", ".codex/skills"],
     },
-    invocation: ({ cwd, briefPath, model, permissions }) => ({
+    invocation: ({ cwd, briefPath, model, permissions, mcp }) => ({
       file: "codex",
       args: [
         "exec",
@@ -120,6 +133,12 @@ export const AGENTS = [
         ...(permissions === "full"
           ? ["--dangerously-bypass-approvals-and-sandbox"]
           : ["--sandbox", "workspace-write", "-c", "approval_policy=never"]),
+        ...Object.entries(mcp ?? {}).flatMap(([k, v]) => [
+          "-c",
+          `mcp_servers.${k}.command=${JSON.stringify(v.command)}`,
+          "-c",
+          `mcp_servers.${k}.args=${JSON.stringify(v.args)}`,
+        ]),
         "--skip-git-repo-check",
         "-C",
         cwd,
@@ -145,7 +164,7 @@ export const AGENTS = [
       ],
       project: [".github/skills", ".agents/skills", ".claude/skills"],
     },
-    invocation: ({ briefPath, model, permissions, home = os.homedir(), env = process.env }) => ({
+    invocation: ({ briefPath, model, permissions, mcp, home = os.homedir(), env = process.env }) => ({
       file: "copilot",
       args: [
         "-p",
@@ -165,6 +184,7 @@ export const AGENTS = [
               path.dirname(briefPath),
               ...existingGlobalSkillDirs("copilot", home, env).flatMap((d) => ["--add-dir", d]),
             ]),
+        ...(mcp && Object.keys(mcp).length ? ["--additional-mcp-config", mcpJson(mcp, { type: "local", tools: ["*"] })] : []),
         ...(model ? ["--model", model] : []),
       ],
       output: "copilot-json",

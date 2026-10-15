@@ -184,3 +184,26 @@ test('install-skill rejects unknown providers and parses the flag', async () => 
   assert.deepEqual(parseProviders(' Claude, codex,,codex '), ['claude', 'codex']);
   assert.deepEqual(parseProviders(undefined), []);
 });
+
+test('every agent gets the Playwright MCP server when the browser check is on', () => {
+  const mcp = { playwright: { command: 'npx', args: ['--yes', '@playwright/mcp@0.0.83', '--headless', '--isolated'] } };
+  const claude = agent('claude').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', mcp });
+  const cfg = claude.args[claude.args.indexOf('--mcp-config') + 1];
+  assert.deepEqual(JSON.parse(cfg), { mcpServers: mcp });
+  assert.match(claude.args[claude.args.indexOf('--allowedTools') + 1], /,mcp__playwright$/);
+
+  const codex = agent('codex').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', mcp });
+  assert.ok(codex.args.includes('mcp_servers.playwright.command="npx"'));
+  assert.ok(codex.args.includes('mcp_servers.playwright.args=["--yes","@playwright/mcp@0.0.83","--headless","--isolated"]'));
+  assert.equal(codex.args.at(-1), PROMPT);
+
+  const copilot = agent('copilot').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', mcp, ...NO_HOME });
+  const extra = JSON.parse(copilot.args[copilot.args.indexOf('--additional-mcp-config') + 1]);
+  assert.deepEqual(extra.mcpServers.playwright, { type: 'local', tools: ['*'], ...mcp.playwright });
+
+  // Without it, nothing changes.
+  for (const id of ['claude', 'codex', 'copilot']) {
+    const args = agent(id).invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', ...NO_HOME }).args.join(' ');
+    assert.doesNotMatch(args, /mcp/);
+  }
+});
