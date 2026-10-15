@@ -1,6 +1,9 @@
-// Everything on the page that is data, in one place. The demo variants are
-// the built-in demo agent's real output on examples/oak-and-iron (generated
-// into public/demo/oak-and-iron/v1–v6); the summaries are its SUMMARY lines.
+// Everything on the page that is data, in one place.
+//
+// The six variants of examples/oak-and-iron were made by Claude Code with the
+// Impeccable skill, each from the brief variantly writes for that variant
+// (saved next to it as BRIEF.md in public/demo/oak-and-iron/vN). The summaries
+// are the agent's own SUMMARY lines.
 
 export type DemoVariant = {
   n: number;
@@ -9,65 +12,65 @@ export type DemoVariant = {
   files: string[];
 };
 
+const FILES = ['index.html', 'about.html', 'style.css'];
+
 export const DEMO_VARIANTS: DemoVariant[] = [
   {
     n: 1,
     direction: 'Editorial',
-    summary: 'Georgia type on #f6f1e7 with #8a2c1b accents.',
-    files: ['style.css'],
+    summary:
+      'A printed magazine: Gloock masthead, cover-line hero with a scale drawing, numbered catalogue entries and a subscription slip.',
+    files: FILES,
   },
   {
     n: 2,
     direction: 'Swiss precision',
-    summary: 'Helvetica Neue type on #ffffff with #e30613 accents.',
-    files: ['style.css'],
+    summary:
+      'A strict 12-column grid in one grotesk, flush left, red used only to signal; the products become a specification table.',
+    files: FILES,
   },
   {
     n: 3,
     direction: 'Warm & tactile',
-    summary: 'Trebuchet MS type on #efe4d6 with #c4622d accents.',
-    files: ['style.css'],
+    summary:
+      'Clay, sage and bone with soft depth: a pill navigation, an illustrated stool, rounded product tiles and drawn icons.',
+    files: FILES,
   },
   {
     n: 4,
     direction: 'Dark technical',
-    summary: 'ui-monospace type on #0d1117 with #3fb950 accents.',
-    files: ['style.css'],
+    summary:
+      'The workshop spec sheet: blueprint grid, a dimensioned drawing of the table, mono readouts and a parts list.',
+    files: FILES,
   },
   {
     n: 5,
     direction: 'Loud & bold',
-    summary: 'Impact type on #ffe600 with #ff2d55 accents.',
-    files: ['style.css'],
+    summary:
+      'Cobalt, yellow and tomato fields, giant condensed caps, a marquee top bar and prices you can read across the room.',
+    files: FILES,
   },
   {
     n: 6,
     direction: 'Quiet minimal',
-    summary: 'system-ui type on #fafaf9 with #57534e accents.',
-    files: ['style.css'],
+    summary:
+      'Distilled: light type, one column of attention, a lot of air, one olive accent and the products as a quiet list.',
+    files: FILES,
   },
 ];
 
-export const STACKS: { name: string; command: string }[] = [
-  { name: 'Next.js', command: 'next dev --port {port}' },
-  { name: 'SvelteKit', command: 'vite dev --port {port}' },
-  { name: 'Astro', command: 'astro dev --port {port}' },
-  { name: 'Nuxt', command: 'nuxi dev --port {port}' },
-  { name: 'Vite', command: 'vite --port {port}' },
-  { name: 'Bun', command: 'bun run dev' },
-  { name: 'Static HTML', command: 'built-in server' },
-  { name: 'Laravel', command: 'php artisan serve + Vite' },
-  { name: 'Rails 8', command: 'bin/rails server -p {port}' },
-  { name: 'Django', command: 'manage.py runserver' },
-  { name: 'FastAPI', command: 'uvicorn app:app --port {port}' },
-  { name: 'Reflex', command: 'reflex run --frontend-port {port}' },
-  { name: 'Go', command: 'go run . (reads PORT)' },
-  { name: 'Rust', command: 'cargo run (reads PORT)' },
-  { name: 'Wasp', command: 'wasp start (one at a time)' },
-];
-
-export const AGENTS: { name: string; install: string; runs: string }[] = [
-  { name: 'Claude Code', install: 'npm install -g @anthropic-ai/claude-code', runs: 'claude -p' },
-  { name: 'Codex CLI', install: 'npm install -g @openai/codex', runs: 'codex exec --full-auto' },
-  { name: 'GitHub Copilot CLI', install: 'npm install -g @github/copilot', runs: 'copilot -p' },
+export const STEPS: { title: string; body: string; command?: string }[] = [
+  {
+    title: 'Run it in your project',
+    body: 'A short wizard reads your stack, finds your agent and asks how many directions you want.',
+    command: 'npx variantly',
+  },
+  {
+    title: 'Your agent redesigns, N times',
+    body: 'Each variant is its own git worktree and its own agent session with Impeccable, in a different direction.',
+  },
+  {
+    title: 'Compare live, keep one',
+    body: 'Every variant runs as your real site. Drag the line, press a number, keep the one you like.',
+  },
 ];

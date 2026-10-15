@@ -4,12 +4,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Oak &amp; Iron Furniture | Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="topbar">Free delivery in Styria on orders over €500!!</div>
-    <nav class="navbar">
-      <a class="logo" href="index.html">🪵 Oak &amp; Iron</a>
+
+    <nav class="navbar" aria-label="Main">
+      <a class="logo" href="index.html">Oak &amp; Iron</a>
       <ul>
         <li><a href="index.html" class="active">Home</a></li>
         <li><a href="#shop">Shop</a></li>
@@ -21,23 +28,22 @@
     <header class="hero">
       <h1>Welcome to Oak &amp; Iron Furniture!</h1>
       <p>Handmade furniture for real homes. Quality you can trust since 2019.</p>
-      <a class="btn" href="#shop">Browse the collection</a>
-      <a class="btn btn-outline" href="#contact">Contact us</a>
+      <div class="actions">
+        <a class="btn" href="#shop">Browse the collection</a>
+        <a class="btn btn-outline" href="#contact">Contact us</a>
+      </div>
     </header>
 
-    <section class="features">
+    <section class="features" aria-label="How we work">
       <div class="feature">
-        <span class="icon">✔</span>
         <h3>Handmade</h3>
         <p>Every piece is built by hand in our workshop outside Graz.</p>
       </div>
       <div class="feature">
-        <span class="icon">♻</span>
         <h3>Reclaimed oak</h3>
         <p>We use reclaimed oak and forged steel wherever we can.</p>
       </div>
       <div class="feature">
-        <span class="icon">🚚</span>
         <h3>Personal delivery</h3>
         <p>Delivered by the person who built it. Lead time 6–8 weeks.</p>
       </div>
@@ -46,27 +52,39 @@
     <section id="shop" class="shop">
       <h2>This Month's Products</h2>
       <div class="cards">
-        <div class="card">
-          <div class="card-img img1"></div>
+        <article class="card">
+          <div class="card-img">
+            <svg viewBox="0 0 240 120" fill="none" stroke="currentColor" stroke-width="1">
+              <path d="M20 44h200M44 44 32 104M44 44l12 60M196 44l-12 60M196 44l12 60" />
+            </svg>
+          </div>
           <h3>The Long Table</h3>
           <p>2.4 m of reclaimed oak on steel trestles.</p>
           <p class="price">€ 2.890,-</p>
           <button type="button">Add to cart</button>
-        </div>
-        <div class="card">
-          <div class="card-img img2"></div>
+        </article>
+        <article class="card">
+          <div class="card-img">
+            <svg viewBox="0 0 240 120" fill="none" stroke="currentColor" stroke-width="1">
+              <path d="M88 40h64M96 40 84 104M144 40l12 64M120 40v64M90 78h60" />
+            </svg>
+          </div>
           <h3>Smithy Stool</h3>
           <p>Hand-forged legs, oiled seat.</p>
           <p class="price">€ 340,-</p>
           <button type="button">Add to cart</button>
-        </div>
-        <div class="card">
-          <div class="card-img img3"></div>
+        </article>
+        <article class="card">
+          <div class="card-img">
+            <svg viewBox="0 0 240 120" fill="none" stroke="currentColor" stroke-width="1">
+              <path d="M84 16v88M84 30h80M84 60h80M84 90h80" />
+            </svg>
+          </div>
           <h3>Wall Shelf No. 4</h3>
           <p>Three shelves, one bracket, no screws visible.</p>
           <p class="price">€ 410,-</p>
           <button type="button">Add to cart</button>
-        </div>
+        </article>
       </div>
     </section>
 
@@ -74,7 +92,7 @@
       <h2>Sign up for our Newsletter</h2>
       <p>Get news about new products and workshop days.</p>
       <form id="newsletter">
-        <input type="email" placeholder="Your email address" required />
+        <input type="email" placeholder="Your email address" required aria-label="Email address" />
         <button>Subscribe</button>
       </form>
     </section>

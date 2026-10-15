@@ -4,79 +4,128 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Oak &amp; Iron Furniture | Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Gloock&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
     <div class="topbar">Free delivery in Styria on orders over €500!!</div>
-    <nav class="navbar">
-      <a class="logo" href="index.html">🪵 Oak &amp; Iron</a>
-      <ul>
-        <li><a href="index.html" class="active">Home</a></li>
-        <li><a href="#shop">Shop</a></li>
-        <li><a href="about.html">About Us</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
-    </nav>
+
+    <header class="masthead">
+      <div class="masthead-rule">
+        <span>Graz · Styria</span>
+        <span>The Furniture Issue</span>
+        <span>Since 2019</span>
+      </div>
+      <a class="logo" href="index.html">Oak <i>&amp;</i> Iron</a>
+      <nav aria-label="Main">
+        <ul>
+          <li><a href="index.html" class="active">Home</a></li>
+          <li><a href="#shop">Shop</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </nav>
+    </header>
 
     <header class="hero">
       <h1>Welcome to Oak &amp; Iron Furniture!</h1>
-      <p>Handmade furniture for real homes. Quality you can trust since 2019.</p>
-      <a class="btn" href="#shop">Browse the collection</a>
-      <a class="btn btn-outline" href="#contact">Contact us</a>
+      <div class="hero-foot">
+        <p class="dek">Handmade furniture for real homes. Quality you can trust since 2019.</p>
+        <div class="hero-actions">
+          <a class="btn" href="#shop">Browse the collection</a>
+          <a class="btn btn-outline" href="#contact">Contact us</a>
+        </div>
+      </div>
+      <figure class="cover-art" aria-hidden="true">
+        <svg viewBox="0 0 480 220" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+          <rect x="20" y="62" width="440" height="16" />
+          <path d="M60 78 32 206M60 78l40 128M80 140h-36M420 78 392 206M420 78l40 128M440 140h-36" />
+          <path d="M20 206h440" stroke-width="1" />
+        </svg>
+        <figcaption>Fig. 1 — The Long Table, drawn to scale</figcaption>
+      </figure>
     </header>
 
-    <section class="features">
+    <section class="features" aria-label="How we work">
       <div class="feature">
-        <span class="icon">✔</span>
+        <span class="num">i.</span>
         <h3>Handmade</h3>
         <p>Every piece is built by hand in our workshop outside Graz.</p>
       </div>
       <div class="feature">
-        <span class="icon">♻</span>
+        <span class="num">ii.</span>
         <h3>Reclaimed oak</h3>
         <p>We use reclaimed oak and forged steel wherever we can.</p>
       </div>
       <div class="feature">
-        <span class="icon">🚚</span>
+        <span class="num">iii.</span>
         <h3>Personal delivery</h3>
         <p>Delivered by the person who built it. Lead time 6–8 weeks.</p>
       </div>
     </section>
 
     <section id="shop" class="shop">
-      <h2>This Month's Products</h2>
+      <header class="section-head">
+        <h2>This Month's Products</h2>
+        <span class="folio">pp. 12–17</span>
+      </header>
       <div class="cards">
-        <div class="card">
-          <div class="card-img img1"></div>
+        <article class="card">
+          <span class="entry">No. 01</span>
+          <div class="card-img">
+            <svg viewBox="0 0 240 120" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <rect x="10" y="30" width="220" height="10" />
+              <path d="M40 40 22 112M40 40l20 72M50 80H30M200 40l-18 72M200 40l20 72M210 80h-20" />
+            </svg>
+          </div>
           <h3>The Long Table</h3>
           <p>2.4 m of reclaimed oak on steel trestles.</p>
           <p class="price">€ 2.890,-</p>
           <button type="button">Add to cart</button>
-        </div>
-        <div class="card">
-          <div class="card-img img2"></div>
+        </article>
+        <article class="card">
+          <span class="entry">No. 02</span>
+          <div class="card-img">
+            <svg viewBox="0 0 240 120" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <ellipse cx="120" cy="34" rx="44" ry="9" />
+              <path d="M90 40 72 112M150 40l18 72M120 43v69M84 82h72" />
+            </svg>
+          </div>
           <h3>Smithy Stool</h3>
           <p>Hand-forged legs, oiled seat.</p>
           <p class="price">€ 340,-</p>
           <button type="button">Add to cart</button>
-        </div>
-        <div class="card">
-          <div class="card-img img3"></div>
+        </article>
+        <article class="card">
+          <span class="entry">No. 03</span>
+          <div class="card-img">
+            <svg viewBox="0 0 240 120" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M60 10v100M60 26h120M60 60h120M60 94h120" />
+              <path d="M60 26l28 0M172 26v8" stroke-width="1" />
+            </svg>
+          </div>
           <h3>Wall Shelf No. 4</h3>
           <p>Three shelves, one bracket, no screws visible.</p>
           <p class="price">€ 410,-</p>
           <button type="button">Add to cart</button>
-        </div>
+        </article>
       </div>
     </section>
 
     <section class="newsletter">
-      <h2>Sign up for our Newsletter</h2>
-      <p>Get news about new products and workshop days.</p>
-      <form id="newsletter">
-        <input type="email" placeholder="Your email address" required />
-        <button>Subscribe</button>
-      </form>
+      <div class="slip">
+        <h2>Sign up for our Newsletter</h2>
+        <p>Get news about new products and workshop days.</p>
+        <form id="newsletter">
+          <input type="email" placeholder="Your email address" required aria-label="Email address" />
+          <button>Subscribe</button>
+        </form>
+      </div>
     </section>
 
     <footer id="contact">

@@ -75,6 +75,15 @@
     }
   }
 
+  @keyframes cycle {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+
   @keyframes caret {
     50% {
       opacity: 0;
