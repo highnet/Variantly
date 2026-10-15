@@ -19,10 +19,11 @@ import { defaultDirections, extractReview, extractSummary, hasAnswers, productMa
 import { auditMarkdown, playwrightMcp, runAudit } from './checks.mjs';
 import { stepFrom } from './steps.mjs';
 import * as git from './git.mjs';
-import { LineBuffer, killTree, runOk, spawnArgs } from './proc.mjs';
+import { LineBuffer, killTree, run, spawnArgs } from './proc.mjs';
 import { ServerPool } from './servers.mjs';
-import { adapterById, fill, packageRunner, pythonFor } from './stacks.mjs';
+import { adapterById, fill, installFailed, packageRunner, pythonFor } from './stacks.mjs';
 
+const LOCKFILES = ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'bun.lock'];
 const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 /**
@@ -314,7 +315,7 @@ export class Session extends EventEmitter {
       const wt = this.worktreeFor(v.n);
       say(`Creating worktree ${wt}`);
       await this.gitLock(() => git.addWorktree(this.repo, wt, this.branchFor(v.n), this.state.base));
-      const placed = await this.#prepareWorktree(wt, config, adapter, say);
+      const { placed, lockfiles } = await this.#prepareWorktree(wt, config, adapter, say);
       if (run.cancelled) return;
 
       // With a browser, the agent can look at its own variant while it works.
@@ -367,6 +368,11 @@ export class Session extends EventEmitter {
       if (run.cancelled) return;
 
       // An agent that couldn't run or changed nothing has nothing to review.
+      // A lockfile the install rewrote and the agent left alone is install
+      // churn, not part of the redesign.
+      for (const [rel, body] of lockfiles) {
+        if ((await readFile(path.join(appDir, rel), 'utf8').catch(() => null)) === body) placed.push(rel);
+      }
       const exclude = placed.map((p) => path.posix.join(config.appRel.replace(/\\/g, '/'), p));
       const nothingChanged = () =>
         unavailable
@@ -424,7 +430,8 @@ export class Session extends EventEmitter {
    * @param {Config} config
    * @param {import('./stacks.mjs').StackAdapter} adapter
    * @param {(line: string) => void} say
-   * @returns {Promise<string[]>} paths placed under the app root
+   * @returns {Promise<{ placed: string[], lockfiles: Map<string, string> }>} paths placed under
+   *   the app root, and the lockfiles as the install left them
    */
   async #prepareWorktree(wt, config, adapter, say) {
     const appSrc = path.join(this.repo, config.appRel);
@@ -477,11 +484,24 @@ export class Session extends EventEmitter {
       }
     }
     if (install) {
-      const pm = packageRunner(appSrc, this.repo);
-      say(`$ ${pm.install}`);
-      await runOk(pm.install.split(' ')[0], pm.install.split(' ').slice(1), { cwd: appDst, timeout: 600_000 });
+      const command = adapter.install ?? packageRunner(appSrc, this.repo).install;
+      say(`$ ${command}`);
+      const [file, ...args] = command.split(' ');
+      const res = await run(file, args, { cwd: appDst, timeout: 600_000 });
+      if (installFailed(res.code, res.stderr + res.stdout)) {
+        const detail = (res.stderr || res.stdout).trim().split('\n').slice(-6).join('\n');
+        throw new Error(`${command} failed (exit ${res.code})\n${detail}`);
+      }
     }
-    return placed;
+    /** @type {Map<string, string>} */
+    const lockfiles = new Map();
+    if (install) {
+      for (const rel of LOCKFILES) {
+        const body = await readFile(path.join(appDst, rel), 'utf8').catch(() => null);
+        if (body !== null) lockfiles.set(rel, body);
+      }
+    }
+    return { placed, lockfiles };
   }
 
   /**
@@ -617,6 +637,7 @@ export class Session extends EventEmitter {
       bootTimeout: adapter.bootTimeout ?? 120_000,
       fixedPort: adapter.fixedPorts,
       defaultPort: adapter.defaultPort,
+      readyFile: adapter.readyFile?.(config.command),
     };
     const originalDir = path.join(this.repo, config.appRel);
     await this.pool.add({

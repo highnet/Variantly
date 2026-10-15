@@ -3,135 +3,93 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Oak &amp; Iron Furniture | Home</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Gloock&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap"
-      rel="stylesheet"
-    />
+    <title>Oak &amp; Iron · Catalogue 2026</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="topbar">Free delivery in Styria on orders over €500!!</div>
+    <div class="sheet">
+    <nav class="navbar" aria-label="Main">
+      <a class="logo">Oak &amp; Iron</a>
+      <ul>
+        <li><a aria-current="page">Home</a></li>
+        <li><a>Shop</a></li>
+        <li><a>About Us</a></li>
+        <li><a>Contact</a></li>
+      </ul>
+    </nav>
 
-    <header class="masthead">
-      <div class="masthead-rule">
-        <span>Graz · Styria</span>
-        <span>The Furniture Issue</span>
-        <span>Since 2019</span>
-      </div>
-      <a class="logo" href="index.html">Oak <i>&amp;</i> Iron</a>
-      <nav aria-label="Main">
-        <ul>
-          <li><a href="index.html" class="active">Home</a></li>
-          <li><a href="#shop">Shop</a></li>
-          <li><a href="about.html">About Us</a></li>
-          <li><a href="#contact">Contact</a></li>
-        </ul>
-      </nav>
+    <header class="cover">
+      <p class="folio">Katalog 2026 <span>·</span> Graz, Austria</p>
+      <h1>Furniture for real homes, made by hand.</h1>
+      <p class="intro">Tables, stools and shelves in reclaimed oak and forged steel, built in a small workshop outside Graz since 2019. Free delivery in Styria on orders over €500.</p>
+      <p class="cover-links"><a class="btn">See the collection</a> <a class="link">Contact us</a></p>
     </header>
 
-    <header class="hero">
-      <h1>Welcome to Oak &amp; Iron Furniture!</h1>
-      <div class="hero-foot">
-        <p class="dek">Handmade furniture for real homes. Quality you can trust since 2019.</p>
-        <div class="hero-actions">
-          <a class="btn" href="#shop">Browse the collection</a>
-          <a class="btn btn-outline" href="#contact">Contact us</a>
-        </div>
-      </div>
-      <figure class="cover-art" aria-hidden="true">
-        <svg viewBox="0 0 480 220" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-          <rect x="20" y="62" width="440" height="16" />
-          <path d="M60 78 32 206M60 78l40 128M80 140h-36M420 78 392 206M420 78l40 128M440 140h-36" />
-          <path d="M20 206h440" stroke-width="1" />
-        </svg>
-        <figcaption>Fig. 1 — The Long Table, drawn to scale</figcaption>
-      </figure>
-    </header>
-
-    <section class="features" aria-label="How we work">
-      <div class="feature">
-        <span class="num">i.</span>
-        <h3>Handmade</h3>
-        <p>Every piece is built by hand in our workshop outside Graz.</p>
-      </div>
-      <div class="feature">
-        <span class="num">ii.</span>
-        <h3>Reclaimed oak</h3>
-        <p>We use reclaimed oak and forged steel wherever we can.</p>
-      </div>
-      <div class="feature">
-        <span class="num">iii.</span>
-        <h3>Personal delivery</h3>
-        <p>Delivered by the person who built it. Lead time 6–8 weeks.</p>
-      </div>
+    <section class="features" aria-labelledby="f-h">
+      <h2 id="f-h" class="section-h"><span class="num">01</span> How we work</h2>
+      <dl class="feature-list">
+        <div><dt>Handmade</dt><dd>Every piece is built by hand in our workshop outside Graz.</dd></div>
+        <div><dt>Reclaimed oak</dt><dd>We use reclaimed oak and forged steel wherever we can.</dd></div>
+        <div><dt>Personal delivery</dt><dd>Delivered by the person who built it. Lead time 6–8 weeks.</dd></div>
+      </dl>
     </section>
 
-    <section id="shop" class="shop">
-      <header class="section-head">
-        <h2>This Month's Products</h2>
-        <span class="folio">pp. 12–17</span>
-      </header>
-      <div class="cards">
-        <article class="card">
-          <span class="entry">No. 01</span>
-          <div class="card-img">
-            <svg viewBox="0 0 240 120" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <rect x="10" y="30" width="220" height="10" />
-              <path d="M40 40 22 112M40 40l20 72M50 80H30M200 40l-18 72M200 40l20 72M210 80h-20" />
-            </svg>
-          </div>
+    <section id="shop" class="shop" aria-labelledby="s-h">
+      <h2 id="s-h" class="section-h"><span class="num">02</span> This month's products</h2>
+      <article class="plate plate-wide">
+        <div class="plate-img img1" role="img" aria-label="Line drawing of a long oak table on steel trestles"><span class="dim dim-w">240 cm</span></div>
+        <div class="plate-text">
+          <p class="art">Art. 101</p>
           <h3>The Long Table</h3>
           <p>2.4 m of reclaimed oak on steel trestles.</p>
+          <p class="spec">Reclaimed oak, steel · L 240 cm</p>
           <p class="price">€ 2.890,-</p>
           <button type="button">Add to cart</button>
-        </article>
-        <article class="card">
-          <span class="entry">No. 02</span>
-          <div class="card-img">
-            <svg viewBox="0 0 240 120" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <ellipse cx="120" cy="34" rx="44" ry="9" />
-              <path d="M90 40 72 112M150 40l18 72M120 43v69M84 82h72" />
-            </svg>
+        </div>
+      </article>
+      <div class="plate-pair">
+        <article class="plate">
+          <div class="plate-img img2" role="img" aria-label="Line drawing of a stool with forged legs"></div>
+          <div class="plate-text">
+            <p class="art">Art. 204</p>
+            <h3>Smithy Stool</h3>
+            <p>Hand-forged legs, oiled seat.</p>
+            <p class="spec">Forged steel, oiled oak</p>
+            <p class="price">€ 340,-</p>
+            <button type="button">Add to cart</button>
           </div>
-          <h3>Smithy Stool</h3>
-          <p>Hand-forged legs, oiled seat.</p>
-          <p class="price">€ 340,-</p>
-          <button type="button">Add to cart</button>
         </article>
-        <article class="card">
-          <span class="entry">No. 03</span>
-          <div class="card-img">
-            <svg viewBox="0 0 240 120" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M60 10v100M60 26h120M60 60h120M60 94h120" />
-              <path d="M60 26l28 0M172 26v8" stroke-width="1" />
-            </svg>
+        <article class="plate">
+          <div class="plate-img img3" role="img" aria-label="Line drawing of a wall shelf with three boards"></div>
+          <div class="plate-text">
+            <p class="art">Art. 304</p>
+            <h3>Wall Shelf No. 4</h3>
+            <p>Three shelves, one bracket, no screws visible.</p>
+            <p class="spec">Oak, steel bracket · 3 shelves</p>
+            <p class="price">€ 410,-</p>
+            <button type="button">Add to cart</button>
           </div>
-          <h3>Wall Shelf No. 4</h3>
-          <p>Three shelves, one bracket, no screws visible.</p>
-          <p class="price">€ 410,-</p>
-          <button type="button">Add to cart</button>
         </article>
       </div>
     </section>
 
-    <section class="newsletter">
-      <div class="slip">
-        <h2>Sign up for our Newsletter</h2>
-        <p>Get news about new products and workshop days.</p>
-        <form id="newsletter">
-          <input type="email" placeholder="Your email address" required aria-label="Email address" />
+    <section class="newsletter" aria-labelledby="n-h">
+      <h2 id="n-h" class="section-h"><span class="num">03</span> Newsletter</h2>
+      <p>News about new products and workshop days. No spam.</p>
+      <form id="newsletter">
+        <label for="email">Email address</label>
+        <div class="row">
+          <input id="email" type="email" placeholder="name@example.com" required />
           <button>Subscribe</button>
-        </form>
-      </div>
+        </div>
+      </form>
     </section>
 
     <footer id="contact">
       <p>Oak &amp; Iron Furniture · Werkstattgasse 4 · 8010 Graz · hello@oak-and-iron.example</p>
       <p class="small">© 2026 Oak &amp; Iron. A fictional shop: demo content for variantly.</p>
     </footer>
+    </div>
     <script>
       document.getElementById('newsletter').addEventListener('submit', (e) => {
         e.preventDefault();

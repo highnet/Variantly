@@ -53,7 +53,7 @@ const CommandCopy = ({ command, tone = 'light', accent, className }: CommandCopy
         onClick={copy}
         aria-label={copied ? 'Copied' : `Copy ${command}`}
       >
-        {copied ? <Check /> : <Copy />}
+        {copied ? <Check className="animate-pop" /> : <Copy />}
       </Button>
       <span className="sr-only" role="status">
         {copied ? 'Copied to clipboard' : ''}
