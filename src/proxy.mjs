@@ -86,7 +86,7 @@ export const createProxy = (opts) => {
         delete out.etag;
         out['cache-control'] = 'no-store';
         res.writeHead(up.statusCode ?? 200, up.statusMessage, out);
-        pipeWithInjection(up, res, opts.inject);
+        pipeWithInjection(up, res, opts.inject, target);
       },
     );
     upstream.on('error', (err) => {
@@ -156,38 +156,58 @@ export const createProxy = (opts) => {
  * Stream an HTML body through, inserting `inject` right after the opening
  * <head> tag. Only the first SCAN_LIMIT bytes are held back while looking
  * for it; streamed SSR (React, Svelte, Nuxt) keeps streaming after that.
+ *
+ * Absolute URLs pointing at the dev server itself are made relative on the
+ * way through. The upstream sees its own address as Host, so helpers that
+ * build absolute URLs (Starlette's url_for, Rails' *_url) would otherwise
+ * send the browser around the proxy, and the page would lose the script.
  * @param {http.IncomingMessage} up
  * @param {http.ServerResponse} res
  * @param {string} inject
+ * @param {URL} target
  */
-const pipeWithInjection = (up, res, inject) => {
+const pipeWithInjection = (up, res, inject, target) => {
+  const self = new RegExp(`(?:https?:)?//(?:localhost|127\\.0\\.0\\.1|\\[::1\\]):${target.port}(?![0-9])`, 'gi');
+  /** @param {string} s */
+  const relative = (s) => s.replace(self, (m, at, all) => (all[at + m.length] === '/' ? '' : '/'));
   let pending = '';
-  let done = false;
+  let injected = false;
+  /** Write what is safe to write, holding back a possible URL cut by the chunk edge. @param {boolean} final */
+  const flush = (final) => {
+    let cut = pending.length;
+    if (!final) {
+      // Every match is shorter than this, so one that is still incomplete
+      // starts at an "h" or "/" in the tail.
+      const tail = Math.max(0, pending.length - 32);
+      const start = pending.slice(tail).search(/[h/]/i);
+      if (start >= 0) cut = tail + start;
+      // A match must keep the character after it, which decides its rewrite.
+      for (const m of pending.matchAll(self)) if (m.index < cut && m.index + m[0].length >= cut) cut = m.index;
+    }
+    res.write(relative(pending.slice(0, cut)));
+    pending = pending.slice(cut);
+  };
   up.setEncoding('utf8');
   up.on('data', (/** @type {string} */ chunk) => {
-    if (done) {
-      res.write(chunk);
-      return;
-    }
     pending += chunk;
-    const match = HEAD_OPEN.exec(pending);
-    if (match) {
-      const at = match.index + match[0].length;
-      res.write(pending.slice(0, at) + inject + pending.slice(at));
-      pending = '';
-      done = true;
-    } else if (pending.length > SCAN_LIMIT) {
-      res.write(inject + pending);
-      pending = '';
-      done = true;
+    if (!injected) {
+      const match = HEAD_OPEN.exec(pending);
+      if (match) {
+        const at = match.index + match[0].length;
+        pending = pending.slice(0, at) + inject + pending.slice(at);
+      } else if (pending.length > SCAN_LIMIT) {
+        pending = inject + pending;
+      } else return;
+      injected = true;
     }
+    flush(false);
   });
   up.on('end', () => {
-    if (!done) {
-      // A fragment or a page without <head>: htmx partials must not get a
-      // second copy of the script, so only whole documents are injected.
-      res.end(/<html|<body|<!doctype/i.test(pending) ? inject + pending : pending);
-    } else res.end();
+    // A fragment or a page without <head>: htmx partials must not get a
+    // second copy of the script, so only whole documents are injected.
+    if (!injected && /<html|<body|<!doctype/i.test(pending)) pending = inject + pending;
+    flush(true);
+    res.end();
   });
   up.on('error', () => res.destroy());
 };

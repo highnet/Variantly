@@ -9,7 +9,7 @@
  * so the browser keeps one URL per variant across restarts.
  */
 import { EventEmitter } from 'node:events';
-import { existsSync } from 'node:fs';
+import { existsSync, rmSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { createProxy } from './proxy.mjs';
 import { LineBuffer, freePort, isUp, killTree, spawnShell } from './proc.mjs';
@@ -24,6 +24,7 @@ import { LineBuffer, freePort, isUp, killTree, spawnShell } from './proc.mjs';
  * @property {number} bootTimeout
  * @property {boolean} [fixedPort] the stack ignores {port}; serves on defaultPort
  * @property {number} [defaultPort]
+ * @property {string} [readyFile]  relative to cwd; written fresh once the server is fully up
  */
 
 /**
@@ -41,7 +42,7 @@ export class ServerPool extends EventEmitter {
     this.maxLive = opts.maxLive ?? 3;
     /** While true (a run is being torn down) nothing may start. */
     this.locked = false;
-    /** @type {Map<string, { spec: TargetSpec, state: ServerState, proxyPort: number, proxy: Awaited<ReturnType<typeof createProxy>>, child?: import('node:child_process').ChildProcess, log: LineBuffer, lastUsed: number, port?: number, upstream?: string, error?: string, boot?: Promise<void> }>} */
+    /** @type {Map<string, { spec: TargetSpec, state: ServerState, proxyPort: number, proxy: Awaited<ReturnType<typeof createProxy>>, child?: import('node:child_process').ChildProcess, log: LineBuffer, lastUsed: number, stops: number, startedAt?: number, port?: number, upstream?: string, error?: string, boot?: Promise<void> }>} */
     this.targets = new Map();
   }
 
@@ -64,6 +65,7 @@ export class ServerPool extends EventEmitter {
       proxy,
       log: new LineBuffer(),
       lastUsed: 0,
+      stops: 0,
     });
     return proxy.port;
   }
@@ -112,6 +114,9 @@ export class ServerPool extends EventEmitter {
   async #start(id) {
     const t = /** @type {NonNullable<ReturnType<typeof this.targets.get>>} */ (this.targets.get(id));
     t.error = undefined;
+    // Bumped by stop(): one that lands while this is still setting up (no
+    // child to kill yet) must keep it from spawning one nobody will stop.
+    const stops = t.stops;
     this.#set(id, 'starting');
 
     if (t.spec.external) {
@@ -132,6 +137,7 @@ export class ServerPool extends EventEmitter {
     const port = t.spec.fixedPort ? (t.spec.defaultPort ?? 3000) : await freePort();
     const port2 = await freePort();
     const command = t.spec.command.replaceAll('{port}', String(port)).replaceAll('{port2}', String(port2));
+    if (t.stops !== stops || this.locked) return;
     t.port = port;
     t.log.push(`$ ${command}\n`);
     if (!existsSync(t.spec.cwd)) {
@@ -162,7 +168,18 @@ export class ServerPool extends EventEmitter {
     // Dev servers bind "localhost", which is ::1 on some machines and
     // 127.0.0.1 on others; whichever answers is the upstream.
     const candidates = [`http://127.0.0.1:${port}`, `http://[::1]:${port}`];
-    const url = await waitUpAny(candidates, t.spec.bootTimeout, () => t.child === child);
+    const startedAt = Date.now();
+    t.startedAt = startedAt;
+    const alive = () => t.child === child;
+    let url = await waitUpAny(candidates, t.spec.bootTimeout, alive);
+    if (url && t.spec.readyFile) {
+      // A stale copy from an earlier run doesn't count, only one written now.
+      const file = path.join(t.spec.cwd, t.spec.readyFile);
+      const fresh = () => (statSync(file, { throwIfNoEntry: false })?.mtimeMs ?? 0) >= startedAt - 1000;
+      const until = startedAt + t.spec.bootTimeout;
+      while (alive() && !fresh() && Date.now() < until) await new Promise((r) => setTimeout(r, 300));
+      if (!fresh()) url = null;
+    }
     if (t.child !== child) return; // stopped or crashed while booting
     if (url) {
       t.proxy.setTarget(url);
@@ -190,10 +207,18 @@ export class ServerPool extends EventEmitter {
   async stop(id) {
     const t = this.targets.get(id);
     if (!t) return;
+    t.stops += 1;
     const child = t.child;
     t.child = undefined;
     this.#set(id, 'sleeping');
     if (child) await killTree(child);
+    // A killed dev server can't clean up after itself on Windows, and a stale
+    // public/hot sends the user's own `artisan serve` to a dead Vite. Only a
+    // file this run wrote is removed.
+    if (child && t.spec.readyFile && t.startedAt) {
+      const file = path.join(t.spec.cwd, t.spec.readyFile);
+      if ((statSync(file, { throwIfNoEntry: false })?.mtimeMs ?? 0) >= t.startedAt - 1000) rmSync(file, { force: true });
+    }
   }
 
   async closeAll() {
