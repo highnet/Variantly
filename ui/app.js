@@ -191,6 +191,196 @@ const render = () => {
 
 const agentShort = { claude: 'Claude', codex: 'Codex', copilot: 'Copilot', demo: 'Demo' };
 
+/*
+ * The check-in is a short wizard: Setup → Designs → Your site → Review.
+ * S.form is the one source of truth; steps only read and write it, so Back
+ * never loses anything. The step lives in the URL (?step=designs) and the
+ * draft in localStorage, so refresh and the browser's back button work.
+ */
+const WIZ = [
+  { id: 'setup', name: 'Setup', title: 'Your setup', next: 'Continue to designs' },
+  { id: 'designs', name: 'Designs', title: 'What should we make?', next: 'Continue' },
+  { id: 'site', name: 'Your site', title: 'About your site', next: 'Review' },
+  { id: 'review', name: 'Review', title: 'Ready when you are' },
+];
+const DRAFT_KEY = 'variantly:draft';
+
+const wizIndex = () => {
+  const id = new URLSearchParams(location.search).get('step');
+  const i = WIZ.findIndex((w) => w.id === id);
+  return i < 0 ? 0 : Math.min(i, S.wizReached ?? 0);
+};
+
+const saveDraft = () => {
+  try {
+    localStorage.setItem(`${DRAFT_KEY}:${S.detect?.repo}`, JSON.stringify(S.form));
+  } catch {}
+};
+const loadDraft = () => {
+  try {
+    return JSON.parse(localStorage.getItem(`${DRAFT_KEY}:${S.detect?.repo}`) ?? 'null');
+  } catch {
+    return null;
+  }
+};
+
+const goStep = (i, { push = true } = {}) => {
+  S.wizReached = Math.max(S.wizReached ?? 0, i);
+  const url = new URL(location.href);
+  url.searchParams.set('step', WIZ[i].id);
+  if (push) history.pushState({ step: i }, '', url);
+  else history.replaceState({ step: i }, '', url);
+  saveDraft();
+  refreshWizard(true);
+};
+addEventListener('popstate', () => S.view === 'checkin' && refreshWizard(true));
+
+/** Re-draw the current step; `focus` moves focus to its heading (a new step). */
+const refreshWizard = (focus = false) => {
+  const main = $('#wizard');
+  if (!main) return;
+  saveDraft();
+  const at = wizIndex();
+  const step = WIZ[at];
+  const blocks = blockers();
+  const form = h('form', {
+    class: 'wiz-step panel',
+    'aria-labelledby': 'wiz-title',
+    onSubmit: (e) => {
+      e.preventDefault();
+      if (step.id === 'review') return generate({ currentTarget: $('#wiz-go') });
+      if (step.id === 'setup' && blocks.length) return $('.note.bad button, .note.bad')?.focus();
+      goStep(at + 1);
+    },
+  }, [
+    h('h2', { id: 'wiz-title', class: 'figure title', tabindex: -1 }, step.title),
+    ...stepBody[step.id](blocks),
+    h('div', { class: 'wiz-nav' }, [
+      at > 0 ? h('button', { class: 'btn outline', type: 'button', onClick: () => history.back() }, 'Back') : h('span'),
+      step.id === 'review'
+        ? h('button', { class: 'btn primary big', type: 'submit', id: 'wiz-go', disabled: blocks.length > 0 }, `Make ${plural(S.form.count, 'design')}`, icon('arrow'))
+        : h('button', { class: 'btn primary', type: 'submit', disabled: step.id === 'setup' && blocks.length > 0 }, step.next, icon('arrow')),
+    ]),
+  ]);
+  main.replaceChildren(
+    h('ol', { class: 'wiz-steps', 'aria-label': 'Steps' }, WIZ.map((w, i) =>
+      h('li', {}, i <= (S.wizReached ?? 0) && i !== at
+        ? h('button', { type: 'button', class: 'wiz-chip done', onClick: () => goStep(i) }, `${i + 1} ${w.name}`)
+        : h('span', { class: cn('wiz-chip', i === at && 'now'), 'aria-current': i === at ? 'step' : null }, `${i + 1} ${w.name}`)),
+    )),
+    form,
+  );
+  $('#wiz-live').textContent = `Step ${at + 1} of ${WIZ.length}: ${step.title}`;
+  if (focus) $('#wiz-title').focus();
+};
+
+const cn = (...xs) => xs.filter(Boolean).join(' ');
+
+const check = (ok, text, detail) =>
+  h('li', { class: cn('check', ok ? 'ok' : 'bad') }, [h('span', { class: 'mark', 'aria-hidden': 'true' }, ok ? '✓' : '!'), h('span', {}, [h('strong', {}, text), detail ? h('span', { class: 'detail' }, ` · ${detail}`) : null])]);
+
+const notesList = (notes) =>
+  notes.length ? h('ul', { class: 'notes' }, notes.map(([kind, text, action]) => h('li', { class: `note ${kind}` }, [h('span', {}, text), action ?? null]))) : null;
+
+const stepBody = {
+  setup: (blocks) => {
+    const v = segmentValues();
+    const a = selectedAgent();
+    const agentOk = S.form.agent === 'demo' || (a?.installed && a.signedIn !== false && a.impeccable);
+    return [
+      h('ul', { class: 'checks' }, [
+        S.detect.hasCommits ? check(true, `${v.from.figure} app found`, v.from.sub) : check(false, 'No commits yet'),
+        check(Boolean(agentOk), agentOk ? `${a?.name ?? 'Demo agent'} ready` : `${a?.name ?? S.form.agent} needs a hand`, v.via.sub),
+      ]),
+      notesList([...blocks, ...advisories()]),
+      h('details', { class: 'more', open: S.openSegment === 'from' || S.openSegment === 'via' }, [
+        h('summary', {}, 'Use a different app or agent'),
+        h('div', { class: 'segments', role: 'group' }, [segmentButton('from', 'Your app'), segmentButton('via', 'Your agent')]),
+        h('div', { class: 'drawer', id: 'drawer', hidden: true }),
+      ]),
+    ];
+  },
+  designs: () => {
+    const f = S.form;
+    return [
+      h('fieldset', { class: 'field picks' }, [
+        h('legend', { class: 'label' }, 'How many designs?'),
+        h('div', { class: 'pick-row' }, [2, 4, 6].map((n) =>
+          h('label', { class: 'pick' }, [h('input', { type: 'radio', name: 'count', checked: f.count === n, onChange: () => ((f.count = n), refreshWizard()) }), h('span', {}, String(n))]),
+        )),
+        h('p', { class: 'hint' }, f.agent === 'demo' ? 'The demo agent costs nothing.' : `Each design is one ${selectedAgent()?.name ?? 'agent'} session on your account, about 10–20 minutes, ${f.concurrency} at a time.`),
+      ]),
+      h('fieldset', { class: 'field picks' }, [
+        h('legend', { class: 'label' }, 'Which pages?'),
+        h('div', { class: 'pick-row' }, [...new Set([...(S.detect.routes ?? ['/']), ...f.routes])].map((r) => pick(r === '/' ? 'Home' : r, f.routes.includes(r), (on) => {
+          f.routes = on ? [...f.routes, r] : f.routes.filter((x) => x !== r);
+          if (!f.routes.length) f.routes = ['/'];
+        }))),
+        h('input', { class: 'input', 'aria-label': 'Add a page', placeholder: 'Add a page, e.g. /pricing, then Enter', onKeydown: (e) => {
+          if (e.key !== 'Enter') return;
+          e.preventDefault();
+          const r = e.target.value.trim();
+          if (!r) return;
+          f.routes = [...new Set([...f.routes, r.startsWith('/') ? r : `/${r}`])];
+          refreshWizard();
+        } }),
+        h('p', { class: 'hint' }, 'Just the home page is fastest. Each extra page adds time to every design.'),
+      ]),
+      h('fieldset', { class: 'field picks' }, [
+        h('legend', { class: 'label' }, 'Extras (optional)'),
+        h('div', { class: 'pick-row' }, (S.detect.extras ?? []).map((x) => pick(x.label, (f.extras ?? []).includes(x.id), (on) => {
+          f.extras = on ? [...(f.extras ?? []), x.id] : (f.extras ?? []).filter((id) => id !== x.id);
+        }, x.hint))),
+      ]),
+      h('details', { class: 'more', open: ['to', 'seats', 'checks'].includes(S.openSegment) }, [
+        h('summary', {}, 'More settings'),
+        h('div', { class: 'segments', role: 'group' }, [segmentButton('to', 'Approach'), segmentButton('seats', 'Variants'), segmentButton('checks', 'Quality')]),
+        h('div', { class: 'drawer', id: 'drawer', hidden: true }),
+      ]),
+    ];
+  },
+  site: () => {
+    const field = (key, label, placeholder) =>
+      h('label', { class: 'field' }, [
+        h('span', { class: 'label' }, label),
+        h('textarea', { class: 'input', rows: 2, placeholder, value: S.form.product?.[key] ?? '', onInput: (e) => ((S.form.product = { ...(S.form.product ?? {}), [key]: e.target.value }), saveDraft()) }),
+      ]);
+    return [
+      h('p', { class: 'hint' }, S.detect.hasProduct
+        ? 'Your PRODUCT.md already tells the designers about your site. Add anything else below, or just continue.'
+        : 'Optional. A few words help the designers aim at your audience instead of guessing. Skip it if you like.'),
+      S.detect.hasProduct ? null : field('users', 'Who is it for?', 'e.g. People furnishing a first home'),
+      S.detect.hasProduct ? null : field('purpose', 'What does it offer?', 'e.g. Handmade oak and steel furniture, delivered by the maker'),
+      S.detect.hasProduct ? null : field('keep', 'What must stay?', 'e.g. The logo, the name, prices in euros'),
+      h('label', { class: 'field' }, [
+        h('span', { class: 'label' }, 'Anything else?'),
+        h('textarea', { class: 'input', rows: 2, placeholder: 'e.g. Less corporate. It should feel like a workshop.', value: S.form.brief, onInput: (e) => ((S.form.brief = e.target.value), saveDraft()) }),
+      ]),
+    ];
+  },
+  review: (blocks) => {
+    const f = S.form;
+    const v = segmentValues();
+    const a = selectedAgent();
+    const answered = ['users', 'purpose', 'keep'].filter((k) => f.product?.[k]?.trim()).length + (f.brief?.trim() ? 1 : 0);
+    const extras = (S.detect.extras ?? []).filter((x) => f.extras?.includes(x.id)).map((x) => x.label);
+    const row = (label, value, step) =>
+      h('div', { class: 'review-row' }, [h('dt', { class: 'label' }, label), h('dd', {}, value), h('dd', {}, h('button', { type: 'button', class: 'link', onClick: () => goStep(step) }, 'Edit'))]);
+    return [
+      h('dl', { class: 'review' }, [
+        row('App', `${v.from.figure} · ${f.appRel || 'repo root'}`, 0),
+        row('Agent', f.agent === 'demo' ? 'Demo agent (no AI)' : a?.name ?? f.agent, 0),
+        row('Designs', `${f.count}, ${f.approach === 'refine' ? 'refining your current look' : 'each a new look Impeccable picks'}`, 1),
+        row('Pages', f.routes.map((r) => (r === '/' ? 'Home' : r)).join(', '), 1),
+        row('Extras', extras.length ? extras.join(', ') : 'None', 1),
+        row('Your site', S.detect.hasProduct ? 'From your PRODUCT.md' : answered ? `${answered} answer${answered === 1 ? '' : 's'}` : 'Skipped', 2),
+      ]),
+      notesList(blocks),
+      h('p', { class: 'hint' }, f.agent === 'demo' ? 'Nothing is spent.' : `Uses ${plural(f.count * (checkOn('review') ? 2 : 1), 'session')} on your ${a?.name ?? 'agent'} account. Your files aren't touched until you keep one.`),
+    ];
+  },
+};
+
 const mountCheckin = (main) => {
   if (!S.detect) {
     main.append(h('div', { class: 'loading' }, 'Looking at your project…'));
@@ -198,69 +388,24 @@ const mountCheckin = (main) => {
     return;
   }
   const d = S.detect;
-  const productField = (key, label, placeholder) =>
-    h('label', { class: 'field' }, [
-      h('span', { class: 'label' }, label),
-      h('textarea', {
-        class: 'input',
-        rows: 2,
-        placeholder,
-        value: S.form.product?.[key] ?? '',
-        onInput: (e) => {
-          S.form.product = { ...(S.form.product ?? {}), [key]: e.target.value };
-        },
-      }),
-    ]);
+  if (!S.draftLoaded) {
+    S.draftLoaded = true;
+    // A refresh or deep link keeps its step; Make is still gated on blockers.
+    S.wizReached = Math.max(0, WIZ.findIndex((w) => w.id === new URLSearchParams(location.search).get('step')));
+    const draft = !S.snap?.config && loadDraft();
+    if (draft) Object.assign(S.form, draft);
+  }
   main.append(
-    h('div', { class: 'setup' }, [
-      h('div', { class: 'setup-main' }, [
-        h('header', { class: 'setup-head' }, [
-          h('h1', { class: 'figure display' }, `Redesign ${d.name}`),
-          h('p', { class: 'setup-meta' }, [d.branch ? `${d.branch}` : null, d.head ? ` · ${d.head}` : null, ` · ${d.repo}`].filter(Boolean).join('')),
-        ]),
-        h('section', { class: 'panel', 'aria-label': 'Run settings' }, [
-          h('div', { class: 'segments', role: 'group' }, [
-            segmentButton('from', 'Your app'),
-            segmentButton('via', 'Your agent'),
-            segmentButton('to', 'Approach'),
-            segmentButton('seats', 'Variants'),
-            segmentButton('checks', 'Quality'),
-          ]),
-          h('div', { class: 'drawer', id: 'drawer', hidden: true }),
-        ]),
-        h('section', { class: 'panel about', 'aria-labelledby': 'about-title' }, [
-          h('h2', { id: 'about-title', class: 'figure title' }, 'About your site'),
-          d.hasProduct
-            ? h('p', { class: 'hint' }, 'PRODUCT.md found. Every agent reads it through Impeccable, so nothing to answer here.')
-            : [
-                h('p', { class: 'hint' }, "Impeccable's three questions. Your answers become PRODUCT.md in every variant, so the agents design for your audience instead of guessing. All optional."),
-                productField('users', 'Who is it for, and what do they come to do?', 'e.g. People furnishing a first home; they browse the collection and ask for a custom piece.'),
-                productField('purpose', 'What does it offer, and what makes it different?', 'e.g. Handmade oak and steel furniture, built and delivered by the maker.'),
-                productField('keep', 'What must stay? Brand, content, constraints', 'e.g. The logo and the name; prices in euros; no stock photos.'),
-              ],
-          h('label', { class: 'field' }, [
-            h('span', { class: 'label' }, 'Anything else for the agents'),
-            h('textarea', {
-              id: 'brief',
-              class: 'input',
-              rows: 2,
-              placeholder: 'e.g. Less corporate. It should feel like a workshop, not a SaaS.',
-              value: S.form.brief,
-              onInput: (e) => (S.form.brief = e.target.value),
-            }),
-          ]),
-        ]),
-        h('section', { class: 'action-dock', 'aria-label': 'Summary' }, [h('div', { id: 'stub-body', class: 'stub-body' })]),
+    h('div', { class: 'setup wizard-wrap' }, [
+      h('header', { class: 'setup-head' }, [
+        h('h1', { class: 'figure display' }, `Redesign ${d.name}`),
+        h('p', { class: 'setup-meta' }, [d.branch, d.head, d.repo].filter(Boolean).join(' · ')),
       ]),
-      h('section', { class: 'board compact', 'aria-labelledby': 'preview-title' }, [
-        h('header', { class: 'board-head' }, [h('h2', { id: 'preview-title', class: 'figure' }, 'Variants'), h('span', { class: 'label', id: 'preview-count' })]),
-        h('table', {}, [
-          h('thead', {}, h('tr', {}, [h('th', { class: 'label' }, 'Var'), h('th', { class: 'label' }, 'Direction'), h('th', { class: 'label' }, 'Status')])),
-          h('tbody', { id: 'preview-rows' }),
-        ]),
-      ]),
+      h('div', { id: 'wizard' }),
+      h('p', { id: 'wiz-live', class: 'sr-only', 'aria-live': 'polite' }),
     ]),
   );
+  refreshWizard();
 };
 
 const segmentButton = (id, label) =>
@@ -360,8 +505,7 @@ const pick = (label, on, set, title) =>
   h('label', { class: 'pick', title: title ?? '' }, [
     h('input', { type: 'checkbox', checked: on, onChange: (e) => {
       set(e.target.checked);
-      updateCheckin();
-      renderDrawer();
+      refreshWizard();
     } }),
     h('span', {}, label),
   ]);
@@ -552,29 +696,6 @@ const renderDrawer = () => {
           ),
         ),
         h('p', { class: 'hint' }, 'Leave a slot blank and Impeccable chooses that world itself. Type to pin one, in your words: "a 70s record sleeve", "like a Swiss train timetable".'),
-      ]),
-      h('fieldset', { class: 'field picks' }, [
-        h('legend', { class: 'label' }, 'Pages to redesign'),
-        h('div', { class: 'pick-row' }, [...new Set([...(S.detect.routes ?? ['/']), ...f.routes])].map((r) => pick(r === '/' ? '/ (home)' : r, f.routes.includes(r), (on) => {
-          f.routes = on ? [...f.routes, r] : f.routes.filter((x) => x !== r);
-          if (!f.routes.length) f.routes = ['/'];
-        }))),
-        h('input', { class: 'input', placeholder: 'Another page, e.g. /pricing, then Enter', onKeydown: (e) => {
-          const r = e.target.value.trim();
-          if (e.key !== 'Enter' || !r) return;
-          e.preventDefault();
-          f.routes = [...new Set([...f.routes, r.startsWith('/') ? r : `/${r}`])];
-          updateCheckin();
-          renderDrawer();
-        } }),
-        h('p', { class: 'hint' }, 'Just the home page is fastest. Each extra page adds time to every variant.'),
-      ]),
-      h('fieldset', { class: 'field picks' }, [
-        h('legend', { class: 'label' }, 'Extra Impeccable passes'),
-        h('div', { class: 'pick-row' }, (S.detect.extras ?? []).map((x) => pick(x.label, (f.extras ?? []).includes(x.id), (on) => {
-          f.extras = on ? [...(f.extras ?? []), x.id] : (f.extras ?? []).filter((id) => id !== x.id);
-        }, x.hint))),
-        h('p', { class: 'hint' }, 'Run after the redesign, on the same pages. Hover one to see what it does.'),
       ]),
     );
   }

@@ -2339,3 +2339,163 @@ body[data-view='compare'] .help {
 .board tr.baseline td {
   border-bottom: 1px dashed var(--slate-line);
 }
+
+/* Check-in wizard: Setup → Designs → Your site → Review */
+.setup.wizard-wrap {
+  grid-template-columns: minmax(0, 760px);
+  justify-content: center;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.wiz-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.wiz-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--steel);
+  font: 600 11px/1 var(--mono);
+  font-stretch: 87.5%;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.wiz-chip.now {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--surface);
+}
+
+button.wiz-chip.done {
+  color: var(--ink);
+  cursor: pointer;
+}
+
+button.wiz-chip.done:hover {
+  border-color: var(--ink);
+}
+
+.wiz-step {
+  display: grid;
+  gap: 20px;
+}
+
+.wiz-step h2:focus {
+  outline: none;
+}
+
+.wiz-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--rule);
+}
+
+.checks {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.check {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 15px;
+}
+
+.check .mark {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--alert);
+  font: 700 12px/1 var(--mono);
+}
+
+.check.bad .mark {
+  background: var(--alert);
+  color: var(--ink);
+}
+
+.check .detail {
+  color: var(--steel);
+}
+
+.more > summary {
+  cursor: pointer;
+  color: var(--steel);
+  font: 500 13px/1.4 var(--mono);
+  font-stretch: 87.5%;
+}
+
+.more[open] > summary {
+  margin-bottom: 12px;
+}
+
+.review {
+  display: grid;
+  margin: 0;
+}
+
+.review-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.review-row dd {
+  margin: 0;
+}
+
+.link {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--ink);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .review-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .review-row dt {
+    grid-column: 1 / -1;
+  }
+}
+
+.wiz-step.panel {
+  padding: 24px clamp(16px, 4vw, 32px);
+}
