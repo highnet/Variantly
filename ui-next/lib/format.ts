@@ -42,7 +42,8 @@ export const clock = (ms: number) => {
   return `${Math.floor(s / 60)}:${pad(s % 60)}`;
 };
 
-export const elapsed = (v: Variant, now = Date.now()) => (v.startedAt ? clock(elapsedMs(v, now)) : '—');
+/** A queued design has not started (a retry keeps its old start time). */
+export const elapsed = (v: Variant, now = Date.now()) => (v.startedAt && v.status !== 'queued' ? clock(elapsedMs(v, now)) : '—');
 
 /** Compact token count: 12k, 1.4M. */
 export const compactTokens = (n: number) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n));

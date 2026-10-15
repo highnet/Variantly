@@ -28,7 +28,7 @@ const Segments = ({ v, size = 'small' }: SegmentsProps) => (
           <motion.i
             className="seg-fill"
             initial={false}
-            animate={{ scaleX: st === 'done' ? 1 : st === 'now' ? 0.35 : 0 }}
+            animate={{ width: st === 'done' ? '100%' : st === 'now' ? '35%' : '0%' }}
             transition={{ ...SPRING, delay: 0.15 + i * 0.05 }}
           />
           {st === 'now' && <i className="seg-shine" />}
@@ -138,7 +138,7 @@ const ProgressCard = ({ v, last }: ProgressCardProps) => {
         <p className="progress-now">
           <AnimatePresence mode="wait" initial={false}>
             <motion.span key={done ? 'd' : at} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
-              {done ? 'Ready to compare.' : LIVE.includes(v.status) ? STEPS[Math.max(0, at)] : 'Waiting for a free slot'}
+              {done ? 'Ready to compare.' : LIVE.includes(v.status) ? STEPS[Math.max(0, at)] : 'Step 0 · Waiting for a free slot'}
             </motion.span>
           </AnimatePresence>
           {next && <span className="progress-next">Next: {next}</span>}

@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import clsx from 'clsx';
 import { Icon } from './Icon';
 import { Segments } from './Progress';
+import { Terminal } from './Terminal';
 import { api } from '@/lib/api';
 import { fetchLog } from '@/lib/live';
 import { LIVE, STATUS, STEPS, agentShort, clock, compactTokens, directionLabel, elapsed, isPickable, pad, scoreText, stepAt, stepState, statusKey, usageText, usageTitle, vname } from '@/lib/format';
@@ -51,7 +52,7 @@ const StepCell = ({ v, last }: StepCellProps) => {
     : v.status === 'done'
       ? 'All steps done'
       : v.status === 'queued'
-        ? 'Waiting for a free slot'
+        ? `0/${STEPS.length} · Waiting for a free slot`
         : `Stopped at: ${STEPS[Math.max(0, at)]}`;
   return (
     <div className="steps" title={last}>
@@ -79,42 +80,6 @@ const StepList = ({ v }: StepListProps) => (
   </ol>
 );
 
-type LogPanelProps = {
-  v: Variant;
-};
-
-const LogPanel = ({ v }: LogPanelProps) => {
-  const lines = useStore((s) => s.logs[`v${v.n}`]);
-  const pre = useRef<HTMLPreElement>(null);
-  useEffect(() => {
-    const el = pre.current;
-    if (el && el.scrollTop + el.clientHeight >= el.scrollHeight - 40) el.scrollTop = el.scrollHeight;
-  }, [lines]);
-  return (
-    <div className="logpanel on-slate">
-      <StepList v={v} />
-      <pre ref={pre}>{lines?.join('\n') || 'No output yet.'}</pre>
-      <div className="actions">
-        {v.status === 'done' && (
-          <button className="btn primary small" type="button" onClick={(e) => (e.stopPropagation(), goCompare(v.n))}>
-            Compare {vname(v.n)}
-          </button>
-        )}
-        {['failed', 'cancelled'].includes(v.status) && (
-          <button className="btn outline small" type="button" onClick={(e) => (e.stopPropagation(), act('retry', v.n))}>
-            Retry
-          </button>
-        )}
-        {['queued', 'preparing', 'running', 'reviewing'].includes(v.status) && (
-          <button className="btn outline small" type="button" onClick={(e) => (e.stopPropagation(), act('cancel', v.n))}>
-            Stop
-          </button>
-        )}
-      </div>
-    </div>
-  );
-};
-
 const Board = () => {
   const snap = useStore((s) => s.snap);
   const openRow = useStore((s) => s.openRow);
@@ -141,10 +106,11 @@ const Board = () => {
     cost > 0 ? `$${cost.toFixed(2)}` : null,
   ].filter(Boolean);
 
+  // The terminal follows the row you pick, else the first design at work.
+  const selected = vs.find((v) => v.n === openRow) ?? vs.find((v) => LIVE.includes(v.status)) ?? list[0];
   const toggle = (n: number) => {
-    const next = openRow === n ? null : n;
-    setState({ openRow: next });
-    if (next !== null) fetchLog(n);
+    setState({ openRow: n });
+    fetchLog(n);
   };
 
   const discard = async () => {
@@ -158,7 +124,7 @@ const Board = () => {
   };
 
   return (
-    <div className="boardview">
+    <div className={clsx('boardview', selected && 'with-terminal')}>
       <section className="board" aria-labelledby="board-title">
         <header className="board-head">
           <div style={{ display: 'grid', gap: 6 }}>
@@ -209,16 +175,15 @@ const Board = () => {
               </tr>
             )}
             {list.map((v) => {
-              const open = openRow === v.n;
               const last = logs[`v${v.n}`]?.at(-1) ?? '';
               return [
                 <motion.tr
                   key={v.n}
                   layout
                   transition={{ type: 'spring', stiffness: 380, damping: 34 }}
-                  className="clickable"
+                  className={clsx('clickable', selected?.n === v.n && 'selected')}
                   tabIndex={0}
-                  aria-expanded={open}
+                  aria-pressed={selected?.n === v.n}
                   onClick={() => toggle(v.n)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -261,18 +226,12 @@ const Board = () => {
                     <StepCell v={v} last={last} />
                   </td>
                 </motion.tr>,
-                open ? (
-                  <tr key={`log-${v.n}`} className="rowlog">
-                    <td colSpan={7}>
-                      <LogPanel v={v} />
-                    </td>
-                  </tr>
-                ) : null,
               ];
             })}
           </tbody>
         </table>
       </section>
+      {selected && <Terminal key={selected.n} v={selected} />}
     </div>
   );
 };

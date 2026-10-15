@@ -249,6 +249,10 @@ export class Session extends EventEmitter {
     if (!['failed', 'cancelled'].includes(v.status)) return;
     v.status = 'queued';
     v.error = undefined;
+    v.step = undefined;
+    v.picked = undefined;
+    v.startedAt = undefined;
+    v.finishedAt = undefined;
     v.summary = '';
     v.files = [];
     v.costUsd = undefined;
