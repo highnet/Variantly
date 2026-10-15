@@ -72,13 +72,23 @@ export const playwrightMcp = (chrome = findChrome()) => ({
   args: ['--yes', PLAYWRIGHT_MCP, '--headless', '--isolated', ...(chrome ? ['--executable-path', chrome] : [])],
 });
 
+/** Audits run one at a time: concurrent `npx --yes` installs race on npm's cache, and parallel Lighthouse runs skew each other's performance scores. */
+let auditQueue = Promise.resolve();
+
 /**
  * Score one page with axe-core and Lighthouse.
  * @param {string} url
  * @param {{ timeoutMs?: number }} [opts]
  * @returns {Promise<AuditResult>}
  */
-export const runAudit = (url, opts = {}) =>
+export const runAudit = (url, opts = {}) => {
+  const run = auditQueue.then(() => auditOnce(url, opts));
+  auditQueue = run.then(() => {}, () => {});
+  return run;
+};
+
+/** @param {string} url @param {{ timeoutMs?: number }} opts @returns {Promise<AuditResult>} */
+const auditOnce = (url, opts) =>
   new Promise((resolve, reject) => {
     const chrome = findChrome();
     const cmd = ['node', JSON.stringify(RUNNER), JSON.stringify(url), ...(chrome ? [JSON.stringify(chrome)] : [])].join(' ');
@@ -92,7 +102,8 @@ export const runAudit = (url, opts = {}) =>
       clearTimeout(timer);
       reject(new Error(`Could not start the audit: ${e.message}`));
     });
-    child.on('exit', () => {
+    // 'close', not 'exit': exit can fire before stdout has drained.
+    child.on('close', () => {
       clearTimeout(timer);
       const last = out.trim().split('\n').at(-1) ?? '';
       try {

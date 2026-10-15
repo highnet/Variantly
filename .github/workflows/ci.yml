@@ -31,6 +31,22 @@ jobs:
           npx variantly --version
           npx variantly --help | head -3
 
+  ui:
+    name: UI (Next.js static export)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui-next
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - run: test -f out/index.html
+
   site:
     runs-on: ubuntu-latest
     defaults:

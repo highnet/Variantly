@@ -49,7 +49,10 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
       >
         Skip to content
       </a>
-      <header className="border-rule bg-panel/95 sticky top-0 z-20 border-b backdrop-blur-sm">
+      <header
+        data-audience={audience}
+        className="border-rule bg-panel/95 sticky top-0 z-20 border-b backdrop-blur-sm"
+      >
         <div className="grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6">
           {brand}
           <div role="tablist" aria-label="Who is reading" className="flex gap-6">
@@ -76,7 +79,7 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
         role="tabpanel"
         tabIndex={-1}
         aria-labelledby={`fork-${audience}`}
-        className="outline-none"
+        className="flex flex-1 flex-col outline-none"
       >
         {audience === 'human' ? human : agent}
       </div>

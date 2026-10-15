@@ -242,9 +242,15 @@
     color-scheme: light;
     accent-color: var(--ink);
     scroll-behavior: smooth;
+    /* Reserve the scrollbar's width on every page, so switching between the
+       long human page and the short agent page never shifts the header. */
+    scrollbar-gutter: stable;
   }
 
   body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
     background: var(--panel);
     color: var(--ink);
     font-family: var(--font-sans);
@@ -370,6 +376,195 @@
     border-radius: 50%;
     background: var(--panel);
     border: 1px solid var(--rule);
+  }
+}
+
+/*
+ * Brand mark: four spectrum bars (human) that melt into an agent node (agent).
+ * Shapes move on a springy overshoot under the goo filter in BrandMark.tsx, so
+ * they pinch and bridge into each other mid-flight. Staggered so it ripples.
+ */
+.brand-mark {
+  --brand-spring: cubic-bezier(0.34, 1.7, 0.5, 1);
+  overflow: visible;
+}
+
+.brand-tile {
+  fill: var(--ink);
+  transform-origin: 16px 16px;
+}
+
+.brand-mark rect:not(.brand-tile) {
+  fill: var(--alert);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    x 620ms var(--brand-spring),
+    y 620ms var(--brand-spring),
+    width 620ms var(--brand-spring),
+    height 620ms var(--brand-spring),
+    rx 620ms var(--brand-spring);
+}
+
+.brand-mark .brand-b {
+  fill: var(--surface);
+}
+
+/* Human: a variant spectrum. */
+.brand-a {
+  x: 6px;
+  y: 7px;
+  width: 5px;
+  height: 18px;
+  rx: 1px;
+  transition-delay: 0ms;
+}
+.brand-b {
+  x: 13px;
+  y: 10px;
+  width: 2px;
+  height: 12px;
+  rx: 1px;
+  transition-delay: 40ms;
+}
+.brand-c {
+  x: 17px;
+  y: 7px;
+  width: 5px;
+  height: 18px;
+  rx: 1px;
+  transition-delay: 80ms;
+}
+.brand-d {
+  x: 24px;
+  y: 12px;
+  width: 2px;
+  height: 8px;
+  rx: 1px;
+  transition-delay: 120ms;
+}
+
+/* Agent: a core with three satellites that pulse in and fuse with it. */
+[data-audience='agent'] .brand-a {
+  x: 5px;
+  y: 5px;
+  width: 6px;
+  height: 6px;
+  rx: 3px;
+  transition-delay: 120ms;
+}
+[data-audience='agent'] .brand-b {
+  x: 13.5px;
+  y: 22px;
+  width: 5px;
+  height: 5px;
+  rx: 2.5px;
+  transition-delay: 60ms;
+}
+[data-audience='agent'] .brand-c {
+  x: 11px;
+  y: 11px;
+  width: 10px;
+  height: 10px;
+  rx: 5px;
+  transition-delay: 0ms;
+}
+[data-audience='agent'] .brand-d {
+  x: 21px;
+  y: 5px;
+  width: 6px;
+  height: 6px;
+  rx: 3px;
+  transition-delay: 180ms;
+}
+
+[data-audience='agent'] .brand-a {
+  animation: brand-tug-a 2.4s 900ms ease-in-out infinite;
+}
+[data-audience='agent'] .brand-d {
+  animation: brand-tug-d 2.4s 1700ms ease-in-out infinite;
+}
+[data-audience='agent'] .brand-b {
+  animation: brand-tug-b 2.4s 2500ms ease-in-out infinite;
+}
+[data-audience='agent'] .brand-c {
+  animation: brand-breathe 2.4s 900ms ease-in-out infinite;
+}
+
+/* A squash-and-stretch on the tile each time the mode flips. */
+[data-audience='agent'] .brand-tile {
+  animation: brand-squish-in 520ms var(--brand-spring);
+}
+[data-audience='human'] .brand-tile {
+  animation: brand-squish-out 520ms var(--brand-spring);
+}
+
+.brand-mark:hover .brand-tile {
+  transform: scale(1.06) rotate(-4deg);
+}
+.brand-tile {
+  transition: transform 380ms var(--brand-spring);
+}
+
+@keyframes brand-tug-a {
+  0%,
+  30%,
+  100% {
+    transform: translate(0, 0);
+  }
+  15% {
+    transform: translate(3px, 2.6px);
+  }
+}
+@keyframes brand-tug-d {
+  0%,
+  30%,
+  100% {
+    transform: translate(0, 0);
+  }
+  15% {
+    transform: translate(-3px, 2.6px);
+  }
+}
+@keyframes brand-tug-b {
+  0%,
+  30%,
+  100% {
+    transform: translate(0, 0);
+  }
+  15% {
+    transform: translate(0, -3px);
+  }
+}
+@keyframes brand-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+@keyframes brand-squish-in {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.86, 1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes brand-squish-out {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.1, 0.86);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 

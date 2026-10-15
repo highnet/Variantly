@@ -78,7 +78,8 @@ test('generates two variants, serves them, and finalizes the chosen one', async 
   await until(() => app.session.state.phase === 'ready');
   const variants = app.session.state.variants;
   assert.deepEqual(variants.map((v) => v.status), ['done', 'done']);
-  assert.deepEqual(variants[0].files, ['style.css']);
+  // The shared PRODUCT.md (from the fixture's own title and README) ships with each variant.
+  assert.deepEqual(variants[0].files, ['PRODUCT.md', 'style.css']);
   assert.match(variants[1].summary, /Swiss precision/);
 
   // Every variant lives in its own worktree; the user's tree is untouched.
@@ -101,7 +102,7 @@ test('generates two variants, serves them, and finalizes the chosen one', async 
 
   const fin = await api('POST', 'finalize/2', {});
   assert.equal(fin.status, 200, JSON.stringify(fin.json));
-  assert.deepEqual(fin.json.files, ['style.css']);
+  assert.deepEqual(fin.json.files, ['PRODUCT.md', 'style.css']);
   assert.deepEqual(fin.json.conflicts, []);
   assert.match(readFileSync(path.join(repo, 'style.css'), 'utf8'), /Swiss precision/);
   assert.match(readFileSync(path.join(repo, 'about.html'), 'utf8'), /About us/);

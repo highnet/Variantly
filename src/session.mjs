@@ -14,6 +14,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createParser } from './agent-output.mjs';
 import { agentById, agentFile } from './agents.mjs';
+import { productFromCode } from './product.mjs';
 import { defaultDirections, extractReview, extractSummary, hasAnswers, productMarkdown, writeBrief, writeReviewBrief } from './brief.mjs';
 import { auditMarkdown, playwrightMcp, runAudit } from './checks.mjs';
 import { stepFrom } from './steps.mjs';
@@ -107,6 +108,8 @@ export class Session extends EventEmitter {
     this.runs = new Map();
     /** @type {Promise<unknown> | undefined} */
     this.gitQueue = undefined;
+    /** PRODUCT.md answers read from the code, once per run, shared by every variant. @type {import('./brief.mjs').ProductAnswers | undefined} */
+    this.codeProduct = undefined;
     /** @type {Promise<void> | undefined} */
     this.auditQueue = undefined;
     this.pool = new ServerPool({
@@ -132,8 +135,11 @@ export class Session extends EventEmitter {
           v.error = 'variantly stopped while this variant was being generated.';
         }
       }
-      this.state.phase = this.state.variants.some((v) => v.status === 'done') ? 'ready' : 'setup';
+      // Back to the board, not the wizard: interrupted designs can be retried there.
+      this.state.phase = this.state.variants.length ? 'ready' : 'setup';
     }
+    // A saved run with designs belongs on the board (discard empties the list).
+    if (this.state.phase === 'setup' && this.state.variants.length) this.state.phase = 'ready';
     // An audit that was running when variantly stopped never finishes.
     for (const v of this.state.variants) if (v.auditState === 'running') v.auditState = undefined;
     if (this.state.config) this.pool.maxLive = this.state.config.maxLive;
@@ -255,6 +261,10 @@ export class Session extends EventEmitter {
     if (!['failed', 'cancelled'].includes(v.status)) return;
     v.status = 'queued';
     v.error = undefined;
+    v.step = undefined;
+    v.picked = undefined;
+    v.startedAt = undefined;
+    v.finishedAt = undefined;
     v.summary = '';
     v.files = [];
     v.costUsd = undefined;
@@ -365,6 +375,19 @@ export class Session extends EventEmitter {
       const { text: output, tail, unavailable } = await launch(briefPath);
       if (run.cancelled) return;
 
+      // An agent that couldn't run or changed nothing has nothing to review.
+      // A lockfile the install rewrote and the agent left alone is install
+      // churn, not part of the redesign.
+      for (const [rel, body] of lockfiles) {
+        if ((await readFile(path.join(appDir, rel), 'utf8').catch(() => null)) === body) placed.push(rel);
+      }
+      const exclude = placed.map((p) => path.posix.join(config.appRel.replace(/\\/g, '/'), p));
+      const nothingChanged = () =>
+        unavailable
+          ? new AgentUnavailable(`${agent.name} can't run: ${unavailable}`)
+          : new Error(['The agent finished without changing any files.', ...tailLines(tail)].join('\n'));
+      if (!(await git.hasChanges(wt, exclude))) throw nothingChanged();
+
       // The review pass: Impeccable's critique and audit, fed the machine
       // scores, fixing what they find. Its failure keeps the build.
       let review = '';
@@ -388,17 +411,8 @@ export class Session extends EventEmitter {
       }
 
       await update({ status: 'committing' });
-      // A lockfile the install rewrote and the agent left alone is install
-      // churn, not part of the redesign.
-      for (const [rel, body] of lockfiles) {
-        if ((await readFile(path.join(appDir, rel), 'utf8').catch(() => null)) === body) placed.push(rel);
-      }
-      const exclude = placed.map((p) => path.posix.join(config.appRel.replace(/\\/g, '/'), p));
       const files = await git.commitAll(wt, `variantly: variant ${v.n} (${v.direction})`, exclude);
-      if (!files.length) {
-        if (unavailable) throw new AgentUnavailable(`${agent.name} can't run: ${unavailable}`);
-        throw new Error(['The agent finished without changing any files.', ...tailLines(tail)].join('\n'));
-      }
+      if (!files.length) throw nothingChanged();
       say(`Committed ${files.length} changed file${files.length === 1 ? '' : 's'}.`);
       await update({ status: 'done', files, summary: extractSummary(output), review: review || undefined, finishedAt: Date.now(), costUsd: run.costUsd, usage: run.usage, credits: run.credits, picked: run.picked });
       // Warm the first finished variant so there is something to compare.
@@ -468,6 +482,14 @@ export class Session extends EventEmitter {
     if (hasAnswers(config.product) && !existsSync(productPath) && !existsSync(path.join(wt, 'PRODUCT.md'))) {
       await writeFile(productPath, productMarkdown(path.basename(this.repo), /** @type {import('./brief.mjs').ProductAnswers} */ (config.product)));
       say('Wrote PRODUCT.md from your answers.');
+    } else if (!existsSync(productPath) && !existsSync(path.join(wt, 'PRODUCT.md'))) {
+      // No answers and no PRODUCT.md: one, from the code, the same in every
+      // variant, instead of each agent guessing on its own time.
+      this.codeProduct ??= productFromCode(this.repo, config.appRel);
+      if (this.codeProduct.purpose) {
+        await writeFile(productPath, productMarkdown(path.basename(this.repo), this.codeProduct).replace("from the owner's answers", 'from what the code says about itself'));
+        say('Wrote a shared PRODUCT.md from your code.');
+      }
     }
     if (install) {
       const command = adapter.install ?? packageRunner(appSrc, this.repo).install;
@@ -533,7 +555,8 @@ export class Session extends EventEmitter {
         clearTimeout(timer);
         reject(new Error(`Could not start ${inv.file}: ${err.message}`));
       });
-      child.on('exit', (code) => {
+      // 'close', not 'exit': exit can fire before stdout has drained, losing the tail.
+      child.on('close', (code) => {
         clearTimeout(timer);
         if (partial) onLine(partial);
         tally(run, parser);

@@ -24,6 +24,10 @@ import { ADAPTERS, detect, packageRunner, projectInfo as projectInfoFor } from '
 import { Session } from './session.mjs';
 
 const UI_DIR = fileURLToPath(new URL('../ui/', import.meta.url));
+// The Next.js UI, built by `npm run build:ui` into ui-next/out. Without a
+// build (a fresh clone) or with VARIANTLY_LEGACY_UI=1, the plain ui/ app runs.
+const APP_DIR = fileURLToPath(new URL('../ui-next/out/', import.meta.url));
+const useApp = () => !process.env.VARIANTLY_LEGACY_UI && existsSync(path.join(APP_DIR, 'index.html'));
 const VERSION = JSON.parse(
   (await import('node:fs')).readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'),
 ).version;
@@ -35,6 +39,9 @@ const TYPES = /** @type {Record<string, string>} */ ({
   '.mjs': 'text/javascript; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.woff2': 'font/woff2',
+  '.txt': 'text/plain; charset=utf-8',
+  '.json': 'application/json',
+  '.ico': 'image/x-icon',
 });
 
 /**
@@ -46,9 +53,14 @@ const TYPES = /** @type {Record<string, string>} */ ({
 export const serveUi = (req, res) => {
   const url = new URL(req.url ?? '/', 'http://x');
   if (!url.pathname.startsWith('/__variantly/')) return false;
-  const rel = url.pathname.slice('/__variantly/'.length);
-  const file = path.resolve(UI_DIR, rel);
-  if (!file.startsWith(UI_DIR) || !existsSync(file) || !statSync(file).isFile()) {
+  const rel = decodeURIComponent(url.pathname.slice('/__variantly/'.length));
+  /** @param {string} dir */
+  const inside = (dir) => {
+    const f = path.resolve(dir, rel);
+    return f.startsWith(dir) && existsSync(f) && statSync(f).isFile() ? f : '';
+  };
+  const file = (useApp() && inside(APP_DIR)) || inside(UI_DIR);
+  if (!file) {
     res.writeHead(404).end();
     return true;
   }

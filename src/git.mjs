@@ -179,6 +179,30 @@ async function unlinkShared(worktree) {
 }
 
 /**
+ * The pathspec for "what the agent changed": everything but the marker and the
+ * excluded paths. `git add` refuses outright (exit 1) when an exclude pathspec
+ * names a path .gitignore already ignores, such as a linked node_modules;
+ * those are skipped anyway, so only the unignored ones need excluding.
+ * @param {string} worktree @param {string[]} exclude
+ */
+const changeSpec = async (worktree, exclude) => {
+  const rels = exclude.map((p) => p.replace(/\\/g, "/"));
+  const ignored = rels.length
+    ? new Set((await run("git", ["check-ignore", "--", ...rels], { cwd: worktree })).stdout.split("\n").map((s) => s.trim()))
+    : new Set();
+  return [".", `:(exclude)${MARKER}`, `:(exclude)**/${MARKER}`, ...rels.filter((p) => !ignored.has(p)).map((p) => `:(exclude)${p}`)];
+};
+
+/**
+ * Whether the agent changed anything, minus the files variantly placed. Reads only.
+ * @param {string} worktree
+ * @param {string[]} exclude  paths relative to the worktree root
+ */
+export async function hasChanges(worktree, exclude) {
+  return (await git(worktree, ["status", "--porcelain", "--untracked-files=all", "--", ...(await changeSpec(worktree, exclude))])).trim() !== "";
+}
+
+/**
  * Commit whatever the agent changed, minus the files variantly placed.
  * @param {string} worktree
  * @param {string} message
@@ -186,15 +210,7 @@ async function unlinkShared(worktree) {
  * @returns {Promise<string[]>} changed files
  */
 export async function commitAll(worktree, message, exclude) {
-  const rels = exclude.map((p) => p.replace(/\\/g, "/"));
-  // `git add` refuses outright (exit 1) when an exclude pathspec names a path
-  // .gitignore already ignores, such as a linked node_modules; those are
-  // skipped anyway, so only the unignored ones need excluding.
-  const ignored = rels.length
-    ? new Set((await run("git", ["check-ignore", "--", ...rels], { cwd: worktree })).stdout.split("\n").map((s) => s.trim()))
-    : new Set();
-  const pathspec = [".", `:(exclude)${MARKER}`, `:(exclude)**/${MARKER}`, ...rels.filter((p) => !ignored.has(p)).map((p) => `:(exclude)${p}`)];
-  await git(worktree, ["add", "-A", "--", ...pathspec]);
+  await git(worktree, ["add", "-A", "--", ...(await changeSpec(worktree, exclude))]);
   const changed = (await git(worktree, ["diff", "--cached", "--name-only"])).split("\n").filter(Boolean);
   if (changed.length) {
     await git(worktree, [
