@@ -13,6 +13,7 @@ import clsx from 'clsx';
 import { act, goCompare } from './Board';
 import { Icon, Mark } from './Icon';
 import { ProgressCard } from './Progress';
+import { PageSkeleton } from './Skeleton';
 import { api } from '@/lib/api';
 import { fetchLog } from '@/lib/live';
 import { LIVE, STATUS, directionLabel, isPickable, pad, plural, scoreText, vname, vsBase } from '@/lib/format';
@@ -403,6 +404,10 @@ const Compare = () => {
   const srvAfter = snap && want.after ? serverOf(getState(), want.after) : undefined;
   const srv: Record<Side, ServerState | undefined> = { before: srvBefore, after: srvAfter };
 
+  // A pane between pointing at a page and that page arriving shows a skeleton.
+  const [pending, setPending] = useState<Record<Side, boolean>>({ before: false, after: false });
+  const settle = (side: Side) => setPending((p) => (p[side] ? { ...p, [side]: false } : p));
+
   // Point each frame at its target, only when the target or path changes.
   useEffect(() => {
     if (applying) return;
@@ -417,6 +422,7 @@ const Compare = () => {
       if (el && (cur.target !== target || cur.path !== path)) {
         el.src = targetUrl(s, path);
         shown.current[side] = { target, path };
+        setPending((p) => (p[side] ? p : { ...p, [side]: true }));
       }
     }
   });
@@ -509,11 +515,13 @@ const Compare = () => {
     >
       <div className="stage" data-mode={effMode} data-device={device} data-show={sel === 'original' ? 'original' : 'variant'}>
         <div className="pane before">
-          <iframe ref={frames.before} title="Original" allow="clipboard-read; clipboard-write" />
+          <iframe ref={frames.before} title="Original" allow="clipboard-read; clipboard-write" onLoad={() => settle('before')} />
+          <PageSkeleton className={clsx(!pending.before && 'done')} />
           {paneWait('before')}
         </div>
         <div className="pane after">
-          <iframe ref={frames.after} title="Variant" allow="clipboard-read; clipboard-write" style={{ visibility: building ? 'hidden' : undefined }} />
+          <iframe ref={frames.after} title="Variant" allow="clipboard-read; clipboard-write" style={{ visibility: building ? 'hidden' : undefined }} onLoad={() => settle('after')} />
+          <PageSkeleton className={clsx((!pending.after || building) && 'done')} />
           {building ? (
             <div className="pane-wait">
               <ProgressCard key={building.n} v={building} last={logs[`v${building.n}`]?.at(-1)} />
