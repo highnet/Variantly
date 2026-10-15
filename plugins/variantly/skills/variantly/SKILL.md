@@ -18,7 +18,7 @@ curl -fsSL https://variantly.tools/SKILLS.md
 ## The short version
 
 1. `npx variantly doctor`; fix anything marked ✗ (git commit, agent CLI,
-   `npx impeccable install --providers=claude --scope=global`).
+   `npx impeccable install --providers=claude --scope=global --yes --no-hooks`).
 2. With the user present, run `npx variantly` in the background and give them
    the URL it prints (default http://localhost:4477). The wizard does the rest.
    To skip the wizard: `npx variantly --yes --agent claude --count 4 --brief "<their words>"`.

@@ -185,7 +185,7 @@ export const startApp = async (opts) => {
     const relay = (/** @type {Buffer} */ d) => send('log', { target: 'install', lines: installLog.push(d) });
     child.stdout?.on('data', relay);
     child.stderr?.on('data', relay);
-    child.on('exit', (code) => send('installed', { agent, code }));
+    child.on('exit', (code) => send('installed', { agent, code, what: command, tail: installLog.tail(4) }));
     return { command };
   };
 
@@ -213,7 +213,7 @@ export const startApp = async (opts) => {
     const relay = (/** @type {Buffer} */ d) => send('log', { target: 'install', lines: installLog.push(d) });
     child.stdout?.on('data', relay);
     child.stderr?.on('data', relay);
-    child.on('exit', (code) => send('installed', { agent, code }));
+    child.on('exit', (code) => send('installed', { agent, code, what: command, tail: installLog.tail(4) }));
     return { command };
   };
 

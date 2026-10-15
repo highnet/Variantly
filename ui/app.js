@@ -432,7 +432,7 @@ const renderDrawer = () => {
         return h('div', { class: 'note alert' }, [
           `${a.name} doesn't have the Impeccable skill yet. `,
           h('button', { class: 'btn small', type: 'button', onClick: () => installImpeccable(a.id) }, 'Install Impeccable'),
-          h('p', { class: 'hint' }, ['Runs ', h('code', {}, `npx impeccable install --providers=${a.id} --scope=global`), ' (nothing is written into your project).']),
+          h('p', { class: 'hint' }, ['Runs ', h('code', {}, `npx impeccable install --providers=${a.id} --scope=global --yes --no-hooks`), ' (nothing is written into your project).']),
         ]);
       })(),
       f.agent === 'demo'
@@ -1317,8 +1317,9 @@ const connect = () => {
     if (row) row.textContent = lines.at(-1) ?? '';
   });
   es.addEventListener('installed', (e) => {
-    const { agent, code } = JSON.parse(e.data);
-    toast(code === 0 ? `Impeccable installed for ${agent}.` : `Impeccable install exited with code ${code}.`, code !== 0);
+    const { agent, code, what = '', tail = [] } = JSON.parse(e.data);
+    const thing = /impeccable/.test(what) ? `Impeccable for ${agent}` : agent;
+    toast(code === 0 ? `Installed ${thing}.` : `Installing ${thing} failed (exit ${code}): ${tail.filter(Boolean).slice(-2).join(' ')}`, code !== 0);
     loadDetect();
   });
   es.addEventListener('problem', (e) => toast(JSON.parse(e.data).message, true));
