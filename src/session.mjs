@@ -505,7 +505,8 @@ export class Session extends EventEmitter {
         clearTimeout(timer);
         reject(new Error(`Could not start ${inv.file}: ${err.message}`));
       });
-      child.on('exit', (code) => {
+      // 'close', not 'exit': exit can fire before stdout has drained, losing the tail.
+      child.on('close', (code) => {
         clearTimeout(timer);
         if (partial) onLine(partial);
         tally(run, parser);
