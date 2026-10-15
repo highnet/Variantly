@@ -1,6 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Courier+Prime:wght@400;700&display=swap');
 
 :root {
+  color-scheme: light;
+  --desk: #d9d3c5;
+  --grain: rgba(0,0,0,.05);
+  --shadow: rgba(0,0,0,.15);
+  --staple-a: #b8b8b8; --staple-b: #777;
+  --on-accent: #fff;
+  --field: #fff;
+  --blend: multiply;
   --pink: #ff48b0;
   --pink-ink: #c4006e;   /* AA text on paper */
   --teal: #00a29a;
@@ -8,11 +16,28 @@
   --paper: #f4efe4;
   --ink: #1d1a1f;
 }
+/* Dark: same zine printed with fluorescent inks on black stock; overprints screen instead of multiply */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --desk: #121014;
+  --paper: #1f1b22;
+  --grain: rgba(255,255,255,.045);
+  --shadow: rgba(0,0,0,.55);
+  --staple-a: #8a8a8a; --staple-b: #4a4a4a;
+  --ink: #efe8da;
+  --pink: #e8429f;
+  --pink-ink: #ff7cc4;
+  --teal: #00a89f;
+  --teal-ink: #4fd8cf;
+  --on-accent: #1d1a1f;
+  --field: #2a252e;
+  --blend: screen;
+}
 * { box-sizing: border-box; }
-html { background: #d9d3c5; }
+html { background: var(--desk); }
 body {
   margin: 0;
-  background: #d9d3c5;
+  background: var(--desk);
   color: var(--ink);
   font: 1.0625rem/1.55 'Courier Prime', 'Courier New', monospace;
   padding: 24px 16px;
@@ -22,16 +47,16 @@ body {
   max-width: 980px;
   margin: 0 auto;
   background: var(--paper);
-  background-image: radial-gradient(rgba(0,0,0,.05) 1px, transparent 1.2px);
+  background-image: radial-gradient(var(--grain) 1px, transparent 1.2px);
   background-size: 5px 5px;
   padding: 28px clamp(16px, 5vw, 56px) 40px;
-  box-shadow: 3px 4px 0 rgba(0,0,0,.15);
+  box-shadow: 3px 4px 0 var(--shadow);
   transform: rotate(-.3deg);
 }
 /* staples */
 .paper::before, .paper::after {
   content: ""; position: absolute; top: 14px; width: 34px; height: 4px;
-  background: linear-gradient(#b8b8b8, #777); border-radius: 1px;
+  background: linear-gradient(var(--staple-a), var(--staple-b)); border-radius: 1px;
 }
 .paper::before { left: 22%; }
 .paper::after { right: 22%; }
@@ -60,7 +85,7 @@ a { color: var(--teal-ink); }
 }
 .riso::after {
   content: attr(data-text); position: absolute; inset: 0;
-  color: var(--pink); mix-blend-mode: multiply;
+  color: var(--pink); mix-blend-mode: var(--blend);
   transform: translate(4px, 3px) rotate(.4deg); pointer-events: none;
 }
 
@@ -72,7 +97,7 @@ a { color: var(--teal-ink); }
 .hero h1 { font-size: clamp(2.1rem, 9vw, 5.4rem); margin: 0; max-width: 11ch; }
 .dots {
   position: absolute; right: -10px; top: 30px; width: min(42vw, 340px); aspect-ratio: 1;
-  border-radius: 50%; z-index: 0; mix-blend-mode: multiply; opacity: .85;
+  border-radius: 50%; z-index: 0; mix-blend-mode: var(--blend); opacity: .85;
   background: radial-gradient(circle, var(--pink) 38%, transparent 42%) 0 0 / 11px 11px;
   -webkit-mask: radial-gradient(circle, #000 30%, transparent 70%); mask: radial-gradient(circle, #000 30%, transparent 70%);
 }
@@ -82,7 +107,7 @@ a { color: var(--teal-ink); }
 .btn, button {
   font: 700 1rem 'Courier Prime', monospace; text-transform: uppercase; cursor: pointer;
   display: inline-block; padding: 12px 18px; text-decoration: none;
-  background: var(--pink-ink); color: #fff; border: 0;
+  background: var(--pink-ink); color: var(--on-accent); border: 0;
   box-shadow: 4px 4px 0 var(--teal);
 }
 .btn:hover, button:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--teal); }
@@ -96,7 +121,7 @@ h3 { font-family: 'Rubik Mono One', sans-serif; font-weight: 400; font-size: 1.0
 .feature { counter-increment: f; display: grid; grid-template-columns: auto 1fr; gap: 0 20px; align-items: start; }
 .feature::before {
   content: counter(f); grid-row: span 2; font: 3.4rem/1 'Rubik Mono One', sans-serif;
-  color: var(--teal); text-shadow: 3px 2px 0 var(--pink); mix-blend-mode: multiply;
+  color: var(--teal); text-shadow: 3px 2px 0 var(--pink); mix-blend-mode: var(--blend);
 }
 .feature p { margin: 0; max-width: 46ch; }
 .f2 { margin-left: clamp(0px, 8vw, 90px); }
@@ -111,7 +136,7 @@ h3 { font-family: 'Rubik Mono One', sans-serif; font-weight: 400; font-size: 1.0
   background: radial-gradient(circle, var(--teal) 35%, transparent 40%) 0 0 / 8px 8px;
 }
 .plate::after {
-  content: ""; position: absolute; inset: 0; mix-blend-mode: multiply;
+  content: ""; position: absolute; inset: 0; mix-blend-mode: var(--blend);
   transform: translate(6px, 5px);
 }
 .p1 .plate::after { background: linear-gradient(var(--pink), var(--pink)) 10% 45% / 80% 16% no-repeat, linear-gradient(var(--pink), var(--pink)) 18% 100% / 6% 45% no-repeat, linear-gradient(var(--pink), var(--pink)) 82% 100% / 6% 45% no-repeat; }
@@ -126,7 +151,7 @@ form label { display: block; font-weight: 700; text-transform: uppercase; font-s
 .row { display: flex; flex-wrap: wrap; gap: 12px; }
 input[type=email] {
   flex: 1 1 220px; min-width: 0; padding: 12px; font: 1rem 'Courier Prime', monospace;
-  background: #fff; color: var(--ink); border: 2px solid var(--ink);
+  background: var(--field); color: var(--ink); border: 2px solid var(--ink);
 }
 
 .about { padding-bottom: 48px; }
