@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNod
 import { AnimatePresence, motion } from 'motion/react';
 import clsx from 'clsx';
 import { Icon } from './Icon';
+import { ViewSkeleton } from './Skeleton';
 import { api } from '@/lib/api';
 import { loadDetect } from '@/lib/live';
 import { pad, plural } from '@/lib/format';
@@ -648,7 +649,7 @@ const Checkin = () => {
     [at],
   );
 
-  if (!d || !f) return <div className="loading">Looking at your project…</div>;
+  if (!d || !f) return <ViewSkeleton label="Looking at your project…" />;
 
   const step = WIZ[at];
   const blocks = blockers(d, f);

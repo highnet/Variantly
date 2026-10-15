@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Board } from './Board';
+import { ViewSkeleton } from './Skeleton';
 import { Checkin } from './Checkin';
 import { Compare } from './Compare';
 import { Kept } from './Kept';
@@ -65,7 +66,7 @@ const Shell = () => {
         </button>
       </header>
       <main id="view" tabIndex={-1}>
-        {view === 'loading' && <div className="loading">Connecting to variantly…</div>}
+        {view === 'loading' && <ViewSkeleton label="Connecting to variantly…" />}
         {view === 'stopped' && <div className="loading">variantly has stopped. You can close this tab.</div>}
         {view === 'checkin' && <Checkin />}
         {view === 'board' && <Board />}

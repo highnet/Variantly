@@ -3393,3 +3393,115 @@ button.wiz-hit:hover .wiz-name {
 .compare.tucked .dock:not(:hover):not(:focus-within) > .btn.primary {
   box-shadow: 0 0 0 4px rgb(255 212 0 / 0.18);
 }
+
+/* Skeletons --------------------------------------------------------------- */
+
+.sk {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(100deg, var(--panel) 30%, var(--surface) 50%, var(--panel) 70%) 0 0 / 300% 100%;
+  animation: sk-sweep 1.4s ease-in-out infinite;
+}
+
+.page-skeleton .sk {
+  background-color: var(--panel);
+}
+
+@keyframes sk-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
+.sk-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sk-between {
+  justify-content: space-between;
+}
+
+.sk-col {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.page-skeleton {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  align-content: start;
+  gap: 32px;
+  padding: 32px;
+  overflow: hidden;
+  background: var(--surface);
+  transition: opacity 400ms ease;
+}
+
+.page-skeleton.done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sk-hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: center;
+}
+
+.sk-media {
+  aspect-ratio: 4 / 3;
+  width: 100%;
+}
+
+.sk-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+
+.sk-square {
+  aspect-ratio: 1;
+  width: 100%;
+}
+
+.view-skeleton {
+  display: grid;
+  gap: 24px;
+  padding: 32px 24px;
+}
+
+.sk-card {
+  padding: 16px;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  background: var(--surface);
+}
+
+.view-skeleton .sk-card .sk {
+  background-color: var(--panel);
+}
+
+.sk-label {
+  margin: 0;
+  color: var(--steel);
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk {
+    animation: none;
+    background: var(--panel);
+  }
+}
+
+.view-skeleton > .sk-row .sk {
+  background-image: linear-gradient(100deg, var(--rule) 30%, var(--surface) 50%, var(--rule) 70%);
+}

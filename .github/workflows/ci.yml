@@ -21,6 +21,14 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: npm ci
       - run: npm run typecheck
+      # The audit test fetches its packages through `npx --yes`. On a cold
+      # cache that install can fail mid-test (most often on Windows), so fill
+      # the npx cache up front, retrying a flaky download.
+      - name: Warm the npx cache for the audit packages
+        shell: bash
+        run: |
+          pkgs=$(node -e "import('./src/checks.mjs').then((m) => console.log(m.AUDIT_PACKAGES.map((p) => '-p ' + p).join(' ')))")
+          for i in 1 2 3; do npx --yes $pkgs -c "node --version" && break; sleep 5; done
       - run: npm test
       - name: Smoke-test the published tarball
         shell: bash
