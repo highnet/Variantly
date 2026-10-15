@@ -44,6 +44,8 @@ const icon = (name) => {
     close: ['M6 6l12 12', 'M18 6L6 18'],
     arrow: ['M5 12h14', 'M13 6l6 6-6 6'],
     refresh: ['M20 11a8 8 0 1 0-2.3 5.7', 'M20 5v6h-6'],
+    desktop: ['M3 4h18v12H3z', 'M8 20h8', 'M12 16v4'],
+    mobile: ['M7 3h10v18H7z', 'M11 18h2'],
   };
   return h(
     'svg',
@@ -161,7 +163,7 @@ const pickView = () => {
   if (S.snap.phase === 'finalized') return 'kept';
   if (S.snap.phase === 'setup' && !variants().length) return 'checkin';
   if (S.snap.phase === 'setup') return 'checkin';
-  if (S.forceBoard || !done().length) return 'board';
+  if (S.forceBoard || (!done().length && !S.wantCompare)) return 'board';
   return 'compare';
 };
 
@@ -957,7 +959,7 @@ const updateBoardView = () => {
   $('#board-title').textContent = `${pad(vs.length)} variants`;
   const agent = S.snap?.config?.agent;
   renderReadout($('#board-meta'));
-  $('#to-compare').disabled = ready === 0;
+  $('#to-compare').disabled = !variants().some((v) => !['failed', 'cancelled'].includes(v.status));
   renderBoardRows($('#board-rows'), [...vs].sort((a, b) => order[a.status] - order[b.status] || (a.finishedAt ?? 0) - (b.finishedAt ?? 0) || a.n - b.n));
   renderBaselineRow($('#board-rows'));
 };
@@ -1139,6 +1141,7 @@ const discard = async () => {
 
 const goCompare = (n) => {
   S.forceBoard = false;
+  S.wantCompare = true;
   if (n) S.sel = n;
   render();
 };
@@ -1264,6 +1267,31 @@ const showIn = (side, target) => {
   if (!ready) renderWait(p.wait, target, srv);
 };
 
+/** A design still being built: where it is, instead of a preview. */
+const showProgress = (v) => {
+  const p = panes.after;
+  if (!p) return;
+  p.loaded = false;
+  p.target = null;
+  p.el.dataset.target = `v${v.n}`;
+  p.wait.hidden = false;
+  const last = (S.logs.get(`v${v.n}`) ?? []).at(-1) ?? '';
+  p.wait.replaceChildren(
+    h('div', { class: 'wait-card' }, [
+      h('header', {}, [
+        h('span', { class: 'figure' }, vname(v.n)),
+        h('span', { class: 'status', 'data-s': statusKey(v.status) }, h('span', { class: 'flap-text' }, 'In progress')),
+      ]),
+      h('div', { class: 'wait-body' }, [
+        h('p', { class: 'wait-dir' }, directionLabel(v.direction, v.picked)),
+        stepList(v),
+        h('p', { class: 'wait-note' }, `${elapsed(v)} so far. It shows here when it's ready; look at another design meanwhile.`),
+      ]),
+      last ? h('pre', { class: 'wait-last' }, last) : null,
+    ]),
+  );
+};
+
 const renderWait = (el, target, srv) => {
   const failed = srv?.state === 'failed';
   const name = target === 'original' ? 'Original' : vname(Number(target.slice(1)));
@@ -1282,15 +1310,22 @@ const renderWait = (el, target, srv) => {
 const updateCompare = () => {
   const stage = $('#stage');
   if (!stage) return;
-  if (S.sel !== 'original' && !done().some((v) => v.n === S.sel)) S.sel = done()[0]?.n ?? 'original';
+  const pickable = variants().filter((v) => !['failed', 'cancelled'].includes(v.status));
+  if (S.sel !== 'original' && !pickable.some((v) => v.n === S.sel)) S.sel = done()[0]?.n ?? pickable[0]?.n ?? 'original';
+  const building = variants().find((x) => x.n === S.sel && x.status !== 'done');
   let mode = S.mode;
   if (S.sel === 'original' && mode !== 'single') mode = 'single';
   stage.dataset.mode = mode;
+  stage.dataset.device = S.device ?? 'desktop';
   stage.dataset.show = S.sel === 'original' ? 'original' : 'variant';
   const variantTarget = S.sel === 'original' ? (S.lastVariant ? `v${S.lastVariant}` : '') : `v${S.sel}`;
   if (S.sel !== 'original') S.lastVariant = S.sel;
   if (mode !== 'single' || S.sel === 'original') showIn('before', 'original');
-  if (variantTarget && (mode !== 'single' || S.sel !== 'original')) showIn('after', variantTarget);
+  if (building) {
+    if (mode === 'slider') stage.dataset.mode = 'side';
+    showIn('before', 'original');
+    showProgress(building);
+  } else if (variantTarget && (mode !== 'single' || S.sel !== 'original')) showIn('after', variantTarget);
   const v = variants().find((x) => x.n === S.sel);
   $('#tag-after').textContent = v ? `${vname(v.n)} · ${directionLabel(v.direction, v.picked)}` : '';
   renderDock();
@@ -1347,6 +1382,8 @@ const renderDock = () => {
     $('#apply')?.focus();
     return;
   }
+  const deviceBtn = (d, label) =>
+    h('button', { type: 'button', 'aria-pressed': String((S.device ?? 'desktop') === d), 'aria-label': label, title: `${label} (m)`, onClick: () => ((S.device = d), updateCompare()) }, icon(d));
   const modeBtn = (m, label) =>
     h('button', { type: 'button', 'aria-pressed': String(S.mode === m), 'aria-label': label, title: `${label} (s)`, onClick: () => ((S.mode = m), updateCompare()) }, icon(m));
   dock.replaceChildren(
@@ -1363,7 +1400,7 @@ const renderDock = () => {
             class: 'cell',
             type: 'button',
             'data-n': v.n,
-            disabled: !ready,
+            disabled: ['failed', 'cancelled'].includes(v.status),
             'aria-current': String(S.sel === v.n),
             'aria-label': `${vname(v.n)} ${directionLabel(v.direction, v.picked)}, ${STATUS[v.status]}`,
             title: `${vname(v.n)} · ${directionLabel(v.direction, v.picked)} · ${STATUS[v.status]}${v.n <= 10 ? ` (${v.n % 10})` : ''}`,
@@ -1376,6 +1413,7 @@ const renderDock = () => {
     ]),
     h('span', { class: 'sep', 'aria-hidden': 'true' }),
     h('div', { class: 'modes', role: 'group', 'aria-label': 'View' }, [modeBtn('slider', 'Slider'), modeBtn('single', 'Single'), modeBtn('side', 'Side by side')]),
+    h('div', { class: 'modes', role: 'group', 'aria-label': 'Screen size' }, [deviceBtn('desktop', 'Desktop'), deviceBtn('mobile', 'Phone')]),
     h('input', {
       class: 'path',
       value: S.path,
@@ -1392,7 +1430,7 @@ const renderDock = () => {
     h('span', { class: 'sep', 'aria-hidden': 'true' }),
     h('button', { class: 'icon-btn', type: 'button', title: 'Board', 'aria-label': 'Show the board', onClick: () => ((S.forceBoard = true), render()) }, icon('board')),
     h('button', { class: 'icon-btn', type: 'button', title: 'Details (i)', 'aria-label': 'Variant details', 'aria-pressed': String(S.infoOpen), onClick: toggleInfo }, icon('info')),
-    typeof S.sel === 'number'
+    typeof S.sel === 'number' && done().some((x) => x.n === S.sel)
       ? h('button', { class: 'btn primary', type: 'button', onClick: () => ((S.confirming = true), renderDock()) }, `Keep ${vname(S.sel)}`)
       : null,
     ].filter(Boolean),
@@ -1555,7 +1593,7 @@ const handleKey = (key) => {
     return;
   }
   if (S.view !== 'compare') return;
-  const ready = done().map((v) => v.n);
+  const ready = variants().filter((v) => !['failed', 'cancelled'].includes(v.status)).map((v) => v.n);
   if (/^[0-9]$/.test(key)) {
     const n = key === '0' ? 10 : Number(key);
     if (ready.includes(n)) select(n);
@@ -1565,6 +1603,10 @@ const handleKey = (key) => {
   if (key === 's') {
     const modes = ['slider', 'single', 'side'];
     S.mode = modes[(modes.indexOf(S.mode) + 1) % modes.length];
+    return updateCompare();
+  }
+  if (key === 'm') {
+    S.device = S.device === 'mobile' ? 'desktop' : 'mobile';
     return updateCompare();
   }
   if (key === 'i') return toggleInfo();
