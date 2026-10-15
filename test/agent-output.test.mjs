@@ -1,15 +1,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { createParser } from '../src/agent-output.mjs';
 import { extractSummary } from '../src/brief.mjs';
 
-const CWD = 'C:/wt/v1';
+// Fixtures name the worktree C:/wt/v1; swap in an absolute path for this platform.
+const CWD = path.resolve('/wt/v1').replace(/\\/g, '/');
 
 /** Feed a fixture through a parser; return the parser and every log line. */
 const feed = (/** @type {string} */ name, /** @type {import('../src/agent-output.mjs').OutputKind} */ kind) => {
   const parser = createParser(kind, { cwd: CWD });
-  const body = readFileSync(new URL(`./fixtures/agent-output/${name}.jsonl`, import.meta.url), 'utf8');
+  const body = readFileSync(new URL(`./fixtures/agent-output/${name}.jsonl`, import.meta.url), 'utf8').replaceAll('C:/wt/v1', CWD);
   const lines = body.split(/\r?\n/).flatMap((l) => parser.push(l));
   return { parser, lines };
 };
