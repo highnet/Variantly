@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/Button';
 
@@ -41,25 +41,18 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
     window.history.replaceState(null, '', url);
   }, []);
 
-  const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-    e.preventDefault();
-    const next = audience === 'human' ? 'agent' : 'human';
-    choose(next);
-    document.getElementById(`fork-${next}`)?.focus();
-  };
-
   return (
     <>
+      <a
+        href="#audience-panel"
+        className="bg-ink text-surface fixed top-3 left-3 z-50 -translate-y-24 rounded-[4px] px-3.5 py-2.5 font-mono text-[13px] font-semibold no-underline focus:translate-y-0"
+      >
+        Skip to content
+      </a>
       <header className="border-rule bg-panel/95 sticky top-0 z-20 border-b backdrop-blur-sm">
-        <div className="mx-auto grid h-14 max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6">
+        <div className="grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6">
           {brand}
-          <div
-            role="tablist"
-            aria-label="Who is reading"
-            className="flex gap-6"
-            onKeyDown={onKeyDown}
-          >
+          <div role="tablist" aria-label="Who is reading" className="flex gap-6">
             {OPTIONS.map((o) => (
               <Button
                 key={o.id}
@@ -69,7 +62,6 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
                 size="tab"
                 aria-selected={audience === o.id}
                 aria-controls="audience-panel"
-                tabIndex={audience === o.id ? 0 : -1}
                 onClick={() => choose(o.id)}
               >
                 {o.label}
@@ -79,7 +71,13 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
           <div className="flex justify-end">{aside}</div>
         </div>
       </header>
-      <div id="audience-panel" role="tabpanel" aria-labelledby={`fork-${audience}`}>
+      <div
+        id="audience-panel"
+        role="tabpanel"
+        tabIndex={-1}
+        aria-labelledby={`fork-${audience}`}
+        className="outline-none"
+      >
         {audience === 'human' ? human : agent}
       </div>
     </>

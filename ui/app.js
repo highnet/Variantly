@@ -1519,7 +1519,7 @@ addEventListener('message', (e) => {
   }
   if (msg.type === 'key') {
     wake();
-    handleKey(msg.key);
+    if (msg.key === 'Escape') closePanels();
   }
 });
 
@@ -1582,57 +1582,16 @@ const shutdown = async () => {
 
 // Keyboard ------------------------------------------------------------------
 
-const handleKey = (key) => {
-  if (key === 'Escape') {
-    if (S.confirming) {
-      S.confirming = false;
-      renderDock();
-    }
-    if (S.infoOpen) toggleInfo();
-    $('#help').hidden = true;
-    return;
+// Keyboard: Tab moves between controls; Esc closes whatever is open.
+const closePanels = () => {
+  if (S.confirming) {
+    S.confirming = false;
+    renderDock();
   }
-  if (S.view !== 'compare') return;
-  const ready = variants().filter((v) => !['failed', 'cancelled'].includes(v.status)).map((v) => v.n);
-  if (/^[0-9]$/.test(key)) {
-    const n = key === '0' ? 10 : Number(key);
-    if (ready.includes(n)) select(n);
-    return;
-  }
-  if (key === 'o') return select('original');
-  if (key === 's') {
-    const modes = ['slider', 'single', 'side'];
-    S.mode = modes[(modes.indexOf(S.mode) + 1) % modes.length];
-    return updateCompare();
-  }
-  if (key === 'm') {
-    S.device = S.device === 'mobile' ? 'desktop' : 'mobile';
-    return updateCompare();
-  }
-  if (key === 'i') return toggleInfo();
-  if (key === '[') return setSplit(S.split - 5);
-  if (key === ']') return setSplit(S.split + 5);
-  if (key === 'ArrowLeft' || key === 'ArrowRight') {
-    if (!ready.length) return;
-    const list = ['original', ...ready];
-    const i = list.indexOf(S.sel);
-    select(list[(i + (key === 'ArrowRight' ? 1 : list.length - 1)) % list.length]);
-  }
+  if (S.infoOpen) toggleInfo();
 };
 
-addEventListener('keydown', (e) => {
-  const t = e.target;
-  if (t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
-  if (t instanceof HTMLElement && t.getAttribute('role') === 'slider' && e.key.startsWith('Arrow')) return;
-  if (e.metaKey || e.ctrlKey || e.altKey) return;
-  handleKey(e.key);
-});
-
-$('#help-toggle').addEventListener('click', (e) => {
-  const help = $('#help');
-  help.hidden = !help.hidden;
-  e.currentTarget.setAttribute('aria-expanded', String(!help.hidden));
-});
+addEventListener('keydown', (e) => e.key === 'Escape' && closePanels());
 
 // Live connection -----------------------------------------------------------
 

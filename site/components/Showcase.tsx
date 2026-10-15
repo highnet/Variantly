@@ -166,19 +166,6 @@ const Showcase = () => {
     };
   }, [auto]);
 
-  // 1–6 work from page load, not only once focus is inside the showcase.
-  useEffect(() => {
-    const onKey = (e: globalThis.KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      const t = e.target as HTMLElement | null;
-      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
-      const n = Number(e.key);
-      if (n >= 1 && n <= DEMO_VARIANTS.length) choose(n);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [choose]);
-
   // Same-origin pages: every pane sits at the same scroll position, in
   // pixels on both axes, so the divider compares the same spot of the page.
   const scrollPos = useRef({ x: 0, y: 0 });
@@ -308,10 +295,6 @@ const Showcase = () => {
       tween((e.clientX / f.clientWidth) * 100, 320);
     });
     win.addEventListener('wheel', takeOver, { passive: true });
-    win.addEventListener('keydown', (e) => {
-      const n = Number(e.key);
-      if (n >= 1 && n <= DEMO_VARIANTS.length) choose(n);
-    });
   };
 
   /*

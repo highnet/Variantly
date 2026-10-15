@@ -57,7 +57,7 @@
     const t = e.target;
     const typing = t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
     if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
-    if (/^[0-9]$/.test(e.key) || ['ArrowLeft', 'ArrowRight', '[', ']', 'o', 's', 'c', 'Escape'].includes(e.key)) {
+    if (e.key === 'Escape') {
       post({ type: 'key', key: e.key });
     }
   });
