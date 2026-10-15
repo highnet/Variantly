@@ -3,14 +3,22 @@
 // The six variants of examples/oak-and-iron were made by Claude Code with the
 // Impeccable skill, each from the brief variantly writes for that variant
 // (saved next to it as BRIEF.md in public/demo/oak-and-iron/vN). The summaries
-// are the agent's own SUMMARY lines.
+// are the agent's own SUMMARY lines. The scores are what variantly's
+// axe-core and Lighthouse check measured on each page's home page.
 
 export type DemoVariant = {
   n: number;
   direction: string;
   summary: string;
   files: string[];
+  /** Lighthouse accessibility, 0–100 */
+  a11y: number;
+  /** elements axe-core flags */
+  axe: number;
 };
+
+/** The original Oak & Iron home page, scored the same way. */
+export const DEMO_ORIGINAL_SCORES = { a11y: 87, axe: 27 };
 
 const FILES = ['index.html', 'about.html', 'style.css'];
 
@@ -21,6 +29,8 @@ export const DEMO_VARIANTS: DemoVariant[] = [
     summary:
       'A printed magazine: Gloock masthead, cover-line hero with a scale drawing, numbered catalogue entries and a subscription slip.',
     files: FILES,
+    a11y: 96,
+    axe: 21,
   },
   {
     n: 2,
@@ -28,6 +38,8 @@ export const DEMO_VARIANTS: DemoVariant[] = [
     summary:
       'A strict 12-column grid in one grotesk, flush left, red used only to signal; the products become a specification table.',
     files: FILES,
+    a11y: 96,
+    axe: 16,
   },
   {
     n: 3,
@@ -35,6 +47,8 @@ export const DEMO_VARIANTS: DemoVariant[] = [
     summary:
       'Clay, sage and bone with soft depth: a pill navigation, an illustrated stool, rounded product tiles and drawn icons.',
     files: FILES,
+    a11y: 92,
+    axe: 18,
   },
   {
     n: 4,
@@ -42,6 +56,8 @@ export const DEMO_VARIANTS: DemoVariant[] = [
     summary:
       'The workshop spec sheet: blueprint grid, a dimensioned drawing of the table, mono readouts and a parts list.',
     files: FILES,
+    a11y: 96,
+    axe: 13,
   },
   {
     n: 5,
@@ -49,6 +65,8 @@ export const DEMO_VARIANTS: DemoVariant[] = [
     summary:
       'Cobalt, yellow and tomato fields, giant condensed caps, a marquee top bar and prices you can read across the room.',
     files: FILES,
+    a11y: 92,
+    axe: 17,
   },
   {
     n: 6,
@@ -56,6 +74,8 @@ export const DEMO_VARIANTS: DemoVariant[] = [
     summary:
       'Distilled: light type, one column of attention, a lot of air, one olive accent and the products as a quiet list.',
     files: FILES,
+    a11y: 91,
+    axe: 31,
   },
 ];
 

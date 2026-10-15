@@ -13,7 +13,7 @@ import {
 import { CommandCopy } from '@/components/CommandCopy';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
-import { DEMO_VARIANTS } from '@/lib/content';
+import { DEMO_ORIGINAL_SCORES, DEMO_VARIANTS } from '@/lib/content';
 import { INSTALL } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
@@ -80,6 +80,37 @@ const FlapWord = ({ word }: FlapWordProps) => {
       {[...cells].map((ch, i) => (
         <FlapCell key={i} target={ch} index={i} />
       ))}
+    </span>
+  );
+};
+
+type ScoreProps = {
+  label: string;
+  value: number;
+  was: number;
+  /** true when a lower number is the better one */
+  lowerIsBetter?: boolean;
+};
+
+/* One score with its change from the original, green when it improved. */
+const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
+  const diff = value - was;
+  const better = lowerIsBetter ? diff < 0 : diff > 0;
+  return (
+    <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
+      <span className="text-steel-on-slate text-[10px] tracking-[0.08em] uppercase">{label}</span>
+      <span className="text-surface text-[15px] font-bold tabular-nums">{value}</span>
+      {diff !== 0 && (
+        <span
+          className={cn(
+            'text-[11px] tabular-nums',
+            better ? 'text-ok-on-slate' : 'text-fail-on-slate',
+          )}
+        >
+          {diff > 0 ? '+' : '−'}
+          {Math.abs(diff)}
+        </span>
+      )}
     </span>
   );
 };
@@ -257,31 +288,6 @@ const Showcase = () => {
                 <FlapWord word={current.direction} />
               </p>
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-                <div role="group" aria-label="Redesigns" className="flex gap-1">
-                  {DEMO_VARIANTS.map((v) => {
-                    const active = selected === v.n;
-                    return (
-                      <Button
-                        key={v.n}
-                        variant="cell"
-                        size="cell"
-                        aria-current={active}
-                        aria-label={`${vname(v.n)} ${v.direction}`}
-                        title={`${v.direction} (${v.n})`}
-                        onClick={() => choose(v.n)}
-                      >
-                        {String(v.n).padStart(2, '0')}
-                        {active && auto && (
-                          <span
-                            key={selected}
-                            aria-hidden="true"
-                            className="bg-ink/50 absolute inset-x-1.5 bottom-1 h-0.5 origin-left animate-[cycle_5.2s_linear_forwards]"
-                          />
-                        )}
-                      </Button>
-                    );
-                  })}
-                </div>
                 <a
                   href={`/demo/oak-and-iron/v${selected}/BRIEF.md`}
                   className="text-steel-on-slate hover:text-surface inline-flex items-center gap-1 text-[13px] underline underline-offset-2"
@@ -292,7 +298,7 @@ const Showcase = () => {
               </div>
               <p className="text-steel-on-slate m-0 text-[13px] leading-snug">
                 A made-up furniture shop, redesigned six ways by Claude Code. Drag the line or pick
-                a number.
+                a number below.
               </p>
             </div>
           </div>
@@ -342,6 +348,46 @@ const Showcase = () => {
           <Typography variant="tag" className="bg-ink text-surface rounded-flap px-2 py-1.5">
             After · {current.direction}
           </Typography>
+        </div>
+
+        <div
+          data-keep-cycle
+          className="bg-slate shadow-grip rounded-chip absolute bottom-3 left-1/2 z-20 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-x-4 gap-y-2 px-2 py-2 font-mono [font-stretch:87.5%]"
+        >
+          <div role="group" aria-label="Redesigns" className="flex gap-1">
+            {DEMO_VARIANTS.map((v) => {
+              const active = selected === v.n;
+              return (
+                <Button
+                  key={v.n}
+                  variant="cell"
+                  size="cell"
+                  aria-current={active}
+                  aria-label={`${vname(v.n)} ${v.direction}`}
+                  title={`${v.direction} (${v.n})`}
+                  onClick={() => choose(v.n)}
+                >
+                  {String(v.n).padStart(2, '0')}
+                  {active && auto && (
+                    <span
+                      key={selected}
+                      aria-hidden="true"
+                      className="bg-ink/50 absolute inset-x-1.5 bottom-1 h-0.5 origin-left animate-[cycle_5.2s_linear_forwards]"
+                    />
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+          <div
+            role="group"
+            className="flex items-center gap-3 pr-2"
+            aria-label={`Scores against the original: accessibility ${current.a11y}, ${current.axe} axe violations`}
+            title="Measured by variantly's axe-core and Lighthouse check, against the original page"
+          >
+            <Score label="A11y" value={current.a11y} was={DEMO_ORIGINAL_SCORES.a11y} />
+            <Score label="axe" value={current.axe} was={DEMO_ORIGINAL_SCORES.axe} lowerIsBetter />
+          </div>
         </div>
 
         <div className="absolute inset-y-0 left-[var(--split)] z-20 w-0">
