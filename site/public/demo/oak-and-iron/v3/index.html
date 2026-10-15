@@ -3,144 +3,96 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Oak &amp; Iron Furniture | Home</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
+    <title>Oak &amp; Iron · Catalogue of Furniture</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="topbar">Free delivery in Styria on orders over €500!!</div>
-
+    <div class="sheet">
     <nav class="navbar" aria-label="Main">
-      <a class="logo" href="index.html">
-        <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" /><path d="M9 20h14M12 20l-2 6M20 20l2 6M10 14c3-5 9-5 12 0" /></svg>
-        Oak &amp; Iron
-      </a>
+      <a class="logo" href="index.html">Oak <span class="amp">&amp;</span> Iron</a>
       <ul>
-        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="index.html" aria-current="page">Home</a></li>
         <li><a href="#shop">Shop</a></li>
         <li><a href="about.html">About Us</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>
     </nav>
 
-    <header class="hero">
-      <div class="hero-copy">
-        <h1>Welcome to Oak &amp; Iron Furniture!</h1>
-        <p>Handmade furniture for real homes. Quality you can trust since 2019.</p>
-        <div class="actions">
-          <a class="btn" href="#shop">Browse the collection</a>
-          <a class="btn btn-outline" href="#contact">Contact us</a>
-        </div>
-      </div>
-      <div class="hero-art" aria-hidden="true">
-        <svg viewBox="0 0 360 360">
-          <circle cx="180" cy="180" r="170" fill="#e8c9a9" />
-          <rect x="60" y="230" width="240" height="14" rx="7" fill="#a75a33" opacity=".25" />
-          <ellipse cx="180" cy="128" rx="92" ry="20" fill="#c4622d" />
-          <rect x="88" y="122" width="184" height="18" rx="9" fill="#a75a33" />
-          <path d="M120 140 92 238M240 140l28 98M180 140v98" stroke="#3b2a20" stroke-width="12" stroke-linecap="round" />
-          <path d="M108 196h144" stroke="#3b2a20" stroke-width="9" stroke-linecap="round" />
-        </svg>
-      </div>
+    <header class="masthead">
+      <p class="imprint">Werkstattgasse 4 &middot; Graz &middot; Established 2019</p>
+      <div class="rule-double"></div>
+      <p class="kicker">Illustrated &amp; Priced Catalogue of</p>
+      <h1>Oak <span class="amp">&amp;</span> Iron<span class="sub">Handmade Furniture</span></h1>
+      <p class="kicker">in Reclaimed Oak &amp; Forged Steel</p>
+      <div class="rule-double"></div>
+      <p class="lede">Handmade furniture for real homes, built by hand in our workshop outside Graz. Free delivery in Styria on orders over &euro;&nbsp;500.</p>
+      <p class="ctas"><a class="btn" href="#shop">Consult the Stock List</a> <a class="link" href="#contact">or write to the Works</a></p>
     </header>
 
-    <section class="features" aria-label="How we work">
-      <div class="feature">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V5a2 2 0 0 1 4 0v5M11 9V4a2 2 0 0 1 4 0v6M15 10V6a2 2 0 0 1 4 0v8a7 7 0 0 1-7 7h-1a6 6 0 0 1-5-3l-2.5-4a2 2 0 0 1 3.4-2L7 13" /></svg>
-        <div>
-          <h3>Handmade</h3>
-          <p>Every piece is built by hand in our workshop outside Graz.</p>
-        </div>
-      </div>
-      <div class="feature">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22c5-3 8-7 8-12V4l-8-2-8 2v6c0 5 3 9 8 12Z" /><path d="M8 12c2 0 4 1 4 4M16 9c-2 0-4 1-4 4" /></svg>
-        <div>
-          <h3>Reclaimed oak</h3>
-          <p>We use reclaimed oak and forged steel wherever we can.</p>
-        </div>
-      </div>
-      <div class="feature">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 6h11v10H2zM13 9h5l4 4v3h-9" /><circle cx="6.5" cy="17.5" r="2" /><circle cx="17.5" cy="17.5" r="2" /></svg>
-        <div>
-          <h3>Personal delivery</h3>
-          <p>Delivered by the person who built it. Lead time 6–8 weeks.</p>
-        </div>
-      </div>
+    <section class="features" aria-labelledby="f-h">
+      <h2 id="f-h"><span class="sec">Section I.</span> Particulars of the House</h2>
+      <ol class="particulars">
+        <li><h3>Handmade</h3><p>Every piece is built by hand in our workshop outside Graz.</p></li>
+        <li><h3>Reclaimed Oak</h3><p>We use reclaimed oak and forged steel wherever we can.</p></li>
+        <li><h3>Personal Delivery</h3><p>Delivered by the person who built it. Lead time 6&ndash;8 weeks.</p></li>
+      </ol>
     </section>
 
-    <section id="shop" class="shop">
-      <h2>This Month's Products</h2>
-      <div class="cards">
-        <article class="card clay">
-          <div class="card-img">
-            <svg viewBox="0 0 240 140" aria-hidden="true">
-              <rect x="14" y="36" width="212" height="16" rx="8" fill="#a75a33" />
-              <path d="M48 52 30 128M48 52l18 76M200 52l-18 76M200 52l18 76" stroke="#3b2a20" stroke-width="8" stroke-linecap="round" />
-            </svg>
-          </div>
-          <h3>The Long Table</h3>
-          <p>2.4 m of reclaimed oak on steel trestles.</p>
-          <div class="buy">
-            <p class="price">€ 2.890,-</p>
-            <button type="button">Add to cart</button>
+    <section id="shop" class="shop" aria-labelledby="s-h">
+      <h2 id="s-h"><span class="sec">Section II.</span> This Month&rsquo;s Products</h2>
+      <p class="note">Prices in Euro, nett. Each article numbered for ease of ordering.</p>
+      <div class="items">
+        <article class="item">
+          <div class="plate plate-table" aria-hidden="true"></div>
+          <div class="item-body">
+            <p class="no">No. 101</p>
+            <h3>The Long Table</h3>
+            <p class="desc">2.4 m of reclaimed oak on steel trestles.</p>
+            <p class="price"><span class="dots"></span>&euro;&nbsp;2.890,-</p>
+            <button type="button">Add to Order</button>
           </div>
         </article>
-        <article class="card sage">
-          <div class="card-img">
-            <svg viewBox="0 0 240 140" aria-hidden="true">
-              <ellipse cx="120" cy="40" rx="50" ry="13" fill="#c4622d" />
-              <path d="M88 48 70 128M152 48l18 80M120 52v76" stroke="#3b2a20" stroke-width="8" stroke-linecap="round" />
-              <path d="M82 92h76" stroke="#3b2a20" stroke-width="6" stroke-linecap="round" />
-            </svg>
-          </div>
-          <h3>Smithy Stool</h3>
-          <p>Hand-forged legs, oiled seat.</p>
-          <div class="buy">
-            <p class="price">€ 340,-</p>
-            <button type="button">Add to cart</button>
+        <article class="item">
+          <div class="plate plate-stool" aria-hidden="true"></div>
+          <div class="item-body">
+            <p class="no">No. 102</p>
+            <h3>Smithy Stool</h3>
+            <p class="desc">Hand-forged legs, oiled seat.</p>
+            <p class="price"><span class="dots"></span>&euro;&nbsp;340,-</p>
+            <button type="button">Add to Order</button>
           </div>
         </article>
-        <article class="card bone">
-          <div class="card-img">
-            <svg viewBox="0 0 240 140" aria-hidden="true">
-              <path d="M70 12v116" stroke="#3b2a20" stroke-width="8" stroke-linecap="round" />
-              <rect x="66" y="28" width="120" height="12" rx="6" fill="#a75a33" />
-              <rect x="66" y="66" width="120" height="12" rx="6" fill="#a75a33" />
-              <rect x="66" y="104" width="120" height="12" rx="6" fill="#a75a33" />
-              <circle cx="150" cy="20" r="8" fill="#7d8f6a" />
-              <rect x="110" y="48" width="16" height="18" rx="4" fill="#c4622d" />
-            </svg>
-          </div>
-          <h3>Wall Shelf No. 4</h3>
-          <p>Three shelves, one bracket, no screws visible.</p>
-          <div class="buy">
-            <p class="price">€ 410,-</p>
-            <button type="button">Add to cart</button>
+        <article class="item">
+          <div class="plate plate-shelf" aria-hidden="true"></div>
+          <div class="item-body">
+            <p class="no">No. 104</p>
+            <h3>Wall Shelf No. 4</h3>
+            <p class="desc">Three shelves, one bracket, no screws visible.</p>
+            <p class="price"><span class="dots"></span>&euro;&nbsp;410,-</p>
+            <button type="button">Add to Order</button>
           </div>
         </article>
       </div>
     </section>
 
-    <section class="newsletter">
-      <div class="note">
-        <h2>Sign up for our Newsletter</h2>
-        <p>Get news about new products and workshop days.</p>
-        <form id="newsletter">
-          <input type="email" placeholder="Your email address" required aria-label="Email address" />
+    <section class="newsletter" aria-labelledby="n-h">
+      <h2 id="n-h">Sign up for our Newsletter</h2>
+      <p>Notices of new products and workshop days, sent by post-electric. No spam.</p>
+      <form id="newsletter">
+        <label for="nl-email">Your email address</label>
+        <div class="row">
+          <input id="nl-email" type="email" placeholder="name@example.com" required />
           <button>Subscribe</button>
-        </form>
-      </div>
+        </div>
+      </form>
     </section>
 
     <footer id="contact">
-      <p>Oak &amp; Iron Furniture · Werkstattgasse 4 · 8010 Graz · hello@oak-and-iron.example</p>
-      <p class="small">© 2026 Oak &amp; Iron. A fictional shop: demo content for variantly.</p>
+      <div class="rule-double"></div>
+      <p>Oak &amp; Iron Furniture &middot; Werkstattgasse 4 &middot; 8010 Graz &middot; hello@oak-and-iron.example</p>
+      <p class="small">&copy; 2026 Oak &amp; Iron. A fictional shop: demo content for variantly.</p>
     </footer>
+    </div>
     <script>
       document.getElementById('newsletter').addEventListener('submit', (e) => {
         e.preventDefault();

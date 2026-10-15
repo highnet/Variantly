@@ -4,8 +4,9 @@ import { Check } from 'lucide-react';
 import { useState } from 'react';
 
 import { CommandCopy } from '@/components/CommandCopy';
+import { PromptCopy } from '@/components/PromptCopy';
 import { Typography } from '@/components/ui/Typography';
-import { CHECKLIST } from '@/lib/content';
+import { CHECKLIST, PROMPTS } from '@/lib/content';
 import { cn } from '@/lib/utils';
 
 /*
@@ -62,13 +63,20 @@ const StartChecklist = () => {
                       on && 'bg-ink text-surface',
                     )}
                   >
-                    {on && <Check className="size-3.5" strokeWidth={3} />}
+                    {on && <Check className="animate-pop size-3.5" strokeWidth={3} />}
                   </span>
                   <span className="grid gap-0.5">
                     <span className="text-[16px] font-semibold">{c.need}</span>
                     <span className="text-steel text-[14px] leading-snug">{c.how}</span>
                   </span>
                 </label>
+                {!on && (
+                  <PromptCopy
+                    prompt={c.prompt}
+                    label="Don’t have this? Copy a prompt for your AI"
+                    className="mt-1.5 ml-[2.625rem]"
+                  />
+                )}
               </li>
             );
           })}
@@ -77,8 +85,19 @@ const StartChecklist = () => {
 
       <div className="bg-slate on-slate text-surface grid content-start gap-4 p-6 sm:p-8">
         <p className="figure m-0 text-[clamp(1.5rem,2.4vw,2rem)] leading-none" aria-live="polite">
-          {ready ? 'You’re ready' : `${ticked.size} of ${CHECKLIST.length} ready`}
+          <span
+            key={ready ? 'ready' : ticked.size}
+            className={cn('inline-block', ready ? 'animate-stamp text-ok-on-slate' : 'animate-pop')}
+          >
+            {ready ? 'You’re ready ✓' : `${ticked.size} of ${CHECKLIST.length} ready`}
+          </span>
         </p>
+        <div aria-hidden="true" className="bg-slate-line h-1 overflow-hidden rounded-full">
+          <div
+            className="bg-ok-on-slate h-full origin-left transition-[scale] duration-500 ease-[cubic-bezier(.3,1.4,.5,1)]"
+            style={{ scale: `${ticked.size / CHECKLIST.length} 1` }}
+          />
+        </div>
         <p className="text-steel-on-slate m-0 text-[15px] leading-relaxed">
           Open a terminal in your website&apos;s folder and paste:
         </p>
@@ -87,11 +106,21 @@ const StartChecklist = () => {
           Just looking? This runs the whole thing with ready-made designs and no AI:
         </p>
         <CommandCopy command="npx variantly --demo" tone="slate" />
-        <p className="text-steel-on-slate m-0 text-[15px] leading-relaxed">
+        <PromptCopy prompt={PROMPTS.demo} tone="slate" label="Or copy it as a prompt for your AI" />
+        <div className="border-slate-line grid gap-2 border-t pt-4">
+          <p className="text-surface m-0 text-[15px] font-semibold">
+            Rather not use the terminal yourself?
+          </p>
+          <p className="text-steel-on-slate m-0 text-[14px] leading-relaxed">
+            Paste this into your AI assistant and it does the setup for you, then hands you the
+            link.
+          </p>
+          <PromptCopy prompt={PROMPTS.setup} tone="slate" preview label="Copy setup prompt" />
+        </div>
+        <p className="text-steel-on-slate m-0 text-[14px] leading-relaxed">
           Stuck?{' '}
           <code className="condensed text-surface font-mono text-[13px]">npx variantly doctor</code>{' '}
-          says what&apos;s missing. Or paste this page&apos;s address into your assistant and ask it
-          to set variantly up.
+          says what&apos;s missing.
         </p>
       </div>
     </section>

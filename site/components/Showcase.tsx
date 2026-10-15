@@ -1,9 +1,10 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, MousePointer2 } from 'lucide-react';
 import {
   useCallback,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
   type KeyboardEvent,
@@ -11,9 +12,10 @@ import {
 } from 'react';
 
 import { CommandCopy } from '@/components/CommandCopy';
+import { PromptCopy } from '@/components/PromptCopy';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
-import { DEMO_ORIGINAL_SCORES, DEMO_VARIANTS } from '@/lib/content';
+import { DEMO_ORIGINAL_SCORES, DEMO_VARIANTS, PROMPTS } from '@/lib/content';
 import { INSTALL } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
@@ -123,8 +125,13 @@ const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
 const Showcase = () => {
   const [selected, setSelected] = useState(1);
   const [auto, setAuto] = useState(true);
-  const [split, setSplit] = useState(50);
-  const [dragging, setDragging] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [hover, setHover] = useState(false);
+  const hoverRef = useRef(false);
+  const pos = useRef(50);
+  const anim = useRef(0);
+  const grip = useRef<HTMLButtonElement>(null);
+  const loaded = useRef(new Set<number>());
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const frames = useRef<(HTMLIFrameElement | null)[]>([]);
@@ -193,21 +200,135 @@ const Showcase = () => {
     }
   }, []);
 
+  /* The fake scrollbar: it reads the visible pane and moves every pane. */
+  const track = useRef<HTMLDivElement>(null);
+  const thumbDrag = useRef<{ y: number; top: number } | null>(null);
+
+  const metrics = () => {
+    const doc = frames.current[selected]?.contentWindow?.document.scrollingElement;
+    if (!doc || !track.current) return null;
+    const view = doc.clientHeight;
+    const full = Math.max(doc.scrollHeight, view);
+    const trackH = track.current.clientHeight;
+    const thumbH = Math.max(40, (view / full) * trackH);
+    return { max: full - view, room: trackH - thumbH, thumbH };
+  };
+
+  const paintThumb = () => {
+    const m = metrics();
+    if (!m || !track.current) return;
+    const top = m.max > 0 ? (scrollPos.current.y / m.max) * m.room : 0;
+    track.current.style.setProperty('--thumb-h', `${m.thumbH}px`);
+    track.current.style.setProperty('--thumb-top', `${top}px`);
+    track.current.dataset.empty = String(m.max <= 0);
+    track.current.setAttribute(
+      'aria-valuenow',
+      String(m.max > 0 ? Math.round((scrollPos.current.y / m.max) * 100) : 0),
+    );
+  };
+
+  const scrollTo = (y: number) => {
+    const m = metrics();
+    if (!m) return;
+    scrollPos.current = { ...scrollPos.current, y: Math.max(0, Math.min(m.max, y)) };
+    quiet.current = Date.now() + 80;
+    for (const f of frames.current) applyScroll(f);
+    paintThumb();
+  };
+
+  const onTrackDown = (e: PointerEvent<HTMLDivElement>) => {
+    const m = metrics();
+    if (!m || !track.current || e.button !== 0) return;
+    e.preventDefault();
+    takeOver();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const r = track.current.getBoundingClientRect();
+    const at = e.clientY - r.top;
+    const top = m.max > 0 ? (scrollPos.current.y / m.max) * m.room : 0;
+    // A press on the track jumps the thumb there, centred under the pointer.
+    const start = at >= top && at <= top + m.thumbH ? top : at - m.thumbH / 2;
+    thumbDrag.current = { y: e.clientY, top: start };
+    scrollTo(m.room > 0 ? (start / m.room) * m.max : 0);
+  };
+  const onTrackMove = (e: PointerEvent<HTMLDivElement>) => {
+    const m = metrics();
+    if (!thumbDrag.current || !m || m.room <= 0) return;
+    const top = thumbDrag.current.top + (e.clientY - thumbDrag.current.y);
+    scrollTo((top / m.room) * m.max);
+  };
+  const onTrackUp = () => {
+    thumbDrag.current = null;
+  };
+
   // A pane that just became visible picks up where the others are.
+  const repaint = useEffectEvent(() => paintThumb());
   useEffect(() => {
     quiet.current = Date.now() + 80;
     applyScroll(frames.current[selected]);
+    repaint();
   }, [selected]);
 
   const onFrameLoad = (i: number) => {
     const f = frames.current[i];
     const win = f?.contentWindow;
     if (!f || !win) return;
+    loaded.current.add(i);
+    if (loaded.current.has(0) && loaded.current.has(1)) setReady(true);
     // The panes are objects on the counter, not embedded documents.
     win.document.documentElement.style.setProperty('scrollbar-width', 'none');
+    // The wheel scrolls the page around the demo, not the panes inside it;
+    // the fake scrollbar on the right is the one way down a pane.
+    win.document.documentElement.style.setProperty('overflow', 'hidden');
+    // Some designs ask for smooth scrolling; the panes must jump in lockstep.
+    win.document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important');
+    // Some designs ask for smooth scrolling; the panes must jump in lockstep.
+    win.document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important');
     applyScroll(f);
     win.addEventListener('scroll', () => syncFrom(f), { passive: true });
+    paintThumb();
+    // Hover mode: the panes cover the stage edge to edge, so their own
+    // clientX is the stage's. A held drag still wins.
+    win.addEventListener('pointermove', (e) => {
+      // Mouse only: a finger has no hover, it drags the line instead.
+      if (!hoverRef.current || e.pointerType !== 'mouse') return;
+      if (stage.current?.dataset.dragging === 'true') return;
+      cancelAnimationFrame(anim.current);
+      setPos((e.clientX / f.clientWidth) * 100);
+    });
     win.addEventListener('pointerdown', takeOver);
+    // A click on empty space in either half glides the line there; links,
+    // buttons, fields and selected text keep their own click.
+    win.addEventListener('click', (e) => {
+      const t = e.target as Element | null;
+      if (
+        t?.closest('a, button, input, select, textarea, label, summary, [role=button], [tabindex]')
+      )
+        return;
+      if (win.getSelection()?.toString()) return;
+      tween((e.clientX / f.clientWidth) * 100, 320);
+    });
+    // A click on empty space in either half glides the line there; links,
+    // buttons, fields and selected text keep their own click.
+    win.addEventListener('click', (e) => {
+      const t = e.target as Element | null;
+      if (
+        t?.closest('a, button, input, select, textarea, label, summary, [role=button], [tabindex]')
+      )
+        return;
+      if (win.getSelection()?.toString()) return;
+      tween((e.clientX / f.clientWidth) * 100, 320);
+    });
+    // A click on empty space in either half glides the line there; links,
+    // buttons, fields and selected text keep their own click.
+    win.addEventListener('click', (e) => {
+      const t = e.target as Element | null;
+      if (
+        t?.closest('a, button, input, select, textarea, label, summary, [role=button], [tabindex]')
+      )
+        return;
+      if (win.getSelection()?.toString()) return;
+      tween((e.clientX / f.clientWidth) * 100, 320);
+    });
     win.addEventListener('wheel', takeOver, { passive: true });
     win.addEventListener('keydown', (e) => {
       const n = Number(e.key);
@@ -215,29 +336,123 @@ const Showcase = () => {
     });
   };
 
-  const move = (e: PointerEvent<HTMLElement>) => {
-    if (!dragging || !stage.current) return;
-    const r = stage.current.getBoundingClientRect();
-    setSplit(Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100)));
+  /*
+   * The divider writes a CSS variable straight onto the stage: no React
+   * state, so a drag never waits on a render and tracks the pointer 1:1.
+   */
+  const setPos = (raw: number) => {
+    let p = Math.max(0, Math.min(100, raw));
+    if (p < 3) p = 0;
+    else if (p > 97) p = 100;
+    const edge = p === 0 || p === 100;
+    if (edge && pos.current !== p && 'vibrate' in navigator) navigator.vibrate?.(8);
+    pos.current = p;
+    const el = stage.current;
+    if (!el) return;
+    el.style.setProperty('--split', `${p}%`);
+    // Labels fade as the divider closes in on them.
+    el.style.setProperty('--before-o', String(Math.max(0, Math.min(1, (p - 12) / 10))));
+    el.style.setProperty('--after-o', String(Math.max(0, Math.min(1, (88 - p) / 10))));
+    grip.current?.setAttribute('aria-valuenow', String(Math.round(p)));
+    grip.current?.setAttribute('aria-valuetext', `${Math.round(p)}% original`);
+  };
+
+  /* Only for moves the user does not drive directly: jumps, keys, the hint. */
+  const tween = (to: number, ms = 220) => {
+    cancelAnimationFrame(anim.current);
+    const from = pos.current;
+    const t0 = performance.now();
+    const step = (t: number) => {
+      const k = Math.min((t - t0) / ms, 1);
+      setPos(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) anim.current = requestAnimationFrame(step);
+    };
+    anim.current = requestAnimationFrame(step);
+  };
+
+  const pct = (e: PointerEvent<HTMLElement>) => {
+    const r = stage.current!.getBoundingClientRect();
+    return ((e.clientX - r.left) / r.width) * 100;
+  };
+
+  const onDown = (e: PointerEvent<HTMLElement>) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    takeOver();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    stage.current!.dataset.dragging = 'true';
+    tween(pct(e), 160);
+  };
+  const onMove = (e: PointerEvent<HTMLElement>) => {
+    // In follow mode the cursor sits on the line, over this band, so the
+    // band has to keep the line moving too or it stalls under the cursor.
+    const follow = hoverRef.current && e.pointerType === 'mouse';
+    if (stage.current?.dataset.dragging !== 'true' && !follow) return;
+    cancelAnimationFrame(anim.current);
+    setPos(pct(e));
+  };
+  const onUp = () => {
+    if (stage.current) delete stage.current.dataset.dragging;
   };
 
   const onGripKey = (e: KeyboardEvent<HTMLButtonElement>) => {
-    const step = e.shiftKey ? 10 : 2;
-    const next =
-      e.key === 'ArrowLeft'
-        ? split - step
-        : e.key === 'ArrowRight'
-          ? split + step
-          : e.key === 'Home'
-            ? 0
-            : e.key === 'End'
-              ? 100
-              : null;
-    if (next === null) return;
+    const keys: Record<string, number> = {
+      ArrowLeft: pos.current - 5,
+      ArrowRight: pos.current + 5,
+      Home: 0,
+      End: 100,
+    };
+    if (!(e.key in keys)) return;
     e.preventDefault();
     takeOver();
-    setSplit(Math.max(0, Math.min(100, next)));
+    tween(keys[e.key], 150);
   };
+
+  // Effects reach the divider through events, so they never re-run for it.
+  const placeAt = useEffectEvent((p: number) => setPos(p));
+  const sweepTo = useEffectEvent((to: number, ms: number) => tween(to, ms));
+
+  useEffect(() => placeAt(50), []);
+
+  useEffect(() => {
+    hoverRef.current = hover;
+  }, [hover]);
+
+  // Follow mode needs a mouse; drop it when there isn't one any more.
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const off = () => !mq.matches && setHover(false);
+    mq.addEventListener('change', off);
+    return () => mq.removeEventListener('change', off);
+  }, []);
+
+  // Never leave the stage hidden if a pane is slow to load.
+  useEffect(() => {
+    const t = window.setTimeout(() => setReady(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
+
+  // One sweep the first time the slider is properly on screen, never again.
+  useEffect(() => {
+    if (!ready || !stage.current) return;
+    const timers: number[] = [];
+    const io = new IntersectionObserver(
+      ([en]) => {
+        if (!en.isIntersecting) return;
+        io.disconnect();
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        timers.push(window.setTimeout(() => sweepTo(60, 400), 300));
+        timers.push(window.setTimeout(() => sweepTo(40, 500), 700));
+        timers.push(window.setTimeout(() => sweepTo(50, 400), 1200));
+      },
+      { threshold: 0.6 },
+    );
+    io.observe(stage.current);
+    return () => {
+      io.disconnect();
+      timers.forEach(clearTimeout);
+    };
+  }, [ready]);
 
   const current = DEMO_VARIANTS[selected - 1];
 
@@ -277,6 +492,11 @@ const Showcase = () => {
                   Check what you need first
                 </a>
               </p>
+              <PromptCopy
+                prompt={PROMPTS.setup}
+                tone="slate"
+                label="No terminal? Copy a prompt for your AI instead"
+              />
             </div>
             <div className="border-slate-line grid gap-2.5 border-t pt-4">
               <p
@@ -306,11 +526,11 @@ const Showcase = () => {
       </div>
       <div
         ref={stage}
-        className="relative isolate h-[62svh] min-h-[380px] touch-none overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]"
-        style={{ ['--split' as string]: `${split}%` }}
-        onPointerMove={move}
-        onPointerUp={() => setDragging(false)}
-        onPointerCancel={() => setDragging(false)}
+        id="demo-stage"
+        className={cn(
+          'group/stage relative isolate h-[62svh] min-h-[380px] overflow-hidden transition-opacity duration-300 select-none lg:h-[78svh] lg:min-h-[560px]',
+          ready ? 'opacity-100' : 'opacity-0',
+        )}
       >
         <iframe
           ref={(el) => {
@@ -339,22 +559,84 @@ const Showcase = () => {
             )}
           />
         ))}
-        {dragging && <div className="absolute inset-0 z-10 cursor-ew-resize" />}
+        {/* The panes stay scrollable; this band either side of the line is
+            the drag surface, so nobody has to hit the grip exactly. */}
+        <div
+          className="absolute inset-y-0 left-[var(--split)] z-20 w-16 -translate-x-1/2 cursor-ew-resize touch-pan-y group-data-[dragging=true]/stage:inset-x-0 group-data-[dragging=true]/stage:left-0 group-data-[dragging=true]/stage:w-auto group-data-[dragging=true]/stage:translate-x-0"
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerCancel={onUp}
+          onLostPointerCapture={onUp}
+          onDoubleClick={() => tween(50, 300)}
+        />
 
         <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex justify-between gap-3">
-          <Typography variant="tag" className="bg-ink text-surface rounded-flap px-2 py-1.5">
+          <Typography
+            variant="tag"
+            className="bg-ink text-surface rounded-flap px-2 py-1.5 opacity-[var(--before-o,1)]"
+          >
             Before<span className="hidden sm:inline"> · today’s site</span>
           </Typography>
-          <Typography variant="tag" className="bg-ink text-surface rounded-flap px-2 py-1.5">
+          <Typography
+            variant="tag"
+            className="bg-ink text-surface rounded-flap px-2 py-1.5 opacity-[var(--after-o,1)]"
+          >
             After · {current.direction}
           </Typography>
         </div>
 
         <div
+          ref={track}
+          role="scrollbar"
+          aria-label="Scroll the pages"
+          aria-controls="demo-stage"
+          aria-orientation="vertical"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={0}
+          tabIndex={0}
+          onKeyDown={(e) => {
+            const view = stage.current?.clientHeight ?? 600;
+            const by: Record<string, number> = {
+              ArrowDown: 60,
+              ArrowUp: -60,
+              PageDown: view * 0.9,
+              PageUp: -view * 0.9,
+            };
+            if (e.key === 'Home') scrollTo(0);
+            else if (e.key === 'End') scrollTo(Infinity);
+            else if (e.key in by) scrollTo(scrollPos.current.y + by[e.key]);
+            else return;
+            e.preventDefault();
+            takeOver();
+          }}
+          onPointerDown={onTrackDown}
+          onPointerMove={onTrackMove}
+          onPointerUp={onTrackUp}
+          onPointerCancel={onTrackUp}
+          title="Drag to scroll the pages"
+          className="group/track absolute inset-y-3 right-1.5 z-30 w-3 cursor-grab touch-none rounded-full bg-black/10 focus-visible:outline-2 focus-visible:outline-offset-2 active:cursor-grabbing data-[empty=true]:hidden"
+        >
+          <div className="bg-ink/70 group-hover/track:bg-ink group-active/track:bg-ink absolute inset-x-0.5 top-[var(--thumb-top,0px)] h-[var(--thumb-h,40px)] rounded-full shadow-[0_0_0_1px_rgb(255_255_255/.5)] transition-colors" />
+        </div>
+
+        <div
           data-keep-cycle
-          className="bg-slate shadow-grip rounded-chip absolute bottom-3 left-1/2 z-20 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-x-4 gap-y-2 px-2 py-2 font-mono [font-stretch:87.5%]"
+          className="bg-slate shadow-grip rounded-chip absolute bottom-3 left-1/2 z-30 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-x-4 gap-y-2 px-2 py-2 font-mono [font-stretch:87.5%]"
         >
           <div role="group" aria-label="Redesigns" className="flex gap-1">
+            <Button
+              variant="cell"
+              size="cell"
+              aria-label="Previous redesign"
+              title="Previous"
+              onClick={() =>
+                choose(((selected + DEMO_VARIANTS.length - 2) % DEMO_VARIANTS.length) + 1)
+              }
+            >
+              <ChevronLeft className="size-4" aria-hidden="true" />
+            </Button>
             {DEMO_VARIANTS.map((v) => {
               const active = selected === v.n;
               return (
@@ -378,7 +660,32 @@ const Showcase = () => {
                 </Button>
               );
             })}
+            <Button
+              variant="cell"
+              size="cell"
+              aria-label="Next redesign"
+              title="Next"
+              onClick={() => choose((selected % DEMO_VARIANTS.length) + 1)}
+            >
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </Button>
           </div>
+          <button
+            type="button"
+            aria-pressed={hover}
+            onClick={() => {
+              takeOver();
+              setHover((h) => !h);
+            }}
+            title="The line follows your cursor; drag or click inside the pages as usual when off"
+            className={cn(
+              'text-steel-on-slate hover:text-surface hidden items-center gap-1.5 rounded px-1.5 py-1 text-[10px] tracking-[0.08em] uppercase [@media(hover:hover)_and_(pointer:fine)]:inline-flex',
+              hover && 'bg-surface text-ink hover:text-ink',
+            )}
+          >
+            <MousePointer2 className="size-3.5" aria-hidden="true" />
+            Follow cursor
+          </button>
           <div
             role="group"
             className="flex items-center gap-3 pr-2"
@@ -390,24 +697,27 @@ const Showcase = () => {
           </div>
         </div>
 
-        <div className="absolute inset-y-0 left-[var(--split)] z-20 w-0">
+        <div className="pointer-events-none absolute inset-y-0 left-[var(--split)] z-20 w-0">
+          {/* A soft shadow the line casts on the after side: depth, not a filter on the page. */}
+          <div className="absolute inset-y-0 left-0 w-10 bg-linear-to-r from-black/15 to-transparent" />
           <div className="bg-ink shadow-divider absolute inset-y-0 -left-px w-0.5" />
           <Button
+            ref={grip}
             variant="grip"
             size="grip"
             role="slider"
             aria-label="Before and after divider"
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-valuenow={Math.round(split)}
-            aria-valuetext={`${Math.round(split)}% original`}
+            aria-valuenow={50}
+            aria-valuetext="50% original"
             onKeyDown={onGripKey}
-            onPointerDown={(e) => {
-              e.preventDefault();
-              takeOver();
-              setDragging(true);
-            }}
-            className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2"
+            onPointerDown={onDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerCancel={onUp}
+            onDoubleClick={() => tween(50, 300)}
+            className="pointer-events-auto absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 touch-pan-y transition-[scale,box-shadow] duration-200 ease-[cubic-bezier(.3,1.6,.5,1)] group-data-[dragging=true]/stage:scale-115 group-data-[dragging=true]/stage:shadow-[0_6px_20px_rgb(0_0_0/.45)]"
           >
             <ChevronLeft aria-hidden="true" />
             Before
