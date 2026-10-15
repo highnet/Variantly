@@ -20,7 +20,7 @@
   },
   "scripts": {
     "start": "node bin/variantly.mjs",
-    "test": "node --test --test-concurrency=2 \"test/*.test.mjs\"",
+    "test": "node --test --test-concurrency=2",
     "typecheck": "tsc -p jsconfig.json",
     "check": "npm run typecheck && npm test"
   },
