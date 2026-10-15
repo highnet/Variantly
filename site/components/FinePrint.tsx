@@ -1,6 +1,5 @@
 import Link from 'next/link';
 
-import { CommandCopy } from '@/components/CommandCopy';
 import { Typography } from '@/components/ui/Typography';
 import { FAQ } from '@/lib/content';
 import { REPO_URL } from '@/lib/site';
@@ -10,53 +9,9 @@ import { REPO_URL } from '@/lib/site';
  * checks before running it on their project.
  */
 const FinePrint = () => (
-  <section aria-labelledby="install-title" className="grid gap-10">
-    <div className="grid gap-10 lg:grid-cols-2">
-      <div className="grid content-start gap-4">
-        <Typography variant="headline" as="h2" id="install-title">
-          Try it on your site
-        </Typography>
-        <Typography variant="body" color="steel">
-          Open a terminal in your website&apos;s folder and paste:
-        </Typography>
-        <CommandCopy command="npx variantly" />
-        <Typography variant="body" color="steel">
-          Want to see how it works first, without using any AI?
-        </Typography>
-        <CommandCopy command="npx variantly --demo" />
-        <Typography variant="body" color="steel">
-          Use Claude Code? Let it do the setup:
-        </Typography>
-        <CommandCopy command="/plugin marketplace add highnet/ProjectHusky" />
-        <Typography variant="small" color="steel">
-          Something not working?{' '}
-          <code className="condensed font-mono text-[13px]">npx variantly doctor</code> checks your
-          setup and tells you what to fix.
-        </Typography>
-      </div>
-      <div className="grid content-start gap-3">
-        <Typography variant="title" as="h3">
-          What you need first
-        </Typography>
-        <ul className="text-steel m-0 grid list-disc gap-2 pl-5 text-[15px] leading-relaxed">
-          <li>
-            An AI coding assistant on your computer: Claude Code, Codex or GitHub Copilot CLI.
-          </li>
-          <li>
-            Your website&apos;s code on your computer, saved with git (at least one commit), and
-            Node.js 20.11 or newer.
-          </li>
-          <li>
-            A way to start your site locally, like{' '}
-            <code className="condensed font-mono text-[13px]">npm run dev</code>.
-          </li>
-          <li>Files that aren&apos;t committed to git won&apos;t be copied into the designs.</li>
-        </ul>
-      </div>
-    </div>
-
+  <section aria-labelledby="faq-title" className="grid gap-10">
     <div className="grid gap-5">
-      <Typography variant="headline" as="h2">
+      <Typography variant="headline" as="h2" id="faq-title">
         Common questions
       </Typography>
       <dl className="m-0 grid gap-x-10 gap-y-6 md:grid-cols-2">

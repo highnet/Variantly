@@ -11,28 +11,20 @@ Scope: the homepage of variantly.tools, with the "I'm a human" / "I'm an agent"
 fork. Visitor mode: Persuade (human view); the agent view is a Read-mode
 quickstart. Inherits the Gate Board world from DESIGN.md (no new identity).
 
-Audience and job: developers with a site that looks generic who use an agent
-CLI; agents sent to find out how to run variantly. In seconds a human should
-know what variantly does (N whole-page redesigns, live, keep one), see it, and
-leave with `npx variantly`. An agent should leave with the exact commands and
-the rule never to choose for the user.
+Audience and job: beginners who build with AI ("vibe coders"), new to terminals and git, whose site looks generic. In seconds they should see what variantly does, believe it is safe, and leave with `npx variantly` plus the confidence they have what it needs. Agents get the exact commands and the rule never to choose for the user.
 
-Proof and content: six whole-page redesigns of the Oak & Iron example (site/public/demo/oak-and-iron/v1-v6), made by Claude Code with the Impeccable skill from the brief variantly writes, each brief shipped next to it as BRIEF.md; real CLI commands; the real stack list; the owner's selling points under the hero. No testimonials, counts, benchmarks or invented timings.
+Keep: the live Oak & Iron before/after, the human/agent fork, the headline "Your website needs a fresh look". Avoid: techy jargon and terminal costume, generic SaaS card grids, cutesy.
 
-Constraints: Next.js 16 + Tailwind v4 + shadcn-style CVA Button/Typography
-(site/AGENTS.md conventions); tokens from DESIGN.md; works without JS for
-reading; keyboard-operable slider and fork; WCAG 2.2 AA.
+Proof and content: six real redesigns of Oak & Iron (site/public/demo/oak-and-iron/v1-v6) with their BRIEF.md; real commands; real stack list. No testimonials, counts, benchmarks or invented timings.
+
+Constraints: Next.js 16 + Tailwind v4 + CVA Button/Typography (site/AGENTS.md); DESIGN.md tokens; keyboard-operable slider and fork; WCAG 2.2 AA.
 
 ## Direction contract
 
-THESIS: The page cycles itself. A split-flap headline names a direction while the before/after beneath swaps to that redesign in sync, so the first viewport shows six whole-page redesigns of one site without a click; it refuses the feature-section landing page and the tour of the app's screens (the check-in desk was built and rejected).
-
-OWN-WORLD: The Gate Board world from DESIGN.md: panel ground, white surfaces, slate dock, ink, one alert yellow for change and the single primary action, Martian Mono condensed figures and labels, system sans prose. Stack and agent logos in one ink colour.
-
-STORY: The visitor reads "Oak & Iron, as EDITORIAL" flip to SWISS, WARM, TECHNICAL while the right side of a large, real before/after keeps changing; they grab the divider or press 1–6 and the cycle stops; they see each variant was made by Claude Code with Impeccable from variantly's own brief (linked); then a three-step how-it-works strip, the stacks and agents as logos, and the install.
-
-FIRST VIEWPORT: Header strip with wordmark, the human/agent fork, GitHub. One line of flap headline across the top ("Oak & Iron, as" + the flapping direction word). Under it, 70% of the viewport height, the before/after with a refined grip and pane tags; directly beneath, the slate dock: 01–06 cells with the active direction name, a "Read the brief" link and the install chip; the yellow is the install's copy action only.
-
-FORM: Flip Headline, dealt structure 3 of my re-rolled list (seed 5dded72f, reroll 1), chosen by the user over Compare Is the Hero and Diptych Spreads. Signature interaction: the split-flap word flips character by character in sync with the right pane cross-fading to the next variant every ~5s; any pointer, key or drag hands control to the visitor and the cycle stops for good. Motion: that one cycle; everything else static.
-
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+FORM: seed:47b6c21d7de45068 (direction roll declined by user: keep Gate Board); surface roll f75d9e0661a156e439a69736ddf8b016 dealt 3,5,1, lead built.
+THESIS: The demo is the page. The live before/after fills the first viewport edge to edge, and the offer rides on it in a docked slate board; refuses the headline-over-demo stack and the feature-section scroll.
+OWN-WORLD: Gate Board: slate dock, white passes on panel ground, one alert yellow for the single copy action, Martian Mono condensed for headings and the flap, system sans for every sentence.
+STORY: The visitor sees a real site change under the flap word, reads one sentence on the dock, copies the command; scrolls to three oversized numbered steps, a tickable "Before you start" checklist, logos, plain FAQ.
+FIRST VIEWPORT: stage = viewport minus header; dock overlays the bottom on desktop, sits below the stage on phones.
+SIGNATURE: flap word plus the stage changing in sync, stopped by drag or 01–06.
+RISK: overlaid dock hides the bottom of the demo; dock must stay compact.

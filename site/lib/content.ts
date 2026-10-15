@@ -59,32 +59,24 @@ export const DEMO_VARIANTS: DemoVariant[] = [
   },
 ];
 
-// The promise under the hero, in plain words.
-export const SELLING_POINTS = [
-  'Several complete redesigns from one command',
-  'Click through each one as a working site',
-  'Keep the one you like; nothing changes until you do',
-  'Not quite right? Run it again',
-];
-
 export const STEPS: { label: string; title: string; body: string; artifact: string }[] = [
   {
-    label: 'Step 1',
+    label: 'Paste',
     title: 'Paste one command',
-    body: 'Open a terminal in your website’s folder and run it. A short wizard asks what your site is for and how many designs you want.',
+    body: 'In a terminal, inside your website’s folder. A few questions follow: what the site is for, and how many designs you want.',
     artifact: 'npx variantly',
   },
   {
-    label: 'Step 2',
-    title: 'Your AI assistant redesigns it',
-    body: 'The coding assistant you already use (like Claude Code) makes each design in its own copy of your site, so your real files stay untouched.',
-    artifact: 'about 4 designs is a good start',
+    label: 'Wait',
+    title: 'Your AI makes the designs',
+    body: 'Your own assistant redesigns the site several ways, each in a separate copy. Your real files are not touched.',
+    artifact: 'Start with 4',
   },
   {
-    label: 'Step 3',
-    title: 'Compare and keep one',
-    body: 'A page opens in your browser. Click through the designs, slide between before and after, and press Keep on your favourite.',
-    artifact: 'Keep · or run it again',
+    label: 'Keep',
+    title: 'Pick your favourite',
+    body: 'A page opens in your browser, just like the demo above. Flick through, compare, press Keep. Or run it again.',
+    artifact: 'Keep',
   },
 ];
 
@@ -103,7 +95,31 @@ export const FAQ: { q: string; a: string }[] = [
     a: 'No. Every design is made in a separate copy. Nothing in your project changes until you press Keep, and even then the change is left for you to review.',
   },
   {
-    q: 'Can I try it without any AI?',
-    a: 'Yes. The demo runs the whole flow with ready-made designs, so you can see how it works first.',
+    q: 'What if I don’t like any of them?',
+    a: 'Run it again, or tell the wizard more about what you want. Nothing is kept unless you press Keep.',
+  },
+];
+
+// What a first-timer checks before running it. Each item says how to check.
+export const CHECKLIST: { id: string; need: string; how: string }[] = [
+  {
+    id: 'agent',
+    need: 'An AI coding assistant installed',
+    how: 'Claude Code, Codex or GitHub Copilot CLI, signed in. If you use Cursor or Lovable only, install Claude Code first.',
+  },
+  {
+    id: 'code',
+    need: 'Your site’s code on your computer',
+    how: 'A folder you can open in a terminal. Sites that only live inside a website builder won’t work.',
+  },
+  {
+    id: 'git',
+    need: 'The code saved with git',
+    how: 'At least one commit. Not sure? Ask your assistant: “commit everything in this folder”.',
+  },
+  {
+    id: 'run',
+    need: 'The site runs on your computer',
+    how: 'Something like npm run dev opens it in your browser. Node.js 20.11 or newer.',
   },
 ];
