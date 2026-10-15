@@ -12,6 +12,7 @@ import {
 } from 'react';
 
 import { CommandCopy } from '@/components/CommandCopy';
+import { PageSkeleton } from '@/components/PageSkeleton';
 import { PromptCopy } from '@/components/PromptCopy';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
@@ -20,7 +21,7 @@ import { DEMO_ORIGINAL_SCORES, DEMO_VARIANTS, PROMPTS } from '@/lib/content';
 import { INSTALL } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
-const CYCLE_MS = 5200;
+const CYCLE_MS = 12000;
 const STEP_MS = 38;
 const STAGGER_MS = 28;
 // The order letters pass the hinge on a real board.
@@ -505,10 +506,17 @@ const Showcase = () => {
         ref={stage}
         id="demo-stage"
         className={cn(
-          'group/stage relative isolate h-[62svh] min-h-[380px] overflow-hidden transition-opacity duration-300 select-none lg:h-[78svh] lg:min-h-[560px]',
-          ready ? 'opacity-100' : 'opacity-0',
+          'group/stage relative isolate h-[62svh] min-h-[380px] overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]',
         )}
       >
+        <PageSkeleton className={cn('z-10', ready && 'pointer-events-none opacity-0')} />
+        {auto && ready && (
+          <div
+            key={selected}
+            aria-hidden="true"
+            className="bg-alert absolute inset-x-0 top-0 z-30 h-1 origin-left animate-[cycle_12s_linear_forwards] motion-reduce:hidden"
+          />
+        )}
         <iframe
           ref={(el) => {
             frames.current[0] = el;
@@ -531,7 +539,7 @@ const Showcase = () => {
             tabIndex={v.n === selected ? 0 : -1}
             loading={v.n === 1 ? 'eager' : 'lazy'}
             className={cn(
-              'absolute inset-0 size-full border-0 transition-opacity duration-500 [clip-path:inset(0_0_0_var(--split))]',
+              'absolute inset-0 size-full border-0 transition-opacity duration-1000 ease-in-out [clip-path:inset(0_0_0_var(--split))]',
               v.n === selected ? 'opacity-100' : 'pointer-events-none opacity-0',
             )}
           />
@@ -631,7 +639,7 @@ const Showcase = () => {
                     <span
                       key={selected}
                       aria-hidden="true"
-                      className="bg-ink/50 absolute inset-x-1.5 bottom-1 h-0.5 origin-left animate-[cycle_5.2s_linear_forwards]"
+                      className="bg-ink/50 absolute inset-x-1.5 bottom-1 h-0.5 origin-left animate-[cycle_12s_linear_forwards]"
                     />
                   )}
                 </Button>

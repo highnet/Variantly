@@ -568,6 +568,23 @@
   }
 }
 
+/* A loading block: a soft panel with a light sweep crossing it. */
+.skeleton {
+  border-radius: var(--radius-chip);
+  background: linear-gradient(100deg, var(--panel) 30%, var(--surface) 50%, var(--panel) 70%) 0 0 /
+    300% 100%;
+  animation: skeleton-sweep 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-sweep {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: 0 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
