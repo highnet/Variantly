@@ -10,6 +10,7 @@
  * cmd.exe running a `.cmd` shim.
  */
 import { existsSync } from "node:fs";
+import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -310,13 +311,48 @@ export async function agentFile(agent) {
  * installed where each one looks for skills.
  * @param {string} projectRoot
  */
+/** The command that signs a person in, run in its own window. */
+const LOGIN = /** @type {Record<string, string>} */ ({ copilot: "copilot login", codex: "codex login", claude: "claude" });
+
+/**
+ * Free sign-in check (no prompt, no credits). Copilot uses the GitHub CLI's
+ * login when there is one; its own login lands in ~/.copilot/config.json.
+ * Codex keeps ~/.codex/auth.json. Claude Code is assumed signed in when it
+ * has ~/.claude.json (it asks on first run otherwise). null = unknown.
+ * @param {string} id
+ * @returns {Promise<boolean | null>}
+ */
+const isSignedIn = async (id) => {
+  const home = os.homedir();
+  if (id === "copilot") {
+    if (process.env.GH_TOKEN || process.env.GITHUB_TOKEN || process.env.COPILOT_GITHUB_TOKEN) return true;
+    try {
+      const cfg = fs.readFileSync(path.join(home, ".copilot", "config.json"), "utf8");
+      if (/logged_in_users|"user"/.test(cfg)) return true;
+    } catch {}
+    const gh = await run("gh", ["auth", "status"], { timeout: 15_000 });
+    return gh.code === 0;
+  }
+  if (id === "codex") return fs.existsSync(path.join(home, ".codex", "auth.json"));
+  if (id === "claude") return fs.existsSync(path.join(home, ".claude.json")) || null;
+  return null;
+};
+
+/** @param {string} projectRoot */
 export async function detectAgents(projectRoot) {
   return Promise.all(
     AGENTS.map(async (agent) => {
       const { path: binPath, version, note } = await probeAgent(agent);
-      const impeccable = hasSkill(agent, "impeccable", { projectRoot });
+      // variantly copies the skill into each worktree from any of these, so
+      // a copy in any of them counts.
+      const impeccable =
+        hasSkill(agent, "impeccable", { projectRoot }) ||
+        [".claude/skills", ".agents/skills", ".github/skills", ".copilot/skills", ".codex/skills"].some((d) =>
+          fs.existsSync(path.join(os.homedir(), d, "impeccable", "SKILL.md")),
+        );
       const variantlySkill = hasSkill(agent, "variantly", { projectRoot });
-      return { id: agent.id, name: agent.name, installed: Boolean(binPath), path: binPath, note, version, impeccable, variantlySkill, install: agent.install };
+      const signedIn = binPath ? await isSignedIn(agent.id) : false;
+      return { id: agent.id, name: agent.name, installed: Boolean(binPath), path: binPath, note, version, impeccable, variantlySkill, signedIn, install: agent.install, login: LOGIN[agent.id] ?? null };
     }),
   );
 }

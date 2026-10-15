@@ -111,6 +111,15 @@ const main = async () => {
 
   if (values.yes && app.session.state.phase === 'setup') {
     const detected = await detectProject(repo, defaults);
+    const chosen = detected.agents.find((/** @type {any} */ a) => a.id === detected.suggested.agent);
+    if (chosen && chosen.installed && !chosen.impeccable) {
+      const { impeccableInstallCommand } = await import('../src/agents.mjs');
+      const { spawnShell } = await import('../src/proc.mjs');
+      const cmd = impeccableInstallCommand(chosen.id);
+      console.log(`  Installing Impeccable for ${chosen.name}: ${cmd}
+`);
+      await new Promise((resolve) => spawnShell(cmd, { cwd: repo }).on('exit', resolve));
+    }
     await app.session.generate(normalizeConfig(detected.suggested));
     console.log(`  Generating ${detected.suggested.count} variants with ${detected.suggested.agent}…\n`);
   }

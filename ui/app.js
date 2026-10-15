@@ -563,6 +563,10 @@ const blockers = () => {
   const a = selectedAgent();
   if (f.agent !== 'demo' && !a?.installed)
     list.push(['bad', `${a?.name ?? f.agent} isn't installed. Sign in to it once after installing.`, a?.install ? fixButton(`Install ${a.name}`, () => runFix('install-agent', { agent: a.id }, `Installing ${a.name}…`)) : null]);
+  if (f.agent !== 'demo' && a?.installed && a.signedIn === false)
+    list.push(['bad', `${a.name} is installed but not signed in. A window opens; follow it, then come back here.`, fixButton(`Sign in to ${a.name}`, () => runFix('login', { agent: a.id }, 'Sign-in window opened. Come back when it says you are signed in.').then(() => setTimeout(loadDetect, 15000)))]);
+  if (f.agent !== 'demo' && a?.installed && !a.impeccable)
+    list.push(['bad', `${a.name} doesn't have the Impeccable design skill yet. variantly needs it; installing takes a minute.`, fixButton('Install Impeccable', () => installImpeccable(a.id))]);
   if (!f.command && !f.originalUrl) list.push(['bad', 'Set a dev command under Your app.']);
   return list;
 };
@@ -572,8 +576,6 @@ const advisories = () => {
   const f = S.form;
   const list = [];
   const a = selectedAgent();
-  if (f.agent !== 'demo' && a?.installed && !a.impeccable)
-    list.push(['alert', `Impeccable isn't installed for ${a.name}, so the agents would design without it.`, fixButton('Install Impeccable', () => installImpeccable(a.id))]);
   if (d.dirty) list.push(['', 'Your uncommitted edits to tracked files are included in every variant.']);
   if (d.untracked) list.push(['', `${plural(d.untracked, 'untracked file')} won't be in the variants. Commit what the site needs.`]);
   return list;

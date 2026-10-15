@@ -163,6 +163,8 @@ export const startApp = async (opts) => {
         return installAgent(String(body.agent ?? ''));
       case 'POST commit':
         return firstCommit();
+      case 'POST login':
+        return openLogin(String(body.agent ?? ''));
       case 'GET install-log':
         return { lines: installLog.tail(100) };
       case 'POST shutdown':
@@ -194,6 +196,21 @@ export const startApp = async (opts) => {
     const a = AGENTS.find((x) => x.id === agent);
     if (!a) throw new Error('Unknown agent.');
     return runSetup(a.install, a.name);
+  };
+
+  /**
+   * Open the agent's own sign-in in a new terminal window: these logins are
+   * interactive (a browser device code), so they need a real console.
+   * @param {string} agent
+   */
+  const openLogin = async (agent) => {
+    const info = (await detectAgents(opts.repo)).find((a) => a.id === agent);
+    if (!info?.login) throw new Error('No sign-in command for this agent.');
+    const cmd = info.login;
+    if (process.platform === 'win32') spawnShell(`start "Sign in" cmd /k ${cmd}`, { cwd: opts.repo });
+    else if (process.platform === 'darwin') spawnShell(`osascript -e 'tell app "Terminal" to do script "${cmd}"'`, { cwd: opts.repo });
+    else spawnShell(`x-terminal-emulator -e ${cmd} || gnome-terminal -- ${cmd}`, { cwd: opts.repo });
+    return { command: cmd };
   };
 
   /** The first commit, for a repository that has none. */

@@ -356,6 +356,21 @@ export class Session extends EventEmitter {
         placed.push(path.posix.relative(config.appRel.replace(/\\/g, '/') || '.', rel));
       }
     }
+    // Impeccable's global installs land in different home folders per agent
+    // (and Copilot doesn't read every one of them). Put the skill where this
+    // agent reads project skills, inside the worktree, so it is always found.
+    const projectSkillDir = { claude: '.claude/skills', codex: '.agents/skills', copilot: '.github/skills' }[config.agent];
+    if (projectSkillDir && !existsSync(path.join(wt, projectSkillDir, 'impeccable', 'SKILL.md'))) {
+      const home = os.homedir();
+      const source = ['.claude/skills', '.agents/skills', '.github/skills', '.copilot/skills', '.codex/skills']
+        .map((d) => path.join(home, d, 'impeccable'))
+        .find((d) => existsSync(path.join(d, 'SKILL.md')));
+      if (source) {
+        const rel = path.posix.join(projectSkillDir, 'impeccable');
+        await cp(source, path.join(wt, rel), { recursive: true });
+        placed.push(path.posix.relative(config.appRel.replace(/\\/g, '/') || '.', rel));
+      }
+    }
     if (placed.length) say(`Linked or copied: ${placed.join(', ')}`);
     // The owner's answers become PRODUCT.md in the variant itself (committed
     // with it), so the kept variant brings its design files home.
