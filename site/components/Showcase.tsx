@@ -141,20 +141,32 @@ const Showcase = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, [choose]);
 
-  // Same-origin pages: keep every pane at the same scroll ratio.
+  // Same-origin pages: every pane sits at the same scroll position, in
+  // pixels on both axes, so the divider compares the same spot of the page.
+  const scrollPos = useRef({ x: 0, y: 0 });
+
+  const applyScroll = (f: HTMLIFrameElement | null) => {
+    const e = f?.contentWindow?.document.scrollingElement;
+    if (!e) return;
+    e.scrollTop = scrollPos.current.y;
+    e.scrollLeft = scrollPos.current.x;
+  };
+
   const syncFrom = useCallback((from: HTMLIFrameElement | null) => {
-    const fw = from?.contentWindow;
-    const fe = fw?.document.scrollingElement;
-    if (!fw || !fe || Date.now() < quiet.current) return;
-    const ratio = fe.scrollTop / Math.max(1, fe.scrollHeight - fw.innerHeight);
+    const fe = from?.contentWindow?.document.scrollingElement;
+    if (!fe || Date.now() < quiet.current) return;
+    scrollPos.current = { x: fe.scrollLeft, y: fe.scrollTop };
     quiet.current = Date.now() + 80;
     for (const f of frames.current) {
-      if (!f || f === from) continue;
-      const w = f.contentWindow;
-      const e = w?.document.scrollingElement;
-      if (w && e) e.scrollTop = ratio * Math.max(0, e.scrollHeight - w.innerHeight);
+      if (f && f !== from) applyScroll(f);
     }
   }, []);
+
+  // A pane that just became visible picks up where the others are.
+  useEffect(() => {
+    quiet.current = Date.now() + 80;
+    applyScroll(frames.current[selected]);
+  }, [selected]);
 
   const onFrameLoad = (i: number) => {
     const f = frames.current[i];
@@ -162,6 +174,7 @@ const Showcase = () => {
     if (!f || !win) return;
     // The panes are objects on the counter, not embedded documents.
     win.document.documentElement.style.setProperty('scrollbar-width', 'none');
+    applyScroll(f);
     win.addEventListener('scroll', () => syncFrom(f), { passive: true });
     win.addEventListener('pointerdown', takeOver);
     win.addEventListener('wheel', takeOver, { passive: true });
@@ -287,7 +300,7 @@ const Showcase = () => {
       </div>
       <div
         ref={stage}
-        className="relative h-[62svh] min-h-[380px] touch-none select-none lg:h-[78svh] lg:min-h-[560px]"
+        className="relative isolate h-[62svh] min-h-[380px] touch-none overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]"
         style={{ ['--split' as string]: `${split}%` }}
         onPointerMove={move}
         onPointerUp={() => setDragging(false)}
