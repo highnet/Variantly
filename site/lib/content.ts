@@ -22,7 +22,7 @@ export type DemoVariant = {
 /** The original Oak & Iron home page, scored the same way. */
 export const DEMO_ORIGINAL_SCORES = { a11y: 97, axe: 21 };
 
-const FILES = ['index.html', 'about.html', 'style.css'];
+const FILES = ['index.html', 'style.css'];
 
 export const DEMO_VARIANTS: DemoVariant[] = [
   {

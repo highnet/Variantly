@@ -281,8 +281,6 @@ const Showcase = () => {
     win.document.documentElement.style.setProperty('overflow', 'hidden');
     // Some designs ask for smooth scrolling; the panes must jump in lockstep.
     win.document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important');
-    // Some designs ask for smooth scrolling; the panes must jump in lockstep.
-    win.document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important');
     applyScroll(f);
     win.addEventListener('scroll', () => syncFrom(f), { passive: true });
     paintThumb();
@@ -301,29 +299,9 @@ const Showcase = () => {
     win.addEventListener('click', (e) => {
       const t = e.target as Element | null;
       if (
-        t?.closest('a, button, input, select, textarea, label, summary, [role=button], [tabindex]')
-      )
-        return;
-      if (win.getSelection()?.toString()) return;
-      tween((e.clientX / f.clientWidth) * 100, 320);
-    });
-    // A click on empty space in either half glides the line there; links,
-    // buttons, fields and selected text keep their own click.
-    win.addEventListener('click', (e) => {
-      const t = e.target as Element | null;
-      if (
-        t?.closest('a, button, input, select, textarea, label, summary, [role=button], [tabindex]')
-      )
-        return;
-      if (win.getSelection()?.toString()) return;
-      tween((e.clientX / f.clientWidth) * 100, 320);
-    });
-    // A click on empty space in either half glides the line there; links,
-    // buttons, fields and selected text keep their own click.
-    win.addEventListener('click', (e) => {
-      const t = e.target as Element | null;
-      if (
-        t?.closest('a, button, input, select, textarea, label, summary, [role=button], [tabindex]')
+        t?.closest(
+          'a[href], button, input, select, textarea, label, summary, [role=button], [tabindex]',
+        )
       )
         return;
       if (win.getSelection()?.toString()) return;
