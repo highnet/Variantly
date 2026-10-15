@@ -339,16 +339,23 @@ const Dock = () => {
 const useJustDone = (v: Variant | undefined) => {
   const [hold, setHold] = useState<number | null>(null);
   const prev = useRef<string | undefined>(undefined);
+  // Keyed on number and status only: the snapshot object changes every few
+  // seconds (live usage), and re-running on that would cancel the timer.
+  const key = v ? `${v.n}:${v.status}` : undefined;
   useEffect(() => {
     const was = prev.current;
-    prev.current = v ? `${v.n}:${v.status}` : undefined;
+    prev.current = key;
+    if (!key || !was) return;
+    const [n, status] = key.split(':');
+    const [wasN, wasStatus] = was.split(':');
     // Any live status (running, reviewing, committing) straight to done.
-    if (v && was?.startsWith(`${v.n}:`) && LIVE.includes(was.split(':')[1] as Variant['status']) && v.status === 'done') {
-      setHold(v.n);
-      const t = setTimeout(() => setHold(null), 1600);
-      return () => clearTimeout(t);
-    }
-  }, [v]);
+    if (n === wasN && status === 'done' && LIVE.includes(wasStatus as Variant['status'])) setHold(Number(n));
+  }, [key]);
+  useEffect(() => {
+    if (hold === null) return;
+    const t = setTimeout(() => setHold(null), 1600);
+    return () => clearTimeout(t);
+  }, [hold]);
   return hold;
 };
 

@@ -3377,3 +3377,19 @@ button.wiz-hit:hover .wiz-name {
 .cmd-copy:hover {
   border-color: var(--surface);
 }
+
+/* Tucked dock: recede, but stay findable. Fade the controls, never Keep. */
+.compare.tucked .dock:not(:hover):not(:focus-within) {
+  opacity: 1;
+  background: rgb(13 13 16 / 0.55);
+  box-shadow: none;
+}
+
+.compare.tucked .dock:not(:hover):not(:focus-within) > *:not(.btn.primary) {
+  opacity: 0.5;
+  transition: opacity 240ms var(--ease);
+}
+
+.compare.tucked .dock:not(:hover):not(:focus-within) > .btn.primary {
+  box-shadow: 0 0 0 4px rgb(255 212 0 / 0.18);
+}
