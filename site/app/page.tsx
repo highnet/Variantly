@@ -6,6 +6,7 @@ import { FinePrint } from '@/components/FinePrint';
 import { HowItWorks } from '@/components/HowItWorks';
 import { Showcase } from '@/components/Showcase';
 import { Stacks } from '@/components/Stacks';
+import { WithLive } from '@/components/WithLive';
 import { StartChecklist } from '@/components/StartChecklist';
 import { REPO_URL } from '@/lib/site';
 
@@ -36,6 +37,7 @@ const Human = () => (
     <div className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)] gap-24 px-4 pt-20 pb-16 sm:px-6">
       <HowItWorks />
       <StartChecklist />
+      <WithLive />
       <Stacks />
       <FinePrint />
     </div>

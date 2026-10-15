@@ -25,12 +25,19 @@ const FinePrint = () => (
     </div>
 
     <footer className="border-rule text-steel flex flex-wrap items-center justify-between gap-4 border-t pt-6 text-sm">
-      <span>
+      <span className="max-w-[90ch] leading-relaxed">
         Built on{' '}
         <a href="https://impeccable.style" className="text-ink underline">
           Impeccable
+        </a>
+        , created by{' '}
+        <a href="https://x.com/pbakaus" className="text-ink underline">
+          Paul Bakaus
         </a>{' '}
-        by Paul Bakaus (Apache-2.0); independent and not affiliated. MIT © highnet.
+        and used under the Apache-2.0 licence. variantly is an independent project, not affiliated
+        with or endorsed by Impeccable or Paul Bakaus; their names are used only to credit the work
+        and are theirs. variantly is MIT-licensed © highnet and provided “as is”, without warranty
+        of any kind. Review every change before you keep it.
       </span>
       <span className="flex gap-5">
         <a href={REPO_URL} className="text-ink underline">
