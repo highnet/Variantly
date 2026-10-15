@@ -72,6 +72,9 @@ export const playwrightMcp = (chrome = findChrome()) => ({
   args: ['--yes', PLAYWRIGHT_MCP, '--headless', '--isolated', ...(chrome ? ['--executable-path', chrome] : [])],
 });
 
+/** What a package missing from a half-finished npx install looks like. */
+export const NPX_HALF_INSTALLED = /Cannot find (package|module) '[^']*[\\/]_npx[\\/]|ERR_MODULE_NOT_FOUND[\s\S]*_npx/;
+
 /** Audits run one at a time: concurrent `npx --yes` installs race on npm's cache, and parallel Lighthouse runs skew each other's performance scores. */
 let auditQueue = Promise.resolve();
 
@@ -82,7 +85,15 @@ let auditQueue = Promise.resolve();
  * @returns {Promise<AuditResult>}
  */
 export const runAudit = (url, opts = {}) => {
-  const run = auditQueue.then(() => auditOnce(url, opts));
+  const run = auditQueue.then(() =>
+    auditOnce(url, opts).catch((err) => {
+      // A cold npx cache can hand back a half-installed package (seen on
+      // Windows: "Cannot find package …\\_npx\\…\\debug\\index.js"). The
+      // second run finds the install finished; any other error is real.
+      if (!NPX_HALF_INSTALLED.test(String(err?.message ?? err))) throw err;
+      return auditOnce(url, opts);
+    }),
+  );
   auditQueue = run.then(() => {}, () => {});
   return run;
 };
