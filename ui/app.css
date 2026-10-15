@@ -2516,15 +2516,35 @@ button.wiz-chip.done:hover {
   box-shadow: var(--lift);
 }
 
+.wait-body {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
 .wait-card .wait-dir {
   margin: 0;
-  font: 600 13px/1.4 var(--mono);
+  font: 600 15px/1.35 var(--mono);
   font-stretch: 87.5%;
   color: var(--surface);
+}
+
+.wait-card .step-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 12px;
 }
 
 .wait-card .wait-note {
   margin: 0;
   color: var(--steel-on-slate);
   font-size: 13px;
+  line-height: 1.5;
+}
+
+.wait-card .wait-last {
+  border-top: 1px solid var(--slate-line);
+  color: var(--steel-on-slate);
 }

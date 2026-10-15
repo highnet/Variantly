@@ -1282,10 +1282,12 @@ const showProgress = (v) => {
         h('span', { class: 'figure' }, vname(v.n)),
         h('span', { class: 'status', 'data-s': statusKey(v.status) }, h('span', { class: 'flap-text' }, 'In progress')),
       ]),
-      h('p', { class: 'wait-dir' }, directionLabel(v.direction, v.picked)),
-      stepList(v),
-      h('p', { class: 'wait-note' }, `${elapsed(v)} so far. It appears here when it's ready; flick to another design meanwhile.`),
-      last ? h('pre', {}, last) : null,
+      h('div', { class: 'wait-body' }, [
+        h('p', { class: 'wait-dir' }, directionLabel(v.direction, v.picked)),
+        stepList(v),
+        h('p', { class: 'wait-note' }, `${elapsed(v)} so far. It shows here when it's ready; look at another design meanwhile.`),
+      ]),
+      last ? h('pre', { class: 'wait-last' }, last) : null,
     ]),
   );
 };
