@@ -2515,3 +2515,16 @@ button.wiz-chip.done:hover {
   border-radius: 18px;
   box-shadow: var(--lift);
 }
+
+.wait-card .wait-dir {
+  margin: 0;
+  font: 600 13px/1.4 var(--mono);
+  font-stretch: 87.5%;
+  color: var(--surface);
+}
+
+.wait-card .wait-note {
+  margin: 0;
+  color: var(--steel-on-slate);
+  font-size: 13px;
+}
