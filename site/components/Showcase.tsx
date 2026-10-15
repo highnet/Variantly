@@ -134,6 +134,7 @@ const Showcase = () => {
   const anim = useRef(0);
   const grip = useRef<HTMLButtonElement>(null);
   const loaded = useRef(new Set<number>());
+  const wired = useRef(new WeakSet<Document>());
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const frames = useRef<(HTMLIFrameElement | null)[]>([]);
@@ -260,7 +261,9 @@ const Showcase = () => {
   const onFrameLoad = (i: number) => {
     const f = frames.current[i];
     const win = f?.contentWindow;
-    if (!f || !win) return;
+    // Each document is wired once, whichever of load or mount sees it first.
+    if (!f || !win || wired.current.has(win.document)) return;
+    wired.current.add(win.document);
     loaded.current.add(i);
     if (loaded.current.has(0) && loaded.current.has(1)) setReady(true);
     // The panes are objects on the counter, not embedded documents.
@@ -390,6 +393,15 @@ const Showcase = () => {
     mq.addEventListener('change', off);
     return () => mq.removeEventListener('change', off);
   }, []);
+
+  // A pane that finished loading before hydration never fired onLoad here.
+  const wireEarly = useEffectEvent(() => {
+    frames.current.forEach((f, i) => {
+      const doc = f?.contentWindow?.document;
+      if (doc?.readyState === 'complete' && doc.URL !== 'about:blank') onFrameLoad(i);
+    });
+  });
+  useEffect(() => wireEarly(), []);
 
   // Theme or reading aids changed: restyle every loaded pane.
   useEffect(() => {
@@ -657,22 +669,20 @@ const Showcase = () => {
               <ChevronRight className="size-4" aria-hidden="true" />
             </Button>
           </div>
-          <button
-            type="button"
+          <Button
+            variant="toggle-slate"
+            size="toggle"
             aria-pressed={hover}
             onClick={() => {
               takeOver();
               setHover((h) => !h);
             }}
             title="The line follows your cursor; drag or click inside the pages as usual when off"
-            className={cn(
-              'text-steel-on-slate hover:text-surface hidden items-center gap-1.5 rounded px-1.5 py-1 text-[10px] tracking-[0.08em] uppercase [@media(hover:hover)_and_(pointer:fine)]:inline-flex',
-              hover && 'bg-surface text-ink hover:text-ink',
-            )}
+            className="hidden [@media(hover:hover)_and_(pointer:fine)]:inline-flex"
           >
             <MousePointer2 className="size-3.5" aria-hidden="true" />
             Follow cursor
-          </button>
+          </Button>
           <div
             role="group"
             className="flex items-center gap-3 pr-2"
