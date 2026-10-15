@@ -54,3 +54,8 @@ next-env.d.ts
 .impeccable/questions/
 .impeccable/mocks/
 .claude/
+
+# Impeccable skill: installed locally by each contributor, never committed (see NOTICE.md)
+.agents/skills/impeccable/
+.claude/skills/impeccable
+skills-lock.json
