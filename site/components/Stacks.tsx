@@ -1,3 +1,4 @@
+import { CommandCopy } from '@/components/CommandCopy';
 import { LogoMark } from '@/components/LogoMark';
 import { Typography } from '@/components/ui/Typography';
 import { AGENT_LOGOS, STACK_LOGOS } from '@/lib/logos';
@@ -9,12 +10,14 @@ import { AGENT_LOGOS, STACK_LOGOS } from '@/lib/logos';
 const Stacks = () => (
   <section
     aria-labelledby="stacks-title"
-    className="grid gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
+    className="grid gap-x-12 gap-y-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:grid-rows-[auto_1fr]"
   >
-    <div className="grid content-start gap-5">
-      <div className="grid gap-2">
+    {/* Both columns share the section's rows, so the two headings and the two
+        panels line up whatever the copy length. */}
+    <div className="grid gap-5 lg:row-span-2 lg:grid-rows-subgrid">
+      <div className="grid content-start gap-2">
         <Typography variant="headline" as="h2" id="stacks-title">
-          Works with the site you have
+          Works with your site
         </Typography>
         <Typography variant="body" color="steel">
           If your site runs on your computer with a start command, variantly can redesign it. These
@@ -34,29 +37,27 @@ const Stacks = () => (
       </ul>
     </div>
 
-    <div className="grid content-start gap-5">
-      <div className="grid gap-2">
+    <div className="mt-7 grid gap-5 lg:row-span-2 lg:mt-0 lg:grid-rows-subgrid">
+      <div className="grid content-start gap-2">
         <Typography variant="headline" as="h2">
-          Uses the AI assistant you already have
+          Uses your own AI
         </Typography>
         <Typography variant="body" color="steel">
           There is no variantly account and nothing to pay us. Each design is one session of your
           own assistant, on your own plan.
         </Typography>
       </div>
-      <ul className="m-0 grid list-none gap-2 p-0">
+      <ul className="m-0 grid list-none auto-rows-fr gap-2 p-0">
         {AGENT_LOGOS.map((a) => (
           <li
             key={a.name}
-            className="rounded-pass border-rule bg-surface flex items-center gap-4 border px-4 py-3.5"
+            className="rounded-pass border-rule bg-surface grid content-center gap-2.5 border px-4 py-3.5"
           >
-            <LogoMark title={a.title} path={a.path} className="text-ink size-7 shrink-0" />
-            <div className="grid min-w-0 gap-0.5">
+            <div className="flex items-center gap-3">
+              <LogoMark title={a.title} path={a.path} className="text-ink size-6 shrink-0" />
               <span className="text-[15px] font-semibold">{a.name}</span>
-              <code className="text-steel condensed truncate font-mono text-[12px]">
-                {a.install}
-              </code>
             </div>
+            <CommandCopy command={a.install} size="sm" />
           </li>
         ))}
       </ul>

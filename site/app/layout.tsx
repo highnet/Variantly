@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import type { ReactNode } from 'react';
 
+import { Toaster } from '@/components/Toaster';
+import { PREFS_BOOT } from '@/lib/prefs';
 import { SITE_URL } from '@/lib/site';
 
 import './globals.css';
@@ -33,8 +35,15 @@ type RootLayoutProps = {
 };
 
 const RootLayout = ({ children }: RootLayoutProps) => (
-  <html lang="en" className={martian.variable}>
-    <body>{children}</body>
+  <html lang="en" className={martian.variable} suppressHydrationWarning>
+    <head>
+      {/* Theme and reading aids before first paint, so nothing flashes. */}
+      <script dangerouslySetInnerHTML={{ __html: PREFS_BOOT }} />
+    </head>
+    <body>
+      {children}
+      <Toaster />
+    </body>
   </html>
 );
 

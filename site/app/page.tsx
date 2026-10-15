@@ -1,23 +1,15 @@
-import Link from 'next/link';
-
 import { AgentQuickstart } from '@/components/AgentQuickstart';
 import { AudienceFork } from '@/components/AudienceFork';
-import { BrandMark } from '@/components/BrandMark';
 import { FinePrint } from '@/components/FinePrint';
 import { HowItWorks } from '@/components/HowItWorks';
+import { PrefsMenu } from '@/components/PrefsMenu';
+import { Brand } from '@/components/Brand';
 import { SiteFooter } from '@/components/SiteFooter';
 import { Showcase } from '@/components/Showcase';
 import { Stacks } from '@/components/Stacks';
 import { WithLive } from '@/components/WithLive';
 import { StartChecklist } from '@/components/StartChecklist';
 import { REPO_URL } from '@/lib/site';
-
-const Brand = () => (
-  <Link href="/" className="flex items-center gap-2.5 no-underline" aria-label="variantly home">
-    <BrandMark className="size-7" />
-    <span className="figure hidden text-base sm:inline">variantly</span>
-  </Link>
-);
 
 const GitHubLink = () => (
   <a
@@ -45,7 +37,12 @@ const Page = () => (
   <>
     <AudienceFork
       brand={<Brand />}
-      aside={<GitHubLink />}
+      aside={
+        <div className="flex items-center gap-3">
+          <PrefsMenu />
+          <GitHubLink />
+        </div>
+      }
       human={<Human />}
       agent={<AgentQuickstart />}
     />

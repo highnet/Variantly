@@ -158,6 +158,14 @@ export class Session extends EventEmitter {
       ...this.state,
       repo: this.repo,
       servers: this.pool.all(),
+      // Where each variant lives, for the UI's handoff prompt.
+      stateDir: this.dir,
+      places: this.state.variants.map((v) => ({
+        n: v.n,
+        worktree: this.worktreeFor(v.n),
+        branch: this.branchFor(v.n),
+        brief: path.join(this.dir, 'briefs', `v${v.n}.md`),
+      })),
     };
   }
 

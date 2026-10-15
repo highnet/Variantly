@@ -15,6 +15,7 @@ import { CommandCopy } from '@/components/CommandCopy';
 import { PromptCopy } from '@/components/PromptCopy';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
+import { applyPrefsToFrame, calmMotion, PREFS_EVENT, readPrefs, type Prefs } from '@/lib/prefs';
 import { DEMO_ORIGINAL_SCORES, DEMO_VARIANTS, PROMPTS } from '@/lib/content';
 import { INSTALL } from '@/lib/site';
 import { cn } from '@/lib/utils';
@@ -44,7 +45,7 @@ const FlapCell = ({ target, index }: FlapCellProps) => {
   const showing = useRef(target);
 
   useEffect(() => {
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduce = calmMotion();
     let timer = 0;
     const step = () => {
       if (reduce || showing.current === target) {
@@ -151,7 +152,7 @@ const Showcase = () => {
   // Cycle while untouched, on screen and in a visible tab.
   useEffect(() => {
     if (!auto) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (calmMotion()) return;
     const io = new IntersectionObserver(([e]) => (visible.current = e.isIntersecting), {
       threshold: 0.3,
     });
@@ -165,19 +166,6 @@ const Showcase = () => {
       io.disconnect();
     };
   }, [auto]);
-
-  // 1–6 work from page load, not only once focus is inside the showcase.
-  useEffect(() => {
-    const onKey = (e: globalThis.KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
-      const t = e.target as HTMLElement | null;
-      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
-      const n = Number(e.key);
-      if (n >= 1 && n <= DEMO_VARIANTS.length) choose(n);
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [choose]);
 
   // Same-origin pages: every pane sits at the same scroll position, in
   // pixels on both axes, so the divider compares the same spot of the page.
@@ -279,6 +267,8 @@ const Showcase = () => {
     // The wheel scrolls the page around the demo, not the panes inside it;
     // the fake scrollbar on the right is the one way down a pane.
     win.document.documentElement.style.setProperty('overflow', 'hidden');
+    // The site's theme and reading aids reach into the demo too.
+    applyPrefsToFrame(win.document, readPrefs());
     // Some designs ask for smooth scrolling; the panes must jump in lockstep.
     win.document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important');
     applyScroll(f);
@@ -308,10 +298,6 @@ const Showcase = () => {
       tween((e.clientX / f.clientWidth) * 100, 320);
     });
     win.addEventListener('wheel', takeOver, { passive: true });
-    win.addEventListener('keydown', (e) => {
-      const n = Number(e.key);
-      if (n >= 1 && n <= DEMO_VARIANTS.length) choose(n);
-    });
   };
 
   /*
@@ -404,6 +390,19 @@ const Showcase = () => {
     return () => mq.removeEventListener('change', off);
   }, []);
 
+  // Theme or reading aids changed: restyle every loaded pane.
+  useEffect(() => {
+    const onPrefs = (e: Event) => {
+      const p = (e as CustomEvent<Prefs>).detail;
+      for (const f of frames.current) {
+        const doc = f?.contentWindow?.document;
+        if (doc?.body) applyPrefsToFrame(doc, p);
+      }
+    };
+    window.addEventListener(PREFS_EVENT, onPrefs);
+    return () => window.removeEventListener(PREFS_EVENT, onPrefs);
+  }, []);
+
   // Never leave the stage hidden if a pane is slow to load.
   useEffect(() => {
     const t = window.setTimeout(() => setReady(true), 4000);
@@ -418,7 +417,7 @@ const Showcase = () => {
       ([en]) => {
         if (!en.isIntersecting) return;
         io.disconnect();
-        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        if (calmMotion()) return;
         timers.push(window.setTimeout(() => sweepTo(60, 400), 300));
         timers.push(window.setTimeout(() => sweepTo(40, 500), 700));
         timers.push(window.setTimeout(() => sweepTo(50, 400), 1200));
