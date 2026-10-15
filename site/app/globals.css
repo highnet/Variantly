@@ -21,6 +21,70 @@
   --ok-on-slate: #7ee2a8;
 }
 
+/* Dark theme: the light grounds go dark and ink goes light. The slate board
+   is already dark, so inside it (.on-slate) the light-theme values stay. */
+:root[data-theme='dark'] {
+  --ink: #eceef1;
+  --steel: #a1a8b0;
+  --rule: #353c45;
+  --panel: #12161a;
+  --surface: #181d22;
+  --fail: #ff8a80;
+}
+
+:root[data-theme='dark'] .on-slate {
+  --ink: #0d0d10;
+  --surface: #ffffff;
+  --panel: #e6e8eb;
+  --rule: #c7cbd0;
+  --steel: #5f656c;
+}
+
+/* Accessibility menu ------------------------------------------------------ */
+
+:root[data-contrast='true'] {
+  --steel: var(--ink);
+  --steel-on-slate: #eceef1;
+  --rule: var(--ink);
+  --slate-line: #8a929b;
+}
+
+:root[data-large='true'] {
+  zoom: 1.125;
+}
+
+:root[data-readable='true'] body,
+:root[data-readable='true'] body * {
+  font-family: 'Atkinson Hyperlegible', Verdana, Tahoma, sans-serif !important;
+  letter-spacing: 0.02em !important;
+  word-spacing: 0.08em !important;
+}
+
+:root[data-readable='true'] body p,
+:root[data-readable='true'] body li,
+:root[data-readable='true'] body dd {
+  line-height: 1.75 !important;
+}
+
+:root[data-calm='true'] * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+:root[data-calm='true'] main,
+:root[data-calm='true'] footer {
+  filter: saturate(0.6);
+}
+
+:root[data-motion='calm'] *,
+:root[data-motion='calm'] *::before,
+:root[data-motion='calm'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
 @theme inline {
   --color-ink: var(--ink);
   --color-slate: var(--slate);
