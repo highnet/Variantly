@@ -125,6 +125,191 @@ kbd {
   font-variant-numeric: tabular-nums;
 }
 
+/* Dark theme, matching variantly.tools: a cool blue-black ground with the
+   passes one step up and the board above that. The board and other slate
+   panels were already dark, so inside them the light-theme values stay. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --panel: #0e1114;
+  --surface: #171b20;
+  --slate: #1e242b;
+  --slate-2: #29313a;
+  --slate-line: #3a434d;
+  --ink: #e8ebee;
+  --steel: #9aa3ad;
+  --steel-on-slate: #aab2bb;
+  --rule: #2c333b;
+  --alert: #f2c94c;
+  --fail: #ff8f85;
+  --fail-on-slate: #ff9a91;
+  --lift: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 10px 28px -12px rgb(0 0 0 / 0.7);
+}
+
+:root[data-theme='dark'] :is(.board, .logpanel, .wait-card, .modes, .action-dock, .info, .pane-wait, .prefs-menu, .toast, .dock, .dock-row, .compare-bar) {
+  --ink: #0d0d10;
+  --surface: #ffffff;
+  --panel: #e6e8eb;
+  --rule: #c7cbd0;
+  --steel: #5f656c;
+}
+
+/* Accessibility menu ------------------------------------------------------ */
+
+:root[data-contrast='true'] {
+  --steel: var(--ink);
+  --steel-on-slate: #eceef1;
+  --rule: var(--ink);
+  --slate-line: #8a929b;
+}
+
+:root[data-large='true'] {
+  zoom: 1.125;
+}
+
+:root[data-readable='true'] body,
+:root[data-readable='true'] body * {
+  font-family: 'Atkinson Hyperlegible', Verdana, Tahoma, sans-serif !important;
+  letter-spacing: 0.02em !important;
+  word-spacing: 0.08em !important;
+}
+
+:root[data-calm='true'] * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+:root[data-calm='true'] main {
+  filter: saturate(0.6);
+}
+
+:root[data-motion='calm'] *,
+:root[data-motion='calm'] *::before,
+:root[data-motion='calm'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+.prefs {
+  position: relative;
+  display: flex;
+  gap: 4px;
+}
+
+.icon-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--steel);
+  cursor: pointer;
+}
+
+.icon-btn:hover,
+.icon-btn[aria-expanded='true'] {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.prefs-menu {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  z-index: 40;
+  display: grid;
+  gap: 16px;
+  width: 300px;
+  padding: 16px;
+  border: 1px solid var(--slate-line);
+  border-radius: 12px;
+  background: var(--slate);
+  color: #fff;
+  box-shadow: 0 18px 40px -14px rgb(0 0 0 / 0.65);
+  font: 14px/1.4 var(--sans);
+}
+
+.prefs-menu[hidden] {
+  display: none;
+}
+
+.prefs-menu fieldset {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.prefs-menu legend {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.prefs-motion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  background: #0d0d10;
+}
+
+.prefs-motion button {
+  padding: 10px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--steel-on-slate);
+  font: 600 13px var(--sans);
+  cursor: pointer;
+}
+
+.prefs-motion button[aria-pressed='true'] {
+  background: #7ee2a8;
+  color: #0d0d10;
+}
+
+.prefs-aid {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--slate-line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.prefs-aid:has(input:checked) {
+  border-color: #7ee2a8;
+}
+
+.prefs-aid input {
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: #7ee2a8;
+}
+
+.prefs-aid strong {
+  display: block;
+  font-size: 14px;
+}
+
+.prefs-aid span span {
+  color: var(--steel-on-slate);
+  font-size: 12px;
+}
+
 /* Skip link: hidden until a keyboard user tabs to it. */
 .skip-link {
   position: absolute;
@@ -169,6 +354,7 @@ kbd {
 .wordmark svg {
   width: 20px;
   height: 20px;
+  fill: currentColor;
 }
 
 .bar-project {

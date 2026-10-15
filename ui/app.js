@@ -50,6 +50,9 @@ const icon = (name) => {
     alert: ['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', 'M12 7.5v5.5', 'M12 16.2v.3'],
     copy: ['M9 9h11v11H9z', 'M5 15H4V4h11v1'],
     handoff: ['M4 12h11', 'M11 6l6 6-6 6', 'M20 4v16'],
+    sun: ['M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z', 'M12 2v2', 'M12 20v2', 'M4.9 4.9l1.4 1.4', 'M17.7 17.7l1.4 1.4', 'M2 12h2', 'M20 12h2', 'M4.9 19.1l1.4-1.4', 'M17.7 6.3l1.4-1.4'],
+    moon: ['M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z'],
+    access: ['M12 3.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z', 'M5 8.5l7 1.5 7-1.5', 'M12 10v5', 'M8.5 21l3.5-6 3.5 6'],
   };
   return h(
     'svg',
@@ -895,6 +898,96 @@ const installImpeccable = async (agent) => {
     toast(err.message, true);
   }
 };
+
+// Theme and accessibility ---------------------------------------------------
+
+/*
+ * The same two header controls as variantly.tools: a theme switch and a
+ * menu of reading aids. Saved in this browser, applied as data attributes
+ * on <html> (the inline script in index.html applies them before paint).
+ */
+const PREFS_KEY = 'variantly:prefs';
+const readPrefs = () => {
+  const m = (q) => matchMedia(q).matches;
+  const base = { theme: m('(prefers-color-scheme: dark)') ? 'dark' : 'light', motion: m('(prefers-reduced-motion: reduce)') ? 'calm' : 'full', readable: false, large: false, contrast: false, calm: false };
+  try {
+    return { ...base, ...JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}') };
+  } catch {
+    return base;
+  }
+};
+const applyPrefs = (p) => {
+  const d = document.documentElement.dataset;
+  for (const k of ['theme', 'motion', 'readable', 'large', 'contrast', 'calm']) d[k] = String(p[k]);
+};
+const setPref = (patch) => {
+  const p = { ...readPrefs(), ...patch };
+  try {
+    localStorage.setItem(PREFS_KEY, JSON.stringify(p));
+  } catch {}
+  applyPrefs(p);
+  mountPrefs();
+};
+
+const AIDS = [
+  ['readable', 'Readable font', 'Clearer letters, more spacing'],
+  ['large', 'Larger text', 'Everything a little bigger'],
+  ['contrast', 'High contrast', 'Stronger colours'],
+  ['calm', 'Calm colours', 'Fewer shadows, less saturation'],
+];
+
+const mountPrefs = () => {
+  const root = $('#prefs');
+  if (!root) return;
+  const p = readPrefs();
+  const menu = $('#prefs-menu');
+  const wasOpen = menu ? !menu.hidden : false;
+  const dark = p.theme === 'dark';
+  root.replaceChildren(
+    h('button', { class: 'icon-btn', type: 'button', 'aria-label': dark ? 'Switch to light theme' : 'Switch to dark theme', title: dark ? 'Light theme' : 'Dark theme', onClick: () => {
+      setPref({ theme: dark ? 'light' : 'dark' });
+      toast(dark ? 'Light theme on' : 'Dark theme on', false, { icon: dark ? 'sun' : 'moon' });
+    } }, icon(dark ? 'sun' : 'moon')),
+    h('button', { class: 'icon-btn', type: 'button', id: 'prefs-toggle', 'aria-label': 'Accessibility settings', title: 'Accessibility', 'aria-expanded': String(wasOpen), 'aria-controls': 'prefs-menu', onClick: (e) => {
+      const menu = $('#prefs-menu');
+      menu.hidden = !menu.hidden;
+      e.currentTarget.setAttribute('aria-expanded', String(!menu.hidden));
+    } }, icon('access')),
+    h('div', { class: 'prefs-menu', id: 'prefs-menu', role: 'dialog', 'aria-label': 'Accessibility settings', hidden: !wasOpen }, [
+      h('fieldset', {}, [
+        h('legend', {}, 'Motion'),
+        h('div', { class: 'prefs-motion' }, [['full', 'Full animations'], ['calm', 'Calmer (less)']].map(([v, label]) =>
+          h('button', { type: 'button', 'aria-pressed': String(p.motion === v), onClick: () => setPref({ motion: v }) }, label),
+        )),
+      ]),
+      h('fieldset', {}, [
+        h('legend', {}, 'Reading aids'),
+        ...AIDS.map(([k, label, hint]) =>
+          h('label', { class: 'prefs-aid' }, [
+            h('input', { type: 'checkbox', checked: p[k], onChange: (e) => setPref({ [k]: e.target.checked }) }),
+            h('span', {}, [h('strong', {}, label), h('span', {}, hint)]),
+          ]),
+        ),
+      ]),
+    ]),
+  );
+};
+
+addEventListener('pointerdown', (e) => {
+  const menu = $('#prefs-menu');
+  if (menu && !menu.hidden && !$('#prefs').contains(e.target)) {
+    menu.hidden = true;
+    $('#prefs-toggle')?.setAttribute('aria-expanded', 'false');
+  }
+});
+addEventListener('keydown', (e) => {
+  const menu = $('#prefs-menu');
+  if (e.key === 'Escape' && menu && !menu.hidden) {
+    menu.hidden = true;
+    $('#prefs-toggle')?.focus();
+  }
+});
+mountPrefs();
 
 // Handoff -------------------------------------------------------------------
 
