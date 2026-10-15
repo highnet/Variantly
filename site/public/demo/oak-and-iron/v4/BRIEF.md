@@ -1,12 +1,12 @@
-<!-- variantly {"variant":4,"count":6,"approach":"redesign","direction":"risograph-zine","appRel":"","stack":"static"} -->
+<!-- variantly {"variant":4,"count":6,"approach":"redesign","direction":"art-deco","appRel":"","stack":"static"} -->
 # variantly brief: variant 4 of 6
 
 ## Task
-Redesign the Oak & Iron demo site in the **Risograph zine** direction: a two-colour risograph zine with fluorescent pink and teal overprint, misregistration, halftone, hand-set headings and a stapled-paper feel. Push it far enough to be recognisable at a glance.
+Redesign the Oak & Iron demo site in the **Art Deco** direction: 1920s Art Deco: geometric display face, brass and deep green, stepped ornaments, symmetrical framing. Push it far enough to be recognisable at a glance.
 
 ## Rules
 - Change presentation, not behaviour.
-- Non-interactive: no prompts or questions.
+- Non-interactive: no questions, just do it.
 - No packages.
 - No servers.
 - No commits.

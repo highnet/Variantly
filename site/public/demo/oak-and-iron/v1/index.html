@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Oak &amp; Iron — Handmade furniture, Graz</title>
+    <title>Oak &amp; Iron · Catalogue 2026</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="bar">Free delivery in Styria on orders over €500</div>
-    <nav class="nav" aria-label="Main">
+    <div class="sheet">
+    <nav class="navbar" aria-label="Main">
       <a class="logo" href="index.html">Oak &amp; Iron</a>
       <ul>
         <li><a href="index.html" aria-current="page">Home</a></li>
@@ -17,55 +17,79 @@
         <li><a href="#contact">Contact</a></li>
       </ul>
     </nav>
-    <header class="hero">
-      <h1>Oak <span>&amp;</span> Iron</h1>
-      <div class="row">
-        <p>Handmade furniture from reclaimed oak and forged steel. Built in a workshop outside Graz since 2019.</p>
-        <div class="ctas">
-          <a class="btn hot" href="#shop">Browse the collection</a>
-          <a class="btn" href="#contact">Contact us</a>
-        </div>
-      </div>
+
+    <header class="cover">
+      <p class="folio">Katalog 2026 <span>·</span> Graz, Austria</p>
+      <h1>Furniture for real homes, made by hand.</h1>
+      <p class="intro">Tables, stools and shelves in reclaimed oak and forged steel, built in a small workshop outside Graz since 2019. Free delivery in Styria on orders over €500.</p>
+      <p class="cover-links"><a class="btn" href="#shop">See the collection</a> <a class="link" href="#contact">Contact us</a></p>
     </header>
 
-    <section aria-labelledby="why">
-      <span class="label">Section 01 / Why us</span>
-      <h2 id="why">How it's made</h2>
-      <ol class="facts">
-        <li><h3>Handmade</h3><p>Every piece is built by hand in our workshop outside Graz.</p></li>
-        <li><h3>Reclaimed oak</h3><p>We use reclaimed oak and forged steel wherever we can.</p></li>
-        <li><h3>Personal delivery</h3><p>Delivered by the person who built it. Lead time 6–8 weeks.</p></li>
-      </ol>
+    <section class="features" aria-labelledby="f-h">
+      <h2 id="f-h" class="section-h"><span class="num">01</span> How we work</h2>
+      <dl class="feature-list">
+        <div><dt>Handmade</dt><dd>Every piece is built by hand in our workshop outside Graz.</dd></div>
+        <div><dt>Reclaimed oak</dt><dd>We use reclaimed oak and forged steel wherever we can.</dd></div>
+        <div><dt>Personal delivery</dt><dd>Delivered by the person who built it. Lead time 6–8 weeks.</dd></div>
+      </dl>
     </section>
 
-    <section id="shop" aria-labelledby="shop-h">
-      <span class="label">Section 02 / Products</span>
-      <h2 id="shop-h">This month's products</h2>
-      <table class="items">
-        <thead><tr><th scope="col">Item</th><th scope="col">Description</th><th scope="col">Price</th><th scope="col"><span class="sr">Cart</span></th></tr></thead>
-        <tbody>
-          <tr><td class="name">The Long Table</td><td>2.4 m of reclaimed oak on steel trestles.</td><td class="price">€ 2.890,-</td><td><button type="button">Add to cart</button></td></tr>
-          <tr><td class="name">Smithy Stool</td><td>Hand-forged legs, oiled seat.</td><td class="price">€ 340,-</td><td><button type="button">Add to cart</button></td></tr>
-          <tr><td class="name">Wall Shelf No. 4</td><td>Three shelves, one bracket, no screws visible.</td><td class="price">€ 410,-</td><td><button type="button">Add to cart</button></td></tr>
-        </tbody>
-      </table>
+    <section id="shop" class="shop" aria-labelledby="s-h">
+      <h2 id="s-h" class="section-h"><span class="num">02</span> This month's products</h2>
+      <article class="plate plate-wide">
+        <div class="plate-img img1" role="img" aria-label="Line drawing of a long oak table on steel trestles"><span class="dim dim-w">240 cm</span></div>
+        <div class="plate-text">
+          <p class="art">Art. 101</p>
+          <h3>The Long Table</h3>
+          <p>2.4 m of reclaimed oak on steel trestles.</p>
+          <p class="spec">Reclaimed oak, steel · L 240 cm</p>
+          <p class="price">€ 2.890,-</p>
+          <button type="button">Add to cart</button>
+        </div>
+      </article>
+      <div class="plate-pair">
+        <article class="plate">
+          <div class="plate-img img2" role="img" aria-label="Line drawing of a stool with forged legs"></div>
+          <div class="plate-text">
+            <p class="art">Art. 204</p>
+            <h3>Smithy Stool</h3>
+            <p>Hand-forged legs, oiled seat.</p>
+            <p class="spec">Forged steel, oiled oak</p>
+            <p class="price">€ 340,-</p>
+            <button type="button">Add to cart</button>
+          </div>
+        </article>
+        <article class="plate">
+          <div class="plate-img img3" role="img" aria-label="Line drawing of a wall shelf with three boards"></div>
+          <div class="plate-text">
+            <p class="art">Art. 304</p>
+            <h3>Wall Shelf No. 4</h3>
+            <p>Three shelves, one bracket, no screws visible.</p>
+            <p class="spec">Oak, steel bracket · 3 shelves</p>
+            <p class="price">€ 410,-</p>
+            <button type="button">Add to cart</button>
+          </div>
+        </article>
+      </div>
     </section>
 
-    <section class="news" aria-labelledby="news-h">
-      <span class="label">Section 03 / Newsletter</span>
-      <h2 id="news-h">Newsletter</h2>
+    <section class="newsletter" aria-labelledby="n-h">
+      <h2 id="n-h" class="section-h"><span class="num">03</span> Newsletter</h2>
       <p>News about new products and workshop days. No spam.</p>
       <form id="newsletter">
-        <label for="nl-email">Email address</label>
-        <input id="nl-email" type="email" placeholder="you@example.com" required />
-        <button>Subscribe</button>
+        <label for="email">Email address</label>
+        <div class="row">
+          <input id="email" type="email" placeholder="name@example.com" required />
+          <button>Subscribe</button>
+        </div>
       </form>
     </section>
 
     <footer id="contact">
       <p>Oak &amp; Iron Furniture · Werkstattgasse 4 · 8010 Graz · hello@oak-and-iron.example</p>
-      <p>© 2026 Oak &amp; Iron. A fictional shop: demo content for variantly.</p>
+      <p class="small">© 2026 Oak &amp; Iron. A fictional shop: demo content for variantly.</p>
     </footer>
+    </div>
     <script>
       document.getElementById('newsletter').addEventListener('submit', (e) => {
         e.preventDefault();

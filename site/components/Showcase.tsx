@@ -279,17 +279,43 @@ const Showcase = () => {
     // The wheel scrolls the page around the demo, not the panes inside it;
     // the fake scrollbar on the right is the one way down a pane.
     win.document.documentElement.style.setProperty('overflow', 'hidden');
+    // Some designs ask for smooth scrolling; the panes must jump in lockstep.
+    win.document.documentElement.style.setProperty('scroll-behavior', 'auto', 'important');
     applyScroll(f);
     win.addEventListener('scroll', () => syncFrom(f), { passive: true });
     paintThumb();
     // Hover mode: the panes cover the stage edge to edge, so their own
     // clientX is the stage's. A held drag still wins.
     win.addEventListener('pointermove', (e) => {
-      if (!hoverRef.current || stage.current?.dataset.dragging === 'true') return;
+      // Mouse only: a finger has no hover, it drags the line instead.
+      if (!hoverRef.current || e.pointerType !== 'mouse') return;
+      if (stage.current?.dataset.dragging === 'true') return;
       cancelAnimationFrame(anim.current);
       setPos((e.clientX / f.clientWidth) * 100);
     });
     win.addEventListener('pointerdown', takeOver);
+    // A click on empty space in either half glides the line there; links,
+    // buttons, fields and selected text keep their own click.
+    win.addEventListener('click', (e) => {
+      const t = e.target as Element | null;
+      if (
+        t?.closest('a, button, input, select, textarea, label, summary, [role=button], [tabindex]')
+      )
+        return;
+      if (win.getSelection()?.toString()) return;
+      tween((e.clientX / f.clientWidth) * 100, 320);
+    });
+    // A click on empty space in either half glides the line there; links,
+    // buttons, fields and selected text keep their own click.
+    win.addEventListener('click', (e) => {
+      const t = e.target as Element | null;
+      if (
+        t?.closest('a, button, input, select, textarea, label, summary, [role=button], [tabindex]')
+      )
+        return;
+      if (win.getSelection()?.toString()) return;
+      tween((e.clientX / f.clientWidth) * 100, 320);
+    });
     win.addEventListener('wheel', takeOver, { passive: true });
     win.addEventListener('keydown', (e) => {
       const n = Number(e.key);
@@ -345,7 +371,10 @@ const Showcase = () => {
     tween(pct(e), 160);
   };
   const onMove = (e: PointerEvent<HTMLElement>) => {
-    if (stage.current?.dataset.dragging !== 'true') return;
+    // In follow mode the cursor sits on the line, over this band, so the
+    // band has to keep the line moving too or it stalls under the cursor.
+    const follow = hoverRef.current && e.pointerType === 'mouse';
+    if (stage.current?.dataset.dragging !== 'true' && !follow) return;
     cancelAnimationFrame(anim.current);
     setPos(pct(e));
   };
@@ -375,6 +404,14 @@ const Showcase = () => {
   useEffect(() => {
     hoverRef.current = hover;
   }, [hover]);
+
+  // Follow mode needs a mouse; drop it when there isn't one any more.
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const off = () => !mq.matches && setHover(false);
+    mq.addEventListener('change', off);
+    return () => mq.removeEventListener('change', off);
+  }, []);
 
   // Never leave the stage hidden if a pane is slow to load.
   useEffect(() => {

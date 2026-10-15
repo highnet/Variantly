@@ -1,12 +1,10 @@
-<!-- variantly {"variant":1,"count":6,"approach":"redesign","direction":"brutalist","appRel":"","stack":"static"} -->
+<!-- variantly {"variant":1,"count":6,"approach":"redesign","direction":"nordic-catalogue","appRel":"","stack":"static"} -->
 # variantly brief: variant 1 of 6
 
 ## Task
-Redesign the site in the **Brutalist** direction: raw HTML brutalism: system mono and one heavy grotesk, black borders, no radius, exposed structure, stark white/black with one safety-orange. Push it far enough to be recognisable at a glance.
+Redesign the site in the **Nordic catalogue** direction: a printed Scandinavian furniture catalogue: pale birch, ink blue, a humanist sans, product plates with dimensions, calm order.
 
 ## Rules
 - Change presentation, not behaviour.
-- Non-interactive: work without asking questions.
-- No packages.
-- No servers.
-- No commits.
+- Non-interactive: no questions, work autonomously.
+- No packages, no servers, no commits.

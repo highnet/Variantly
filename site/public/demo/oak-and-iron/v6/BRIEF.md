@@ -1,12 +1,12 @@
-<!-- variantly {"variant":6,"count":6,"approach":"redesign","direction":"trade-catalogue","appRel":"","stack":"static"} -->
+<!-- variantly {"variant":6,"count":6,"approach":"redesign","direction":"risograph-zine","appRel":"","stack":"static"} -->
 # variantly brief: variant 6 of 6
 
 ## Task
-Redesign the Oak & Iron demo site in the **Trade catalogue** direction: an 1890s ironmonger's trade catalogue: engraved-style rules, condensed slab and old-style serif, sepia ink on rag paper, numbered stock items. Push it far enough to be recognisable at a glance.
+Redesign the Oak & Iron demo site in the **Risograph zine** direction: a two-colour risograph zine with fluorescent pink and teal overprint, misregistration, halftone, hand-set headings and a stapled-paper feel. Push it far enough to be recognisable at a glance.
 
 ## Rules
 - Change presentation, not behaviour.
-- Non-interactive: no new JS beyond the existing newsletter script.
+- Non-interactive: no prompts or questions.
 - No packages.
 - No servers.
 - No commits.

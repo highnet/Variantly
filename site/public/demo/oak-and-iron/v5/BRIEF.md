@@ -1,12 +1,12 @@
-<!-- variantly {"variant":5,"count":6,"approach":"redesign","direction":"mingei-craft","appRel":"","stack":"static"} -->
+<!-- variantly {"variant":5,"count":6,"approach":"redesign","direction":"brutalist","appRel":"","stack":"static"} -->
 # variantly brief: variant 5 of 6
 
 ## Task
-Redesign the Oak & Iron demo site in the **Mingei craft** direction: Japanese mingei folk-craft, indigo and persimmon, washi texture, vertical accents, a refined serif with lots of quiet space.
+Redesign the site in the **Brutalist** direction: raw HTML brutalism: system mono and one heavy grotesk, black borders, no radius, exposed structure, stark white/black with one safety-orange. Push it far enough to be recognisable at a glance.
 
 ## Rules
 - Change presentation, not behaviour.
-- Non-interactive: no new JS beyond the existing newsletter script.
+- Non-interactive: work without asking questions.
 - No packages.
 - No servers.
 - No commits.

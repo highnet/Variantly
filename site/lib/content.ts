@@ -27,15 +27,6 @@ const FILES = ['index.html', 'about.html', 'style.css'];
 export const DEMO_VARIANTS: DemoVariant[] = [
   {
     n: 1,
-    direction: 'Brutalist',
-    summary:
-      'Raw brutalist grid: black rules, square corners, system mono with Archivo Black headings, stark white and black, safety-orange accents.',
-    files: FILES,
-    a11y: 98,
-    axe: 2,
-  },
-  {
-    n: 2,
     direction: 'Nordic catalogue',
     summary:
       'A printed Scandinavian catalogue: pale birch paper, ink-blue rules and type, numbered sections, product plates with line drawings and dimensions.',
@@ -44,25 +35,7 @@ export const DEMO_VARIANTS: DemoVariant[] = [
     axe: 1,
   },
   {
-    n: 3,
-    direction: 'Art Deco',
-    summary:
-      'A 1920s Art Deco salon: Limelight and Poiret One display type, brass on deep green, a sunburst, stepped frames and diamond rules.',
-    files: FILES,
-    a11y: 98,
-    axe: 1,
-  },
-  {
-    n: 4,
-    direction: 'Risograph zine',
-    summary:
-      'A stapled cream zine page: misregistered pink-and-teal overprint headings, Courier Prime body text, halftone dots and drawn product plates.',
-    files: FILES,
-    a11y: 98,
-    axe: 1,
-  },
-  {
-    n: 5,
+    n: 2,
     direction: 'Mingei craft',
     summary:
       'Japanese folk craft: Shippori Mincho serif, indigo and persimmon on speckled washi paper, vertical accents and a quiet, spacious layout.',
@@ -71,10 +44,37 @@ export const DEMO_VARIANTS: DemoVariant[] = [
     axe: 16,
   },
   {
-    n: 6,
+    n: 3,
     direction: 'Trade catalogue',
     summary:
       'An 1890s ironmonger’s catalogue on rag paper: double-ruled borders, numbered stock items, dotted price leaders, sepia ink with rust accents.',
+    files: FILES,
+    a11y: 98,
+    axe: 1,
+  },
+  {
+    n: 4,
+    direction: 'Art Deco',
+    summary:
+      'A 1920s Art Deco salon: Limelight and Poiret One display type, brass on deep green, a sunburst, stepped frames and diamond rules.',
+    files: FILES,
+    a11y: 98,
+    axe: 1,
+  },
+  {
+    n: 5,
+    direction: 'Brutalist',
+    summary:
+      'Raw brutalist grid: black rules, square corners, system mono with Archivo Black headings, stark white and black, safety-orange accents.',
+    files: FILES,
+    a11y: 98,
+    axe: 2,
+  },
+  {
+    n: 6,
+    direction: 'Risograph zine',
+    summary:
+      'A stapled cream zine page: misregistered pink-and-teal overprint headings, Courier Prime body text, halftone dots and drawn product plates.',
     files: FILES,
     a11y: 98,
     axe: 1,
