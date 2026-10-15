@@ -14,7 +14,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createParser } from './agent-output.mjs';
 import { agentById, agentFile } from './agents.mjs';
-import { defaultDirections, extractSummary, hasAnswers, productMarkdown, writeBrief } from './brief.mjs';
+import { defaultDirections, extractReview, extractSummary, hasAnswers, productMarkdown, writeBrief, writeReviewBrief } from './brief.mjs';
+import { auditMarkdown, playwrightMcp, runAudit } from './checks.mjs';
 import { stepFrom } from './steps.mjs';
 import * as git from './git.mjs';
 import { LineBuffer, killTree, runOk, spawnArgs } from './proc.mjs';
@@ -43,10 +44,13 @@ const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  * @property {number} maxLive
  * @property {'link' | 'install'} deps
  * @property {number} agentTimeoutMin
+ * @property {boolean} browser   give the agent a browser (Playwright MCP) on its live variant
+ * @property {boolean} review    a second pass: Impeccable critique and audit, then fixes
+ * @property {boolean} audit     score the original and every variant with axe-core and Lighthouse
  */
 
 /**
- * @typedef {'queued' | 'preparing' | 'running' | 'committing' | 'done' | 'failed' | 'cancelled'} VariantStatus
+ * @typedef {'queued' | 'preparing' | 'running' | 'reviewing' | 'committing' | 'done' | 'failed' | 'cancelled'} VariantStatus
  * @typedef {object} Variant
  * @property {number} n
  * @property {string} direction
@@ -61,6 +65,10 @@ const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  * @property {string} [picked]    the world Impeccable picked, as the agent named it
  * @property {number} [step]      index into STEPS: where the run is
  * @property {number} [credits]   AI credits / premium requests, when the agent reports them (Copilot)
+ * @property {string} [review]    what the review pass found and fixed
+ * @property {import('./checks.mjs').AuditResult} [audit]  axe-core and Lighthouse scores
+ * @property {'running' | 'failed'} [auditState]
+ * @property {string} [auditError]
  */
 
 /**
@@ -73,6 +81,8 @@ const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  * @property {Variant[]} variants
  * @property {number | null} chosen
  * @property {{ files: string[], conflicts: string[], depsChanged: boolean } | null} result
+ * @property {import('./checks.mjs').AuditResult} [baseline]  the original's scores
+ * @property {string} [baselineError]
  */
 
 /** @param {string} repo */
@@ -96,6 +106,8 @@ export class Session extends EventEmitter {
     this.runs = new Map();
     /** @type {Promise<unknown> | undefined} */
     this.gitQueue = undefined;
+    /** @type {Promise<void> | undefined} */
+    this.auditQueue = undefined;
     this.pool = new ServerPool({
       inject: (id) => frameScriptTag(id),
       local: opts.local,
@@ -121,6 +133,8 @@ export class Session extends EventEmitter {
       }
       this.state.phase = this.state.variants.some((v) => v.status === 'done') ? 'ready' : 'setup';
     }
+    // An audit that was running when variantly stopped never finishes.
+    for (const v of this.state.variants) if (v.auditState === 'running') v.auditState = undefined;
     if (this.state.config) this.pool.maxLive = this.state.config.maxLive;
     if (this.state.phase === 'ready' && this.state.config) await this.#registerTargets();
     return this.state;
@@ -194,6 +208,7 @@ export class Session extends EventEmitter {
     await this.save();
     await this.#registerTargets();
     this.pool.ensure('original').catch(() => {});
+    if (this.state.config?.audit) this.audit('original').catch(() => {});
     this.#runQueue().catch((err) => this.emit('error', err));
     return { untracked: snap.untracked.length, dirty: snap.dirty };
   }
@@ -235,6 +250,10 @@ export class Session extends EventEmitter {
     v.files = [];
     v.costUsd = undefined;
     v.usage = undefined;
+    v.review = undefined;
+    v.audit = undefined;
+    v.auditState = undefined;
+    v.auditError = undefined;
     const wasIdle = this.state.phase !== 'generating';
     this.state.phase = 'generating';
     await this.save();
@@ -260,7 +279,7 @@ export class Session extends EventEmitter {
     const adapter = adapterById(config.stackId);
     const agent = agentById(config.agent);
     const log = new LineBuffer(2000);
-    /** @type {{ child?: import('node:child_process').ChildProcess, log: LineBuffer, cancelled?: boolean, costUsd?: number, credits?: number, picked?: string, usage?: import('./agent-output.mjs').Usage }} */
+    /** @type {AgentRunState & { log: LineBuffer }} */
     const run = { log };
     /** @type {ReturnType<typeof setInterval> | undefined} */
     let liveUsage;
@@ -288,6 +307,12 @@ export class Session extends EventEmitter {
       const placed = await this.#prepareWorktree(wt, config, adapter, say);
       if (run.cancelled) return;
 
+      // With a browser, the agent can look at its own variant while it works.
+      const browser = config.browser && agent.id !== 'demo';
+      const mcp = browser ? { playwright: playwrightMcp() } : undefined;
+      const previewUrl = browser ? this.pool.urls(`v${v.n}`)?.preview : undefined;
+      if (browser) this.pool.ensure(`v${v.n}`).catch(() => {});
+
       const briefPath = path.join(this.dir, 'briefs', `v${v.n}.md`);
       await mkdir(path.dirname(briefPath), { recursive: true });
       const appDir = path.join(wt, config.appRel);
@@ -308,6 +333,7 @@ export class Session extends EventEmitter {
           styles: adapter.styles,
           hasProduct: existsSync(path.join(appDir, 'PRODUCT.md')) || existsSync(path.join(wt, 'PRODUCT.md')),
           hasDesign: existsSync(path.join(appDir, 'DESIGN.md')) || existsSync(path.join(wt, 'DESIGN.md')),
+          previewUrl,
         }),
       );
 
@@ -321,11 +347,36 @@ export class Session extends EventEmitter {
         Object.assign(v, { usage: run.usage && { ...run.usage }, costUsd: run.costUsd, credits: run.credits, picked: run.picked });
         this.save().catch(() => {});
       }, 3000);
-      const inv = agent.invocation({ cwd: wt, briefPath, model: config.model || undefined, permissions: config.permissions });
-      inv.file = await agentFile(agent);
-      say(`$ ${inv.file === agent.bin ? agent.bin : JSON.stringify(inv.file)} ${inv.args.map((a) => (/\s/.test(a) ? JSON.stringify(a) : a)).join(' ')}`);
-      const { text: output, tail, unavailable } = await this.#runAgent(run, inv, wt, config.agentTimeoutMin, say);
+      const launch = async (/** @type {string} */ brief) => {
+        const inv = agent.invocation({ cwd: wt, briefPath: brief, model: config.model || undefined, permissions: config.permissions, mcp });
+        inv.file = await agentFile(agent);
+        say(`$ ${inv.file === agent.bin ? agent.bin : JSON.stringify(inv.file)} ${inv.args.map((a) => (/\s/.test(a) ? JSON.stringify(a) : a)).join(' ')}`);
+        return this.#runAgent(run, inv, wt, config.agentTimeoutMin, say);
+      };
+      const { text: output, tail, unavailable } = await launch(briefPath);
       if (run.cancelled) return;
+
+      // The review pass: Impeccable's critique and audit, fed the machine
+      // scores, fixing what they find. Its failure keeps the build.
+      let review = '';
+      if (config.review && agent.id !== 'demo') {
+        await update({ status: 'reviewing' });
+        say('Reviewing: Impeccable critique and audit.');
+        const scores = config.audit ? await this.#score(`v${v.n}`, config, say) : undefined;
+        const reviewPath = path.join(this.dir, 'briefs', `v${v.n}-review.md`);
+        await writeFile(
+          reviewPath,
+          writeReviewBrief({ variant: v.n, agent: agent.id, routes: config.routes, previewUrl, audit: scores && auditMarkdown(scores) }),
+        );
+        run.carry = { costUsd: run.costUsd, usage: run.usage, credits: run.credits };
+        try {
+          review = extractReview((await launch(reviewPath)).text);
+        } catch (err) {
+          if (run.cancelled) return;
+          say(`Review pass failed, keeping the design as built: ${err instanceof Error ? err.message.split('\n')[0] : err}`);
+        }
+        if (run.cancelled) return;
+      }
 
       await update({ status: 'committing' });
       const exclude = placed.map((p) => path.posix.join(config.appRel.replace(/\\/g, '/'), p));
@@ -335,11 +386,12 @@ export class Session extends EventEmitter {
         throw new Error(['The agent finished without changing any files.', ...tailLines(tail)].join('\n'));
       }
       say(`Committed ${files.length} changed file${files.length === 1 ? '' : 's'}.`);
-      await update({ status: 'done', files, summary: extractSummary(output), finishedAt: Date.now(), costUsd: run.costUsd, usage: run.usage, credits: run.credits, picked: run.picked });
+      await update({ status: 'done', files, summary: extractSummary(output), review: review || undefined, finishedAt: Date.now(), costUsd: run.costUsd, usage: run.usage, credits: run.credits, picked: run.picked });
       // Warm the first finished variant so there is something to compare.
       if (this.state.variants.filter((x) => x.status === 'done').length === 1) {
         this.pool.ensure(`v${v.n}`).catch(() => {});
       }
+      if (config.audit) this.audit(`v${v.n}`).catch(() => {});
     } catch (err) {
       if (run.cancelled) return;
       const message = err instanceof Error ? err.message : String(err);
@@ -411,7 +463,7 @@ export class Session extends EventEmitter {
   }
 
   /**
-   * @param {{ child?: import('node:child_process').ChildProcess, cancelled?: boolean, costUsd?: number, credits?: number, picked?: string, usage?: import('./agent-output.mjs').Usage }} run
+   * @param {AgentRunState} run
    * @param {import('./agents.mjs').AgentRun} inv
    * @param {string} cwd
    * @param {number} timeoutMin
@@ -433,9 +485,7 @@ export class Session extends EventEmitter {
           if (named) run.picked = named[1].trim().replace(/[.`]+$/, '');
         }
         // Live usage: the board shows spend while the agent works.
-        run.usage = parser.usage();
-        run.costUsd = parser.costUsd();
-        run.credits = parser.credits?.();
+        tally(run, parser);
       };
       const onData = (/** @type {Buffer} */ chunk) => {
         const parts = (partial + chunk.toString()).split(/\r?\n/);
@@ -458,9 +508,7 @@ export class Session extends EventEmitter {
       child.on('exit', (code) => {
         clearTimeout(timer);
         if (partial) onLine(partial);
-        run.costUsd = parser.costUsd();
-        run.usage = parser.usage();
-        run.credits = parser.credits?.();
+        tally(run, parser);
         const result = { text: parser.text(), tail: parser.tail(), unavailable: parser.unavailable() };
         if (run.cancelled || code === 0) return resolve(result);
         if (result.unavailable) return reject(new AgentUnavailable(`The agent exited with code ${code}: ${result.unavailable}`));
@@ -468,6 +516,67 @@ export class Session extends EventEmitter {
         reject(new Error(error ? `The agent exited with code ${code}: ${error}` : [`The agent exited with code ${code}.`, ...tailLines(result.tail)].join('\n')));
       });
     });
+  }
+
+  /**
+   * Score one target (the original or a variant) with axe-core and
+   * Lighthouse, one at a time so audits don't fight over servers.
+   * @param {string} id  'original' | 'v1' ...
+   */
+  async audit(id) {
+    const config = this.state.config;
+    if (!config) return;
+    const v = id === 'original' ? undefined : this.state.variants.find((x) => `v${x.n}` === id);
+    if (id !== 'original' && !v) return;
+    const mark = async (/** @type {Partial<Variant>} */ patch) => {
+      if (v) Object.assign(v, patch);
+      await this.save();
+    };
+    await mark({ auditState: 'running', auditError: undefined });
+    /** @type {Promise<void>} */
+    const next = (this.auditQueue ?? Promise.resolve()).then(async () => {
+      try {
+        const say = (/** @type {string} */ line) => this.emit('log', { target: id, lines: [line] });
+        const result = await this.#score(id, config, say, true);
+        if (v) await mark({ audit: result, auditState: undefined });
+        else {
+          this.state.baseline = result;
+          this.state.baselineError = undefined;
+          await this.save();
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message.split('\n')[0] : String(err);
+        if (v) await mark({ auditState: 'failed', auditError: message });
+        else {
+          this.state.baselineError = message;
+          await this.save();
+        }
+      }
+    });
+    this.auditQueue = next.catch(() => {});
+    return next;
+  }
+
+  /**
+   * Start a target if needed and run the audit against its dev server.
+   * @param {string} id @param {Config} config @param {(line: string) => void} say
+   * @param {boolean} [rethrow]  throw on failure instead of returning undefined
+   */
+  async #score(id, config, say, rethrow = false) {
+    try {
+      await this.pool.ensure(id);
+      const base = this.pool.urls(id)?.upstream;
+      if (!base) throw new Error(this.pool.status(id)?.error ?? 'The server is not running.');
+      const route = config.routes.find((r) => r.startsWith('/')) ?? '/';
+      say(`Scoring ${id} with axe-core and Lighthouse…`);
+      const result = await runAudit(new URL(route, base).href);
+      say(`Scored ${id}: accessibility ${result.lighthouse.accessibility ?? '–'}, ${result.axe.total} axe violations.`);
+      return result;
+    } catch (err) {
+      if (rethrow) throw err;
+      say(`Could not score ${id}: ${err instanceof Error ? err.message.split('\n')[0] : err}`);
+      return undefined;
+    }
   }
 
   /** Register the original and every finished variant with the server pool. */
@@ -573,3 +682,36 @@ const tailLines = (tail) => (tail.length ? ['Last output:', ...tail.slice(-5).ma
 
 /** @param {string} id */
 const frameScriptTag = (id) => `<script src="/__variantly/frame.js" data-variantly="${id}" defer></script>`;
+
+/**
+ * @typedef {object} AgentRunState
+ * @property {import('node:child_process').ChildProcess} [child]
+ * @property {boolean} [cancelled]
+ * @property {number} [costUsd]
+ * @property {number} [credits]
+ * @property {string} [picked]
+ * @property {import('./agent-output.mjs').Usage} [usage]
+ * @property {{ costUsd?: number, credits?: number, usage?: import('./agent-output.mjs').Usage }} [carry]  totals from earlier passes
+ */
+
+/** @param {number | undefined} a @param {number | undefined} b */
+const plus = (a, b) => (a === undefined ? b : b === undefined ? a : a + b);
+
+/**
+ * Copy a parser's running totals onto the run, on top of earlier passes.
+ * @param {AgentRunState} run @param {import('./agent-output.mjs').OutputParser} parser
+ */
+const tally = (run, parser) => {
+  const c = run.carry ?? {};
+  const u = parser.usage();
+  run.costUsd = plus(c.costUsd, parser.costUsd());
+  run.credits = plus(c.credits, parser.credits?.());
+  run.usage =
+    c.usage && u
+      ? {
+          inputTokens: c.usage.inputTokens + u.inputTokens,
+          outputTokens: c.usage.outputTokens + u.outputTokens,
+          cachedInputTokens: c.usage.cachedInputTokens + u.cachedInputTokens,
+        }
+      : (u ?? c.usage);
+};

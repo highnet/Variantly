@@ -118,6 +118,7 @@ const STATUS = {
   queued: 'Scheduled',
   preparing: 'Preparing',
   running: 'Working',
+  reviewing: 'Reviewing',
   committing: 'Committing',
   done: 'Ready',
   failed: 'Failed',
@@ -223,6 +224,7 @@ const mountCheckin = (main) => {
             segmentButton('via', 'Your agent'),
             segmentButton('to', 'Approach'),
             segmentButton('seats', 'Variants'),
+            segmentButton('checks', 'Quality'),
           ]),
           h('div', { class: 'drawer', id: 'drawer', hidden: true }),
         ]),
@@ -297,6 +299,15 @@ const loadDetect = async () => {
 const selectedCandidate = () => S.detect.candidates.find((c) => c.rel === S.form.appRel && c.stackId === S.form.stackId);
 const selectedAgent = () => S.detect.agents.find((a) => a.id === S.form.agent);
 
+/** The checks around Impeccable: key, title, short name, what it does. */
+const CHECKS = [
+  ['browser', 'Let the agent see its variant', 'browser', 'Each agent gets a headless browser (Playwright MCP) on its own live variant: it screenshots its work at desktop and phone widths and fixes what it sees.'],
+  ['review', 'Review pass', 'review', 'When the design is built, the agent runs again: Impeccable’s critique and audit, fed with the scores, then fixes the worst problems without changing the direction. A second session per variant.'],
+  ['audit', 'Scores', 'scores', 'axe-core and Lighthouse on the original and every variant: accessibility, performance, best practices, SEO. Runs on your machine, costs nothing.'],
+];
+/** A check is on unless turned off; the demo agent has no browser or review pass. */
+const checkOn = (key) => S.form[key] !== false && !(S.form.agent === 'demo' && key !== 'audit');
+
 const segmentValues = () => {
   const f = S.form;
   const cand = selectedCandidate();
@@ -316,6 +327,14 @@ const segmentValues = () => {
     },
     to: { figure: f.approach === 'refine' ? 'Refine' : 'Redesign', sub: pinned ? `${pinned} pinned by you · the rest by Impeccable` : 'Impeccable picks every world' },
     seats: { figure: pad(f.count), sub: `${f.concurrency} at a time · ${f.maxLive} servers live` },
+    checks: (() => {
+      const on = CHECKS.filter(([k]) => checkOn(k));
+      return {
+        figure: `${on.length} of ${CHECKS.length}`,
+        sub: on.length ? on.map(([, , short]) => short).join(' · ') : 'Impeccable only',
+        warn: !S.detect.chrome && (checkOn('browser') || checkOn('audit')),
+      };
+    })(),
   };
 };
 
@@ -560,6 +579,33 @@ const renderDrawer = () => {
     );
   }
 
+  if (S.openSegment === 'checks') {
+    put(drawer,
+      h('fieldset', { class: 'field checks' }, [
+        h('legend', { class: 'label' }, 'Around Impeccable'),
+        ...CHECKS.map(([key, title, , detail]) =>
+          h('label', { class: 'check' }, [
+            h('input', {
+              type: 'checkbox',
+              checked: checkOn(key),
+              disabled: f.agent === 'demo' && key !== 'audit',
+              onChange: (e) => {
+                f[key] = e.target.checked;
+                updateCheckin(true);
+              },
+            }),
+            h('span', {}, [h('span', { class: 'name' }, title), h('span', { class: 'hint' }, detail)]),
+          ]),
+        ),
+      ]),
+      f.agent === 'demo' ? h('p', { class: 'hint' }, 'The demo agent has no browser and no review pass; scores still run.') : null,
+      !d.chrome && (checkOn('browser') || checkOn('audit'))
+        ? h('p', { class: 'note alert' }, ['No Chrome or Chromium found. Install Chrome, or set ', h('code', {}, 'CHROME_PATH'), '; until then the browser and scores will fail.'])
+        : null,
+      h('p', { class: 'hint' }, 'All three run through npx at pinned versions the first time they are needed, so they work with any stack.'),
+    );
+  }
+
   if (S.openSegment === 'seats') {
     put(drawer, 
       h('div', { class: 'field-row' }, [
@@ -631,6 +677,7 @@ const advisories = () => {
   const a = selectedAgent();
   if (d.dirty) list.push(['', 'Your uncommitted edits to tracked files are included in every variant.']);
   if (d.untracked) list.push(['', `${plural(d.untracked, 'untracked file')} won't be in the variants. Commit what the site needs.`]);
+  if (!d.chrome && (checkOn('browser') || checkOn('audit'))) list.push(['alert', 'No Chrome found for the browser and scores. Set CHROME_PATH or turn them off under Quality.']);
   return list;
 };
 
@@ -661,7 +708,7 @@ const renderStub = () => {
         h('p', { class: 'dock-summary' }, [
           h('strong', {}, `${plural(f.count, 'variant')} · ${f.approach}`),
           ` with ${agentName}, ${f.concurrency} at a time. `,
-          f.agent === 'demo' ? 'No AI, nothing spent.' : `${plural(f.count, 'session')} on your account.`,
+          f.agent === 'demo' ? 'No AI, nothing spent.' : `${plural(f.count * (checkOn('review') ? 2 : 1), 'session')} on your account${checkOn('review') ? ', review passes included' : ''}.`,
         ]),
         h('button', { class: 'btn primary big', type: 'button', disabled: blocks.length > 0, onClick: generate }, `Generate ${plural(f.count, 'variant')}`, icon('arrow')),
       ]),
@@ -781,7 +828,7 @@ const renderReadout = (el) => {
   el.replaceChildren(...parts.map((p) => h('span', {}, p)));
 };
 
-const order = { done: 0, committing: 1, running: 2, preparing: 3, queued: 4, failed: 5, cancelled: 6 };
+const order = { done: 0, committing: 1, reviewing: 2, running: 3, preparing: 4, queued: 5, failed: 6, cancelled: 7 };
 
 const updateBoardView = () => {
   const vs = variants();
@@ -791,6 +838,22 @@ const updateBoardView = () => {
   renderReadout($('#board-meta'));
   $('#to-compare').disabled = ready === 0;
   renderBoardRows($('#board-rows'), [...vs].sort((a, b) => order[a.status] - order[b.status] || (a.finishedAt ?? 0) - (b.finishedAt ?? 0) || a.n - b.n));
+  renderBaselineRow($('#board-rows'));
+};
+
+/** The original's scores as the board's first row, so every variant reads against it. */
+const renderBaselineRow = (tbody) => {
+  if (!S.snap?.config?.audit && !S.snap?.baseline) return;
+  const a = S.snap.baseline;
+  const err = S.snap.baselineError;
+  tbody.prepend(
+    h('tr', { class: 'baseline' }, [
+      h('td', { class: 'var figure' }, 'Orig'),
+      h('td', { class: 'dir' }, 'Your site as it is', h('span', { class: 'summary scores' }, a ? scoreText(a) : err ? `Not scored: ${err}` : 'Scoring with axe-core and Lighthouse…')),
+      h('td', {}, h('span', { class: 'status', 'data-s': 'scheduled' }, h('span', { class: 'flap-text' }, 'Baseline'))),
+      h('td', { colspan: 4 }),
+    ]),
+  );
 };
 
 const renderBoardRows = (tbody, list) => {
@@ -803,7 +866,7 @@ const renderBoardRows = (tbody, list) => {
     const s = statusKey(v.status);
     const unseen = S.unseen.has(v.n);
     const open = S.openRow === v.n;
-    const statusEl = h('span', { class: `status${unseen ? ' unseen' : ''}`, 'data-s': s }, h('span', { class: 'flap-text' }, STATUS[v.status]), v.status === 'running' ? h('span', { class: 'working-bars', 'aria-hidden': 'true' }, h('i'), h('i'), h('i')) : null);
+    const statusEl = h('span', { class: `status${unseen ? ' unseen' : ''}`, 'data-s': s }, h('span', { class: 'flap-text' }, STATUS[v.status]), ['running', 'reviewing'].includes(v.status) ? h('span', { class: 'working-bars', 'aria-hidden': 'true' }, h('i'), h('i'), h('i')) : null);
     if (prevStatus.has(key) && prevStatus.get(key) !== s) statusEl.classList.add('flip');
     const logLines = S.logs.get(`v${v.n}`) ?? [];
     const tr = h(
@@ -825,7 +888,7 @@ const renderBoardRows = (tbody, list) => {
       },
       [
         h('td', { class: 'var figure' }, vname(v.n)),
-        h('td', { class: 'dir' }, directionLabel(v.direction, v.picked), v.summary ? h('span', { class: 'summary' }, v.summary) : v.error ? h('span', { class: 'summary' }, v.error.split('\n')[0]) : null),
+        h('td', { class: 'dir' }, directionLabel(v.direction, v.picked), v.summary ? h('span', { class: 'summary' }, v.summary) : v.error ? h('span', { class: 'summary' }, v.error.split('\n')[0]) : null, v.review ? h('span', { class: 'summary' }, `Review: ${v.review}`) : null, scoreLine(v)),
         h('td', {}, statusEl),
         h('td', { class: 'num data', 'data-elapsed': key }, elapsed(v)),
         h('td', { class: 'num data hide-compact' }, v.files?.length ? String(v.files.length) : '—'),
@@ -844,6 +907,50 @@ const renderBoardRows = (tbody, list) => {
   }
 };
 
+// Scores --------------------------------------------------------------------
+
+/** One target's axe-core and Lighthouse result: a variant, or null for the original. */
+const auditOf = (v) => (v ? v.audit : S.snap?.baseline);
+
+/** "92 (+7)" against the original, when both were scored. */
+const vsBase = (n, base) => (typeof n !== 'number' ? '–' : typeof base === 'number' && base !== n ? `${n} (${n > base ? '+' : ''}${n - base})` : String(n));
+
+const scoreText = (a, base) =>
+  `A11y ${vsBase(a.lighthouse.accessibility, base?.lighthouse.accessibility)} · Perf ${vsBase(a.lighthouse.performance, base?.lighthouse.performance)} · axe ${a.axe.total}${base ? ` (was ${base.axe.total})` : ''}`;
+
+/** The board's one-line readout under a variant's summary. */
+const scoreLine = (v) => {
+  if (v.auditState === 'running') return h('span', { class: 'summary' }, 'Scoring with axe-core and Lighthouse…');
+  if (v.auditState === 'failed') return h('span', { class: 'summary' }, `Not scored: ${v.auditError ?? 'the audit failed'}`);
+  return v.audit ? h('span', { class: 'summary scores' }, scoreText(v.audit, S.snap?.baseline)) : null;
+};
+
+/** The details panel's scores, with the worst axe violations and a re-run button. */
+const scorePanel = (v) => {
+  if (!S.snap?.config?.audit && !auditOf(v)) return null;
+  const a = auditOf(v);
+  const base = v ? S.snap?.baseline : null;
+  const failed = v ? v.auditState === 'failed' && v.auditError : S.snap?.baselineError;
+  const running = v ? v.auditState === 'running' : !a && !failed;
+  const id = v ? `v${v.n}` : 'original';
+  return h('div', { class: 'scores-panel' }, [
+    h('div', { class: 'label' }, 'Scores · axe-core and Lighthouse'),
+    a
+      ? h('dl', { class: 'scores-grid' }, [
+          ['Accessibility', a.lighthouse.accessibility, base?.lighthouse.accessibility],
+          ['Performance', a.lighthouse.performance, base?.lighthouse.performance],
+          ['Best practices', a.lighthouse.bestPractices, base?.lighthouse.bestPractices],
+          ['SEO', a.lighthouse.seo, base?.lighthouse.seo],
+          ['axe violations', a.axe.total, base?.axe.total],
+        ].flatMap(([k, n, b]) => [h('dt', {}, k), h('dd', { class: 'data' }, vsBase(n, b))]))
+      : h('p', { class: 'hint' }, running ? 'Scoring…' : failed ? `Not scored: ${failed}` : 'Not scored yet.'),
+    a?.axe.violations.length
+      ? h('ul', {}, a.axe.violations.slice(0, 5).map((x) => h('li', {}, [h('strong', {}, x.impact), ` ${x.help} (${x.nodes}×)`])))
+      : null,
+    running ? null : h('button', { class: 'btn outline small', type: 'button', onClick: () => act('audit', id) }, a ? 'Score again' : 'Score now'),
+  ]);
+};
+
 const logPanel = (v) => {
   const lines = S.logs.get(`v${v.n}`) ?? [];
   const pre = h('pre', { 'data-log': `v${v.n}` }, lines.join('\n') || 'No output yet.');
@@ -854,7 +961,7 @@ const logPanel = (v) => {
     h('div', { class: 'actions' }, [
       v.status === 'done' ? h('button', { class: 'btn primary small', type: 'button', onClick: (e) => (e.stopPropagation(), goCompare(v.n)) }, `Compare ${vname(v.n)}`) : null,
       ['failed', 'cancelled'].includes(v.status) ? h('button', { class: 'btn outline small', type: 'button', onClick: (e) => (e.stopPropagation(), act('retry', v.n)) }, 'Retry') : null,
-      ['queued', 'preparing', 'running'].includes(v.status) ? h('button', { class: 'btn outline small', type: 'button', onClick: (e) => (e.stopPropagation(), act('cancel', v.n)) }, 'Stop') : null,
+      ['queued', 'preparing', 'running', 'reviewing'].includes(v.status) ? h('button', { class: 'btn outline small', type: 'button', onClick: (e) => (e.stopPropagation(), act('cancel', v.n)) }, 'Stop') : null,
     ]),
   ]);
 };
@@ -1087,7 +1194,9 @@ const showFlag = () => {
     flag.classList.add('gone');
     return;
   }
-  flag.replaceChildren(h('span', {}, h('strong', {}, directionLabel(v.direction, v.picked)), v.summary ? ` — ${v.summary}` : ''));
+  flag.replaceChildren(
+    h('span', {}, h('strong', {}, directionLabel(v.direction, v.picked)), v.summary ? ` — ${v.summary}` : '', v.audit ? h('span', { class: 'flag-scores' }, scoreText(v.audit, S.snap?.baseline)) : null),
+  );
   flag.classList.remove('gone');
   clearTimeout(flagTimer);
   flagTimer = setTimeout(() => flag.classList.add('gone'), 4500);
@@ -1126,7 +1235,7 @@ const renderDock = () => {
       h('button', { class: 'cell orig', type: 'button', 'aria-current': String(S.sel === 'original'), title: 'Original (o)', onClick: () => select('original') }, 'ORIG'),
       ...vs.map((v) => {
         const ready = v.status === 'done';
-        const pipClass = S.unseen.has(v.n) ? 'pip' : v.status === 'failed' ? 'pip fail' : ['running', 'preparing', 'committing', 'queued'].includes(v.status) ? 'pip work' : '';
+        const pipClass = S.unseen.has(v.n) ? 'pip' : v.status === 'failed' ? 'pip fail' : ['running', 'reviewing', 'preparing', 'committing', 'queued'].includes(v.status) ? 'pip work' : '';
         return h(
           'button',
           {
@@ -1195,7 +1304,7 @@ const renderInfo = async () => {
   if (!S.infoOpen) return;
   const v = variants().find((x) => x.n === S.sel);
   if (!v) {
-    el.replaceChildren(h('header', {}, [h('span', { class: 'figure' }, 'Original'), closeInfoBtn()]), h('div', { class: 'body' }, 'Your current checkout, as it is.'));
+    el.replaceChildren(h('header', {}, [h('span', { class: 'figure' }, 'Original'), closeInfoBtn()]), h('div', { class: 'body' }, ['Your current checkout, as it is.', scorePanel(null)]));
     return;
   }
   if (!S.logs.has(`v${v.n}`)) {
@@ -1207,6 +1316,8 @@ const renderInfo = async () => {
     h('header', {}, [h('div', {}, [h('div', { class: 'figure' }, vname(v.n)), h('div', { class: 'label' }, directionLabel(v.direction, v.picked))]), closeInfoBtn()]),
     h('div', { class: 'body' }, [
       v.summary ? h('p', { style: { margin: 0 } }, v.summary) : null,
+      v.review ? h('p', { style: { margin: 0 } }, [h('span', { class: 'label' }, 'Review '), v.review]) : null,
+      scorePanel(v),
       h('div', {}, [h('div', { class: 'label' }, `${plural(v.files.length, 'file')} changed`), h('ul', {}, v.files.map((f) => h('li', {}, f)))]),
       h('div', { class: 'label' }, `Branch ${S.snap.runId ? `variantly/${S.snap.runId}/v${v.n}` : ''}`),
     ]),
@@ -1264,7 +1375,7 @@ const mountKept = (main) => {
       h('section', { class: 'pass', 'aria-labelledby': 'kept-title' }, [
         h('div', { class: 'pass-main' }, [
           h('h1', { id: 'kept-title', class: 'figure big', style: { margin: 0 } }, vname(n)),
-          h('div', {}, [h('h2', {}, directionLabel(v?.direction ?? '', v?.picked)), v?.summary ? h('p', { class: 'hint', style: { fontSize: '15px' } }, v.summary) : null]),
+          h('div', {}, [h('h2', {}, directionLabel(v?.direction ?? '', v?.picked)), v?.summary ? h('p', { class: 'hint', style: { fontSize: '15px' } }, v.summary) : null, v?.review ? h('p', { class: 'hint' }, `Review: ${v.review}`) : null, v?.audit ? h('p', { class: 'hint data' }, scoreText(v.audit, S.snap?.baseline)) : null]),
           r.conflicts.length ? h('p', { class: 'note bad' }, `Merged with your own edits, with conflicts in ${r.conflicts.join(', ')}. Resolve the conflict markers in those files.`) : null,
           r.depsChanged ? h('p', { class: 'note alert' }, 'This variant changed dependency files. Run your install command.') : null,
           h('div', {}, [h('div', { class: 'label', style: { marginBottom: '8px' } }, `Applied to your working tree, unstaged: ${plural(r.files.length, 'file')}`), h('ul', {}, r.files.map((f) => h('li', {}, f)))]),

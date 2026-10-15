@@ -14,6 +14,7 @@ import http from 'node:http';
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { findChrome } from './checks.mjs';
 import { detectAgents, impeccableInstallCommand, AGENTS } from './agents.mjs';
 import { EXTRAS, defaultDirections } from './brief.mjs';
 import { detectRoutes } from './routes.mjs';
@@ -154,6 +155,9 @@ export const startApp = async (opts) => {
       case 'POST ensure':
         session.pool.ensure(arg).catch(() => {});
         return session.pool.status(arg);
+      case 'POST audit':
+        session.audit(arg).catch(() => {});
+        return { ok: true };
       case 'POST finalize':
         return session.finalize(n);
       case 'POST discard':
@@ -299,6 +303,7 @@ export const detectProject = async (repo, defaults = {}) => {
     candidates,
     stacks: ADAPTERS.map((a) => ({ id: a.id, name: a.name, stack: a.stack, command: a.command(projectInfoFor(repo)) })),
     agents,
+    chrome: Boolean(findChrome()),
     routes: detectRoutes(path.join(repo, best?.rel ?? '')),
     extras: EXTRAS.map(({ id, label, hint }) => ({ id, label, hint })),
     hasProduct: ['PRODUCT.md', path.join(best?.rel ?? '', 'PRODUCT.md')].some((p) => existsSync(path.join(repo, p))),
@@ -322,6 +327,9 @@ export const detectProject = async (repo, defaults = {}) => {
       maxLive: 3,
       deps: best?.adapter.needsInstall ? 'install' : 'link',
       agentTimeoutMin: 40,
+      browser: true,
+      review: true,
+      audit: true,
       ...defaults,
     },
   };
@@ -363,6 +371,9 @@ export const normalizeConfig = (body) => {
     maxLive: num(body.maxLive, 3, 2, 11),
     deps: body.deps === 'install' ? 'install' : 'link',
     agentTimeoutMin: num(body.agentTimeoutMin, 40, 5, 240),
+    browser: body.browser !== false,
+    review: body.review !== false,
+    audit: body.audit !== false,
   };
 };
 

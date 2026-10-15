@@ -1,0 +1,67 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { extractReview, writeBrief, writeReviewBrief } from '../src/brief.mjs';
+import { auditMarkdown, findChrome, playwrightMcp } from '../src/checks.mjs';
+import { normalizeConfig } from '../src/server.mjs';
+
+const BASE = { variant: 1, count: 2, approach: /** @type {const} */ ('redesign'), direction: '', brief: '', routes: [], appRel: '', stackName: 'Static', stackId: 'static', styles: '', hasProduct: false, hasDesign: false };
+
+test('the brief tells the agent about its browser only when it has one', () => {
+  assert.match(writeBrief(BASE), /there is no browser/);
+  const withBrowser = writeBrief({ ...BASE, previewUrl: 'http://localhost:4100' });
+  assert.match(withBrowser, /Playwright browser tools/);
+  assert.match(withBrowser, /http:\/\/localhost:4100/);
+  assert.doesNotMatch(withBrowser, /there is no browser/);
+});
+
+test('the review brief runs Impeccable critique and audit and carries the scores', () => {
+  const r = writeReviewBrief({ variant: 3, agent: 'codex', routes: ['/pricing'], audit: '- axe-core: 2 violating elements' });
+  assert.match(r, /\$impeccable/);
+  assert.match(r, /\*\*critique\*\* on \/pricing/);
+  assert.match(r, /\*\*audit\*\*/);
+  assert.match(r, /## Automated scores\n\n- axe-core: 2 violating/);
+  assert.match(r, /Keep the direction/);
+  // Rules stay numbered in order.
+  assert.deepEqual(r.match(/## Rules[\s\S]*?## When/)?.[0].match(/^\d(?=\.)/gm), ['1', '2', '3', '4', '5', '6', '7']);
+  assert.doesNotMatch(writeReviewBrief({ variant: 1, routes: [] }), /Automated scores/);
+  assert.equal(extractReview('done\nREVIEW: Fixed **contrast** on buttons.'), 'Fixed contrast on buttons.');
+});
+
+test('the checks are on by default and can be turned off', () => {
+  const on = normalizeConfig({ command: 'x {port}' });
+  assert.deepEqual([on.browser, on.review, on.audit], [true, true, true]);
+  const off = normalizeConfig({ command: 'x {port}', browser: false, review: false, audit: false });
+  assert.deepEqual([off.browser, off.review, off.audit], [false, false, false]);
+});
+
+test('findChrome prefers CHROME_PATH, then the Playwright cache', () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'variantly-chrome-'));
+  try {
+    const exe = path.join(dir, 'chromium-1200', 'chrome-linux', 'chrome');
+    mkdirSync(path.dirname(exe), { recursive: true });
+    writeFileSync(exe, '');
+    assert.equal(findChrome({ PLAYWRIGHT_BROWSERS_PATH: dir }, path.join(dir, 'nohome')), exe);
+    const own = path.join(dir, 'mine');
+    writeFileSync(own, '');
+    assert.equal(findChrome({ CHROME_PATH: own, PLAYWRIGHT_BROWSERS_PATH: dir }, dir), own);
+    assert.deepEqual(playwrightMcp(own).args.slice(-2), ['--executable-path', own]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('auditMarkdown lists scores, violations and weak audits', () => {
+  const md = auditMarkdown({
+    url: 'http://x/',
+    at: 0,
+    lighthouse: { performance: 99, accessibility: 80, bestPractices: 100, seo: null, weak: [{ id: 'image-alt', title: 'Images lack alt', score: 0, value: '' }] },
+    axe: { critical: 1, serious: 0, moderate: 0, minor: 0, total: 1, violations: [{ id: 'image-alt', impact: 'critical', help: 'Images must have alt', nodes: 1, targets: ['img'] }] },
+  });
+  assert.match(md, /accessibility 80/);
+  assert.match(md, /SEO –/);
+  assert.match(md, /\*\*critical\*\* `image-alt`/);
+  assert.match(md, /`image-alt` \(0\): Images lack alt/);
+});
