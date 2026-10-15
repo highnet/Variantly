@@ -347,6 +347,11 @@ body[data-view='compare'] {
   border-right: 0;
 }
 
+/* Five segments on two columns: the last spans the row. */
+.segment:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
 .segment:nth-child(-n + 2) {
   border-bottom: 1px solid var(--rule);
 }
@@ -1928,7 +1933,7 @@ body[data-view='compare'] .help {
 /* Wide passes hold all four segments in one row at full figure scale. */
 @container (min-width: 1000px) {
   .segments {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
   .segment:nth-child(2n) {
     border-right: 1px solid var(--rule);
@@ -2210,4 +2215,16 @@ body[data-view='compare'] .help {
 .info .scores-panel .btn.outline {
   color: var(--surface);
   border-color: var(--steel-on-slate);
+}
+
+.flag-scores {
+  display: block;
+  margin-top: 4px;
+  font: 500 12px/1.4 var(--mono);
+  font-stretch: 87.5%;
+  color: var(--steel);
+}
+
+.board tr.baseline td {
+  border-bottom: 1px dashed var(--slate-line);
 }

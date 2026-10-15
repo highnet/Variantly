@@ -14,6 +14,7 @@ import http from 'node:http';
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { findChrome } from './checks.mjs';
 import { detectAgents, impeccableInstallCommand, AGENTS } from './agents.mjs';
 import { defaultDirections } from './brief.mjs';
 import * as git from './git.mjs';
@@ -301,6 +302,7 @@ export const detectProject = async (repo, defaults = {}) => {
     candidates,
     stacks: ADAPTERS.map((a) => ({ id: a.id, name: a.name, stack: a.stack, command: a.command(projectInfoFor(repo)) })),
     agents,
+    chrome: Boolean(findChrome()),
     hasProduct: ['PRODUCT.md', path.join(best?.rel ?? '', 'PRODUCT.md')].some((p) => existsSync(path.join(repo, p))),
     hasDesign: ['DESIGN.md', path.join(best?.rel ?? '', 'DESIGN.md')].some((p) => existsSync(path.join(repo, p))),
     suggested: {

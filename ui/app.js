@@ -204,6 +204,7 @@ const mountCheckin = (main) => {
             segmentButton('via', 'Your agent'),
             segmentButton('to', 'Approach'),
             segmentButton('seats', 'Variants'),
+            segmentButton('checks', 'Quality'),
           ]),
           h('div', { class: 'drawer', id: 'drawer', hidden: true }),
         ]),
@@ -276,6 +277,15 @@ const loadDetect = async () => {
 const selectedCandidate = () => S.detect.candidates.find((c) => c.rel === S.form.appRel && c.stackId === S.form.stackId);
 const selectedAgent = () => S.detect.agents.find((a) => a.id === S.form.agent);
 
+/** The checks around Impeccable: key, title, short name, what it does. */
+const CHECKS = [
+  ['browser', 'Let the agent see its variant', 'browser', 'Each agent gets a headless browser (Playwright MCP) on its own live variant: it screenshots its work at desktop and phone widths and fixes what it sees.'],
+  ['review', 'Review pass', 'review', 'When the design is built, the agent runs again: Impeccable’s critique and audit, fed with the scores, then fixes the worst problems without changing the direction. A second session per variant.'],
+  ['audit', 'Scores', 'scores', 'axe-core and Lighthouse on the original and every variant: accessibility, performance, best practices, SEO. Runs on your machine, costs nothing.'],
+];
+/** A check is on unless turned off; the demo agent has no browser or review pass. */
+const checkOn = (key) => S.form[key] !== false && !(S.form.agent === 'demo' && key !== 'audit');
+
 const segmentValues = () => {
   const f = S.form;
   const cand = selectedCandidate();
@@ -295,6 +305,14 @@ const segmentValues = () => {
     },
     to: { figure: f.approach === 'refine' ? 'Refine' : 'Redesign', sub: pinned ? `${pinned} pinned by you · the rest by Impeccable` : 'Impeccable picks every world' },
     seats: { figure: pad(f.count), sub: `${f.concurrency} at a time · ${f.maxLive} servers live` },
+    checks: (() => {
+      const on = CHECKS.filter(([k]) => checkOn(k));
+      return {
+        figure: `${on.length} of ${CHECKS.length}`,
+        sub: on.length ? on.map(([, , short]) => short).join(' · ') : 'Impeccable only',
+        warn: !S.detect.chrome && (checkOn('browser') || checkOn('audit')),
+      };
+    })(),
   };
 };
 
@@ -506,22 +524,33 @@ const renderDrawer = () => {
         h('span', { class: 'label' }, 'Pages that matter (optional)'),
         h('input', { class: 'input', value: f.routes.join(', '), placeholder: '/, /pricing, /blog', onInput: change((e) => (f.routes = e.target.value.split(',').map((s) => s.trim()).filter(Boolean))) }),
       ]),
+    );
+  }
+
+  if (S.openSegment === 'checks') {
+    put(drawer,
       h('fieldset', { class: 'field checks' }, [
-        h('legend', { class: 'label' }, 'Checks'),
-        ...[
-          ['browser', 'Let the agent see its variant', 'A headless browser (Playwright MCP) on the live variant, so the agent screenshots and fixes what it sees.'],
-          ['review', 'Review pass', 'A second agent run per variant: Impeccable’s critique and audit, then fixes. Costs roughly half again.'],
-          ['audit', 'Scores', 'axe-core and Lighthouse on the original and every variant, shown side by side. Runs on your machine, free.'],
-        ].map(([key, title, detail]) =>
+        h('legend', { class: 'label' }, 'Around Impeccable'),
+        ...CHECKS.map(([key, title, , detail]) =>
           h('label', { class: 'check' }, [
-            h('input', { type: 'checkbox', checked: f[key] !== false, disabled: f.agent === 'demo' && key !== 'audit', onChange: (e) => {
-              f[key] = e.target.checked;
-              updateCheckin(true);
-            } }),
+            h('input', {
+              type: 'checkbox',
+              checked: checkOn(key),
+              disabled: f.agent === 'demo' && key !== 'audit',
+              onChange: (e) => {
+                f[key] = e.target.checked;
+                updateCheckin(true);
+              },
+            }),
             h('span', {}, [h('span', { class: 'name' }, title), h('span', { class: 'hint' }, detail)]),
           ]),
         ),
       ]),
+      f.agent === 'demo' ? h('p', { class: 'hint' }, 'The demo agent has no browser and no review pass; scores still run.') : null,
+      !d.chrome && (checkOn('browser') || checkOn('audit'))
+        ? h('p', { class: 'note alert' }, ['No Chrome or Chromium found. Install Chrome, or set ', h('code', {}, 'CHROME_PATH'), '; until then the browser and scores will fail.'])
+        : null,
+      h('p', { class: 'hint' }, 'All three run through npx at pinned versions the first time they are needed, so they work with any stack.'),
     );
   }
 
@@ -596,6 +625,7 @@ const advisories = () => {
   const a = selectedAgent();
   if (d.dirty) list.push(['', 'Your uncommitted edits to tracked files are included in every variant.']);
   if (d.untracked) list.push(['', `${plural(d.untracked, 'untracked file')} won't be in the variants. Commit what the site needs.`]);
+  if (!d.chrome && (checkOn('browser') || checkOn('audit'))) list.push(['alert', 'No Chrome found for the browser and scores. Set CHROME_PATH or turn them off under Quality.']);
   return list;
 };
 
@@ -626,7 +656,7 @@ const renderStub = () => {
         h('p', { class: 'dock-summary' }, [
           h('strong', {}, `${plural(f.count, 'variant')} · ${f.approach}`),
           ` with ${agentName}, ${f.concurrency} at a time. `,
-          f.agent === 'demo' ? 'No AI, nothing spent.' : `${plural(f.count, 'session')} on your account.`,
+          f.agent === 'demo' ? 'No AI, nothing spent.' : `${plural(f.count * (checkOn('review') ? 2 : 1), 'session')} on your account${checkOn('review') ? ', review passes included' : ''}.`,
         ]),
         h('button', { class: 'btn primary big', type: 'button', disabled: blocks.length > 0, onClick: generate }, `Generate ${plural(f.count, 'variant')}`, icon('arrow')),
       ]),
@@ -756,6 +786,22 @@ const updateBoardView = () => {
   renderReadout($('#board-meta'));
   $('#to-compare').disabled = ready === 0;
   renderBoardRows($('#board-rows'), [...vs].sort((a, b) => order[a.status] - order[b.status] || (a.finishedAt ?? 0) - (b.finishedAt ?? 0) || a.n - b.n));
+  renderBaselineRow($('#board-rows'));
+};
+
+/** The original's scores as the board's first row, so every variant reads against it. */
+const renderBaselineRow = (tbody) => {
+  if (!S.snap?.config?.audit && !S.snap?.baseline) return;
+  const a = S.snap.baseline;
+  const err = S.snap.baselineError;
+  tbody.prepend(
+    h('tr', { class: 'baseline' }, [
+      h('td', { class: 'var figure' }, 'Orig'),
+      h('td', { class: 'dir' }, 'Your site as it is', h('span', { class: 'summary scores' }, a ? scoreText(a) : err ? `Not scored: ${err}` : 'Scoring with axe-core and Lighthouse…')),
+      h('td', {}, h('span', { class: 'status', 'data-s': 'scheduled' }, h('span', { class: 'flap-text' }, 'Baseline'))),
+      h('td', { colspan: 4 }),
+    ]),
+  );
 };
 
 const renderBoardRows = (tbody, list) => {
@@ -1093,7 +1139,9 @@ const showFlag = () => {
     flag.classList.add('gone');
     return;
   }
-  flag.replaceChildren(h('span', {}, h('strong', {}, directionLabel(v.direction, v.picked)), v.summary ? ` — ${v.summary}` : ''));
+  flag.replaceChildren(
+    h('span', {}, h('strong', {}, directionLabel(v.direction, v.picked)), v.summary ? ` — ${v.summary}` : '', v.audit ? h('span', { class: 'flag-scores' }, scoreText(v.audit, S.snap?.baseline)) : null),
+  );
   flag.classList.remove('gone');
   clearTimeout(flagTimer);
   flagTimer = setTimeout(() => flag.classList.add('gone'), 4500);
@@ -1273,7 +1321,7 @@ const mountKept = (main) => {
       h('section', { class: 'pass', 'aria-labelledby': 'kept-title' }, [
         h('div', { class: 'pass-main' }, [
           h('h1', { id: 'kept-title', class: 'figure big', style: { margin: 0 } }, vname(n)),
-          h('div', {}, [h('h2', {}, directionLabel(v?.direction ?? '', v?.picked)), v?.summary ? h('p', { class: 'hint', style: { fontSize: '15px' } }, v.summary) : null]),
+          h('div', {}, [h('h2', {}, directionLabel(v?.direction ?? '', v?.picked)), v?.summary ? h('p', { class: 'hint', style: { fontSize: '15px' } }, v.summary) : null, v?.review ? h('p', { class: 'hint' }, `Review: ${v.review}`) : null, v?.audit ? h('p', { class: 'hint data' }, scoreText(v.audit, S.snap?.baseline)) : null]),
           r.conflicts.length ? h('p', { class: 'note bad' }, `Merged with your own edits, with conflicts in ${r.conflicts.join(', ')}. Resolve the conflict markers in those files.`) : null,
           r.depsChanged ? h('p', { class: 'note alert' }, 'This variant changed dependency files. Run your install command.') : null,
           h('div', {}, [h('div', { class: 'label', style: { marginBottom: '8px' } }, `Applied to your working tree, unstaged: ${plural(r.files.length, 'file')}`), h('ul', {}, r.files.map((f) => h('li', {}, f)))]),
