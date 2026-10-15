@@ -1014,7 +1014,9 @@ const targetUrl = (target, path) => {
 
 const showIn = (side, target) => {
   const p = panes[side];
-  if (!p) return;
+  // Keeping shuts every server down: leave the frames as they are, and
+  // never ask for a server back while the change is being applied.
+  if (!p || S.applying) return;
   const srv = server(target);
   const ready = srv?.state === 'ready';
   if (target && srv && srv.state !== 'ready' && srv.state !== 'starting') api('POST', `ensure/${target}`, {}).catch(() => {});
@@ -1108,8 +1110,8 @@ const renderDock = () => {
     dock.replaceChildren(
       h('div', { class: 'confirm', role: 'alertdialog', 'aria-label': 'Keep this variant?' }, [
         h('span', {}, ['Apply ', h('strong', {}, vname(v.n)), ` (${directionLabel(v.direction, v.picked)}) to your working tree? `, h('span', { class: 'muted' }, `${plural(v.files.length, 'file')}. The others stay as branches.`)]),
-        h('button', { class: 'btn outline small', type: 'button', onClick: () => ((S.confirming = false), renderDock()) }, 'Cancel'),
-        h('button', { class: 'btn primary', type: 'button', id: 'apply', onClick: () => keep(v.n) }, `Apply ${vname(v.n)}`),
+        h('button', { class: 'btn outline small', type: 'button', disabled: Boolean(S.applying), onClick: () => ((S.confirming = false), renderDock()) }, 'Cancel'),
+        h('button', { class: 'btn primary', type: 'button', id: 'apply', disabled: Boolean(S.applying), onClick: () => keep(v.n) }, S.applying ? 'Applying…' : `Apply ${vname(v.n)}`),
       ]),
     );
     $('#apply')?.focus();
@@ -1215,17 +1217,16 @@ const renderInfo = async () => {
 const closeInfoBtn = () => h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close details', onClick: toggleInfo }, icon('close'));
 
 const keep = async (n) => {
-  const btn = $('#apply');
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Applying…';
-  }
+  S.applying = n;
+  renderDock();
   try {
     await api('POST', `finalize/${n}`, {});
   } catch (err) {
     toast(err.message, true);
     S.confirming = false;
     renderDock();
+  } finally {
+    S.applying = null;
   }
 };
 
