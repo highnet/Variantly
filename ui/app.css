@@ -384,8 +384,38 @@ kbd {
   flex: 1;
 }
 
+/* Compare is full screen: the header folds away except its theme and
+   accessibility controls, which sit in the bottom-right corner. */
 body[data-view='compare'] .bar {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  z-index: 30;
+  height: auto;
+  padding: 4px;
+  border: 1px solid var(--slate-line);
+  border-radius: 999px;
+  background: var(--slate);
+  box-shadow: 0 10px 30px -8px rgb(0 0 0 / 0.6);
+}
+
+body[data-view='compare'] .bar > :not(.prefs) {
   display: none;
+}
+
+body[data-view='compare'] .bar .icon-btn {
+  color: var(--steel-on-slate);
+}
+
+body[data-view='compare'] .bar .icon-btn:hover,
+body[data-view='compare'] .bar .icon-btn[aria-expanded='true'] {
+  background: var(--slate-2);
+  color: #fff;
+}
+
+body[data-view='compare'] .prefs-menu {
+  top: auto;
+  bottom: 48px;
 }
 
 body[data-view='compare'] {
@@ -2842,4 +2872,29 @@ button.wiz-chip.done:hover {
 .wait-card .wait-last {
   border-top: 1px solid var(--slate-line);
   color: var(--steel-on-slate);
+}
+
+/* Narrow compare screens: the dock fills the bottom, so the corner
+   controls move up under the variant label. */
+@media (max-width: 1100px) {
+  body[data-view='compare'] .bar {
+    top: 48px;
+    bottom: auto;
+  }
+
+  body[data-view='compare'] .prefs-menu {
+    top: 44px;
+    bottom: auto;
+  }
+}
+
+/* In compare the corner holds the theme controls; toasts sit above them. */
+body[data-view='compare'] .toasts {
+  bottom: 64px;
+}
+
+@media (max-width: 1100px) {
+  body[data-view='compare'] .toasts {
+    bottom: 76px;
+  }
 }

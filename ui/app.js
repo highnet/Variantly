@@ -1566,14 +1566,14 @@ const renderDock = () => {
     return;
   }
   const deviceBtn = (d, label) =>
-    h('button', { type: 'button', 'aria-pressed': String((S.device ?? 'desktop') === d), 'aria-label': label, title: `${label} (m)`, onClick: () => ((S.device = d), updateCompare()) }, icon(d));
+    h('button', { type: 'button', 'aria-pressed': String((S.device ?? 'desktop') === d), 'aria-label': label, title: label, onClick: () => ((S.device = d), updateCompare()) }, icon(d));
   const modeBtn = (m, label) =>
-    h('button', { type: 'button', 'aria-pressed': String(S.mode === m), 'aria-label': label, title: `${label} (s)`, onClick: () => ((S.mode = m), updateCompare()) }, icon(m));
+    h('button', { type: 'button', 'aria-pressed': String(S.mode === m), 'aria-label': label, title: label, onClick: () => ((S.mode = m), updateCompare()) }, icon(m));
   dock.replaceChildren(
     ...[
     h('span', { class: 'mark', title: 'variantly' }, mark()),
     h('div', { class: 'cells', role: 'group', 'aria-label': 'Show' }, [
-      h('button', { class: 'cell orig', type: 'button', 'aria-current': String(S.sel === 'original'), title: 'Original (o)', onClick: () => select('original') }, 'ORIG'),
+      h('button', { class: 'cell orig', type: 'button', 'aria-current': String(S.sel === 'original'), title: 'Original', onClick: () => select('original') }, 'ORIG'),
       ...vs.map((v) => {
         const ready = v.status === 'done';
         const pipClass = S.unseen.has(v.n) ? 'pip' : v.status === 'failed' ? 'pip fail' : ['running', 'reviewing', 'preparing', 'committing', 'queued'].includes(v.status) ? 'pip work' : '';
@@ -1586,7 +1586,7 @@ const renderDock = () => {
             disabled: ['failed', 'cancelled'].includes(v.status),
             'aria-current': String(S.sel === v.n),
             'aria-label': `${vname(v.n)} ${directionLabel(v.direction, v.picked)}, ${STATUS[v.status]}`,
-            title: `${vname(v.n)} · ${directionLabel(v.direction, v.picked)} · ${STATUS[v.status]}${v.n <= 10 ? ` (${v.n % 10})` : ''}`,
+            title: `${vname(v.n)} · ${directionLabel(v.direction, v.picked)} · ${STATUS[v.status]}`,
             onClick: () => select(v.n),
           },
           pad(v.n),
@@ -1611,8 +1611,9 @@ const renderDock = () => {
       },
     }),
     h('span', { class: 'sep', 'aria-hidden': 'true' }),
+    h('button', { class: 'icon-btn', type: 'button', title: 'Hand off to your agent', 'aria-label': 'Copy a handoff prompt for your agent', onClick: copyHandoff }, icon('handoff')),
     h('button', { class: 'icon-btn', type: 'button', title: 'Board', 'aria-label': 'Show the board', onClick: () => ((S.forceBoard = true), render()) }, icon('board')),
-    h('button', { class: 'icon-btn', type: 'button', title: 'Details (i)', 'aria-label': 'Variant details', 'aria-pressed': String(S.infoOpen), onClick: toggleInfo }, icon('info')),
+    h('button', { class: 'icon-btn', type: 'button', title: 'Details', 'aria-label': 'Variant details', 'aria-pressed': String(S.infoOpen), onClick: toggleInfo }, icon('info')),
     typeof S.sel === 'number' && done().some((x) => x.n === S.sel)
       ? h('button', { class: 'btn primary', type: 'button', onClick: () => ((S.confirming = true), renderDock()) }, `Keep ${vname(S.sel)}`)
       : null,
