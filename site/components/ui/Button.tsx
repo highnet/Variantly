@@ -16,6 +16,15 @@ const buttonVariants = cva(
         tab: 'border-b-2 border-transparent text-steel hover:text-ink aria-selected:border-ink aria-selected:text-ink',
         icon: 'text-steel hover:bg-panel hover:text-ink',
         'icon-slate': 'text-steel-on-slate hover:bg-slate-raised hover:text-surface',
+        // Round header control (theme, accessibility); lit while its menu is open.
+        'header-icon':
+          'text-steel hover:bg-surface hover:text-ink aria-expanded:bg-surface aria-expanded:text-ink [&_svg]:size-4.5',
+        // One option of a segmented control on slate; the pressed one glows green.
+        segment:
+          'normal-case tracking-normal font-sans text-steel-on-slate hover:text-surface aria-pressed:bg-ok-on-slate aria-pressed:text-ink',
+        // A small on/off switch in the slate dock.
+        'toggle-slate':
+          'text-steel-on-slate hover:text-surface aria-pressed:bg-surface aria-pressed:text-ink',
         // A quiet chip that copies a prompt; same footprint in every state.
         prompt:
           'border border-rule bg-surface text-ink normal-case tracking-normal font-sans hover:border-ink active:translate-y-px',
@@ -33,6 +42,9 @@ const buttonVariants = cva(
         tab: 'h-11 px-1 text-xs',
         icon: 'size-9 rounded-chip',
         'icon-sm': 'size-7 rounded-chip',
+        round: 'size-9 rounded-full',
+        segment: 'rounded-[8px] px-2 py-2.5 text-[13px] font-semibold',
+        toggle: 'rounded px-1.5 py-1 text-[10px] gap-1.5 [&_svg]:size-3.5',
         // Wraps on narrow screens instead of running off the edge.
         prompt:
           'min-h-8 rounded-control px-2.5 py-1.5 text-left text-[13px] leading-tight font-semibold whitespace-normal',

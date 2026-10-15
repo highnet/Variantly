@@ -3,6 +3,7 @@
 import { Accessibility, Contrast, Moon, Palette, Sun, Type, ZoomIn } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 
+import { Button } from '@/components/ui/Button';
 import { PREFS_EVENT, PREFS_KEY, readPrefs, savePrefs, type Prefs } from '@/lib/prefs';
 import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -23,9 +24,6 @@ const AIDS: {
   { key: 'contrast', label: 'High contrast', hint: 'Stronger colours', icon: <Contrast /> },
   { key: 'calm', label: 'Calm colours', hint: 'Fewer shadows, less saturation', icon: <Palette /> },
 ];
-
-const iconButton =
-  'text-steel hover:text-ink hover:bg-surface focus-visible:outline-ink grid size-9 place-items-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 [&_svg]:size-[18px]';
 
 /* The theme switch and the accessibility menu, side by side in the header. */
 const PrefsMenu = () => {
@@ -80,18 +78,18 @@ const PrefsMenu = () => {
 
   return (
     <div ref={root} className="relative flex items-center gap-1">
-      <button
-        type="button"
-        className={iconButton}
+      <Button
+        variant="header-icon"
+        size="round"
         aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
         title={dark ? 'Light theme' : 'Dark theme'}
         onClick={() => set({ theme: dark ? 'light' : 'dark' })}
       >
         {dark ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
-      </button>
-      <button
-        type="button"
-        className={cn(iconButton, open && 'bg-surface text-ink')}
+      </Button>
+      <Button
+        variant="header-icon"
+        size="round"
         aria-label="Accessibility settings"
         title="Accessibility"
         aria-expanded={open}
@@ -99,7 +97,7 @@ const PrefsMenu = () => {
         onClick={() => setOpen((o) => !o)}
       >
         <Accessibility aria-hidden="true" />
-      </button>
+      </Button>
 
       {open && prefs && (
         <div
@@ -117,20 +115,15 @@ const PrefsMenu = () => {
                   ['calm', 'Calmer (less)'],
                 ] as const
               ).map(([v, label]) => (
-                <button
+                <Button
                   key={v}
-                  type="button"
+                  variant="segment"
+                  size="segment"
                   aria-pressed={prefs.motion === v}
                   onClick={() => set({ motion: v })}
-                  className={cn(
-                    'focus-visible:outline-surface rounded-[8px] px-2 py-2.5 text-[13px] font-semibold transition-colors focus-visible:outline-2',
-                    prefs.motion === v
-                      ? 'bg-ok-on-slate text-ink'
-                      : 'text-steel-on-slate hover:text-surface',
-                  )}
                 >
                   {label}
-                </button>
+                </Button>
               ))}
             </div>
           </fieldset>
