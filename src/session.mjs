@@ -131,8 +131,11 @@ export class Session extends EventEmitter {
           v.error = 'variantly stopped while this variant was being generated.';
         }
       }
-      this.state.phase = this.state.variants.some((v) => v.status === 'done') ? 'ready' : 'setup';
+      // Back to the board, not the wizard: interrupted designs can be retried there.
+      this.state.phase = this.state.variants.length ? 'ready' : 'setup';
     }
+    // A saved run with designs belongs on the board (discard empties the list).
+    if (this.state.phase === 'setup' && this.state.variants.length) this.state.phase = 'ready';
     // An audit that was running when variantly stopped never finishes.
     for (const v of this.state.variants) if (v.auditState === 'running') v.auditState = undefined;
     if (this.state.config) this.pool.maxLive = this.state.config.maxLive;
