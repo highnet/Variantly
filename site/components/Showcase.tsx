@@ -1,9 +1,10 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, MousePointer2 } from 'lucide-react';
 import {
   useCallback,
   useEffect,
+  useEffectEvent,
   useRef,
   useState,
   type KeyboardEvent,
@@ -11,9 +12,10 @@ import {
 } from 'react';
 
 import { CommandCopy } from '@/components/CommandCopy';
+import { PromptCopy } from '@/components/PromptCopy';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
-import { DEMO_ORIGINAL_SCORES, DEMO_VARIANTS } from '@/lib/content';
+import { DEMO_ORIGINAL_SCORES, DEMO_VARIANTS, PROMPTS } from '@/lib/content';
 import { INSTALL } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
@@ -124,6 +126,8 @@ const Showcase = () => {
   const [selected, setSelected] = useState(1);
   const [auto, setAuto] = useState(true);
   const [ready, setReady] = useState(false);
+  const [hover, setHover] = useState(false);
+  const hoverRef = useRef(false);
   const pos = useRef(50);
   const anim = useRef(0);
   const grip = useRef<HTMLButtonElement>(null);
@@ -212,6 +216,13 @@ const Showcase = () => {
     win.document.documentElement.style.setProperty('scrollbar-width', 'none');
     applyScroll(f);
     win.addEventListener('scroll', () => syncFrom(f), { passive: true });
+    // Hover mode: the panes cover the stage edge to edge, so their own
+    // clientX is the stage's. A held drag still wins.
+    win.addEventListener('pointermove', (e) => {
+      if (!hoverRef.current || stage.current?.dataset.dragging === 'true') return;
+      cancelAnimationFrame(anim.current);
+      setPos((e.clientX / f.clientWidth) * 100);
+    });
     win.addEventListener('pointerdown', takeOver);
     win.addEventListener('wheel', takeOver, { passive: true });
     win.addEventListener('keydown', (e) => {
@@ -224,7 +235,7 @@ const Showcase = () => {
    * The divider writes a CSS variable straight onto the stage: no React
    * state, so a drag never waits on a render and tracks the pointer 1:1.
    */
-  const setPos = useCallback((raw: number) => {
+  const setPos = (raw: number) => {
     let p = Math.max(0, Math.min(100, raw));
     if (p < 3) p = 0;
     else if (p > 97) p = 100;
@@ -239,23 +250,20 @@ const Showcase = () => {
     el.style.setProperty('--after-o', String(Math.max(0, Math.min(1, (88 - p) / 10))));
     grip.current?.setAttribute('aria-valuenow', String(Math.round(p)));
     grip.current?.setAttribute('aria-valuetext', `${Math.round(p)}% original`);
-  }, []);
+  };
 
   /* Only for moves the user does not drive directly: jumps, keys, the hint. */
-  const tween = useCallback(
-    (to: number, ms = 220) => {
-      cancelAnimationFrame(anim.current);
-      const from = pos.current;
-      const t0 = performance.now();
-      const step = (t: number) => {
-        const k = Math.min((t - t0) / ms, 1);
-        setPos(from + (to - from) * (1 - Math.pow(1 - k, 3)));
-        if (k < 1) anim.current = requestAnimationFrame(step);
-      };
-      anim.current = requestAnimationFrame(step);
-    },
-    [setPos],
-  );
+  const tween = (to: number, ms = 220) => {
+    cancelAnimationFrame(anim.current);
+    const from = pos.current;
+    const t0 = performance.now();
+    const step = (t: number) => {
+      const k = Math.min((t - t0) / ms, 1);
+      setPos(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) anim.current = requestAnimationFrame(step);
+    };
+    anim.current = requestAnimationFrame(step);
+  };
 
   const pct = (e: PointerEvent<HTMLElement>) => {
     const r = stage.current!.getBoundingClientRect();
@@ -292,7 +300,15 @@ const Showcase = () => {
     tween(keys[e.key], 150);
   };
 
-  useEffect(() => setPos(50), [setPos]);
+  // Effects reach the divider through events, so they never re-run for it.
+  const placeAt = useEffectEvent((p: number) => setPos(p));
+  const sweepTo = useEffectEvent((to: number, ms: number) => tween(to, ms));
+
+  useEffect(() => placeAt(50), []);
+
+  useEffect(() => {
+    hoverRef.current = hover;
+  }, [hover]);
 
   // Never leave the stage hidden if a pane is slow to load.
   useEffect(() => {
@@ -309,9 +325,9 @@ const Showcase = () => {
         if (!en.isIntersecting) return;
         io.disconnect();
         if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        timers.push(window.setTimeout(() => tween(60, 400), 300));
-        timers.push(window.setTimeout(() => tween(40, 500), 700));
-        timers.push(window.setTimeout(() => tween(50, 400), 1200));
+        timers.push(window.setTimeout(() => sweepTo(60, 400), 300));
+        timers.push(window.setTimeout(() => sweepTo(40, 500), 700));
+        timers.push(window.setTimeout(() => sweepTo(50, 400), 1200));
       },
       { threshold: 0.6 },
     );
@@ -320,7 +336,7 @@ const Showcase = () => {
       io.disconnect();
       timers.forEach(clearTimeout);
     };
-  }, [ready, tween]);
+  }, [ready]);
 
   const current = DEMO_VARIANTS[selected - 1];
 
@@ -360,6 +376,11 @@ const Showcase = () => {
                   Check what you need first
                 </a>
               </p>
+              <PromptCopy
+                prompt={PROMPTS.setup}
+                tone="slate"
+                label="No terminal? Copy a prompt for your AI instead"
+              />
             </div>
             <div className="border-slate-line grid gap-2.5 border-t pt-4">
               <p
@@ -497,6 +518,22 @@ const Showcase = () => {
               <ChevronRight className="size-4" aria-hidden="true" />
             </Button>
           </div>
+          <button
+            type="button"
+            aria-pressed={hover}
+            onClick={() => {
+              takeOver();
+              setHover((h) => !h);
+            }}
+            title="The line follows your cursor; drag or click inside the pages as usual when off"
+            className={cn(
+              'text-steel-on-slate hover:text-surface hidden items-center gap-1.5 rounded px-1.5 py-1 text-[10px] tracking-[0.08em] uppercase [@media(hover:hover)_and_(pointer:fine)]:inline-flex',
+              hover && 'bg-surface text-ink hover:text-ink',
+            )}
+          >
+            <MousePointer2 className="size-3.5" aria-hidden="true" />
+            Follow cursor
+          </button>
           <div
             role="group"
             className="flex items-center gap-3 pr-2"
@@ -509,6 +546,8 @@ const Showcase = () => {
         </div>
 
         <div className="pointer-events-none absolute inset-y-0 left-[var(--split)] z-20 w-0">
+          {/* A soft shadow the line casts on the after side: depth, not a filter on the page. */}
+          <div className="absolute inset-y-0 left-0 w-10 bg-linear-to-r from-black/15 to-transparent" />
           <div className="bg-ink shadow-divider absolute inset-y-0 -left-px w-0.5" />
           <Button
             ref={grip}

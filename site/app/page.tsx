@@ -4,6 +4,7 @@ import { AgentQuickstart } from '@/components/AgentQuickstart';
 import { AudienceFork } from '@/components/AudienceFork';
 import { FinePrint } from '@/components/FinePrint';
 import { HowItWorks } from '@/components/HowItWorks';
+import { SiteFooter } from '@/components/SiteFooter';
 import { Showcase } from '@/components/Showcase';
 import { Stacks } from '@/components/Stacks';
 import { WithLive } from '@/components/WithLive';
@@ -45,12 +46,15 @@ const Human = () => (
 );
 
 const Page = () => (
-  <AudienceFork
-    brand={<Brand />}
-    aside={<GitHubLink />}
-    human={<Human />}
-    agent={<AgentQuickstart />}
-  />
+  <>
+    <AudienceFork
+      brand={<Brand />}
+      aside={<GitHubLink />}
+      human={<Human />}
+      agent={<AgentQuickstart />}
+    />
+    <SiteFooter />
+  </>
 );
 
 export default Page;
