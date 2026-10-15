@@ -39,6 +39,17 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      # A version published by hand (the first release was) is skipped, not
+      # retried, so merging its release PR still goes green.
+      - name: Check whether this version is already on npm
+        id: published
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if npm view "variantly@$version" version >/dev/null 2>&1; then
+            echo "variantly@$version is already on npm; skipping publish."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
       # OIDC trusted publishing (npm's Trusted Publisher setting for this repo
       # and workflow filename): no NPM_TOKEN secret, with provenance.
-      - run: npm publish --provenance --access public
+      - if: steps.published.outputs.skip != 'true'
+        run: npm publish --provenance --access public
