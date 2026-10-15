@@ -52,7 +52,7 @@ export const compactTokens = (n: number) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}
 export const usageText = (v: Variant) => {
   const parts: string[] = [];
   if (v.usage) parts.push(`${compactTokens(v.usage.inputTokens + v.usage.outputTokens)} tok`);
-  if (typeof v.credits === 'number') parts.push(`${v.credits} cr`);
+  if (typeof v.credits === 'number') parts.push(`${v.credits} premium req`);
   if (typeof v.costUsd === 'number') parts.push(`$${v.costUsd.toFixed(2)}`);
   return parts.join(' · ') || '—';
 };
@@ -60,7 +60,9 @@ export const usageText = (v: Variant) => {
 export const usageTitle = (v: Variant) =>
   v.usage
     ? `${v.usage.inputTokens.toLocaleString()} in (${(v.usage.cachedInputTokens ?? 0).toLocaleString()} cached) · ${v.usage.outputTokens.toLocaleString()} out`
-    : 'No usage reported yet';
+    : typeof v.credits === 'number'
+      ? `${v.credits} premium request${v.credits === 1 ? '' : 's'} (Copilot reports no tokens)`
+      : 'No usage reported yet';
 
 /** "92 (+7)" against the original, when both were scored. */
 export const vsBase = (n: number | undefined, base?: number) =>

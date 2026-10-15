@@ -102,7 +102,7 @@ const Board = () => {
     `Elapsed ${start ? clock(end - start) : '0:00'}`,
     `${vs.filter((v) => v.status === 'done').length} of ${vs.length} ready`,
     tokens > 0 ? `${compactTokens(tokens)} tokens` : null,
-    credits > 0 ? `${credits} AI credits` : null,
+    credits > 0 ? `${credits} premium requests` : null,
     cost > 0 ? `$${cost.toFixed(2)}` : null,
   ].filter(Boolean);
 
