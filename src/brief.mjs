@@ -72,7 +72,11 @@ export const hasAnswers = (a) => Boolean(a && (a.users.trim() || a.purpose.trim(
  * @property {boolean} hasProduct PRODUCT.md exists (theirs or written from answers)
  * @property {boolean} hasDesign  DESIGN.md exists
  * @property {string} stackId
+ * @property {string} [agent]     claude | codex | copilot | demo: how the skill is named
  */
+
+/** How each agent's prompt names a skill. Codex mentions skills with a dollar sign. */
+const SKILL_CALL = /** @type {Record<string, string>} */ ({ codex: "$impeccable" });
 
 /** @param {BriefInput} b */
 export const writeBrief = (b) => {
@@ -100,8 +104,8 @@ isolated copy; edit anything in it.
 
 ## Task
 
-Use the **Impeccable** skill for all of the design work (\`/impeccable\`; load
-the skill before you start). ${task}
+Use the **Impeccable** skill for all of the design work
+(\`${SKILL_CALL[b.agent ?? ""] ?? "/impeccable"}\`; load the skill before you start). ${task}
 
 ${b.brief ? `What the owner asked for, in their words:\n\n> ${b.brief.replace(/\n/g, '\n> ')}\n` : ''}
 ## The project

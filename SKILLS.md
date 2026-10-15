@@ -31,13 +31,36 @@ or "try a few directions", and they can look at a browser. Do not use it for
 behaviour changes, for a single element (that is `/impeccable live`), or on a
 deployed production site.
 
+## Installing this skill
+
+`npx variantly install-skill` writes the short form of this manual as a skill
+for every agent on the PATH, so the agent knows to reach for variantly when
+someone asks for a redesign. One `SKILL.md` serves all three agents.
+
+```sh
+npx variantly install-skill                                   # agents on PATH, user-wide
+npx variantly install-skill --providers=claude                # ~/.claude/skills/variantly/
+npx variantly install-skill --providers=codex                 # ~/.agents/skills/variantly/
+npx variantly install-skill --providers=copilot               # ~/.copilot/skills/variantly/
+npx variantly install-skill --providers=codex --scope=project # .agents/skills/variantly/ in the repo
+```
+
+Project scope writes `.claude/skills/`, `.agents/skills/` or `.github/skills/`
+in the repository, for everyone who clones it. Running it again updates the
+file in place. Claude Code can also use the plugin:
+`/plugin marketplace add highnet/ProjectHusky` then
+`/plugin install variantly@variantly`. Restart the agent after installing.
+
 ## Requirements
 
 - Node 20.11 or newer, git, and a repository with at least one commit.
 - One agent CLI on `PATH`, signed in: `claude`, `codex` or `copilot`.
 - The Impeccable skill installed for that agent:
   `npx impeccable install --providers=<claude|codex|copilot> --scope=global --yes --no-hooks`.
-  The wizard checks this and can run it.
+  The wizard checks this and can run it. Where each agent looks: Claude Code
+  `~/.claude/skills`, `.claude/skills`; Codex `~/.agents/skills`,
+  `.agents/skills`; Copilot `~/.copilot/skills`, `~/.agents/skills`,
+  `.github/skills`, `.agents/skills`, `.claude/skills`.
 - A project whose dev server can be told its port (`{port}` in the command,
   or a `PORT` environment variable). Static HTML needs nothing.
 
@@ -50,6 +73,7 @@ npx variantly doctor             # check node, git, agents, Impeccable, stack
 npx variantly status             # the current run as JSON
 npx variantly keep 3             # apply variant 3, discard the others' worktrees
 npx variantly clean              # remove every variantly worktree, branch, state
+npx variantly install-skill      # put the variantly skill where your agents read skills
 ```
 
 Flags for the default command: `--agent claude|codex|copilot|demo`,
@@ -61,12 +85,15 @@ crude fixed restyles, for trying the flow), `--no-open`, `--port <n>`.
 
 1. Run `npx variantly doctor` in the project. Fix what it marks `✗`: a missing
    commit (`git add -A && git commit -m "Before variantly"`), a missing agent,
-   or a missing Impeccable install.
+   or a missing Impeccable install. Use your own id in what follows:
+   `claude`, `codex` or `copilot`.
 2. Start a run. With the person present: `npx variantly` and let them use the
    wizard. Without the wizard:
 
    ```sh
-   npx variantly --yes --agent claude --count 4 --brief "warmer, less corporate"
+   npx variantly --yes --agent claude  --count 4 --brief "warmer, less corporate"
+   npx variantly --yes --agent codex   --count 4 --brief "warmer, less corporate"
+   npx variantly --yes --agent copilot --count 4 --brief "warmer, less corporate"
    ```
 
    This prints the app URL (default `http://localhost:4477`) and keeps running.
@@ -88,7 +115,10 @@ Each variant is one full agent session on the person's account, with the
 usage that implies; a real redesign is a long session, not a quick edit. Two
 run at a time by default (`concurrency`), so wall-clock time is roughly the
 variant count divided by two, times one session. The app streams every agent's
-progress, and with Claude Code it shows each session's cost when it ends. A
+progress (files edited, commands run, skills loaded) from each CLI's JSON
+event stream. Usage appears only as the agent reports it: Claude Code reports
+each session's dollar cost, Codex and Copilot report tokens (in `status` as
+`usage`); variantly never estimates a price. A
 variant that fails says why in `status` and can be retried from the app
 without redoing the others.
 

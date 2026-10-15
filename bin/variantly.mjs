@@ -16,6 +16,9 @@ Usage
   variantly status [dir]     print the current run as JSON (for agents and scripts)
   variantly keep <n> [dir]   apply variant n to your working tree, discard the rest
   variantly clean [dir]      remove variantly's worktrees, branches and state
+  variantly install-skill [dir]
+                             teach your agent to drive variantly: writes the
+                             variantly skill where each agent reads skills
 
 Options
   -p, --port <n>             port for the variantly app (default 4477)
@@ -25,6 +28,10 @@ Options
       --yes                  skip the wizard: generate with detected defaults
       --demo                 use the built-in demo agent (no AI, no account)
       --no-open              don't open the browser
+      --providers <ids>      install-skill: claude,codex,copilot (default: the
+                             agents on your PATH)
+      --scope <s>            install-skill: global (default, your user) or
+                             project (dir, for everyone who clones it)
   -h, --help
   -v, --version
 
@@ -46,6 +53,8 @@ const main = async () => {
         demo: { type: 'boolean' },
         open: { type: 'boolean', default: true },
         'no-open': { type: 'boolean' },
+        providers: { type: 'string' },
+        scope: { type: 'string' },
         help: { type: 'boolean', short: 'h' },
         version: { type: 'boolean', short: 'v' },
       },
@@ -59,6 +68,10 @@ const main = async () => {
   if (values.version) return console.log(pkg.version);
 
   const [first, second, third] = positionals;
+  if (first === 'install-skill') {
+    const str = (/** @type {unknown} */ v) => (typeof v === 'string' ? v : undefined);
+    return installSkillCommand({ providers: str(values.providers), scope: str(values.scope), dir: second });
+  }
   const command = ['doctor', 'clean', 'status', 'keep'].includes(String(first)) ? String(first) : 'start';
   const dirArg = command === 'start' ? first : command === 'keep' ? third : second;
   const target = path.resolve(String(dirArg ?? '.'));
@@ -137,12 +150,52 @@ const doctor = async (repo) => {
   console.log('\nAgents');
   for (const a of info.agents) {
     console.log(`${ok(a.installed)} ${a.name.padEnd(20)} ${a.installed ? a.version : `install: ${a.install}`}`);
-    if (a.installed) console.log(`  ${ok(a.impeccable)} Impeccable skill ${a.impeccable ? 'found' : `missing: npx impeccable install --providers=${a.id} --scope=global`}`);
+    if (a.note) console.log('  · ' + a.note);
+    if (a.installed && a.path) console.log('  · ' + a.path);
+    if (!a.installed) continue;
+    console.log(`  ${ok(a.impeccable)} Impeccable skill ${a.impeccable ? 'found' : `missing: npx impeccable install --providers=${a.id} --scope=global`}`);
+    console.log(`  ${a.variantlySkill ? '✓' : '·'} variantly skill ${a.variantlySkill ? 'found' : `not installed (optional): npx variantly install-skill --providers=${a.id}`}`);
   }
   console.log('\nApp');
   if (!info.candidates.length) console.log('✗ no known stack found; set a custom dev command in the wizard');
   for (const c of info.candidates) {
     console.log(`  ${c.name.padEnd(12)} ${c.rel || '.'}  →  ${c.command}${c.running ? `   (running at ${c.defaultUrl})` : ''}`);
+  }
+};
+
+/**
+ * @param {{ providers?: string, scope?: string, dir?: string }} o
+ */
+const installSkillCommand = async (o) => {
+  const { installSkill, parseProviders } = await import('../src/install-skill.mjs');
+  const { AGENTS } = await import('../src/agents.mjs');
+  const { which } = await import('../src/proc.mjs');
+  const scope = String(o.scope ?? 'global');
+  if (scope !== 'global' && scope !== 'project') return fail('--scope is global or project.');
+  let providers = parseProviders(o.providers);
+  if (!providers.length) {
+    providers = AGENTS.filter((a) => which(a.bin)).map((a) => a.id);
+    if (!providers.length) {
+      return fail(`No agent CLI found on PATH. Name the ones to install for:\n\n  npx variantly install-skill --providers=${AGENTS.map((a) => a.id).join(',')}`);
+    }
+  }
+  /** @type {string | undefined} */
+  let projectRoot;
+  if (scope === 'project') {
+    const target = path.resolve(o.dir ?? '.');
+    if (!existsSync(target)) return fail(`No such folder: ${target}`);
+    const git = await import('../src/git.mjs');
+    projectRoot = (await git.repoRoot(target)) ?? target;
+  }
+  try {
+    const results = await installSkill({ providers, scope, projectRoot });
+    for (const r of results) {
+      const name = AGENTS.find((a) => a.id === r.agent)?.name ?? r.agent;
+      console.log(`${r.status === 'unchanged' ? '·' : '✓'} ${name.padEnd(20)} ${r.status.padEnd(9)} ${r.file}`);
+    }
+    console.log('\nRestart the agent (or start a new session) so it picks up the skill.');
+  } catch (err) {
+    fail(err instanceof Error ? err.message : String(err));
   }
 };
 

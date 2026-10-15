@@ -694,11 +694,13 @@ const renderReadout = (el) => {
   const end = settled ? Math.max(0, ...vs.map((v) => v.finishedAt ?? 0)) : Date.now();
   const s = start ? Math.max(0, Math.floor((end - start) / 1000)) : 0;
   const cost = vs.reduce((sum, v) => sum + (typeof v.costUsd === 'number' ? v.costUsd : 0), 0);
+  // Codex and Copilot report tokens, not dollars; show what was reported.
+  const tokens = vs.reduce((sum, v) => sum + (v.usage ? v.usage.inputTokens + v.usage.outputTokens : 0), 0);
   const parts = [
     agentShort[agent] ?? agent ?? '',
     `Elapsed ${Math.floor(s / 60)}:${pad(s % 60)}`,
     `${done().length} of ${vs.length} ready`,
-    cost > 0 ? `${cost.toFixed(2)} so far` : null,
+    cost > 0 ? `${cost.toFixed(2)} so far` : tokens > 0 ? `${tokens >= 1e6 ? `${(tokens / 1e6).toFixed(1)}M` : `${Math.round(tokens / 1e3)}k`} tokens so far` : null,
   ].filter(Boolean);
   el.replaceChildren(...parts.map((p) => h('span', {}, p)));
 };

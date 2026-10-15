@@ -68,14 +68,30 @@ You need **one** of these, signed in:
 and Impeccable installed for it (the wizard offers to run this for you):
 
 ```sh
-npx impeccable install --providers=claude --scope=global --yes --no-hooks
+npx impeccable install --providers=claude --scope=global --yes --no-hooks   # or codex, or copilot
 ```
 
 No agent yet? `npx variantly --demo` runs the whole flow with a built-in demo
 agent that applies crude fixed restyles: no AI and no account, just a way to
 see how it works.
 
-**From Claude Code**, add the plugin and let your agent drive it:
+**Let your agent drive it.** Teach your agent variantly once and then just ask
+it for a redesign. `install-skill` writes the variantly skill where each agent
+reads skills (it defaults to the agents on your PATH, user-wide):
+
+```sh
+npx variantly install-skill                              # every agent you have
+npx variantly install-skill --providers=codex,copilot    # just these
+npx variantly install-skill --scope=project              # into this repo, for everyone who clones it
+```
+
+| Agent | User-wide (`--scope=global`) | In the project (`--scope=project`) | Then ask |
+| --- | --- | --- | --- |
+| Claude Code | `~/.claude/skills/variantly/` | `.claude/skills/variantly/` | "redesign my site with variantly" or `/variantly` |
+| Codex CLI | `~/.agents/skills/variantly/` | `.agents/skills/variantly/` | "redesign my site with variantly" or `$variantly` |
+| GitHub Copilot CLI | `~/.copilot/skills/variantly/` | `.github/skills/variantly/` | "redesign my site with variantly" or `/variantly` |
+
+Claude Code users can install it as a plugin instead:
 
 ```
 /plugin marketplace add highnet/ProjectHusky
@@ -153,11 +169,27 @@ variantly never sees a model. It starts `claude -p`, `codex exec` or
 variant is one full agent session**, so ten variants cost what ten redesign
 sessions cost you. The wizard defaults to four.
 
-Permissions: by default Claude Code runs with `acceptEdits` and a short list of
-allowed tools, Codex with `--full-auto` (workspace-write sandbox) and Copilot
-with `--allow-all-tools` minus `git push` and `rm`. Every agent works inside its
-own worktree. "Full auto" in the wizard removes those limits; use it only in
-projects you trust.
+Each agent streams structured events (`--output-format stream-json`,
+`--json`, `--output-format json`), so the board shows the same live lines for
+all three: files read and edited, commands run, skills loaded, and each
+variant's summary. Usage is shown only as the agent reports it: Claude Code
+reports a dollar cost per session, Codex and Copilot report tokens, and
+variantly never estimates a price.
+
+Permissions: by default
+
+- **Claude Code** runs with `--permission-mode acceptEdits` and a short list of
+  allowed tools;
+- **Codex** runs `codex exec --sandbox workspace-write` with
+  `approval_policy=never` (it can write only its worktree; nothing waits for
+  an approval);
+- **Copilot** runs `copilot -p --allow-all-tools --no-ask-user` with
+  `git push`, `git commit` and `rm` denied, and file access limited to the
+  worktree, the brief and your user-wide skills (`--add-dir`).
+
+"Full auto" in the wizard removes those limits
+(`--dangerously-skip-permissions`, `--dangerously-bypass-approvals-and-sandbox`,
+`--allow-all`); use it only in projects you trust.
 
 ## Commands
 
@@ -167,6 +199,7 @@ variantly doctor [dir]     check node, git, agents, Impeccable, detected stack
 variantly status [dir]     the current run as JSON
 variantly keep <n> [dir]   apply variant n; the others stay as branches
 variantly clean [dir]      remove every worktree, branch and state file
+variantly install-skill    put the variantly skill where your agents read skills
 
   --agent <id>   claude | codex | copilot | demo
   --count <n>    1–10
@@ -175,6 +208,10 @@ variantly clean [dir]      remove every worktree, branch and state file
   --demo         built-in demo agent, no AI
   --no-open      don't open a browser
   --port <n>     app port (default 4477)
+
+  install-skill:
+  --providers <ids>  claude,codex,copilot (default: the agents on your PATH)
+  --scope <s>        global (default) or project
 ```
 
 ## Safety
