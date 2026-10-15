@@ -352,9 +352,20 @@ const Showcase = () => {
 
         <div
           data-keep-cycle
-          className="bg-slate shadow-grip rounded-chip absolute bottom-3 left-1/2 z-20 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-x-4 gap-y-2 px-2 py-2 font-mono [font-stretch:87.5%]"
+          className="bg-slate shadow-grip rounded-chip absolute bottom-3 left-1/2 z-30 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-x-4 gap-y-2 px-2 py-2 font-mono [font-stretch:87.5%]"
         >
           <div role="group" aria-label="Redesigns" className="flex gap-1">
+            <Button
+              variant="cell"
+              size="cell"
+              aria-label="Previous redesign"
+              title="Previous"
+              onClick={() =>
+                choose(((selected + DEMO_VARIANTS.length - 2) % DEMO_VARIANTS.length) + 1)
+              }
+            >
+              <ChevronLeft className="size-4" aria-hidden="true" />
+            </Button>
             {DEMO_VARIANTS.map((v) => {
               const active = selected === v.n;
               return (
@@ -378,6 +389,15 @@ const Showcase = () => {
                 </Button>
               );
             })}
+            <Button
+              variant="cell"
+              size="cell"
+              aria-label="Next redesign"
+              title="Next"
+              onClick={() => choose((selected % DEMO_VARIANTS.length) + 1)}
+            >
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </Button>
           </div>
           <div
             role="group"

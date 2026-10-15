@@ -18,64 +18,64 @@ export type DemoVariant = {
 };
 
 /** The original Oak & Iron home page, scored the same way. */
-export const DEMO_ORIGINAL_SCORES = { a11y: 87, axe: 27 };
+export const DEMO_ORIGINAL_SCORES = { a11y: 97, axe: 21 };
 
 const FILES = ['index.html', 'about.html', 'style.css'];
 
 export const DEMO_VARIANTS: DemoVariant[] = [
   {
     n: 1,
-    direction: 'Editorial',
+    direction: "Brutalist",
     summary:
-      'A printed magazine: Gloock masthead, cover-line hero with a scale drawing, numbered catalogue entries and a subscription slip.',
+      "Raw brutalist grid: black rules, square corners, system mono with Archivo Black headings, stark white and black, safety-orange accents.",
     files: FILES,
-    a11y: 96,
-    axe: 21,
+    a11y: 98,
+    axe: 2,
   },
   {
     n: 2,
-    direction: 'Swiss precision',
+    direction: "Nordic catalogue",
     summary:
-      'A strict 12-column grid in one grotesk, flush left, red used only to signal; the products become a specification table.',
+      "A printed Scandinavian catalogue: pale birch paper, ink-blue rules and type, numbered sections, product plates with line drawings and dimensions.",
     files: FILES,
-    a11y: 96,
-    axe: 16,
+    a11y: 98,
+    axe: 1,
   },
   {
     n: 3,
-    direction: 'Warm & tactile',
+    direction: "Art Deco",
     summary:
-      'Clay, sage and bone with soft depth: a pill navigation, an illustrated stool, rounded product tiles and drawn icons.',
+      "A 1920s Art Deco salon: Limelight and Poiret One display type, brass on deep green, a sunburst, stepped frames and diamond rules.",
     files: FILES,
-    a11y: 92,
-    axe: 18,
+    a11y: 98,
+    axe: 1,
   },
   {
     n: 4,
-    direction: 'Dark technical',
+    direction: "Risograph zine",
     summary:
-      'The workshop spec sheet: blueprint grid, a dimensioned drawing of the table, mono readouts and a parts list.',
+      "A stapled cream zine page: misregistered pink-and-teal overprint headings, Courier Prime body text, halftone dots and drawn product plates.",
     files: FILES,
-    a11y: 96,
-    axe: 13,
+    a11y: 98,
+    axe: 1,
   },
   {
     n: 5,
-    direction: 'Loud & bold',
+    direction: "Mingei craft",
     summary:
-      'Cobalt, yellow and tomato fields, giant condensed caps, a marquee top bar and prices you can read across the room.',
+      "Japanese folk craft: Shippori Mincho serif, indigo and persimmon on speckled washi paper, vertical accents and a quiet, spacious layout.",
     files: FILES,
-    a11y: 92,
-    axe: 17,
+    a11y: 98,
+    axe: 16,
   },
   {
     n: 6,
-    direction: 'Quiet minimal',
+    direction: "Trade catalogue",
     summary:
-      'Distilled: light type, one column of attention, a lot of air, one olive accent and the products as a quiet list.',
+      "An 1890s ironmonger’s catalogue on rag paper: double-ruled borders, numbered stock items, dotted price leaders, sepia ink with rust accents.",
     files: FILES,
-    a11y: 91,
-    axe: 31,
+    a11y: 98,
+    axe: 1,
   },
 ];
 
