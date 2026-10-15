@@ -53,3 +53,19 @@ test('extras add Impeccable passes; copy rewrite frees the wording', () => {
   assert.match(b, /Impeccable's `animate`/);
   assert.match(b, /the facts in the copy/);
 });
+
+test('a shell that writes files moves a variant past choosing a direction', () => {
+  const dir = STEPS.findIndex((s) => s.id === 'direction');
+  const build = STEPS.findIndex((s) => s.id === 'build');
+  for (const line of [
+    "→ powershell @' import math colors={ 'paper':'#f2eddf' …",
+    "→ powershell Set-Content -Path apps/web/src/app.css -Value $css",
+    '→ bash cat > src/styles.css <<EOF',
+    "→ bash python3 -c \"open('index.html','w').write(html)\"",
+  ])
+    assert.equal(stepFrom(line, dir), build, line);
+  // Reading files from the shell is not building.
+  assert.equal(stepFrom('→ powershell Get-Content apps/web/src/app.css', dir), -1);
+  // Before a direction, a shell write does not skip ahead.
+  assert.equal(stepFrom("→ powershell @' x '@ | Set-Content a.css", 1), -1);
+});

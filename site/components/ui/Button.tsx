@@ -15,6 +15,12 @@ const buttonVariants = cva(
           'border border-steel-on-slate bg-transparent text-surface hover:bg-slate-raised active:translate-y-px',
         tab: 'border-b-2 border-transparent text-steel hover:text-ink aria-selected:border-ink aria-selected:text-ink',
         icon: 'text-steel hover:bg-panel hover:text-ink',
+        'icon-slate': 'text-steel-on-slate hover:bg-slate-raised hover:text-surface',
+        // A quiet chip that copies a prompt; same footprint in every state.
+        prompt:
+          'border border-rule bg-surface text-ink normal-case tracking-normal font-sans hover:border-ink active:translate-y-px',
+        'prompt-slate':
+          'border border-slate-line bg-transparent text-surface normal-case tracking-normal font-sans hover:bg-ink active:translate-y-px',
         // A numbered cell on the slate dock; the current one lifts, white.
         cell: 'relative bg-slate-raised text-surface opacity-55 tracking-normal tabular-nums [font-stretch:75%] hover:opacity-90 aria-[current=true]:bg-surface aria-[current=true]:text-ink aria-[current=true]:opacity-100 aria-[current=true]:-translate-y-0.5 aria-[current=true]:shadow-cell',
         // The before/after divider's handle.
@@ -26,6 +32,8 @@ const buttonVariants = cva(
         small: 'h-8 rounded-chip px-3 text-[11px]',
         tab: 'h-11 px-1 text-xs',
         icon: 'size-9 rounded-chip',
+        'icon-sm': 'size-7 rounded-chip',
+        prompt: 'h-8 rounded-control px-2.5 text-[13px] font-semibold',
         cell: 'h-10 min-w-11 rounded-control px-2 text-[15px] aria-[current=true]:min-w-15 aria-[current=true]:text-2xl',
         grip: 'h-11 rounded-full px-2 text-[10px] gap-1 tracking-[0.08em]',
       },
