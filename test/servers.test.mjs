@@ -37,3 +37,16 @@ test('a server with a ready file is ready only once it writes a fresh one, which
   await pool.stop('original');
   assert.equal(existsSync(path.join(dir, 'hot')), false);
 });
+
+test('a server stopped while it is still being set up never starts', async (t) => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), 'variantly-race-'));
+  writeFileSync(path.join(dir, 'server.cjs'), "require('node:fs').writeFileSync('started', '');\nsetInterval(() => {}, 1000);\n");
+  const pool = new ServerPool({ inject: () => '' });
+  t.after(() => rmSync(dir, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 }));
+  await pool.add({ id: 'v1', cwd: dir, command: `"${process.execPath}" server.cjs`, bootTimeout: 5_000 });
+  const boot = pool.ensure('v1');
+  await pool.closeAll();
+  await boot;
+  await new Promise((r) => setTimeout(r, 1500));
+  assert.equal(existsSync(path.join(dir, 'started')), false, 'the dev server was spawned after closeAll');
+});

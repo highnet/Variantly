@@ -42,7 +42,7 @@ export class ServerPool extends EventEmitter {
     this.maxLive = opts.maxLive ?? 3;
     /** While true (a run is being torn down) nothing may start. */
     this.locked = false;
-    /** @type {Map<string, { spec: TargetSpec, state: ServerState, proxyPort: number, proxy: Awaited<ReturnType<typeof createProxy>>, child?: import('node:child_process').ChildProcess, log: LineBuffer, lastUsed: number, startedAt?: number, port?: number, upstream?: string, error?: string, boot?: Promise<void> }>} */
+    /** @type {Map<string, { spec: TargetSpec, state: ServerState, proxyPort: number, proxy: Awaited<ReturnType<typeof createProxy>>, child?: import('node:child_process').ChildProcess, log: LineBuffer, lastUsed: number, stops: number, startedAt?: number, port?: number, upstream?: string, error?: string, boot?: Promise<void> }>} */
     this.targets = new Map();
   }
 
@@ -65,6 +65,7 @@ export class ServerPool extends EventEmitter {
       proxy,
       log: new LineBuffer(),
       lastUsed: 0,
+      stops: 0,
     });
     return proxy.port;
   }
@@ -113,6 +114,9 @@ export class ServerPool extends EventEmitter {
   async #start(id) {
     const t = /** @type {NonNullable<ReturnType<typeof this.targets.get>>} */ (this.targets.get(id));
     t.error = undefined;
+    // Bumped by stop(): one that lands while this is still setting up (no
+    // child to kill yet) must keep it from spawning one nobody will stop.
+    const stops = t.stops;
     this.#set(id, 'starting');
 
     if (t.spec.external) {
@@ -133,6 +137,7 @@ export class ServerPool extends EventEmitter {
     const port = t.spec.fixedPort ? (t.spec.defaultPort ?? 3000) : await freePort();
     const port2 = await freePort();
     const command = t.spec.command.replaceAll('{port}', String(port)).replaceAll('{port2}', String(port2));
+    if (t.stops !== stops || this.locked) return;
     t.port = port;
     t.log.push(`$ ${command}\n`);
     if (!existsSync(t.spec.cwd)) {
@@ -202,6 +207,7 @@ export class ServerPool extends EventEmitter {
   async stop(id) {
     const t = this.targets.get(id);
     if (!t) return;
+    t.stops += 1;
     const child = t.child;
     t.child = undefined;
     this.#set(id, 'sleeping');
