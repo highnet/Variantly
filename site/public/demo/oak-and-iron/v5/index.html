@@ -3,29 +3,14 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Oak &amp; Iron Furniture | Home</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap"
-      rel="stylesheet"
-    />
+    <title>Oak &amp; Iron · Handmade furniture, Graz</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="topbar" aria-label="Free delivery in Styria on orders over €500!!">
-      <div class="marquee" aria-hidden="true">
-        <span>Free delivery in Styria on orders over €500!!</span>
-        <span>Free delivery in Styria on orders over €500!!</span>
-        <span>Free delivery in Styria on orders over €500!!</span>
-        <span>Free delivery in Styria on orders over €500!!</span>
-      </div>
-    </div>
-
-    <nav class="navbar" aria-label="Main">
-      <a class="logo" href="index.html">Oak &amp; Iron</a>
+    <nav class="navbar">
+      <a class="logo" href="index.html"><span class="seal" aria-hidden="true">樫</span> Oak &amp; Iron</a>
       <ul>
-        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="index.html" aria-current="page">Home</a></li>
         <li><a href="#shop">Shop</a></li>
         <li><a href="about.html">About Us</a></li>
         <li><a href="#contact">Contact</a></li>
@@ -33,83 +18,69 @@
     </nav>
 
     <header class="hero">
-      <h1>Welcome to Oak &amp; Iron Furniture!</h1>
-      <div class="hero-row">
-        <p>Handmade furniture for real homes. Quality you can trust since 2019.</p>
-        <div class="actions">
+      <p class="tate" aria-hidden="true">手仕事 · 木と鉄</p>
+      <div class="hero-text">
+        <p class="kicker">Workshop outside Graz · since 2019</p>
+        <h1>Furniture, made slowly by hand.</h1>
+        <p>Handmade furniture for real homes, from reclaimed oak and forged steel. Free delivery in Styria on orders over €500.</p>
+        <div class="hero-ctas">
           <a class="btn" href="#shop">Browse the collection</a>
-          <a class="btn btn-outline" href="#contact">Contact us</a>
+          <a class="link" href="#contact">Contact us</a>
         </div>
       </div>
-      <svg class="hero-stool" viewBox="0 0 200 220" aria-hidden="true">
-        <rect x="20" y="30" width="160" height="26" fill="#ff4a1c" />
-        <path d="M50 56 24 214M150 56l26 158M100 56v158M36 140h128" stroke="#111" stroke-width="16" stroke-linecap="square" fill="none" />
-      </svg>
     </header>
 
-    <section class="features" aria-label="How we work">
-      <div class="feature f1">
-        <h3>Handmade</h3>
-        <p>Every piece is built by hand in our workshop outside Graz.</p>
-      </div>
-      <div class="feature f2">
-        <h3>Reclaimed oak</h3>
-        <p>We use reclaimed oak and forged steel wherever we can.</p>
-      </div>
-      <div class="feature f3">
-        <h3>Personal delivery</h3>
-        <p>Delivered by the person who built it. Lead time 6–8 weeks.</p>
-      </div>
+    <section class="features">
+      <h2><span class="num">一</span> Why us</h2>
+      <ol class="feature-list">
+        <li><h3>Handmade</h3><p>Every piece is built by hand in our workshop outside Graz.</p></li>
+        <li><h3>Reclaimed oak</h3><p>We use reclaimed oak and forged steel wherever we can.</p></li>
+        <li><h3>Personal delivery</h3><p>Delivered by the person who built it. Lead time 6–8 weeks.</p></li>
+      </ol>
     </section>
 
     <section id="shop" class="shop">
-      <h2>This Month's Products</h2>
-      <div class="cards">
-        <article class="card">
-          <div class="card-img">
-            <svg viewBox="0 0 240 120" aria-hidden="true">
-              <rect x="0" y="24" width="240" height="16" fill="#111" />
-              <path d="M36 40 20 120M36 40l16 80M204 40l-16 80M204 40l16 80" stroke="#111" stroke-width="10" fill="none" />
-            </svg>
+      <h2><span class="num">二</span> This month's pieces</h2>
+      <div class="items">
+        <article class="item item-wide">
+          <div class="swatch s1" aria-hidden="true"></div>
+          <div class="item-body">
+            <h3>The Long Table</h3>
+            <p>2.4 m of reclaimed oak on steel trestles.</p>
+            <p class="price">€ 2.890,-</p>
+            <button type="button">Add to cart</button>
           </div>
-          <h3>The Long Table</h3>
-          <p>2.4 m of reclaimed oak on steel trestles.</p>
-          <p class="price">€ 2.890,-</p>
-          <button type="button">Add to cart</button>
         </article>
-        <article class="card">
-          <div class="card-img">
-            <svg viewBox="0 0 240 120" aria-hidden="true">
-              <rect x="70" y="20" width="100" height="16" fill="#111" />
-              <path d="M84 36 66 120M156 36l18 84M120 36v84M78 82h84" stroke="#111" stroke-width="10" fill="none" />
-            </svg>
+        <article class="item">
+          <div class="swatch s2" aria-hidden="true"></div>
+          <div class="item-body">
+            <h3>Smithy Stool</h3>
+            <p>Hand-forged legs, oiled seat.</p>
+            <p class="price">€ 340,-</p>
+            <button type="button">Add to cart</button>
           </div>
-          <h3>Smithy Stool</h3>
-          <p>Hand-forged legs, oiled seat.</p>
-          <p class="price">€ 340,-</p>
-          <button type="button">Add to cart</button>
         </article>
-        <article class="card">
-          <div class="card-img">
-            <svg viewBox="0 0 240 120" aria-hidden="true">
-              <path d="M64 0v120" stroke="#111" stroke-width="10" />
-              <path d="M58 20h124M58 60h124M58 100h124" stroke="#111" stroke-width="14" />
-            </svg>
+        <article class="item">
+          <div class="swatch s3" aria-hidden="true"></div>
+          <div class="item-body">
+            <h3>Wall Shelf No. 4</h3>
+            <p>Three shelves, one bracket, no screws visible.</p>
+            <p class="price">€ 410,-</p>
+            <button type="button">Add to cart</button>
           </div>
-          <h3>Wall Shelf No. 4</h3>
-          <p>Three shelves, one bracket, no screws visible.</p>
-          <p class="price">€ 410,-</p>
-          <button type="button">Add to cart</button>
         </article>
       </div>
     </section>
 
     <section class="newsletter">
-      <h2>Sign up for our Newsletter</h2>
-      <p>Get news about new products and workshop days.</p>
+      <h2><span class="num">三</span> Newsletter</h2>
+      <p>Occasional news about new pieces and workshop days. No spam.</p>
       <form id="newsletter">
-        <input type="email" placeholder="Your email address" required aria-label="Email address" />
-        <button>Subscribe</button>
+        <label for="nl-email">Email address</label>
+        <div class="row">
+          <input id="nl-email" type="email" placeholder="you@example.com" required />
+          <button>Subscribe</button>
+        </div>
       </form>
     </section>
 
