@@ -21,6 +21,18 @@ export const directionLabel = (/** @type {string} */ direction) =>
   direction.trim() ? direction.trim().slice(0, 48) : 'Impeccable’s pick';
 
 /**
+ * Optional Impeccable passes the owner can add on top of the redesign. Each
+ * maps to the Impeccable command that does it.
+ */
+export const EXTRAS = /** @type {const} */ ([
+  { id: 'copy', command: 'clarify', label: 'Rewrite the copy', hint: 'Sharper headlines, buttons and labels. Facts, prices and names stay.' },
+  { id: 'motion', command: 'animate', label: 'Add motion', hint: 'Purposeful transitions and entrances, with reduced motion respected.' },
+  { id: 'delight', command: 'delight', label: 'Add delight', hint: 'Small moments of personality: empty states, hovers, details.' },
+  { id: 'mobile', command: 'adapt', label: 'Polish for phones', hint: 'Check every chosen page at phone width and fix what breaks.' },
+  { id: 'a11y', command: 'harden', label: 'Harden', hint: 'Accessibility, focus states, long text and error states.' },
+]);
+
+/**
  * @typedef {object} ProductAnswers
  * @property {string} users     who it is for and what they come to do
  * @property {string} purpose   what it does and what makes it different
@@ -65,7 +77,8 @@ export const hasAnswers = (a) => Boolean(a && (a.users.trim() || a.purpose.trim(
  * @property {"redesign" | "refine"} approach
  * @property {string} direction   the owner's own words for this variant, or ''
  * @property {string} brief       the owner's free-text brief, may be empty
- * @property {string[]} routes    the pages that matter, may be empty
+ * @property {string[]} routes    the pages to redesign; empty means the home page
+ * @property {string[]} [extras]  ids from EXTRAS
  * @property {string} appRel      app root relative to the repository
  * @property {string} stackName
  * @property {string} styles      where the look lives
@@ -94,7 +107,13 @@ const SKILL_CALL = /** @type {Record<string, string>} */ ({ codex: "$impeccable"
 
 /** @param {BriefInput} b */
 export const writeBrief = (b) => {
-  const target = b.routes.length ? b.routes.join(', ') : "the site's main pages, starting with the home page";
+  const routes = b.routes.length ? b.routes : ['/'];
+  const target = routes.length === 1 && routes[0] === '/' ? 'the home page (`/`) only' : `these pages: ${routes.map((r) => '`' + r + '`').join(', ')}`;
+  const extras = EXTRAS.filter((x) => (b.extras ?? []).includes(x.id));
+  const keepsCopy = !extras.some((x) => x.id === 'copy');
+  const also = extras.length
+    ? `\n## Also, after the redesign\n\n${extras.map((x) => `- **${x.label}**: run Impeccable's \`${x.command}\` on the same pages. ${x.hint}`).join('\n')}\n`
+    : '';
   const where = b.appRel ? `The app lives in \`${b.appRel}/\` inside this repository.` : 'The app lives at the root of this repository.';
   const pinned = b.direction.trim();
   const meta = JSON.stringify({ variant: b.variant, count: b.count, approach: b.approach, direction: pinned, appRel: b.appRel, stack: b.stackId });
@@ -121,6 +140,9 @@ isolated copy; edit anything in it.
 Use the **Impeccable** skill for all of the design work
 (\`${skillCall(b.agent)}\`; load the skill before you start). ${task}
 
+Shared layout, header, footer and global styles may change so these pages
+work; leave the content of other pages alone.
+${also}
 ${b.brief ? `What the owner asked for, in their words:\n\n> ${b.brief.replace(/\n/g, '\n> ')}\n` : ''}
 ## The project
 
@@ -134,7 +156,7 @@ ${b.brief ? `What the owner asked for, in their words:\n\n> ${b.brief.replace(/\
 
 1. This run is **non-interactive**. Never ask a question or wait for an answer;
    make the call a senior designer would and note it in your summary.
-2. Change presentation, not behaviour. Keep every route, every piece of copy
+2. Change presentation, not behaviour. Keep every route, ${keepsCopy ? 'every piece of copy' : 'the facts in the copy (names, prices, numbers, claims)'}
    and data, every form field and handler. Markup structure, styles, tokens,
    fonts, images and motion are yours to change.
 3. **Do not install packages or touch lockfiles.** Installed dependencies are

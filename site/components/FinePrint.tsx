@@ -1,7 +1,7 @@
 import Link from 'next/link';
 
-import { CommandCopy } from '@/components/CommandCopy';
 import { Typography } from '@/components/ui/Typography';
+import { FAQ } from '@/lib/content';
 import { REPO_URL } from '@/lib/site';
 
 /*
@@ -9,49 +9,35 @@ import { REPO_URL } from '@/lib/site';
  * checks before running it on their project.
  */
 const FinePrint = () => (
-  <section aria-labelledby="install-title" className="grid gap-10">
-    <div className="grid gap-10 lg:grid-cols-2">
-      <div className="grid content-start gap-4">
-        <Typography variant="headline" as="h2" id="install-title">
-          Try it on your site
-        </Typography>
-        <Typography variant="label" color="steel" as="p">
-          From your project, once
-        </Typography>
-        <CommandCopy command="npx variantly" />
-        <Typography variant="label" color="steel" as="p">
-          No agent yet? The whole flow, no AI
-        </Typography>
-        <CommandCopy command="npx variantly --demo" />
-        <Typography variant="label" color="steel" as="p">
-          Or let Claude Code drive it
-        </Typography>
-        <CommandCopy command="/plugin marketplace add highnet/ProjectHusky" />
-        <Typography variant="small" color="steel">
-          <code className="condensed font-mono text-[13px]">npx variantly doctor</code> checks
-          everything.
-        </Typography>
-      </div>
-      <div className="grid content-start gap-3">
-        <Typography variant="title" as="h3">
-          Requirements
-        </Typography>
-        <ul className="text-steel m-0 grid list-disc gap-2 pl-5 text-[15px] leading-relaxed">
-          <li>Node 20.11+, git, and at least one commit.</li>
-          <li>A dev command that takes a port ({'{port}'} or a PORT variable).</li>
-          <li>Commit what the site needs: untracked files aren&apos;t copied into variants.</li>
-          <li>Every variant is one full agent session on your account. Start with four.</li>
-        </ul>
-      </div>
+  <section aria-labelledby="faq-title" className="grid gap-10">
+    <div className="grid gap-5">
+      <Typography variant="headline" as="h2" id="faq-title">
+        Common questions
+      </Typography>
+      <dl className="m-0 grid gap-x-10 gap-y-6 md:grid-cols-2">
+        {FAQ.map((f) => (
+          <div key={f.q} className="grid content-start gap-1.5">
+            <dt className="text-[17px] font-semibold">{f.q}</dt>
+            <dd className="text-steel m-0 text-[15px] leading-relaxed">{f.a}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
 
     <footer className="border-rule text-steel flex flex-wrap items-center justify-between gap-4 border-t pt-6 text-sm">
-      <span>
+      <span className="max-w-[90ch] leading-relaxed">
         Built on{' '}
         <a href="https://impeccable.style" className="text-ink underline">
           Impeccable
+        </a>
+        , created by{' '}
+        <a href="https://x.com/pbakaus" className="text-ink underline">
+          Paul Bakaus
         </a>{' '}
-        by Paul Bakaus (Apache-2.0); independent and not affiliated. MIT © highnet.
+        and used under the Apache-2.0 licence. variantly is an independent project, not affiliated
+        with or endorsed by Impeccable or Paul Bakaus; their names are used only to credit the work
+        and are theirs. variantly is MIT-licensed © highnet and provided “as is”, without warranty
+        of any kind. Review every change before you keep it.
       </span>
       <span className="flex gap-5">
         <a href={REPO_URL} className="text-ink underline">

@@ -6,6 +6,8 @@ import { FinePrint } from '@/components/FinePrint';
 import { HowItWorks } from '@/components/HowItWorks';
 import { Showcase } from '@/components/Showcase';
 import { Stacks } from '@/components/Stacks';
+import { WithLive } from '@/components/WithLive';
+import { StartChecklist } from '@/components/StartChecklist';
 import { REPO_URL } from '@/lib/site';
 
 const Brand = () => (
@@ -30,11 +32,15 @@ const GitHubLink = () => (
 );
 
 const Human = () => (
-  <main className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)] gap-24 px-4 pt-8 pb-16 sm:px-6 lg:pt-10">
+  <main>
     <Showcase />
-    <HowItWorks />
-    <Stacks />
-    <FinePrint />
+    <div className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)] gap-24 px-4 pt-20 pb-16 sm:px-6">
+      <HowItWorks />
+      <StartChecklist />
+      <WithLive />
+      <Stacks />
+      <FinePrint />
+    </div>
   </main>
 );
 

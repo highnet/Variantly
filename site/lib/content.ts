@@ -59,31 +59,67 @@ export const DEMO_VARIANTS: DemoVariant[] = [
   },
 ];
 
-// The promise under the hero, in the owner's words.
-export const SELLING_POINTS = [
-  'Get dozens of variants in a single day',
-  'Pick the one you like the most',
-  'Works with any stack, any agent',
-  'Try again',
-];
-
 export const STEPS: { label: string; title: string; body: string; artifact: string }[] = [
   {
-    label: 'You run',
-    title: 'One command in your project',
-    body: 'A short wizard reads your stack, finds your agent and asks what the site is for.',
+    label: 'Paste',
+    title: 'Paste one command',
+    body: 'In a terminal, inside your website’s folder. A few questions follow: what the site is for, and how many designs you want.',
     artifact: 'npx variantly',
   },
   {
-    label: 'Your agent makes',
-    title: 'N redesigns at once',
-    body: 'Each variant is its own git worktree and agent session; Impeccable picks a different world for each.',
-    artifact: '~/.variantly/<project>/v1 … vN',
+    label: 'Wait',
+    title: 'Your AI makes the designs',
+    body: 'Your own assistant redesigns the site several ways, each in a separate copy. Your real files are not touched.',
+    artifact: 'Start with 4',
   },
   {
-    label: 'You keep',
-    title: 'The one you like',
-    body: 'Every variant runs as your real site. Flick between them, keep one, or run it again.',
-    artifact: '1–9 · drag the line · Keep',
+    label: 'Keep',
+    title: 'Pick your favourite',
+    body: 'A page opens in your browser, just like the demo above. Flick through, compare, press Keep. Or run it again.',
+    artifact: 'Keep',
+  },
+];
+
+// Plain answers to the questions a first-time visitor asks.
+export const FAQ: { q: string; a: string }[] = [
+  {
+    q: 'Do I need to be a developer?',
+    a: 'You need to be comfortable pasting a command into a terminal. Your AI coding assistant does the design work, and it can set variantly up for you: send it this page.',
+  },
+  {
+    q: 'What does it cost?',
+    a: 'variantly is free and open source. Each design is one session of your own AI assistant, so it uses your plan or credits. Start with four.',
+  },
+  {
+    q: 'Can it break my site?',
+    a: 'No. Every design is made in a separate copy. Nothing in your project changes until you press Keep, and even then the change is left for you to review.',
+  },
+  {
+    q: 'What if I don’t like any of them?',
+    a: 'Run it again, or tell the wizard more about what you want. Nothing is kept unless you press Keep.',
+  },
+];
+
+// What a first-timer checks before running it. Each item says how to check.
+export const CHECKLIST: { id: string; need: string; how: string }[] = [
+  {
+    id: 'agent',
+    need: 'An AI coding assistant installed',
+    how: 'Claude Code, Codex or GitHub Copilot CLI, signed in. If you use Cursor or Lovable only, install Claude Code first.',
+  },
+  {
+    id: 'code',
+    need: 'Your site’s code on your computer',
+    how: 'A folder you can open in a terminal. Sites that only live inside a website builder won’t work.',
+  },
+  {
+    id: 'git',
+    need: 'The code saved with git',
+    how: 'At least one commit. Not sure? Ask your assistant: “commit everything in this folder”.',
+  },
+  {
+    id: 'run',
+    need: 'The site runs on your computer',
+    how: 'Something like npm run dev opens it in your browser. Node.js 20.11 or newer.',
   },
 ];

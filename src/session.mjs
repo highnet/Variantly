@@ -16,6 +16,7 @@ import { createParser } from './agent-output.mjs';
 import { agentById, agentFile } from './agents.mjs';
 import { defaultDirections, extractReview, extractSummary, hasAnswers, productMarkdown, writeBrief, writeReviewBrief } from './brief.mjs';
 import { auditMarkdown, playwrightMcp, runAudit } from './checks.mjs';
+import { stepFrom } from './steps.mjs';
 import * as git from './git.mjs';
 import { LineBuffer, killTree, runOk, spawnArgs } from './proc.mjs';
 import { ServerPool } from './servers.mjs';
@@ -38,6 +39,7 @@ const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  * @property {import('./brief.mjs').ProductAnswers} [product]  answers to Impeccable's init questions
  * @property {string} brief
  * @property {string[]} routes
+ * @property {string[]} [extras]     ids from EXTRAS: Impeccable passes beyond the redesign
  * @property {number} concurrency
  * @property {number} maxLive
  * @property {'link' | 'install'} deps
@@ -61,6 +63,7 @@ const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  * @property {number} [costUsd]   what the agent reported the session cost (Claude Code only)
  * @property {import('./agent-output.mjs').Usage} [usage]  tokens, as the agent reported them
  * @property {string} [picked]    the world Impeccable picked, as the agent named it
+ * @property {number} [step]      index into STEPS: where the run is
  * @property {number} [credits]   AI credits / premium requests, when the agent reports them (Copilot)
  * @property {string} [review]    what the review pass found and fixed
  * @property {import('./checks.mjs').AuditResult} [audit]  axe-core and Lighthouse scores
@@ -283,6 +286,11 @@ export class Session extends EventEmitter {
     this.runs.set(v.n, run);
     const say = (/** @type {string} */ line) => {
       log.push(line + '\n');
+      const next = stepFrom(line, v.step ?? 0);
+      if (next >= 0) {
+        v.step = next;
+        this.save().catch(() => {});
+      }
       this.emit('log', { target: `v${v.n}`, lines: [line] });
     };
     const update = async (/** @type {Partial<Variant>} */ patch) => {
@@ -292,7 +300,7 @@ export class Session extends EventEmitter {
 
     try {
       if (!agent) throw new Error(`Unknown agent "${config.agent}".`);
-      await update({ status: 'preparing', startedAt: Date.now() });
+      await update({ status: 'preparing', startedAt: Date.now(), step: 0 });
       const wt = this.worktreeFor(v.n);
       say(`Creating worktree ${wt}`);
       await this.gitLock(() => git.addWorktree(this.repo, wt, this.branchFor(v.n), this.state.base));
@@ -318,6 +326,7 @@ export class Session extends EventEmitter {
           direction: v.direction,
           brief: config.brief,
           routes: config.routes,
+          extras: config.extras ?? [],
           appRel: config.appRel,
           stackName: adapter.name,
           stackId: adapter.id,

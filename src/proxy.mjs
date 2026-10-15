@@ -51,9 +51,9 @@ export const createProxy = (opts) => {
   const server = http.createServer((req, res) => {
     if (opts.local?.(req, res)) return;
     const headers = { ...req.headers };
-    headers.host = target.host;
+    headers.host = facing(target).host;
     headers['accept-encoding'] = 'identity';
-    if (headers.origin) headers.origin = target.origin;
+    if (headers.origin) headers.origin = facing(target).origin;
     if (typeof headers.referer === 'string') headers.referer = rewriteToTarget(headers.referer, target);
     // Ask for the full page, never a 304 we would have nothing to inject into.
     delete headers['if-none-match'];
@@ -107,8 +107,8 @@ export const createProxy = (opts) => {
       for (let i = 0; i < req.rawHeaders.length; i += 2) {
         const name = req.rawHeaders[i];
         let value = req.rawHeaders[i + 1];
-        if (name.toLowerCase() === 'host') value = target.host;
-        if (name.toLowerCase() === 'origin') value = target.origin;
+        if (name.toLowerCase() === 'host') value = facing(target).host;
+        if (name.toLowerCase() === 'origin') value = facing(target).origin;
         lines.push(`${name}: ${value}`);
       }
       up.write(lines.join('\r\n') + '\r\n\r\n');
@@ -228,6 +228,20 @@ const unavailablePage = (target, reason, inject) => `<!doctype html><html><head>
 <style>body{margin:0;min-height:100vh;display:grid;place-items:center;font:15px/1.5 ui-sans-serif,system-ui,sans-serif;background:#f4f1ea;color:#1d1b17}
 p{max-width:36ch;text-align:center}code{font-size:13px;opacity:.7}</style></head>
 <body><p>Waiting for the dev server at <code>${escapeHtml(target)}</code>.<br><code>${escapeHtml(reason)}</code></p></body></html>`;
+
+/**
+ * How the dev server should see us: loopback targets as `localhost`, since
+ * dev servers trust that name by default. Next.js 16 blocks its HMR socket
+ * for any other origin (127.0.0.1 included), and a dead HMR socket makes
+ * the page reload itself in a loop.
+ * @param {URL} t
+ */
+const facing = (t) => {
+  if (!/^(127\.0\.0\.1|\[::1\])$/.test(t.hostname)) return t;
+  const u = new URL(t.href);
+  u.hostname = 'localhost';
+  return u;
+};
 
 /** URL.hostname keeps IPv6 brackets; sockets want them gone. @param {string} h */
 const bare = (h) => h.replace(/^\[|\]$/g, '');

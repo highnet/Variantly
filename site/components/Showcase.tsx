@@ -13,7 +13,7 @@ import {
 import { CommandCopy } from '@/components/CommandCopy';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
-import { DEMO_VARIANTS, SELLING_POINTS } from '@/lib/content';
+import { DEMO_VARIANTS } from '@/lib/content';
 import { INSTALL } from '@/lib/site';
 import { cn } from '@/lib/utils';
 
@@ -141,20 +141,32 @@ const Showcase = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, [choose]);
 
-  // Same-origin pages: keep every pane at the same scroll ratio.
+  // Same-origin pages: every pane sits at the same scroll position, in
+  // pixels on both axes, so the divider compares the same spot of the page.
+  const scrollPos = useRef({ x: 0, y: 0 });
+
+  const applyScroll = (f: HTMLIFrameElement | null) => {
+    const e = f?.contentWindow?.document.scrollingElement;
+    if (!e) return;
+    e.scrollTop = scrollPos.current.y;
+    e.scrollLeft = scrollPos.current.x;
+  };
+
   const syncFrom = useCallback((from: HTMLIFrameElement | null) => {
-    const fw = from?.contentWindow;
-    const fe = fw?.document.scrollingElement;
-    if (!fw || !fe || Date.now() < quiet.current) return;
-    const ratio = fe.scrollTop / Math.max(1, fe.scrollHeight - fw.innerHeight);
+    const fe = from?.contentWindow?.document.scrollingElement;
+    if (!fe || Date.now() < quiet.current) return;
+    scrollPos.current = { x: fe.scrollLeft, y: fe.scrollTop };
     quiet.current = Date.now() + 80;
     for (const f of frames.current) {
-      if (!f || f === from) continue;
-      const w = f.contentWindow;
-      const e = w?.document.scrollingElement;
-      if (w && e) e.scrollTop = ratio * Math.max(0, e.scrollHeight - w.innerHeight);
+      if (f && f !== from) applyScroll(f);
     }
   }, []);
+
+  // A pane that just became visible picks up where the others are.
+  useEffect(() => {
+    quiet.current = Date.now() + 80;
+    applyScroll(frames.current[selected]);
+  }, [selected]);
 
   const onFrameLoad = (i: number) => {
     const f = frames.current[i];
@@ -162,6 +174,7 @@ const Showcase = () => {
     if (!f || !win) return;
     // The panes are objects on the counter, not embedded documents.
     win.document.documentElement.style.setProperty('scrollbar-width', 'none');
+    applyScroll(f);
     win.addEventListener('scroll', () => syncFrom(f), { passive: true });
     win.addEventListener('pointerdown', takeOver);
     win.addEventListener('wheel', takeOver, { passive: true });
@@ -201,161 +214,162 @@ const Showcase = () => {
     <section
       ref={root}
       aria-labelledby="hero-title"
-      className="grid gap-6"
+      className="bg-slate on-slate grid"
       onPointerDown={(e) => {
         if ((e.target as HTMLElement).closest('[data-keep-cycle]')) return;
         takeOver();
       }}
     >
-      <div className="grid gap-5">
-        <Typography
-          variant="display"
-          id="hero-title"
-          className="text-[clamp(2.5rem,4.6vw,4.75rem)]"
-        >
-          Your website needs a fresh look
-        </Typography>
-        <ul className="border-rule m-0 grid list-none grid-cols-2 border-y p-0 md:grid-cols-4">
-          {SELLING_POINTS.map((point) => (
-            <li key={point} className="py-3 pr-4 text-[15px] leading-snug font-semibold md:py-4">
-              {point}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="grid gap-3">
-        <p
-          className="figure [container-type:inline-size] m-0 flex flex-wrap items-center gap-x-[0.3em] gap-y-1 text-[clamp(1.5rem,3vw,2.5rem)] leading-none"
-          aria-live="polite"
-        >
-          <span>Oak &amp; Iron, as</span>
-          <span className="sr-only">{current.direction}</span>
-          <FlapWord word={current.direction} />
-        </p>
-
-        <div className="rounded-pass border-rule bg-surface shadow-lift overflow-hidden border">
-          <div
-            ref={stage}
-            className="relative h-[min(52vh,660px)] min-h-[360px] touch-none select-none"
-            style={{ ['--split' as string]: `${split}%` }}
-            onPointerMove={move}
-            onPointerUp={() => setDragging(false)}
-            onPointerCancel={() => setDragging(false)}
-          >
-            <iframe
-              ref={(el) => {
-                frames.current[0] = el;
-              }}
-              onLoad={() => onFrameLoad(0)}
-              src={page(0)}
-              title="Oak & Iron as it was: the original"
-              className="absolute inset-0 size-full border-0"
-            />
-            {DEMO_VARIANTS.map((v) => (
-              <iframe
-                key={v.n}
-                ref={(el) => {
-                  frames.current[v.n] = el;
-                }}
-                onLoad={() => onFrameLoad(v.n)}
-                src={page(v.n)}
-                title={`${vname(v.n)}: ${v.direction}`}
-                aria-hidden={v.n !== selected}
-                tabIndex={v.n === selected ? 0 : -1}
-                loading={v.n === 1 ? 'eager' : 'lazy'}
-                className={cn(
-                  'absolute inset-0 size-full border-0 transition-opacity duration-500 [clip-path:inset(0_0_0_var(--split))]',
-                  v.n === selected ? 'opacity-100' : 'pointer-events-none opacity-0',
-                )}
-              />
-            ))}
-            {dragging && <div className="absolute inset-0 z-10 cursor-ew-resize" />}
-
-            <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex justify-between gap-3">
-              <Typography variant="tag" className="bg-ink text-surface rounded-flap px-2 py-1.5">
-                Before<span className="hidden sm:inline"> · the original</span>
-              </Typography>
-              <Typography variant="tag" className="bg-ink text-surface rounded-flap px-2 py-1.5">
-                {vname(selected)} · {current.direction}
-              </Typography>
-            </div>
-
-            <div className="absolute inset-y-0 left-[var(--split)] z-20 w-0">
-              <div className="bg-ink shadow-divider absolute inset-y-0 -left-px w-0.5" />
-              <Button
-                variant="grip"
-                size="grip"
-                role="slider"
-                aria-label="Before and after divider"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.round(split)}
-                aria-valuetext={`${Math.round(split)}% original`}
-                onKeyDown={onGripKey}
-                onPointerDown={(e) => {
-                  e.preventDefault();
-                  takeOver();
-                  setDragging(true);
-                }}
-                className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2"
-              >
-                <ChevronLeft aria-hidden="true" />
-                Before
-                <i className="bg-slate-line mx-1 h-4 w-px" />
-                After
-                <ChevronRight aria-hidden="true" />
-              </Button>
-            </div>
+      <div className="text-surface">
+        <div className="bg-slate border-slate-line mx-auto grid max-w-[1440px] gap-x-10 gap-y-5 px-4 py-7 sm:px-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:py-9">
+          <div className="grid content-start gap-4">
+            <Typography
+              variant="display"
+              id="hero-title"
+              className="text-surface text-[clamp(2.25rem,4.2vw,4.25rem)]"
+            >
+              Your website needs a fresh look
+            </Typography>
+            <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">
+              One command asks the AI coding assistant you already use to redesign your site several
+              different ways. Try each one live, like the shop below, and keep your favourite. Your
+              current site stays untouched until you do.
+            </p>
           </div>
 
-          <div className="on-slate bg-slate text-surface flex flex-wrap items-center gap-x-4 gap-y-3 p-2.5">
-            <div role="group" aria-label="Variants" className="flex gap-1">
-              {DEMO_VARIANTS.map((v) => {
-                const active = selected === v.n;
-                return (
-                  <Button
-                    key={v.n}
-                    variant="cell"
-                    size="cell"
-                    aria-current={active}
-                    aria-label={`${vname(v.n)} ${v.direction}`}
-                    title={`${v.direction} (${v.n})`}
-                    onClick={() => choose(v.n)}
-                  >
-                    {String(v.n).padStart(2, '0')}
-                    {active && auto && (
-                      <span
-                        key={selected}
-                        aria-hidden="true"
-                        className="bg-ink/50 absolute inset-x-1.5 bottom-1 h-0.5 origin-left animate-[cycle_5.2s_linear_forwards]"
-                      />
-                    )}
-                  </Button>
-                );
-              })}
-            </div>
-            <p className="text-steel-on-slate m-0 min-w-0 flex-1 basis-64 text-[13px] leading-snug">
-              <span className="text-surface font-semibold">{current.direction}.</span>{' '}
-              {current.summary}{' '}
-              <a
-                href={`/demo/oak-and-iron/v${selected}/BRIEF.md`}
-                className="text-surface inline-flex items-center gap-1 underline"
-              >
-                <FileText className="size-3.5" aria-hidden="true" />
-                Read the brief
-              </a>
-            </p>
-            <div data-keep-cycle className="w-full sm:w-auto">
+          <div className="grid content-start gap-4">
+            <div data-keep-cycle className="grid gap-2">
               <CommandCopy command={INSTALL} tone="slate" accent />
+              <p className="text-steel-on-slate m-0 text-[14px] leading-snug">
+                Paste it into a terminal in your website&apos;s folder.{' '}
+                <a href="#start-title" className="text-surface underline underline-offset-2">
+                  Check what you need first
+                </a>
+              </p>
+            </div>
+            <div className="border-slate-line grid gap-2.5 border-t pt-4">
+              <p
+                className="figure [container-type:inline-size] m-0 flex flex-wrap items-center gap-x-[0.3em] gap-y-1 text-[clamp(1.1rem,1.6vw,1.5rem)] leading-none"
+                aria-live="polite"
+              >
+                <span className="text-steel-on-slate">Now showing</span>
+                <span className="sr-only">{current.direction}</span>
+                <FlapWord word={current.direction} />
+              </p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+                <div role="group" aria-label="Redesigns" className="flex gap-1">
+                  {DEMO_VARIANTS.map((v) => {
+                    const active = selected === v.n;
+                    return (
+                      <Button
+                        key={v.n}
+                        variant="cell"
+                        size="cell"
+                        aria-current={active}
+                        aria-label={`${vname(v.n)} ${v.direction}`}
+                        title={`${v.direction} (${v.n})`}
+                        onClick={() => choose(v.n)}
+                      >
+                        {String(v.n).padStart(2, '0')}
+                        {active && auto && (
+                          <span
+                            key={selected}
+                            aria-hidden="true"
+                            className="bg-ink/50 absolute inset-x-1.5 bottom-1 h-0.5 origin-left animate-[cycle_5.2s_linear_forwards]"
+                          />
+                        )}
+                      </Button>
+                    );
+                  })}
+                </div>
+                <a
+                  href={`/demo/oak-and-iron/v${selected}/BRIEF.md`}
+                  className="text-steel-on-slate hover:text-surface inline-flex items-center gap-1 text-[13px] underline underline-offset-2"
+                >
+                  <FileText className="size-3.5" aria-hidden="true" />
+                  What the AI was asked
+                </a>
+              </div>
+              <p className="text-steel-on-slate m-0 text-[13px] leading-snug">
+                A made-up furniture shop, redesigned six ways by Claude Code. Drag the line or pick
+                a number.
+              </p>
             </div>
           </div>
         </div>
+      </div>
+      <div
+        ref={stage}
+        className="relative isolate h-[62svh] min-h-[380px] touch-none overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]"
+        style={{ ['--split' as string]: `${split}%` }}
+        onPointerMove={move}
+        onPointerUp={() => setDragging(false)}
+        onPointerCancel={() => setDragging(false)}
+      >
+        <iframe
+          ref={(el) => {
+            frames.current[0] = el;
+          }}
+          onLoad={() => onFrameLoad(0)}
+          src={page(0)}
+          title="Oak & Iron as it was: the original"
+          className="absolute inset-0 size-full border-0 bg-white"
+        />
+        {DEMO_VARIANTS.map((v) => (
+          <iframe
+            key={v.n}
+            ref={(el) => {
+              frames.current[v.n] = el;
+            }}
+            onLoad={() => onFrameLoad(v.n)}
+            src={page(v.n)}
+            title={`${vname(v.n)}: ${v.direction}`}
+            aria-hidden={v.n !== selected}
+            tabIndex={v.n === selected ? 0 : -1}
+            loading={v.n === 1 ? 'eager' : 'lazy'}
+            className={cn(
+              'absolute inset-0 size-full border-0 transition-opacity duration-500 [clip-path:inset(0_0_0_var(--split))]',
+              v.n === selected ? 'opacity-100' : 'pointer-events-none opacity-0',
+            )}
+          />
+        ))}
+        {dragging && <div className="absolute inset-0 z-10 cursor-ew-resize" />}
 
-        <Typography variant="caption" color="ink">
-          Six redesigns of a fictional shop, each made by Claude Code with Impeccable from the brief
-          variantly writes. Press 1–6, or drag the line.
-        </Typography>
+        <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex justify-between gap-3">
+          <Typography variant="tag" className="bg-ink text-surface rounded-flap px-2 py-1.5">
+            Before<span className="hidden sm:inline"> · today’s site</span>
+          </Typography>
+          <Typography variant="tag" className="bg-ink text-surface rounded-flap px-2 py-1.5">
+            After · {current.direction}
+          </Typography>
+        </div>
+
+        <div className="absolute inset-y-0 left-[var(--split)] z-20 w-0">
+          <div className="bg-ink shadow-divider absolute inset-y-0 -left-px w-0.5" />
+          <Button
+            variant="grip"
+            size="grip"
+            role="slider"
+            aria-label="Before and after divider"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(split)}
+            aria-valuetext={`${Math.round(split)}% original`}
+            onKeyDown={onGripKey}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              takeOver();
+              setDragging(true);
+            }}
+            className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2"
+          >
+            <ChevronLeft aria-hidden="true" />
+            Before
+            <i className="bg-slate-line mx-1 h-4 w-px" />
+            After
+            <ChevronRight aria-hidden="true" />
+          </Button>
+        </div>
       </div>
     </section>
   );

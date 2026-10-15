@@ -16,7 +16,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findChrome } from './checks.mjs';
 import { detectAgents, impeccableInstallCommand, AGENTS } from './agents.mjs';
-import { defaultDirections } from './brief.mjs';
+import { EXTRAS, defaultDirections } from './brief.mjs';
+import { detectRoutes } from './routes.mjs';
 import * as git from './git.mjs';
 import { LineBuffer, isUp, run, runOk, spawnShell } from './proc.mjs';
 import { ADAPTERS, detect, packageRunner, projectInfo as projectInfoFor } from './stacks.mjs';
@@ -303,6 +304,8 @@ export const detectProject = async (repo, defaults = {}) => {
     stacks: ADAPTERS.map((a) => ({ id: a.id, name: a.name, stack: a.stack, command: a.command(projectInfoFor(repo)) })),
     agents,
     chrome: Boolean(findChrome()),
+    routes: detectRoutes(path.join(repo, best?.rel ?? '')),
+    extras: EXTRAS.map(({ id, label, hint }) => ({ id, label, hint })),
     hasProduct: ['PRODUCT.md', path.join(best?.rel ?? '', 'PRODUCT.md')].some((p) => existsSync(path.join(repo, p))),
     hasDesign: ['DESIGN.md', path.join(best?.rel ?? '', 'DESIGN.md')].some((p) => existsSync(path.join(repo, p))),
     suggested: {
@@ -318,7 +321,8 @@ export const detectProject = async (repo, defaults = {}) => {
       directions: defaultDirections(10),
       product: { users: '', purpose: '', keep: '' },
       brief: '',
-      routes: [],
+      routes: ['/'],
+      extras: [],
       concurrency: 2,
       maxLive: 3,
       deps: best?.adapter.needsInstall ? 'install' : 'link',
@@ -362,6 +366,7 @@ export const normalizeConfig = (body) => {
     },
     brief: str(body.brief).slice(0, 4000),
     routes: Array.isArray(body.routes) ? body.routes.map(String).filter(Boolean).slice(0, 20) : [],
+    extras: Array.isArray(body.extras) ? EXTRAS.map((x) => x.id).filter((id) => body.extras.includes(id)) : [],
     concurrency: num(body.concurrency, 2, 1, 10),
     maxLive: num(body.maxLive, 3, 2, 11),
     deps: body.deps === 'install' ? 'install' : 'link',

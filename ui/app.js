@@ -124,6 +124,26 @@ const STATUS = {
   failed: 'Failed',
   cancelled: 'Cancelled',
 };
+/** Mirrors src/steps.mjs. */
+const STEPS = ['Setting up', 'Reading the site', 'Choosing a direction', 'Building', 'Checking', 'Writing DESIGN.md', 'Saving'];
+const stepAt = (v) => (v.status === 'done' ? STEPS.length : v.status === 'queued' ? -1 : v.step ?? 0);
+const stepState = (v, i) => {
+  const at = stepAt(v);
+  return i < at ? 'done' : i === at && ['preparing', 'running', 'committing'].includes(v.status) ? 'now' : '';
+};
+const stepCell = (v, last) => {
+  const at = stepAt(v);
+  const live = ['preparing', 'running', 'committing'].includes(v.status);
+  const label = live ? `${at + 1}/${STEPS.length} · ${STEPS[at]}` : v.status === 'done' ? 'All steps done' : v.status === 'queued' ? 'Waiting for a free slot' : `Stopped at: ${STEPS[Math.max(0, at)]}`;
+  return h('div', { class: 'steps', title: last }, [
+    h('div', { class: 'track', 'aria-hidden': 'true' }, STEPS.map((_, i) => h('i', { class: stepState(v, i) }))),
+    h('span', { class: 'now-label' }, label),
+    live ? h('span', { class: 'last lastline' }, last) : null,
+  ]);
+};
+const stepList = (v) =>
+  h('ol', { class: 'step-list', 'aria-label': 'Steps' }, STEPS.map((s, i) => h('li', { class: stepState(v, i) }, `${stepState(v, i) === 'done' ? '✓' : i + 1} ${s}`)));
+
 const statusKey = (s) => (s === 'queued' ? 'scheduled' : s === 'done' ? 'ready' : s);
 
 const noteStatusChanges = () => {
@@ -265,6 +285,8 @@ const loadDetect = async () => {
     S.detect = await api('GET', 'detect');
     const saved = S.snap?.config;
     S.form = { ...S.detect.suggested, ...(saved ?? {}) };
+    if (!S.form.routes?.length) S.form.routes = ['/'];
+    S.form.extras ??= [];
     S.form.directions = Array.from({ length: 10 }, (_, i) => S.form.directions?.[i] ?? '');
     S.form.product = S.form.product ?? { users: '', purpose: '', keep: '' };
     S.view = '';
@@ -332,6 +354,17 @@ const updateCheckin = (drawerChanged = false) => {
   renderStub();
   renderPreviewRows();
 };
+
+/** A checkbox chip. */
+const pick = (label, on, set, title) =>
+  h('label', { class: 'pick', title: title ?? '' }, [
+    h('input', { type: 'checkbox', checked: on, onChange: (e) => {
+      set(e.target.checked);
+      updateCheckin();
+      renderDrawer();
+    } }),
+    h('span', {}, label),
+  ]);
 
 const renderDrawer = () => {
   const drawer = $('#drawer');
@@ -520,9 +553,28 @@ const renderDrawer = () => {
         ),
         h('p', { class: 'hint' }, 'Leave a slot blank and Impeccable chooses that world itself. Type to pin one, in your words: "a 70s record sleeve", "like a Swiss train timetable".'),
       ]),
-      h('label', { class: 'field' }, [
-        h('span', { class: 'label' }, 'Pages that matter (optional)'),
-        h('input', { class: 'input', value: f.routes.join(', '), placeholder: '/, /pricing, /blog', onInput: change((e) => (f.routes = e.target.value.split(',').map((s) => s.trim()).filter(Boolean))) }),
+      h('fieldset', { class: 'field picks' }, [
+        h('legend', { class: 'label' }, 'Pages to redesign'),
+        h('div', { class: 'pick-row' }, [...new Set([...(S.detect.routes ?? ['/']), ...f.routes])].map((r) => pick(r === '/' ? '/ (home)' : r, f.routes.includes(r), (on) => {
+          f.routes = on ? [...f.routes, r] : f.routes.filter((x) => x !== r);
+          if (!f.routes.length) f.routes = ['/'];
+        }))),
+        h('input', { class: 'input', placeholder: 'Another page, e.g. /pricing, then Enter', onKeydown: (e) => {
+          const r = e.target.value.trim();
+          if (e.key !== 'Enter' || !r) return;
+          e.preventDefault();
+          f.routes = [...new Set([...f.routes, r.startsWith('/') ? r : `/${r}`])];
+          updateCheckin();
+          renderDrawer();
+        } }),
+        h('p', { class: 'hint' }, 'Just the home page is fastest. Each extra page adds time to every variant.'),
+      ]),
+      h('fieldset', { class: 'field picks' }, [
+        h('legend', { class: 'label' }, 'Extra Impeccable passes'),
+        h('div', { class: 'pick-row' }, (S.detect.extras ?? []).map((x) => pick(x.label, (f.extras ?? []).includes(x.id), (on) => {
+          f.extras = on ? [...(f.extras ?? []), x.id] : (f.extras ?? []).filter((id) => id !== x.id);
+        }, x.hint))),
+        h('p', { class: 'hint' }, 'Run after the redesign, on the same pages. Hover one to see what it does.'),
       ]),
     );
   }
@@ -725,7 +777,7 @@ const mountBoardView = (main) => {
             h('th', { class: 'label' }, 'Time'),
             h('th', { class: 'label hide-compact' }, 'Files'),
             h('th', { class: 'label' }, 'Usage'),
-            h('th', { class: 'label' }, 'Latest'),
+            h('th', { class: 'label' }, 'Step'),
           ])),
           h('tbody', { id: 'board-rows', 'aria-live': 'polite' }),
         ]),
@@ -841,7 +893,7 @@ const renderBoardRows = (tbody, list) => {
         h('td', { class: 'num data', 'data-elapsed': key }, elapsed(v)),
         h('td', { class: 'num data hide-compact' }, v.files?.length ? String(v.files.length) : '—'),
         h('td', { class: 'num data', title: usageTitle(v) }, usageText(v)),
-        h('td', { class: 'lastline' }, logLines.at(-1) ?? ''),
+        h('td', { class: 'step-cell' }, stepCell(v, logLines.at(-1) ?? '')),
       ],
     );
     tbody.append(tr);
@@ -904,6 +956,7 @@ const logPanel = (v) => {
   const pre = h('pre', { 'data-log': `v${v.n}` }, lines.join('\n') || 'No output yet.');
   queueMicrotask(() => (pre.scrollTop = pre.scrollHeight));
   return h('div', { class: 'logpanel on-slate' }, [
+    stepList(v),
     pre,
     h('div', { class: 'actions' }, [
       v.status === 'done' ? h('button', { class: 'btn primary small', type: 'button', onClick: (e) => (e.stopPropagation(), goCompare(v.n)) }, `Compare ${vname(v.n)}`) : null,
@@ -1068,7 +1121,9 @@ const targetUrl = (target, path) => {
 
 const showIn = (side, target) => {
   const p = panes[side];
-  if (!p) return;
+  // Keeping shuts every server down: leave the frames as they are, and
+  // never ask for a server back while the change is being applied.
+  if (!p || S.applying) return;
   const srv = server(target);
   const ready = srv?.state === 'ready';
   if (target && srv && srv.state !== 'ready' && srv.state !== 'starting') api('POST', `ensure/${target}`, {}).catch(() => {});
@@ -1164,8 +1219,8 @@ const renderDock = () => {
     dock.replaceChildren(
       h('div', { class: 'confirm', role: 'alertdialog', 'aria-label': 'Keep this variant?' }, [
         h('span', {}, ['Apply ', h('strong', {}, vname(v.n)), ` (${directionLabel(v.direction, v.picked)}) to your working tree? `, h('span', { class: 'muted' }, `${plural(v.files.length, 'file')}. The others stay as branches.`)]),
-        h('button', { class: 'btn outline small', type: 'button', onClick: () => ((S.confirming = false), renderDock()) }, 'Cancel'),
-        h('button', { class: 'btn primary', type: 'button', id: 'apply', onClick: () => keep(v.n) }, `Apply ${vname(v.n)}`),
+        h('button', { class: 'btn outline small', type: 'button', disabled: Boolean(S.applying), onClick: () => ((S.confirming = false), renderDock()) }, 'Cancel'),
+        h('button', { class: 'btn primary', type: 'button', id: 'apply', disabled: Boolean(S.applying), onClick: () => keep(v.n) }, S.applying ? 'Applying…' : `Apply ${vname(v.n)}`),
       ]),
     );
     $('#apply')?.focus();
@@ -1273,17 +1328,16 @@ const renderInfo = async () => {
 const closeInfoBtn = () => h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'Close details', onClick: toggleInfo }, icon('close'));
 
 const keep = async (n) => {
-  const btn = $('#apply');
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'Applying…';
-  }
+  S.applying = n;
+  renderDock();
   try {
     await api('POST', `finalize/${n}`, {});
   } catch (err) {
     toast(err.message, true);
     S.confirming = false;
     renderDock();
+  } finally {
+    S.applying = null;
   }
 };
 
