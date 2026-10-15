@@ -44,6 +44,8 @@ const icon = (name) => {
     close: ['M6 6l12 12', 'M18 6L6 18'],
     arrow: ['M5 12h14', 'M13 6l6 6-6 6'],
     refresh: ['M20 11a8 8 0 1 0-2.3 5.7', 'M20 5v6h-6'],
+    desktop: ['M3 4h18v12H3z', 'M8 20h8', 'M12 16v4'],
+    mobile: ['M7 3h10v18H7z', 'M11 18h2'],
   };
   return h(
     'svg',
@@ -1286,6 +1288,7 @@ const updateCompare = () => {
   let mode = S.mode;
   if (S.sel === 'original' && mode !== 'single') mode = 'single';
   stage.dataset.mode = mode;
+  stage.dataset.device = S.device ?? 'desktop';
   stage.dataset.show = S.sel === 'original' ? 'original' : 'variant';
   const variantTarget = S.sel === 'original' ? (S.lastVariant ? `v${S.lastVariant}` : '') : `v${S.sel}`;
   if (S.sel !== 'original') S.lastVariant = S.sel;
@@ -1347,6 +1350,8 @@ const renderDock = () => {
     $('#apply')?.focus();
     return;
   }
+  const deviceBtn = (d, label) =>
+    h('button', { type: 'button', 'aria-pressed': String((S.device ?? 'desktop') === d), 'aria-label': label, title: `${label} (m)`, onClick: () => ((S.device = d), updateCompare()) }, icon(d));
   const modeBtn = (m, label) =>
     h('button', { type: 'button', 'aria-pressed': String(S.mode === m), 'aria-label': label, title: `${label} (s)`, onClick: () => ((S.mode = m), updateCompare()) }, icon(m));
   dock.replaceChildren(
@@ -1376,6 +1381,7 @@ const renderDock = () => {
     ]),
     h('span', { class: 'sep', 'aria-hidden': 'true' }),
     h('div', { class: 'modes', role: 'group', 'aria-label': 'View' }, [modeBtn('slider', 'Slider'), modeBtn('single', 'Single'), modeBtn('side', 'Side by side')]),
+    h('div', { class: 'modes', role: 'group', 'aria-label': 'Screen size' }, [deviceBtn('desktop', 'Desktop'), deviceBtn('mobile', 'Phone')]),
     h('input', {
       class: 'path',
       value: S.path,
@@ -1565,6 +1571,10 @@ const handleKey = (key) => {
   if (key === 's') {
     const modes = ['slider', 'single', 'side'];
     S.mode = modes[(modes.indexOf(S.mode) + 1) % modes.length];
+    return updateCompare();
+  }
+  if (key === 'm') {
+    S.device = S.device === 'mobile' ? 'desktop' : 'mobile';
     return updateCompare();
   }
   if (key === 'i') return toggleInfo();

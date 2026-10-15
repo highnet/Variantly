@@ -2499,3 +2499,19 @@ button.wiz-chip.done:hover {
 .wiz-step.panel {
   padding: 24px clamp(16px, 4vw, 32px);
 }
+
+/* Phone preview: both frames at a phone's width, centred, so the slider
+   and side by side still line up. */
+.stage[data-device='mobile'] .pane {
+  background: var(--panel);
+}
+
+.stage[data-device='mobile'] .pane iframe {
+  width: 390px;
+  max-width: calc(100% - 24px);
+  height: min(844px, calc(100% - 120px));
+  margin: 24px auto 0;
+  border: 1px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: var(--lift);
+}
