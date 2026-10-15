@@ -17,10 +17,7 @@ know what variantly does (N whole-page redesigns, live, keep one), see it, and
 leave with `npx variantly`. An agent should leave with the exact commands and
 the rule never to choose for the user.
 
-Proof and content: real demo-agent output on the Oak & Iron example
-(site/public/demo/oak-and-iron/v0–v6, labelled as crude demo-agent output, no
-AI); real CLI commands; the real stack list. No testimonials, counts,
-benchmarks or invented timings.
+Proof and content: six whole-page redesigns of the Oak & Iron example (site/public/demo/oak-and-iron/v1-v6), made by Claude Code with the Impeccable skill from the brief variantly writes, each brief shipped next to it as BRIEF.md; real CLI commands; the real stack list; the owner's selling points under the hero. No testimonials, counts, benchmarks or invented timings.
 
 Constraints: Next.js 16 + Tailwind v4 + shadcn-style CVA Button/Typography
 (site/AGENTS.md conventions); tokens from DESIGN.md; works without JS for

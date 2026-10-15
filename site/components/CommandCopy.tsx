@@ -40,7 +40,7 @@ const CommandCopy = ({ command, tone = 'light', accent, className }: CommandCopy
     >
       <span
         aria-hidden="true"
-        className={cn('font-mono text-sm', tone === 'slate' ? 'text-alert' : 'text-steel')}
+        className={cn('font-mono text-sm', tone === 'slate' ? 'text-steel-on-slate' : 'text-steel')}
       >
         $
       </span>

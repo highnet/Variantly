@@ -59,18 +59,31 @@ export const DEMO_VARIANTS: DemoVariant[] = [
   },
 ];
 
-export const STEPS: { title: string; body: string; command?: string }[] = [
+// The promise under the hero, in the owner's words.
+export const SELLING_POINTS = [
+  'Get dozens of variants in a single day',
+  'Pick the one you like the most',
+  'Works with any stack, any agent',
+  'Try again',
+];
+
+export const STEPS: { label: string; title: string; body: string; artifact: string }[] = [
   {
-    title: 'Run it in your project',
-    body: 'A short wizard reads your stack, finds your agent and asks how many directions you want.',
-    command: 'npx variantly',
+    label: 'You run',
+    title: 'One command in your project',
+    body: 'A short wizard reads your stack, finds your agent and asks what the site is for.',
+    artifact: 'npx variantly',
   },
   {
-    title: 'Your agent redesigns, N times',
-    body: 'Each variant is its own git worktree and its own agent session with Impeccable, in a different direction.',
+    label: 'Your agent makes',
+    title: 'N redesigns at once',
+    body: 'Each variant is its own git worktree and agent session; Impeccable picks a different world for each.',
+    artifact: '~/.variantly/<project>/v1 … vN',
   },
   {
-    title: 'Compare live, keep one',
-    body: 'Every variant runs as your real site. Drag the line, press a number, keep the one you like.',
+    label: 'You keep',
+    title: 'The one you like',
+    body: 'Every variant runs as your real site. Flick between them, keep one, or run it again.',
+    artifact: '1–9 · drag the line · Keep',
   },
 ];

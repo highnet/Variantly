@@ -28,19 +28,18 @@ const FinePrint = () => (
         </Typography>
         <CommandCopy command="/plugin marketplace add highnet/ProjectHusky" />
         <Typography variant="small" color="steel">
-          Needs Node 20.11+, git and one commit.{' '}
           <code className="condensed font-mono text-[13px]">npx variantly doctor</code> checks
           everything.
         </Typography>
       </div>
       <div className="grid content-start gap-3">
         <Typography variant="title" as="h3">
-          Where it can trip
+          Requirements
         </Typography>
         <ul className="text-steel m-0 grid list-disc gap-2 pl-5 text-[15px] leading-relaxed">
-          <li>Your dev command has to take a port ({'{port}'} or a PORT variable).</li>
-          <li>Untracked files aren&apos;t copied into variants; commit what the site needs.</li>
-          <li>Next.js variants install their own dependencies: quick with pnpm, slow with npm.</li>
+          <li>Node 20.11+, git, and at least one commit.</li>
+          <li>A dev command that takes a port ({'{port}'} or a PORT variable).</li>
+          <li>Commit what the site needs: untracked files aren&apos;t copied into variants.</li>
           <li>Every variant is one full agent session on your account. Start with four.</li>
         </ul>
       </div>
