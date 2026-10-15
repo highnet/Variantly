@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { detect, fill, packageRunner, projectInfo as infoFor } from '../src/stacks.mjs';
+import { adapterById, detect, fill, installFailed, packageRunner, projectInfo as infoFor } from '../src/stacks.mjs';
 
 /** Write a fixture tree: { 'path': 'contents' } */
 const fixture = (/** @type {Record<string, string>} */ files) => {
@@ -32,7 +32,7 @@ const CASES = [
   ['go', { 'go.mod': 'module x\nrequire github.com/a-h/templ v0.3.0\n' }, /templ generate && go run \./],
   ['wasp', { 'main.wasp': 'app x {}', 'package.json': pkg({ react: '18' }) }, /wasp start/],
   ['rust', { 'Cargo.toml': '[package]\nname="x"' }, /cargo run/],
-  ['rails', { Gemfile: '', 'config/application.rb': '', 'Procfile.dev': 'css: bin/rails tailwindcss:watch' }, /tailwindcss:build && bin\/rails server -p \{port\}/],
+  ['rails', { Gemfile: '', 'config/application.rb': '', 'Procfile.dev': 'css: bin/rails tailwindcss:watch' }, /tailwindcss:build && (ruby )?bin\/rails server -p \{port\}/],
   ['vite', { 'package.json': pkg({ vite: '6', react: '19' }) }, /vite --port \{port\} --strictPort/],
   ['bun', { 'package.json': pkg({}, { dev: 'bun --hot index.ts' }), 'bun.lock': '' }, /bun run dev/],
   ['static', { 'index.html': '<!doctype html>' }, /static-server\.mjs" \{port\}/],
@@ -58,7 +58,35 @@ test('finds the frontend in a monorepo and ranks it first', (t) => {
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const found = detect(dir);
   assert.deepEqual(found.map((f) => f.rel).sort(), ['', 'web']);
+  assert.equal(found[0].rel, 'web');
   assert.equal(packageRunner(path.join(dir, 'web'), dir).run, 'pnpm exec');
+});
+
+test('a Go or Rust API ranks below its Vite frontend, a server-rendered one above it', (t) => {
+  /** @type {[Record<string, string>, string][]} */
+  const cases = [
+    [{ 'go.mod': 'module api\nrequire github.com/go-chi/chi/v5 v5.2.1', 'cmd/api/main.go': '', 'web/package.json': pkg({ vite: '7', react: '19' }) }, 'web'],
+    [{ 'Cargo.toml': '[dependencies]\naxum = "0.8"', 'frontend/package.json': pkg({ vite: '7', react: '19' }) }, 'frontend'],
+    [{ 'go.mod': 'module site', 'templates/index.html': '', 'tools/package.json': pkg({ vite: '7' }) }, ''],
+    [{ 'Cargo.toml': '[dependencies]\naskama = "0.14"', 'admin/package.json': pkg({ vite: '7' }) }, ''],
+  ];
+  for (const [files, want] of cases) {
+    const dir = fixture(files);
+    t.after(() => rmSync(dir, { recursive: true, force: true }));
+    assert.equal(detect(dir)[0].rel, want, JSON.stringify(Object.keys(files)));
+  }
+});
+
+test('a Jinja templates folder is not mistaken for a static site', (t) => {
+  const dir = fixture({ 'main.py': 'from fastapi import FastAPI\napp = FastAPI()\n', 'templates/index.html': '{% block x %}{% endblock %}' });
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  assert.deepEqual(detect(dir).map((f) => `${f.rel}:${f.adapter.id}`), [':fastapi']);
+});
+
+test('pnpm skipping unapproved build scripts is not a failed install', () => {
+  assert.equal(installFailed(1, 'Error: ERR_PNPM_IGNORED_BUILDS\n  Ignored build scripts: sharp'), false);
+  assert.equal(installFailed(1, 'ERR_PNPM_OUTDATED_LOCKFILE'), true);
+  assert.equal(installFailed(0, ''), false);
 });
 
 test('a Next.js app inside apps/web of a Python repo wins over the Python backend', (t) => {
@@ -77,3 +105,23 @@ test('fill replaces known placeholders and leaves the rest', () => {
   assert.equal(fill('{run} next dev --port {port} {nope}', { run: 'npx', port: 3001 }), 'npx next dev --port 3001 {nope}');
 });
 
+
+test('Laravel with Vite waits for public/hot; without Vite it does not', () => {
+  const laravel = adapterById('laravel');
+  const info = (/** @type {Record<string,string>} */ files) => /** @type {any} */ ({ has: (/** @type {string} */ f) => f in files, read: () => '' });
+  assert.equal(laravel.readyFile?.(laravel.command(info({ artisan: '', 'composer.json': '', 'vite.config.js': '' }))), 'public/hot');
+  assert.equal(laravel.readyFile?.(laravel.command(info({ artisan: '', 'composer.json': '' }))), undefined);
+});
+
+test('Rails runs its binstub through ruby on Windows, where cmd.exe cannot', () => {
+  const rails = adapterById('rails');
+  const command = rails.command(/** @type {any} */ ({ has: () => true, read: () => '' }));
+  assert.equal(command, process.platform === 'win32' ? 'ruby bin/rails server -p {port}' : 'bin/rails server -p {port}');
+});
+
+test('Wasp variants build their own .wasp: nothing is linked, each runs wasp install', () => {
+  const wasp = adapterById('wasp');
+  assert.deepEqual(wasp.link, []);
+  assert.equal(wasp.needsInstall, true);
+  assert.equal(wasp.install, 'wasp install');
+});

@@ -1,9 +1,11 @@
+import { SKILLS_URL } from '@/lib/site';
+
 // Everything on the page that is data, in one place.
 //
-// The six variants of examples/oak-and-iron were made by Claude Code with the
-// Impeccable skill, each from the brief variantly writes for that variant
-// (saved next to it as BRIEF.md in public/demo/oak-and-iron/vN). The summaries
-// are the agent's own SUMMARY lines. The scores are what variantly's
+// The six variants of examples/oak-and-iron were made by six Claude Code
+// agents in parallel, each from a short variantly-style brief (saved next to
+// it as BRIEF.md in public/demo/oak-and-iron/vN). The summaries are edited
+// from each agent's SUMMARY line. The scores are what variantly's
 // axe-core and Lighthouse check measured on each page's home page.
 
 export type DemoVariant = {
@@ -18,64 +20,64 @@ export type DemoVariant = {
 };
 
 /** The original Oak & Iron home page, scored the same way. */
-export const DEMO_ORIGINAL_SCORES = { a11y: 87, axe: 27 };
+export const DEMO_ORIGINAL_SCORES = { a11y: 97, axe: 21 };
 
-const FILES = ['index.html', 'about.html', 'style.css'];
+const FILES = ['index.html', 'style.css'];
 
 export const DEMO_VARIANTS: DemoVariant[] = [
   {
     n: 1,
-    direction: 'Editorial',
+    direction: 'Nordic catalogue',
     summary:
-      'A printed magazine: Gloock masthead, cover-line hero with a scale drawing, numbered catalogue entries and a subscription slip.',
+      'A printed Scandinavian catalogue: pale birch paper, ink-blue rules and type, numbered sections, product plates with line drawings and dimensions.',
     files: FILES,
-    a11y: 96,
-    axe: 21,
+    a11y: 98,
+    axe: 1,
   },
   {
     n: 2,
-    direction: 'Swiss precision',
+    direction: 'Mingei craft',
     summary:
-      'A strict 12-column grid in one grotesk, flush left, red used only to signal; the products become a specification table.',
+      'Japanese folk craft: Shippori Mincho serif, indigo and persimmon on speckled washi paper, vertical accents and a quiet, spacious layout.',
     files: FILES,
-    a11y: 96,
+    a11y: 98,
     axe: 16,
   },
   {
     n: 3,
-    direction: 'Warm & tactile',
+    direction: 'Trade catalogue',
     summary:
-      'Clay, sage and bone with soft depth: a pill navigation, an illustrated stool, rounded product tiles and drawn icons.',
+      'An 1890s ironmonger’s catalogue on rag paper: double-ruled borders, numbered stock items, dotted price leaders, sepia ink with rust accents.',
     files: FILES,
-    a11y: 92,
-    axe: 18,
+    a11y: 98,
+    axe: 1,
   },
   {
     n: 4,
-    direction: 'Dark technical',
+    direction: 'Art Deco',
     summary:
-      'The workshop spec sheet: blueprint grid, a dimensioned drawing of the table, mono readouts and a parts list.',
+      'A 1920s Art Deco salon: Limelight and Poiret One display type, brass on deep green, a sunburst, stepped frames and diamond rules.',
     files: FILES,
-    a11y: 96,
-    axe: 13,
+    a11y: 98,
+    axe: 1,
   },
   {
     n: 5,
-    direction: 'Loud & bold',
+    direction: 'Brutalist',
     summary:
-      'Cobalt, yellow and tomato fields, giant condensed caps, a marquee top bar and prices you can read across the room.',
+      'Raw brutalist grid: black rules, square corners, system mono with Archivo Black headings, stark white and black, safety-orange accents.',
     files: FILES,
-    a11y: 92,
-    axe: 17,
+    a11y: 98,
+    axe: 2,
   },
   {
     n: 6,
-    direction: 'Quiet minimal',
+    direction: 'Risograph zine',
     summary:
-      'Distilled: light type, one column of attention, a lot of air, one olive accent and the products as a quiet list.',
+      'A stapled cream zine page: misregistered pink-and-teal overprint headings, Courier Prime body text, halftone dots and drawn product plates.',
     files: FILES,
-    a11y: 91,
-    axe: 31,
+    a11y: 98,
+    axe: 1,
   },
 ];
 
@@ -121,25 +123,39 @@ export const FAQ: { q: string; a: string }[] = [
 ];
 
 // What a first-timer checks before running it. Each item says how to check.
-export const CHECKLIST: { id: string; need: string; how: string }[] = [
+/** Ready-made prompts to paste into the person's own AI assistant. */
+export const PROMPTS = {
+  setup: `Set up variantly for this website. Read ${SKILLS_URL}, run \`npx variantly doctor\` in this folder and fix anything it marks ✗ (ask me before installing anything). Then start a run with 4 designs and give me the link it prints so I can compare them.`,
+  demo: 'Run `npx variantly --demo` in this folder and give me the link it prints. It shows ready-made designs without using any AI credits.',
+};
+
+export const CHECKLIST: { id: string; need: string; how: string; prompt: string }[] = [
   {
     id: 'agent',
     need: 'An AI coding assistant installed',
     how: 'Claude Code, Codex or GitHub Copilot CLI, signed in. If you use Cursor or Lovable only, install Claude Code first.',
+    prompt:
+      'Help me install Claude Code on this computer and sign in. Tell me each command to run and check it works with `claude --version`.',
   },
   {
     id: 'code',
     need: 'Your site’s code on your computer',
     how: 'A folder you can open in a terminal. Sites that only live inside a website builder won’t work.',
+    prompt:
+      'Help me get my website’s code onto this computer. Ask me where the site is hosted, then walk me through downloading or cloning it into a folder.',
   },
   {
     id: 'git',
     need: 'The code saved with git',
     how: 'At least one commit. Not sure? Ask your assistant: “commit everything in this folder”.',
+    prompt:
+      'Make sure this folder is a git repository and commit everything in it with the message "before variantly". Initialise git first if needed.',
   },
   {
     id: 'run',
     need: 'The site runs on your computer',
     how: 'Something like npm run dev opens it in your browser. Node.js 20.11 or newer.',
+    prompt:
+      'Get this website running locally. Check Node.js is 20.11 or newer, install its dependencies and start the dev server, then tell me the address to open.',
   },
 ];

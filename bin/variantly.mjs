@@ -222,11 +222,20 @@ const clean = async (repo) => {
   const { Session, stateDirFor } = await import('../src/session.mjs');
   const git = await import('../src/git.mjs');
   const session = new Session({ repo });
+  // A worktree a stray process still holds open (Windows) must not stop the
+  // branches and the rest of the state from going.
+  session.on('error', (err) => console.error(`  ${err.message}`));
   await session.load();
   await session.discard();
   await session.close();
   await git.deleteBranches(repo, 'variantly/');
-  await rm(stateDirFor(repo), { recursive: true, force: true });
+  try {
+    await rm(stateDirFor(repo), { recursive: true, force: true, maxRetries: 5, retryDelay: 300 });
+  } catch {
+    console.error(`  Could not remove ${stateDirFor(repo)}: a process still has it open. Stop it and run \`variantly clean\` again.`);
+    process.exitCode = 1;
+    return;
+  }
   console.log('Removed variantly worktrees, branches and state for this project.');
 };
 

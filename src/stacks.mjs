@@ -39,7 +39,11 @@ import path from "node:path";
  * @property {string} styles       where the look lives, for the agent brief
  * @property {number} [bootTimeout] ms to wait for the first response
  * @property {boolean} [needsInstall] linked deps don't work; install instead
+ * @property {string} [install]   the install command, when not the lockfile's
  * @property {boolean} [fixedPorts] the stack can't be moved off its ports
+ * @property {(command: string) => string | undefined} [readyFile]
+ *           a file (relative to the app root) the dev command writes once
+ *           every part of it is up; the server isn't ready before then
  * @property {string} [note]       shown in the wizard
  */
 
@@ -104,7 +108,13 @@ export const ADAPTERS = [
     detect: (p) => (p.has("main.wasp") || p.has("main.wasp.ts") || p.has(".wasproot") ? 95 : 0),
     command: () => "wasp start",
     defaultPort: 3000,
-    link: ["node_modules", ".wasp"],
+    // .wasp is the generated app each variant compiles its own copy of,
+    // and node_modules holds workspace links into it, so neither is shared:
+    // each variant gets its own `wasp install` (wasp start refuses to run
+    // without one).
+    link: [],
+    needsInstall: true,
+    install: "wasp install",
     copy: [".env.server", ".env.client"],
     fixedPorts: true,
     bootTimeout: 300_000,
@@ -123,6 +133,9 @@ export const ADAPTERS = [
     defaultPort: 8000,
     link: ["vendor", "node_modules", "database/database.sqlite"],
     copy: [".env"],
+    // artisan answers before Vite has written public/hot, and until then
+    // @vite looks for a production manifest and the page is a 500.
+    readyFile: (command) => (/\bvite\b/.test(command) ? "public/hot" : undefined),
     styles: "resources/css/app.css, resources/js/Pages/* (Inertia) or resources/views/**/*.blade.php",
     note: "Runs php artisan serve and Vite together; needs the concurrently package or edit the command.",
   },
@@ -131,10 +144,14 @@ export const ADAPTERS = [
     name: "Rails",
     stack: "Rails 8 + Hotwire (Turbo + Stimulus) + Tailwind",
     detect: (p) => (p.has("Gemfile") && p.has("config/application.rb") ? 95 : 0),
-    command: (p) =>
-      p.read("Procfile.dev").includes("tailwindcss")
-        ? "bin/rails tailwindcss:build && bin/rails server -p {port}"
-        : "bin/rails server -p {port}",
+    // cmd.exe reads `bin/rails` as `bin` with a /rails switch, and the
+    // binstub has no extension Windows could run anyway.
+    command: (p) => {
+      const rails = process.platform === "win32" ? "ruby bin/rails" : "bin/rails";
+      return p.read("Procfile.dev").includes("tailwindcss")
+        ? `${rails} tailwindcss:build && ${rails} server -p {port}`
+        : `${rails} server -p {port}`;
+    },
     defaultPort: 3000,
     link: ["storage", "node_modules", "vendor/bundle"],
     copy: ["config/master.key", ".env"],
@@ -179,7 +196,9 @@ export const ADAPTERS = [
     id: "go",
     name: "Go",
     stack: "Go (Templ / html/template, HTMX + Alpine, Chi / Fiber)",
-    detect: (p) => (p.has("go.mod") ? 80 : 0),
+    // A Go module that renders no HTML is an API; a frontend next to it
+    // (web/ on Vite) is what gets redesigned, so it must outrank it.
+    detect: (p) => (!p.has("go.mod") ? 0 : rendersHtml(p, /github\.com\/a-h\/templ/, "go.mod") ? 80 : 50),
     command: (p) =>
       p.read("go.mod").includes("github.com/a-h/templ") ? "go tool templ generate && go run ." : "go run .",
     defaultPort: 8080,
@@ -193,7 +212,7 @@ export const ADAPTERS = [
     id: "rust",
     name: "Rust",
     stack: "Rust (Axum + Askama / Maud, HTMX)",
-    detect: (p) => (p.has("Cargo.toml") ? 80 : 0),
+    detect: (p) => (!p.has("Cargo.toml") ? 0 : rendersHtml(p, /\b(askama|maud|tera|minijinja|leptos|dioxus|yew)\b/, "Cargo.toml") ? 80 : 50),
     command: () => "cargo run",
     defaultPort: 3000,
     link: [],
@@ -256,6 +275,23 @@ export function adapterById(id) {
   return ADAPTERS.find((a) => a.id === id) ?? CUSTOM;
 }
 
+/**
+ * Whether a Go or Rust project serves pages itself rather than only an API:
+ * a templating dependency in its manifest, or a templates/views folder.
+ * @param {ProjectInfo} p
+ * @param {RegExp} deps
+ * @param {string} manifest
+ */
+function rendersHtml(p, deps, manifest) {
+  if (deps.test(p.read(manifest))) return true;
+  if (["templates", "views", "static", "web/templates", "internal/views", "internal/templates"].some((rel) => p.has(rel))) return true;
+  try {
+    return readdirSync(p.dir).some((f) => /\.(templ|html)$/.test(f));
+  } catch {
+    return false;
+  }
+}
+
 /** @param {ProjectInfo} p */
 function fastapiModule(p) {
   for (const rel of ["main.py", "app/main.py", "src/main.py", "app.py", "server.py"]) {
@@ -299,7 +335,7 @@ export function projectInfo(dir) {
  * @property {number} score
  */
 
-const SKIP = new Set(["node_modules", ".git", "vendor", ".venv", "venv", "dist", "build", ".next", "target", "storage", "public", "tmp"]);
+const SKIP = new Set(["node_modules", ".git", "vendor", "templates", ".venv", "venv", "dist", "build", ".next", "target", "storage", "public", "tmp"]);
 
 /**
  * Look at the repository root and two levels below it (apps/web,
@@ -357,6 +393,18 @@ export function packageRunner(appRoot, repo) {
     dir = path.dirname(dir);
   }
   return { run: "npx --no-install", install: "npm install --prefer-offline --no-audit --no-fund" };
+}
+
+/**
+ * Whether a dependency install in a variant worktree really failed. pnpm 10+
+ * exits non-zero when it skipped build scripts the project never approved
+ * (ERR_PNPM_IGNORED_BUILDS), yet every package is installed and the user's
+ * own checkout was installed exactly the same way, so that one is fine.
+ * @param {number} code
+ * @param {string} output
+ */
+export function installFailed(code, output) {
+  return code !== 0 && !/ERR_PNPM_IGNORED_BUILDS/.test(output);
 }
 
 /**
