@@ -53,9 +53,15 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
         data-audience={audience}
         className="border-rule bg-panel/95 sticky top-0 z-20 border-b backdrop-blur-sm"
       >
-        <div className="grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6">
+        {/* Phones: brand and controls on one row, the audience tabs below.
+            From sm up: brand, tabs centred, controls, in one 56px row. */}
+        <div className="grid grid-cols-[1fr_auto] items-center gap-x-4 px-4 pt-2 sm:h-14 sm:grid-cols-[1fr_auto_1fr] sm:px-6 sm:pt-0">
           {brand}
-          <div role="tablist" aria-label="Who is reading" className="flex gap-6">
+          <div
+            role="tablist"
+            aria-label="Who is reading"
+            className="col-span-2 row-start-2 flex justify-center gap-6 sm:col-span-1 sm:col-start-2 sm:row-start-1"
+          >
             {OPTIONS.map((o) => (
               <Button
                 key={o.id}
@@ -71,7 +77,7 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
               </Button>
             ))}
           </div>
-          <div className="flex justify-end">{aside}</div>
+          <div className="flex justify-end sm:col-start-3 sm:row-start-1">{aside}</div>
         </div>
       </header>
       <div

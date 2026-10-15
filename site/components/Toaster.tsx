@@ -33,7 +33,7 @@ const Toaster = () => {
   return (
     <ol
       aria-live="polite"
-      className="pointer-events-none fixed right-4 bottom-4 z-60 m-0 grid w-[min(360px,calc(100vw-2rem))] list-none gap-2 p-0"
+      className="pointer-events-none fixed right-4 bottom-4 left-4 z-60 m-0 grid list-none gap-2 p-0 sm:left-auto sm:w-90"
     >
       {items.map((t) => {
         const Icon = ICON[t.tone];

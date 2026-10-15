@@ -33,7 +33,9 @@ const buttonVariants = cva(
         tab: 'h-11 px-1 text-xs',
         icon: 'size-9 rounded-chip',
         'icon-sm': 'size-7 rounded-chip',
-        prompt: 'h-8 rounded-control px-2.5 text-[13px] font-semibold',
+        // Wraps on narrow screens instead of running off the edge.
+        prompt:
+          'min-h-8 rounded-control px-2.5 py-1.5 text-left text-[13px] leading-tight font-semibold whitespace-normal',
         cell: 'h-10 min-w-11 rounded-control px-2 text-[15px] aria-[current=true]:min-w-15 aria-[current=true]:text-2xl',
         grip: 'h-11 rounded-full px-2 text-[10px] gap-1 tracking-[0.08em]',
       },
