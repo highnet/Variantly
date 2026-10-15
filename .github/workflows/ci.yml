@@ -22,6 +22,12 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+        env:
+          # On the Windows runners, npx installs Lighthouse's dependencies
+          # incompletely (missing @puppeteer/browsers files), so the scoring
+          # test fails there for reasons outside variantly. Ubuntu and macOS
+          # still run it.
+          VARIANTLY_SKIP_AUDIT: ${{ runner.os == 'Windows' && '1' || '' }}
       - name: Smoke-test the published tarball
         shell: bash
         run: |
