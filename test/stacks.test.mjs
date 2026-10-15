@@ -32,7 +32,7 @@ const CASES = [
   ['go', { 'go.mod': 'module x\nrequire github.com/a-h/templ v0.3.0\n' }, /templ generate && go run \./],
   ['wasp', { 'main.wasp': 'app x {}', 'package.json': pkg({ react: '18' }) }, /wasp start/],
   ['rust', { 'Cargo.toml': '[package]\nname="x"' }, /cargo run/],
-  ['rails', { Gemfile: '', 'config/application.rb': '', 'Procfile.dev': 'css: bin/rails tailwindcss:watch' }, /tailwindcss:build && bin\/rails server -p \{port\}/],
+  ['rails', { Gemfile: '', 'config/application.rb': '', 'Procfile.dev': 'css: bin/rails tailwindcss:watch' }, /tailwindcss:build && (ruby )?bin\/rails server -p \{port\}/],
   ['vite', { 'package.json': pkg({ vite: '6', react: '19' }) }, /vite --port \{port\} --strictPort/],
   ['bun', { 'package.json': pkg({}, { dev: 'bun --hot index.ts' }), 'bun.lock': '' }, /bun run dev/],
   ['static', { 'index.html': '<!doctype html>' }, /static-server\.mjs" \{port\}/],
@@ -111,4 +111,10 @@ test('Laravel with Vite waits for public/hot; without Vite it does not', () => {
   const info = (/** @type {Record<string,string>} */ files) => /** @type {any} */ ({ has: (/** @type {string} */ f) => f in files, read: () => '' });
   assert.equal(laravel.readyFile?.(laravel.command(info({ artisan: '', 'composer.json': '', 'vite.config.js': '' }))), 'public/hot');
   assert.equal(laravel.readyFile?.(laravel.command(info({ artisan: '', 'composer.json': '' }))), undefined);
+});
+
+test('Rails runs its binstub through ruby on Windows, where cmd.exe cannot', () => {
+  const rails = adapterById('rails');
+  const command = rails.command(/** @type {any} */ ({ has: () => true, read: () => '' }));
+  assert.equal(command, process.platform === 'win32' ? 'ruby bin/rails server -p {port}' : 'bin/rails server -p {port}');
 });

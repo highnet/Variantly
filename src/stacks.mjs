@@ -137,10 +137,14 @@ export const ADAPTERS = [
     name: "Rails",
     stack: "Rails 8 + Hotwire (Turbo + Stimulus) + Tailwind",
     detect: (p) => (p.has("Gemfile") && p.has("config/application.rb") ? 95 : 0),
-    command: (p) =>
-      p.read("Procfile.dev").includes("tailwindcss")
-        ? "bin/rails tailwindcss:build && bin/rails server -p {port}"
-        : "bin/rails server -p {port}",
+    // cmd.exe reads `bin/rails` as `bin` with a /rails switch, and the
+    // binstub has no extension Windows could run anyway.
+    command: (p) => {
+      const rails = process.platform === "win32" ? "ruby bin/rails" : "bin/rails";
+      return p.read("Procfile.dev").includes("tailwindcss")
+        ? `${rails} tailwindcss:build && ${rails} server -p {port}`
+        : `${rails} server -p {port}`;
+    },
     defaultPort: 3000,
     link: ["storage", "node_modules", "vendor/bundle"],
     copy: ["config/master.key", ".env"],
