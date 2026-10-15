@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'motion/react';
+import { CommandBlock } from './CommandBlock';
 import { api } from '@/lib/api';
 import { directionLabel, pad, plural, scoreText, vname } from '@/lib/format';
 import { setState, toast, useStore } from '@/lib/store';
@@ -67,13 +68,16 @@ const Kept = () => {
             <h2>Next</h2>
             <ol>
               <li>
-                Review the change: <code>git diff</code>. Nothing is committed.
+                Review the change. Nothing is committed.
+                <CommandBlock command="git diff" />
               </li>
               <li>
-                Tune single elements with <code>/impeccable live</code> in your agent.
+                Tune single elements in your agent.
+                <CommandBlock command="/impeccable live" />
               </li>
               <li>
-                The other variants are kept as <code>variantly/{snap.runId}/*</code> branches. <code>npx variantly clean</code> removes them.
+                The other designs are kept as branches (variantly/{snap.runId}/…). This removes them:
+                <CommandBlock command="npx variantly clean" />
               </li>
             </ol>
           </div>

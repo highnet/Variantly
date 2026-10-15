@@ -3331,3 +3331,49 @@ button.wiz-hit:hover .wiz-name {
 .board .seg {
   background: #3a414a;
 }
+
+/* Copyable command block */
+.cmd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0 4px;
+  padding: 6px 6px 6px 12px;
+  border-radius: var(--r-sm);
+  background: var(--ink);
+  color: var(--surface);
+  font: 500 13px/1.4 var(--mono);
+  font-stretch: 87.5%;
+}
+
+.cmd code {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  font: inherit;
+  background: none;
+  color: inherit;
+}
+
+.cmd-prompt {
+  color: var(--alert);
+  font-weight: 700;
+}
+
+.cmd-copy {
+  flex: none;
+  padding: 5px 10px;
+  border: 1px solid #4a525c;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--surface);
+  font: 700 10px/1 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.cmd-copy:hover {
+  border-color: var(--surface);
+}
