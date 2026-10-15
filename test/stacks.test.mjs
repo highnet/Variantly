@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { detect, fill, installFailed, packageRunner, projectInfo as infoFor } from '../src/stacks.mjs';
+import { adapterById, detect, fill, installFailed, packageRunner, projectInfo as infoFor } from '../src/stacks.mjs';
 
 /** Write a fixture tree: { 'path': 'contents' } */
 const fixture = (/** @type {Record<string, string>} */ files) => {
@@ -105,3 +105,10 @@ test('fill replaces known placeholders and leaves the rest', () => {
   assert.equal(fill('{run} next dev --port {port} {nope}', { run: 'npx', port: 3001 }), 'npx next dev --port 3001 {nope}');
 });
 
+
+test('Laravel with Vite waits for public/hot; without Vite it does not', () => {
+  const laravel = adapterById('laravel');
+  const info = (/** @type {Record<string,string>} */ files) => /** @type {any} */ ({ has: (/** @type {string} */ f) => f in files, read: () => '' });
+  assert.equal(laravel.readyFile?.(laravel.command(info({ artisan: '', 'composer.json': '', 'vite.config.js': '' }))), 'public/hot');
+  assert.equal(laravel.readyFile?.(laravel.command(info({ artisan: '', 'composer.json': '' }))), undefined);
+});

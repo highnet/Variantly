@@ -40,6 +40,9 @@ import path from "node:path";
  * @property {number} [bootTimeout] ms to wait for the first response
  * @property {boolean} [needsInstall] linked deps don't work; install instead
  * @property {boolean} [fixedPorts] the stack can't be moved off its ports
+ * @property {(command: string) => string | undefined} [readyFile]
+ *           a file (relative to the app root) the dev command writes once
+ *           every part of it is up; the server isn't ready before then
  * @property {string} [note]       shown in the wizard
  */
 
@@ -123,6 +126,9 @@ export const ADAPTERS = [
     defaultPort: 8000,
     link: ["vendor", "node_modules", "database/database.sqlite"],
     copy: [".env"],
+    // artisan answers before Vite has written public/hot, and until then
+    // @vite looks for a production manifest and the page is a 500.
+    readyFile: (command) => (/\bvite\b/.test(command) ? "public/hot" : undefined),
     styles: "resources/css/app.css, resources/js/Pages/* (Inertia) or resources/views/**/*.blade.php",
     note: "Runs php artisan serve and Vite together; needs the concurrently package or edit the command.",
   },

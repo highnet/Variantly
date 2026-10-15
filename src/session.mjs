@@ -599,6 +599,7 @@ export class Session extends EventEmitter {
       bootTimeout: adapter.bootTimeout ?? 120_000,
       fixedPort: adapter.fixedPorts,
       defaultPort: adapter.defaultPort,
+      readyFile: adapter.readyFile?.(config.command),
     };
     const originalDir = path.join(this.repo, config.appRel);
     await this.pool.add({
