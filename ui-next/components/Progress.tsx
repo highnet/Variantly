@@ -155,7 +155,7 @@ const ProgressCard = ({ v, last }: ProgressCardProps) => {
           })}
         </ol>
         <p className="progress-time">
-          <span className="data">{clock(elapsedMs(v, now))}</span> {done ? 'in total.' : 'so far. You can look at other designs meanwhile.'}
+          {v.status === 'queued' ? 'It starts as soon as a slot frees up. You can look at other designs meanwhile.' : (<><span className="data">{clock(elapsedMs(v, now))}</span> {done ? 'in total.' : 'so far. You can look at other designs meanwhile.'}</>)}
         </p>
       </div>
       {last && !done && <pre className="progress-last">{last}</pre>}

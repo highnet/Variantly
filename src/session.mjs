@@ -128,13 +128,15 @@ export class Session extends EventEmitter {
     } catch {}
     // A run that was interrupted mid-generation can't be resumed: those
     // agents are gone. Mark what didn't finish so the user can retry it.
-    if (this.state.phase === 'generating') {
-      for (const v of this.state.variants) {
-        if (!['done', 'failed', 'cancelled'].includes(v.status)) {
-          v.status = 'failed';
-          v.error = 'variantly stopped while this variant was being generated.';
-        }
+    // Nothing runs right after a start, in any phase: a queued variant left
+    // behind in a finished run is just as stuck as a running one.
+    for (const v of this.state.variants) {
+      if (!['done', 'failed', 'cancelled'].includes(v.status)) {
+        v.status = 'failed';
+        v.error = 'variantly stopped while this variant was being generated.';
       }
+    }
+    if (this.state.phase === 'generating') {
       // Back to the board, not the wizard: interrupted designs can be retried there.
       this.state.phase = this.state.variants.length ? 'ready' : 'setup';
     }
@@ -230,13 +232,21 @@ export class Session extends EventEmitter {
 
   async #runQueue() {
     const config = /** @type {Config} */ (this.state.config);
-    const queue = this.state.variants.filter((v) => v.status === 'queued');
+    // Workers take the next queued variant live, not from a list made at the
+    // start, so a retry that arrives while the run is going is picked up.
+    /** @type {Set<number>} */
+    const claimed = new Set();
+    const next = () => {
+      const v = this.state.variants.find((x) => x.status === 'queued' && !claimed.has(x.n));
+      if (v) claimed.add(v.n);
+      return v;
+    };
     // Set when the agent itself can't run (missing, not signed in): the rest
     // of the queue would fail the same way, so it isn't started.
     /** @type {{ reason?: string }} */
     const halt = {};
-    const workers = Array.from({ length: Math.max(1, Math.min(config.concurrency, queue.length)) }, async () => {
-      for (let v = queue.shift(); v; v = queue.shift()) {
+    const workers = Array.from({ length: Math.max(1, config.concurrency) }, async () => {
+      for (let v = next(); v; v = next()) {
         if (halt.reason) {
           Object.assign(v, { status: 'failed', error: `Not started: ${halt.reason}`, finishedAt: Date.now() });
           await this.save();
