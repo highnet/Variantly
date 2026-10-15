@@ -56,7 +56,7 @@ article, [class*="card"]:not([class*="card-"]) { background: ${look.alt} !import
 `;
 
 const CANDIDATES = [
-  'app/globals.css', 'src/app/globals.css', 'styles/globals.css', 'src/app.css', 'src/index.css', 'src/styles/global.css',
+  'app/globals.css', 'src/app/globals.css', 'styles/globals.css', 'src/app.css', 'src/index.css', 'src/Main.css', 'src/main.css', 'src/App.css', 'src/styles/global.css',
   'src/styles/globals.css', 'assets/css/main.css', 'app/assets/css/main.css', 'resources/css/app.css',
   'app/assets/tailwind/application.css', 'app/assets/stylesheets/application.css', 'static/css/main.css',
   'static/style.css', 'style.css', 'styles.css', 'css/style.css', 'main.css',
