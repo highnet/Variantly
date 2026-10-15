@@ -10,6 +10,7 @@
     "bin",
     "src",
     "ui",
+    "ui-next/out",
     "plugins/variantly/skills",
     "SKILLS.md",
     "README.md",
@@ -24,7 +25,8 @@
     "test": "node --test --test-concurrency=2",
     "typecheck": "tsc -p jsconfig.json",
     "check": "npm run typecheck && npm test",
-    "prepare": "husky"
+    "prepare": "husky",
+    "build:ui": "npm --prefix ui-next ci --no-audit --no-fund && npm --prefix ui-next run build"
   },
   "keywords": [
     "redesign",

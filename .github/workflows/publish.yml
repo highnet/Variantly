@@ -39,6 +39,9 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      # The Next.js UI ships prebuilt (ui-next/out); variantly serves it as static files.
+      - run: npm run build:ui
+      - run: test -f ui-next/out/index.html
       # A version published by hand (the first release was) is skipped, not
       # retried, so merging its release PR still goes green.
       - name: Check whether this version is already on npm

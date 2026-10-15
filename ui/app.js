@@ -1143,6 +1143,7 @@ const goCompare = (n) => {
   S.forceBoard = false;
   S.wantCompare = true;
   if (n) S.sel = n;
+  else if (typeof S.sel !== 'number') S.sel = done()[0]?.n ?? variants().find((v) => !['failed', 'cancelled'].includes(v.status))?.n ?? 'original';
   render();
 };
 
@@ -1205,7 +1206,7 @@ const mountCompare = (main) => {
       h('nav', { class: 'dock', id: 'dock', 'aria-label': 'Variants' }),
     ]),
   );
-  if (S.sel === null || (S.sel !== 'original' && !done().some((v) => v.n === S.sel))) S.sel = done()[0]?.n ?? 'original';
+  if (S.sel === null) S.sel = done()[0]?.n ?? variants().find((v) => !['failed', 'cancelled'].includes(v.status))?.n ?? 'original';
   setSplit(S.split);
   wake();
   renderDock();
