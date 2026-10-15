@@ -208,7 +208,11 @@ const Showcase = () => {
       }}
     >
       <div className="grid gap-5">
-        <Typography variant="display" id="hero-title" className="text-[clamp(2.5rem,4.6vw,4.75rem)]">
+        <Typography
+          variant="display"
+          id="hero-title"
+          className="text-[clamp(2.5rem,4.6vw,4.75rem)]"
+        >
           Your website needs a fresh look
         </Typography>
         <ul className="border-rule m-0 grid list-none grid-cols-2 border-y p-0 md:grid-cols-4">
