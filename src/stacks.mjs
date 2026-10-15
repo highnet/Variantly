@@ -179,7 +179,9 @@ export const ADAPTERS = [
     id: "go",
     name: "Go",
     stack: "Go (Templ / html/template, HTMX + Alpine, Chi / Fiber)",
-    detect: (p) => (p.has("go.mod") ? 80 : 0),
+    // A Go module that renders no HTML is an API; a frontend next to it
+    // (web/ on Vite) is what gets redesigned, so it must outrank it.
+    detect: (p) => (!p.has("go.mod") ? 0 : rendersHtml(p, /github\.com\/a-h\/templ/, "go.mod") ? 80 : 50),
     command: (p) =>
       p.read("go.mod").includes("github.com/a-h/templ") ? "go tool templ generate && go run ." : "go run .",
     defaultPort: 8080,
@@ -193,7 +195,7 @@ export const ADAPTERS = [
     id: "rust",
     name: "Rust",
     stack: "Rust (Axum + Askama / Maud, HTMX)",
-    detect: (p) => (p.has("Cargo.toml") ? 80 : 0),
+    detect: (p) => (!p.has("Cargo.toml") ? 0 : rendersHtml(p, /\b(askama|maud|tera|minijinja|leptos|dioxus|yew)\b/, "Cargo.toml") ? 80 : 50),
     command: () => "cargo run",
     defaultPort: 3000,
     link: [],
@@ -256,6 +258,23 @@ export function adapterById(id) {
   return ADAPTERS.find((a) => a.id === id) ?? CUSTOM;
 }
 
+/**
+ * Whether a Go or Rust project serves pages itself rather than only an API:
+ * a templating dependency in its manifest, or a templates/views folder.
+ * @param {ProjectInfo} p
+ * @param {RegExp} deps
+ * @param {string} manifest
+ */
+function rendersHtml(p, deps, manifest) {
+  if (deps.test(p.read(manifest))) return true;
+  if (["templates", "views", "static", "web/templates", "internal/views", "internal/templates"].some((rel) => p.has(rel))) return true;
+  try {
+    return readdirSync(p.dir).some((f) => /\.(templ|html)$/.test(f));
+  } catch {
+    return false;
+  }
+}
+
 /** @param {ProjectInfo} p */
 function fastapiModule(p) {
   for (const rel of ["main.py", "app/main.py", "src/main.py", "app.py", "server.py"]) {
@@ -299,7 +318,7 @@ export function projectInfo(dir) {
  * @property {number} score
  */
 
-const SKIP = new Set(["node_modules", ".git", "vendor", ".venv", "venv", "dist", "build", ".next", "target", "storage", "public", "tmp"]);
+const SKIP = new Set(["node_modules", ".git", "vendor", "templates", ".venv", "venv", "dist", "build", ".next", "target", "storage", "public", "tmp"]);
 
 /**
  * Look at the repository root and two levels below it (apps/web,
@@ -357,6 +376,18 @@ export function packageRunner(appRoot, repo) {
     dir = path.dirname(dir);
   }
   return { run: "npx --no-install", install: "npm install --prefer-offline --no-audit --no-fund" };
+}
+
+/**
+ * Whether a dependency install in a variant worktree really failed. pnpm 10+
+ * exits non-zero when it skipped build scripts the project never approved
+ * (ERR_PNPM_IGNORED_BUILDS), yet every package is installed and the user's
+ * own checkout was installed exactly the same way, so that one is fine.
+ * @param {number} code
+ * @param {string} output
+ */
+export function installFailed(code, output) {
+  return code !== 0 && !/ERR_PNPM_IGNORED_BUILDS/.test(output);
 }
 
 /**

@@ -18,9 +18,9 @@ import { defaultDirections, extractReview, extractSummary, hasAnswers, productMa
 import { auditMarkdown, playwrightMcp, runAudit } from './checks.mjs';
 import { stepFrom } from './steps.mjs';
 import * as git from './git.mjs';
-import { LineBuffer, killTree, runOk, spawnArgs } from './proc.mjs';
+import { LineBuffer, killTree, run, spawnArgs } from './proc.mjs';
 import { ServerPool } from './servers.mjs';
-import { adapterById, fill, packageRunner, pythonFor } from './stacks.mjs';
+import { adapterById, fill, installFailed, packageRunner, pythonFor } from './stacks.mjs';
 
 const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -457,7 +457,12 @@ export class Session extends EventEmitter {
     if (install) {
       const pm = packageRunner(appSrc, this.repo);
       say(`$ ${pm.install}`);
-      await runOk(pm.install.split(' ')[0], pm.install.split(' ').slice(1), { cwd: appDst, timeout: 600_000 });
+      const [file, ...args] = pm.install.split(' ');
+      const res = await run(file, args, { cwd: appDst, timeout: 600_000 });
+      if (installFailed(res.code, res.stderr + res.stdout)) {
+        const detail = (res.stderr || res.stdout).trim().split('\n').slice(-6).join('\n');
+        throw new Error(`${pm.install} failed (exit ${res.code})\n${detail}`);
+      }
     }
     return placed;
   }
