@@ -14,6 +14,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createParser } from './agent-output.mjs';
 import { agentById, agentFile } from './agents.mjs';
+import { productFromCode } from './product.mjs';
 import { defaultDirections, extractReview, extractSummary, hasAnswers, productMarkdown, writeBrief, writeReviewBrief } from './brief.mjs';
 import { auditMarkdown, playwrightMcp, runAudit } from './checks.mjs';
 import { stepFrom } from './steps.mjs';
@@ -106,6 +107,8 @@ export class Session extends EventEmitter {
     this.runs = new Map();
     /** @type {Promise<unknown> | undefined} */
     this.gitQueue = undefined;
+    /** PRODUCT.md answers read from the code, once per run, shared by every variant. @type {import('./brief.mjs').ProductAnswers | undefined} */
+    this.codeProduct = undefined;
     /** @type {Promise<void> | undefined} */
     this.auditQueue = undefined;
     this.pool = new ServerPool({
@@ -464,6 +467,14 @@ export class Session extends EventEmitter {
     if (hasAnswers(config.product) && !existsSync(productPath) && !existsSync(path.join(wt, 'PRODUCT.md'))) {
       await writeFile(productPath, productMarkdown(path.basename(this.repo), /** @type {import('./brief.mjs').ProductAnswers} */ (config.product)));
       say('Wrote PRODUCT.md from your answers.');
+    } else if (!existsSync(productPath) && !existsSync(path.join(wt, 'PRODUCT.md'))) {
+      // No answers and no PRODUCT.md: one, from the code, the same in every
+      // variant, instead of each agent guessing on its own time.
+      this.codeProduct ??= productFromCode(this.repo, config.appRel);
+      if (this.codeProduct.purpose) {
+        await writeFile(productPath, productMarkdown(path.basename(this.repo), this.codeProduct).replace("from the owner's answers", 'from what the code says about itself'));
+        say('Wrote a shared PRODUCT.md from your code.');
+      }
     }
     if (install) {
       const pm = packageRunner(appSrc, this.repo);
