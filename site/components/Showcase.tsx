@@ -123,8 +123,11 @@ const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
 const Showcase = () => {
   const [selected, setSelected] = useState(1);
   const [auto, setAuto] = useState(true);
-  const [split, setSplit] = useState(50);
-  const [dragging, setDragging] = useState(false);
+  const [ready, setReady] = useState(false);
+  const pos = useRef(50);
+  const anim = useRef(0);
+  const grip = useRef<HTMLButtonElement>(null);
+  const loaded = useRef(new Set<number>());
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const frames = useRef<(HTMLIFrameElement | null)[]>([]);
@@ -203,6 +206,8 @@ const Showcase = () => {
     const f = frames.current[i];
     const win = f?.contentWindow;
     if (!f || !win) return;
+    loaded.current.add(i);
+    if (loaded.current.has(0) && loaded.current.has(1)) setReady(true);
     // The panes are objects on the counter, not embedded documents.
     win.document.documentElement.style.setProperty('scrollbar-width', 'none');
     applyScroll(f);
@@ -215,29 +220,107 @@ const Showcase = () => {
     });
   };
 
-  const move = (e: PointerEvent<HTMLElement>) => {
-    if (!dragging || !stage.current) return;
-    const r = stage.current.getBoundingClientRect();
-    setSplit(Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100)));
+  /*
+   * The divider writes a CSS variable straight onto the stage: no React
+   * state, so a drag never waits on a render and tracks the pointer 1:1.
+   */
+  const setPos = useCallback((raw: number) => {
+    let p = Math.max(0, Math.min(100, raw));
+    if (p < 3) p = 0;
+    else if (p > 97) p = 100;
+    const edge = p === 0 || p === 100;
+    if (edge && pos.current !== p && 'vibrate' in navigator) navigator.vibrate?.(8);
+    pos.current = p;
+    const el = stage.current;
+    if (!el) return;
+    el.style.setProperty('--split', `${p}%`);
+    // Labels fade as the divider closes in on them.
+    el.style.setProperty('--before-o', String(Math.max(0, Math.min(1, (p - 12) / 10))));
+    el.style.setProperty('--after-o', String(Math.max(0, Math.min(1, (88 - p) / 10))));
+    grip.current?.setAttribute('aria-valuenow', String(Math.round(p)));
+    grip.current?.setAttribute('aria-valuetext', `${Math.round(p)}% original`);
+  }, []);
+
+  /* Only for moves the user does not drive directly: jumps, keys, the hint. */
+  const tween = useCallback(
+    (to: number, ms = 220) => {
+      cancelAnimationFrame(anim.current);
+      const from = pos.current;
+      const t0 = performance.now();
+      const step = (t: number) => {
+        const k = Math.min((t - t0) / ms, 1);
+        setPos(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+        if (k < 1) anim.current = requestAnimationFrame(step);
+      };
+      anim.current = requestAnimationFrame(step);
+    },
+    [setPos],
+  );
+
+  const pct = (e: PointerEvent<HTMLElement>) => {
+    const r = stage.current!.getBoundingClientRect();
+    return ((e.clientX - r.left) / r.width) * 100;
+  };
+
+  const onDown = (e: PointerEvent<HTMLElement>) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    takeOver();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    stage.current!.dataset.dragging = 'true';
+    tween(pct(e), 160);
+  };
+  const onMove = (e: PointerEvent<HTMLElement>) => {
+    if (stage.current?.dataset.dragging !== 'true') return;
+    cancelAnimationFrame(anim.current);
+    setPos(pct(e));
+  };
+  const onUp = () => {
+    if (stage.current) delete stage.current.dataset.dragging;
   };
 
   const onGripKey = (e: KeyboardEvent<HTMLButtonElement>) => {
-    const step = e.shiftKey ? 10 : 2;
-    const next =
-      e.key === 'ArrowLeft'
-        ? split - step
-        : e.key === 'ArrowRight'
-          ? split + step
-          : e.key === 'Home'
-            ? 0
-            : e.key === 'End'
-              ? 100
-              : null;
-    if (next === null) return;
+    const keys: Record<string, number> = {
+      ArrowLeft: pos.current - 5,
+      ArrowRight: pos.current + 5,
+      Home: 0,
+      End: 100,
+    };
+    if (!(e.key in keys)) return;
     e.preventDefault();
     takeOver();
-    setSplit(Math.max(0, Math.min(100, next)));
+    tween(keys[e.key], 150);
   };
+
+  useEffect(() => setPos(50), [setPos]);
+
+  // Never leave the stage hidden if a pane is slow to load.
+  useEffect(() => {
+    const t = window.setTimeout(() => setReady(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
+
+  // One sweep the first time the slider is properly on screen, never again.
+  useEffect(() => {
+    if (!ready || !stage.current) return;
+    const timers: number[] = [];
+    const io = new IntersectionObserver(
+      ([en]) => {
+        if (!en.isIntersecting) return;
+        io.disconnect();
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        timers.push(window.setTimeout(() => tween(60, 400), 300));
+        timers.push(window.setTimeout(() => tween(40, 500), 700));
+        timers.push(window.setTimeout(() => tween(50, 400), 1200));
+      },
+      { threshold: 0.6 },
+    );
+    io.observe(stage.current);
+    return () => {
+      io.disconnect();
+      timers.forEach(clearTimeout);
+    };
+  }, [ready, tween]);
 
   const current = DEMO_VARIANTS[selected - 1];
 
@@ -306,11 +389,10 @@ const Showcase = () => {
       </div>
       <div
         ref={stage}
-        className="relative isolate h-[62svh] min-h-[380px] touch-none overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]"
-        style={{ ['--split' as string]: `${split}%` }}
-        onPointerMove={move}
-        onPointerUp={() => setDragging(false)}
-        onPointerCancel={() => setDragging(false)}
+        className={cn(
+          'group/stage relative isolate h-[62svh] min-h-[380px] overflow-hidden transition-opacity duration-300 select-none lg:h-[78svh] lg:min-h-[560px]',
+          ready ? 'opacity-100' : 'opacity-0',
+        )}
       >
         <iframe
           ref={(el) => {
@@ -339,13 +421,29 @@ const Showcase = () => {
             )}
           />
         ))}
-        {dragging && <div className="absolute inset-0 z-10 cursor-ew-resize" />}
+        {/* The panes stay scrollable; this band either side of the line is
+            the drag surface, so nobody has to hit the grip exactly. */}
+        <div
+          className="absolute inset-y-0 left-[var(--split)] z-20 w-16 -translate-x-1/2 cursor-ew-resize touch-pan-y group-data-[dragging=true]/stage:inset-x-0 group-data-[dragging=true]/stage:left-0 group-data-[dragging=true]/stage:w-auto group-data-[dragging=true]/stage:translate-x-0"
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerCancel={onUp}
+          onLostPointerCapture={onUp}
+          onDoubleClick={() => tween(50, 300)}
+        />
 
         <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex justify-between gap-3">
-          <Typography variant="tag" className="bg-ink text-surface rounded-flap px-2 py-1.5">
+          <Typography
+            variant="tag"
+            className="bg-ink text-surface rounded-flap px-2 py-1.5 opacity-[var(--before-o,1)]"
+          >
             Before<span className="hidden sm:inline"> · today’s site</span>
           </Typography>
-          <Typography variant="tag" className="bg-ink text-surface rounded-flap px-2 py-1.5">
+          <Typography
+            variant="tag"
+            className="bg-ink text-surface rounded-flap px-2 py-1.5 opacity-[var(--after-o,1)]"
+          >
             After · {current.direction}
           </Typography>
         </div>
@@ -410,24 +508,25 @@ const Showcase = () => {
           </div>
         </div>
 
-        <div className="absolute inset-y-0 left-[var(--split)] z-20 w-0">
+        <div className="pointer-events-none absolute inset-y-0 left-[var(--split)] z-20 w-0">
           <div className="bg-ink shadow-divider absolute inset-y-0 -left-px w-0.5" />
           <Button
+            ref={grip}
             variant="grip"
             size="grip"
             role="slider"
             aria-label="Before and after divider"
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-valuenow={Math.round(split)}
-            aria-valuetext={`${Math.round(split)}% original`}
+            aria-valuenow={50}
+            aria-valuetext="50% original"
             onKeyDown={onGripKey}
-            onPointerDown={(e) => {
-              e.preventDefault();
-              takeOver();
-              setDragging(true);
-            }}
-            className="absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2"
+            onPointerDown={onDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerCancel={onUp}
+            onDoubleClick={() => tween(50, 300)}
+            className="pointer-events-auto absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 touch-pan-y transition-[scale,box-shadow] duration-200 ease-[cubic-bezier(.3,1.6,.5,1)] group-data-[dragging=true]/stage:scale-115 group-data-[dragging=true]/stage:shadow-[0_6px_20px_rgb(0_0_0/.45)]"
           >
             <ChevronLeft aria-hidden="true" />
             Before
