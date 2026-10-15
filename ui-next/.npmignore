@@ -1,0 +1,5 @@
+# npm reads this instead of .gitignore here: the built UI (out/) must ship.
+node_modules/
+.next/
+*.tsbuildinfo
+next-env.d.ts
