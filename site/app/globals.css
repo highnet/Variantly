@@ -1,0 +1,198 @@
+@import 'tailwindcss';
+
+/* variantly.tools — the Gate Board world, shared with the local app (ui/).
+   Panel and white pass surfaces, a slate departures board, ink type, and one
+   alert yellow reserved for change and the single primary action. */
+
+:root {
+  --ink: #0d0d10;
+  --slate: #1c2127;
+  --slate-2: #262c33;
+  --slate-line: #353c45;
+  --steel: #5f656c;
+  --steel-on-slate: #a9b0b8;
+  --rule: #c7cbd0;
+  --panel: #e6e8eb;
+  --surface: #ffffff;
+  --alert: #ffd400;
+  --alert-hover: #ffe14d;
+  --fail: #b3261e;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-slate: var(--slate);
+  --color-slate-2: var(--slate-2);
+  --color-slate-line: var(--slate-line);
+  --color-steel: var(--steel);
+  --color-steel-on-slate: var(--steel-on-slate);
+  --color-rule: var(--rule);
+  --color-panel: var(--panel);
+  --color-surface: var(--surface);
+  --color-alert: var(--alert);
+  --color-alert-hover: var(--alert-hover);
+  --color-fail: var(--fail);
+
+  --font-mono: var(--font-martian), ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --radius-pass: 10px;
+  --radius-chip: 6px;
+
+  --shadow-lift: 0 1px 1px rgb(13 13 16 / 0.06), 0 8px 24px -12px rgb(13 13 16 / 0.28);
+  --shadow-dock: 0 18px 40px -14px rgb(13 13 16 / 0.65);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+  --animate-flap: flap-text 420ms var(--ease-out-expo);
+  --animate-bar: bar 1.2s var(--ease-out-expo) infinite;
+  --animate-caret: caret 1s steps(1, end) infinite;
+
+  @keyframes flap-text {
+    0% {
+      transform: rotateX(0);
+    }
+    45% {
+      transform: rotateX(90deg);
+      opacity: 0.2;
+    }
+    55% {
+      transform: rotateX(-90deg);
+      opacity: 0.2;
+    }
+    100% {
+      transform: rotateX(0);
+    }
+  }
+
+  @keyframes bar {
+    0%,
+    100% {
+      transform: scaleY(0.35);
+    }
+    40% {
+      transform: scaleY(1);
+    }
+  }
+
+  @keyframes caret {
+    50% {
+      opacity: 0;
+    }
+  }
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    accent-color: var(--ink);
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--panel);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: var(--alert);
+    color: var(--ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+
+  .on-slate :focus-visible {
+    outline-color: var(--alert);
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
+  }
+
+  a {
+    text-underline-offset: 3px;
+  }
+
+  /* Grid items may shrink below their content (long commands scroll inside
+     their chip instead of widening the page). */
+  :where(.grid) > * {
+    min-width: 0;
+  }
+}
+
+@layer components {
+  /* Condensed board figures: widths come from the variable font's wdth axis. */
+  .figure {
+    font-family: var(--font-mono);
+    font-stretch: 75%;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+
+  .condensed {
+    font-stretch: 87.5%;
+  }
+
+  /* Split-flap status chip: the seam sits behind the letters. */
+  .flap {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .flap::after {
+    content: '';
+    position: absolute;
+    inset: 50% 0 auto;
+    height: 1px;
+    z-index: -1;
+    background: rgb(0 0 0 / 0.3);
+  }
+
+  .flap-light::after {
+    background: rgb(0 0 0 / 0.12);
+  }
+
+  /* Printed barcode strip: the world's only ornament. */
+  .scan {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--ink) 0 2px,
+      transparent 2px 4px,
+      var(--ink) 4px 5px,
+      transparent 5px 8px,
+      var(--ink) 8px 11px,
+      transparent 11px 12px
+    );
+  }
+
+  /* Perforation punch holes on a pass stub edge. */
+  .punch::before,
+  .punch::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,208 @@
+#!/usr/bin/env node
+// @ts-check
+import { parseArgs } from 'node:util';
+import { existsSync, readFileSync } from 'node:fs';
+import { rm } from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const pkg = JSON.parse(readFileSync(fileURLToPath(new URL('../package.json', import.meta.url)), 'utf8'));
+
+const USAGE = `variantly ${pkg.version} — N redesigns of your site, side by side. Keep one.
+
+Usage
+  variantly [dir]            open the wizard for the project in dir (default: .)
+  variantly doctor [dir]     check git, agents, Impeccable and the detected stack
+  variantly status [dir]     print the current run as JSON (for agents and scripts)
+  variantly keep <n> [dir]   apply variant n to your working tree, discard the rest
+  variantly clean [dir]      remove variantly's worktrees, branches and state
+
+Options
+  -p, --port <n>             port for the variantly app (default 4477)
+      --agent <id>           claude | codex | copilot | demo
+      --count <n>            how many variants, 1–10
+      --brief <text>         what you want, in your words
+      --yes                  skip the wizard: generate with detected defaults
+      --demo                 use the built-in demo agent (no AI, no account)
+      --no-open              don't open the browser
+  -h, --help
+  -v, --version
+
+Your agent does the design work with your own subscription or API key;
+variantly brings no model. Docs: https://variantly.tools · agents: https://variantly.tools/SKILLS.md`;
+
+const main = async () => {
+  /** @type {ReturnType<typeof parseArgs>} */
+  let parsed;
+  try {
+    parsed = parseArgs({
+      allowPositionals: true,
+      options: {
+        port: { type: 'string', short: 'p' },
+        agent: { type: 'string' },
+        count: { type: 'string' },
+        brief: { type: 'string' },
+        yes: { type: 'boolean' },
+        demo: { type: 'boolean' },
+        open: { type: 'boolean', default: true },
+        'no-open': { type: 'boolean' },
+        help: { type: 'boolean', short: 'h' },
+        version: { type: 'boolean', short: 'v' },
+      },
+    });
+  } catch (err) {
+    fail(err instanceof Error ? err.message : String(err));
+    return;
+  }
+  const { values, positionals } = parsed;
+  if (values.help) return console.log(USAGE);
+  if (values.version) return console.log(pkg.version);
+
+  const [first, second, third] = positionals;
+  const command = ['doctor', 'clean', 'status', 'keep'].includes(String(first)) ? String(first) : 'start';
+  const dirArg = command === 'start' ? first : command === 'keep' ? third : second;
+  const target = path.resolve(String(dirArg ?? '.'));
+  if (!existsSync(target)) return fail(`No such folder: ${target}`);
+
+  const git = await import('../src/git.mjs');
+  const repo = await git.repoRoot(target);
+  if (!repo) {
+    return fail(
+      `${target} is not inside a git repository.\nvariantly gives every variant its own git worktree, so it needs one:\n\n  git init && git add -A && git commit -m "Before variantly"`,
+    );
+  }
+
+  if (command === 'doctor') return doctor(repo);
+  if (command === 'clean') return clean(repo);
+  if (command === 'status') return status(repo);
+  if (command === 'keep') return keep(repo, Number(second));
+
+  const [{ startApp, detectProject, normalizeConfig }, { openBrowser, freePort }] = await Promise.all([
+    import('../src/server.mjs'),
+    import('../src/proc.mjs'),
+  ]);
+
+  /** @type {Partial<import('../src/session.mjs').Config>} */
+  const defaults = {};
+  if (values.demo) defaults.agent = 'demo';
+  if (typeof values.agent === 'string') defaults.agent = values.agent;
+  if (typeof values.count === 'string') defaults.count = Number(values.count);
+  if (typeof values.brief === 'string') defaults.brief = values.brief;
+
+  const wanted = Number(values.port ?? 4477);
+  const port = await freePort(wanted);
+  const app = await startApp({ repo, port, defaults });
+  const rel = path.relative(process.cwd(), repo) || '.';
+  console.log(`\n  variantly ${pkg.version}  ·  ${rel}\n\n  ➜  ${app.url}\n`);
+  if (port !== wanted) console.log(`  (port ${wanted} was busy)\n`);
+
+  if (values.yes && app.session.state.phase === 'setup') {
+    const detected = await detectProject(repo, defaults);
+    await app.session.generate(normalizeConfig(detected.suggested));
+    console.log(`  Generating ${detected.suggested.count} variants with ${detected.suggested.agent}…\n`);
+  }
+  if (values.open && !values['no-open']) openBrowser(app.url);
+  console.log('  Press Ctrl+C to stop. Your variants are kept until you pick one or run `variantly clean`.\n');
+
+  app.session.on('log', ({ target, lines }) => {
+    if (process.env.VARIANTLY_VERBOSE) for (const line of lines) console.log(`  [${target}] ${line}`);
+  });
+
+  let closing = false;
+  const shutdown = async () => {
+    if (closing) process.exit(1);
+    closing = true;
+    console.log('\n  Stopping dev servers and agents…');
+    await app.close();
+    process.exit(0);
+  };
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
+};
+
+/** @param {string} repo */
+const doctor = async (repo) => {
+  const { detectProject } = await import('../src/server.mjs');
+  const { which, run } = await import('../src/proc.mjs');
+  const info = await detectProject(repo);
+  const ok = (/** @type {boolean} */ b) => (b ? '✓' : '✗');
+  const nodeOk = Number(process.versions.node.split('.')[0]) >= 20;
+  const gitVersion = (await run('git', ['--version'])).stdout.trim();
+  console.log(`variantly ${info.version}\n`);
+  console.log(`${ok(nodeOk)} node ${process.versions.node}`);
+  console.log(`${ok(Boolean(which('git')))} ${gitVersion || 'git not found'}`);
+  console.log(`${ok(info.hasCommits)} repository ${repo}${info.hasCommits ? '' : ' (no commits yet)'}`);
+  if (info.dirty) console.log('  · uncommitted changes will be included in every variant');
+  if (info.untracked) console.log(`  · ${info.untracked} untracked file(s) will NOT be in the variants; commit or stage what matters`);
+  console.log('\nAgents');
+  for (const a of info.agents) {
+    console.log(`${ok(a.installed)} ${a.name.padEnd(20)} ${a.installed ? a.version : `install: ${a.install}`}`);
+    if (a.installed) console.log(`  ${ok(a.impeccable)} Impeccable skill ${a.impeccable ? 'found' : `missing: npx impeccable install --providers=${a.id} --scope=global`}`);
+  }
+  console.log('\nApp');
+  if (!info.candidates.length) console.log('✗ no known stack found; set a custom dev command in the wizard');
+  for (const c of info.candidates) {
+    console.log(`  ${c.name.padEnd(12)} ${c.rel || '.'}  →  ${c.command}${c.running ? `   (running at ${c.defaultUrl})` : ''}`);
+  }
+};
+
+/** @param {string} repo */
+const clean = async (repo) => {
+  const { Session, stateDirFor } = await import('../src/session.mjs');
+  const git = await import('../src/git.mjs');
+  const session = new Session({ repo });
+  await session.load();
+  await session.discard();
+  await session.close();
+  await git.deleteBranches(repo, 'variantly/');
+  await rm(stateDirFor(repo), { recursive: true, force: true });
+  console.log('Removed variantly worktrees, branches and state for this project.');
+};
+
+/** @param {string} repo */
+const status = async (repo) => {
+  const { Session } = await import('../src/session.mjs');
+  const session = new Session({ repo });
+  const state = await session.load();
+  const { config, ...rest } = state;
+  console.log(
+    JSON.stringify(
+      {
+        ...rest,
+        agent: config?.agent ?? null,
+        approach: config?.approach ?? null,
+        variants: state.variants.map((v) => ({ ...v, branch: state.runId ? session.branchFor(v.n) : null })),
+      },
+      null,
+      2,
+    ),
+  );
+  await session.close();
+};
+
+/** @param {string} repo @param {number} n */
+const keep = async (repo, n) => {
+  if (!Number.isInteger(n) || n < 1) return fail('Usage: variantly keep <n>   (n is the variant number)');
+  const { Session } = await import('../src/session.mjs');
+  const session = new Session({ repo });
+  await session.load();
+  try {
+    const result = await session.finalize(n);
+    console.log(`Applied variant ${n}: ${result.files.length} file(s) changed in your working tree.`);
+    if (result.conflicts.length) console.log(`Resolve conflict markers in: ${result.conflicts.join(', ')}`);
+    if (result.depsChanged) console.log('Dependencies changed: run your install command.');
+    console.log('The other variants are kept as branches until `variantly clean`.');
+  } finally {
+    await session.close();
+  }
+};
+
+/** @param {string} message */
+const fail = (message) => {
+  console.error(`\n  ${message.split('\n').join('\n  ')}\n`);
+  process.exitCode = 1;
+};
+
+main().catch((err) => {
+  fail(err instanceof Error ? (err.stack ?? err.message) : String(err));
+});

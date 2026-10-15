@@ -1,0 +1,59 @@
+{
+  "title": "variantly.tools — choose the page structure",
+  "question": "The Gate Board world is settled. Three structures for the homepage were dealt; lock one, steer, or re-roll. All three keep the I'm a human / I'm an agent fork and a real, draggable before/after of the Oak & Iron example.",
+  "options": [
+    {
+      "id": "terminal-board",
+      "label": "Terminal + Board",
+      "kicker": "THE ROLL",
+      "thesis": "The first screen is the tool working: npx variantly types itself on the left while the departures board on the right fills with Oak & Iron variants that flip to READY.",
+      "palette": ["#e6e8eb", "#ffffff", "#0d0d10", "#1c2127", "#ffd400"],
+      "materials": ["terminal panel", "split-flap board", "boarding-pass stub for install"],
+      "viewport": "Top: wordmark + human/agent fork. Left half: a terminal running npx variantly with the check-in pass summary. Right half: the board, rows flipping SCHEDULED → WORKING → READY. Under both: the real before/after of Oak & Iron with the 1…N dock, draggable.",
+      "risk": "Two animated panels compete for the first glance; the board has to win and the terminal stay quiet.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "wordmark · human / agent fork · install", "x": 0, "y": 0, "w": 12, "h": 1 },
+        { "label": "headline + install command", "x": 0, "y": 1, "w": 5, "h": 2, "accent": true },
+        { "label": "terminal: npx variantly", "x": 0, "y": 3, "w": 5, "h": 3 },
+        { "label": "departures board: V01–V04 flipping", "x": 5, "y": 1, "w": 7, "h": 5, "accent": true },
+        { "label": "live before/after: Oak & Iron + 1…N dock", "x": 0, "y": 6, "w": 12, "h": 4 }
+      ] }
+    },
+    {
+      "id": "checkin-desk",
+      "label": "Check-in Desk",
+      "thesis": "Scrolling is travelling: the page walks you through four counters in order (check-in, board, compare, keep), each one a working miniature of the real app.",
+      "palette": ["#e6e8eb", "#ffffff", "#0d0d10", "#1c2127", "#ffd400"],
+      "materials": ["counter signs", "pass segments", "the real compare at the third counter"],
+      "viewport": "Fork and headline across the top; the first counter is the check-in pass itself with FROM / VIA / TO / VARIANTS filled for Oak & Iron and a yellow Generate that scrolls you to the board.",
+      "risk": "A four-step tour delays the payoff (the compare) to the third screen; impatient visitors may not scroll.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "wordmark · human / agent fork", "x": 0, "y": 0, "w": 12, "h": 1 },
+        { "label": "headline", "x": 0, "y": 1, "w": 12, "h": 1, "accent": true },
+        { "label": "counter 1: check-in pass (Oak & Iron)", "x": 0, "y": 2, "w": 9, "h": 3 },
+        { "label": "stub: install", "x": 9, "y": 2, "w": 3, "h": 3, "accent": true },
+        { "label": "counter 2: board", "x": 0, "y": 5, "w": 12, "h": 2 },
+        { "label": "counter 3: compare", "x": 0, "y": 7, "w": 12, "h": 3 }
+      ] }
+    },
+    {
+      "id": "departures-hall",
+      "label": "Departures Hall",
+      "thesis": "The page is a concourse board at gate scale: ten variants of Oak & Iron listed as departures, and the selected row opens into the live before/after like a gate opening.",
+      "palette": ["#1c2127", "#0d0d10", "#f2f2ee", "#ffd400", "#e6e8eb"],
+      "materials": ["full-width slate board", "split-flap rows", "gate panel"],
+      "viewport": "A full-width dark board with a giant row per variant (V01 EDITORIAL READY …); the human/agent fork sits in the board header like a gate selector; the top row is expanded into the draggable before/after.",
+      "risk": "The darkest of the three; flap theatre at this scale can tip into costume if the copy isn't plain.",
+      "wireframe": { "cols": 12, "rows": 10, "regions": [
+        { "label": "board header: wordmark · human / agent fork · clock", "x": 0, "y": 0, "w": 12, "h": 1, "accent": true },
+        { "label": "headline row", "x": 0, "y": 1, "w": 12, "h": 1 },
+        { "label": "V01 row expanded: live before/after", "x": 0, "y": 2, "w": 12, "h": 5 },
+        { "label": "V02–V04 rows", "x": 0, "y": 7, "w": 12, "h": 2 },
+        { "label": "install stub", "x": 0, "y": 9, "w": 12, "h": 1, "accent": true }
+      ] }
+    }
+  ],
+  "reroll": true,
+  "buildPath": { "value": "code", "toggle": false },
+  "steer": true
+}

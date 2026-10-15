@@ -1,0 +1,11 @@
+{
+  "name": "variantly",
+  "owner": { "name": "highnet" },
+  "plugins": [
+    {
+      "name": "variantly",
+      "source": "./plugins/variantly",
+      "description": "Drive variantly from Claude Code: N whole-page Impeccable redesigns of your site, compared live, keep one."
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "title": "variantly — choose the visual world",
+  "question": "The roll assigned the Cupping Table for the local app (wizard, generation board, comparison view). Keep it, take an alternate, or re-roll.",
+  "options": [
+    {
+      "id": "assigned",
+      "label": "Cupping Table",
+      "kicker": "THE ROLL",
+      "lineage": "specialty-coffee cupping: numbered cups, blind tasting, the printed score form",
+      "thesis": "Every variant is a numbered cup on one table; you taste them blind, mark the form, and keep one.",
+      "palette": ["#f3f2ee", "#1c1b19", "#a3a8aa", "#2a45c9"],
+      "materials": ["glazed porcelain rims seen from above", "a printed score form ticked in blue ballpoint"],
+      "viewport": "Your site fills the screen; along the bottom edge a row of numbered porcelain rims is the 1…N picker, the active cup circled in ballpoint; the before/after divider is a hairline with a spoon-bowl grip.",
+      "risk": "Cupping is niche ritual: if its vocabulary leaks into labels (aroma, crust) it turns into costume instead of a quiet instrument.",
+      "raised": [
+        { "from": "challenger-datamatics", "raise": "Chrome is strictly graphite on porcelain plus one ballpoint blue; the only other colour on screen belongs to the sites being tasted." },
+        { "from": "challenger-folio", "raise": "Registration: every cup is shown at the same path, scale and scroll ratio, so a difference is always the design, never the framing." },
+        { "from": "challenger-wall", "raise": "The cup under the spoon lifts; the rest of the row drops to half ink." },
+        { "from": "challenger-atlas", "raise": "Hierarchy by size, not weight: the active cup number is the only large figure in the chrome." }
+      ]
+    },
+    {
+      "id": "model-pick",
+      "label": "Better One, or Two?",
+      "kicker": "IMPECCABLE’S PICK",
+      "lineage": "the optometrist's phoropter and its lens flips",
+      "thesis": "Flip numbered lenses in front of your own site until one is sharp, exactly like the eye exam everybody has sat through.",
+      "palette": ["#f6f7f5", "#121314", "#0f7c6c", "#d9dcd8"],
+      "materials": ["matte instrument enamel", "engraved dial numerals", "lens rings"],
+      "viewport": "The site seen through a circular lens bezel; a dial of numbered lenses around the bottom edge; '1 or 2?' is literally the prompt between two variants.",
+      "risk": "The most familiar shape for a compare tool; closest to what A/B tools already look like."
+    },
+    {
+      "id": "challenger-gateboard",
+      "label": "Gate Board",
+      "verdict": "competitive",
+      "lineage": "airport departure boards and the segmented boarding pass",
+      "thesis": "Variants depart like flights: the board reranks live as agents work, and each variant carries a pass with its number and summary.",
+      "palette": ["#101214", "#f2f2ee", "#ffb000", "#3a3d40"],
+      "materials": ["split-flap panels", "tabular mono figures", "perforated pass segments"],
+      "viewport": "Generation is a departures board, row per variant with status that holds its alert colour until seen; comparison docks the board to one strip.",
+      "case": "Holds audience identification (everyone reads a gate board) and makes waiting legible; loses on the choosing moment, which it has no native gesture for.",
+      "risk": "Split-flap theatre turns playful fast; the board has to stay an instrument."
+    },
+    {
+      "id": "challenger-factory",
+      "label": "Catalog Numbers",
+      "verdict": "competitive",
+      "lineage": "Factory Records sleeves: FAC numbers and colour-coded titles",
+      "thesis": "Every variant is a catalog entry, V01 to V10, its look encoded as a strip of its own colours; only the selected one is decoded.",
+      "palette": ["#0c0c0c", "#f4f4f2", "#7a7a78"],
+      "materials": ["matte black sleeve", "white hairline plots", "hue-block code strips sampled from each variant"],
+      "viewport": "Matte black around the site, a strict V-number index at the edge with each variant's sampled palette as a code strip.",
+      "case": "Holds product clarity (number-coded variants with their palette as a strip is instantly readable); loses audience identification with most developers.",
+      "risk": "Matte black chrome lands close to the dark dev-tool default."
+    },
+    {
+      "id": "challenger-wall",
+      "label": "Streaming Title Wall",
+      "verdict": "declined",
+      "lineage": "streaming catalog rows",
+      "thesis": "Variants as poster tiles in a scrolling row.",
+      "palette": ["#141414", "#e5e5e5"],
+      "materials": ["poster tiles"],
+      "viewport": "Rows of variant thumbnails.",
+      "case": "Fuses into a thumbnail gallery, which is exactly the screenshot grid variantly exists to replace.",
+      "kept": "The focused item lifts while the rest dim.",
+      "risk": "Generic gallery."
+    },
+    {
+      "id": "challenger-atlas",
+      "label": "Star Atlas",
+      "verdict": "declined",
+      "lineage": "celestial charts",
+      "thesis": "Variants as stars ranked by magnitude.",
+      "palette": ["#0e1a33", "#f4f1e6", "#d24a2b"],
+      "materials": ["chart ink"],
+      "viewport": "A chart of variants.",
+      "case": "No ranking exists among variants; magnitude would invent one.",
+      "kept": "Hierarchy carried by size instead of type weight.",
+      "risk": "Decorative."
+    },
+    {
+      "id": "challenger-folio",
+      "label": "Botanical Folio",
+      "verdict": "declined",
+      "lineage": "fixed-scale botanical plates",
+      "thesis": "Variants as registered plates on one baseline.",
+      "palette": ["#efe8d8", "#3c5a2e", "#b02a1d"],
+      "materials": ["engraved plates"],
+      "viewport": "Plates in a band.",
+      "case": "Cream-and-serif lands in the rut and fights the sites being compared.",
+      "kept": "Strict registration: same scale and position for every comparison.",
+      "risk": "Rut palette."
+    },
+    {
+      "id": "challenger-datamatics",
+      "label": "Datamatics",
+      "verdict": "declined",
+      "lineage": "Ryoji Ikeda's data fields",
+      "thesis": "Agent output as strobing barcode fields.",
+      "palette": ["#000000", "#ffffff"],
+      "materials": ["barcode bars", "mono numerics"],
+      "viewport": "Black and white data field.",
+      "case": "Strobing fights a decision you make by looking calmly.",
+      "kept": "Total monochrome discipline in the chrome.",
+      "risk": "Hostile to long sessions."
+    }
+  ],
+  "reroll": { "registers": ["safer", "bolder"] },
+  "buildPath": { "value": "code", "toggle": false },
+  "canon": true,
+  "canonCard": {
+    "label": "The category standard",
+    "thesis": "A modern dev-tool app: neutral dark chrome, segmented tabs, a variants sidebar, done at Linear/Vercel craft.",
+    "palette": ["#0a0a0a", "#ededed", "#3b82f6"],
+    "materials": ["neutral panels", "1px borders", "Geist type"],
+    "viewport": "Top bar, variant tabs, the site in a framed viewport.",
+    "risk": "Indistinguishable from every other dev tool by design."
+  },
+  "steer": true
+}

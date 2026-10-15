@@ -1,0 +1,51 @@
+{
+  "name": "variantly",
+  "version": "0.1.0",
+  "description": "Point it at a site that needs a redesign. Your own coding agent renders N Impeccable redesigns side by side; you swipe between them and keep one.",
+  "type": "module",
+  "bin": {
+    "variantly": "bin/variantly.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "ui",
+    "SKILLS.md",
+    "README.md",
+    "NOTICE.md",
+    "LICENCE.md"
+  ],
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "start": "node bin/variantly.mjs",
+    "test": "node --test --test-concurrency=2 \"test/*.test.mjs\"",
+    "typecheck": "tsc -p jsconfig.json",
+    "check": "npm run typecheck && npm test"
+  },
+  "keywords": [
+    "redesign",
+    "design",
+    "ui",
+    "impeccable",
+    "agents",
+    "claude-code",
+    "codex",
+    "copilot",
+    "variants",
+    "cli"
+  ],
+  "author": "highnet",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/highnet/ProjectHusky.git"
+  },
+  "homepage": "https://github.com/highnet/ProjectHusky#readme",
+  "bugs": "https://github.com/highnet/ProjectHusky/issues",
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "typescript": "^5.9.3"
+  }
+}

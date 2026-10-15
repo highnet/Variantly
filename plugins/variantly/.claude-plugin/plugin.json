@@ -1,0 +1,9 @@
+{
+  "name": "variantly",
+  "version": "0.1.0",
+  "description": "Drive variantly from Claude Code: N whole-page Impeccable redesigns of your site, compared live, keep one.",
+  "author": { "name": "highnet" },
+  "homepage": "https://variantly.tools",
+  "repository": "https://github.com/highnet/ProjectHusky",
+  "license": "MIT"
+}

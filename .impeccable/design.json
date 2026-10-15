@@ -1,0 +1,585 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-15T09:22:31.196Z",
+  "title": "Design System: variantly",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ticket Ink",
+        "canonical": "#0d0d10",
+        "oklch": "oklch(16% 0.006 285.7)",
+        "purpose": "Text on light, solid buttons, log panels, compare divider, BEFORE/AFTER tags, toasts.",
+        "tonalRamp": [
+          "oklch(15% 0.006 285.7)",
+          "oklch(25% 0.006 285.7)",
+          "oklch(35% 0.006 285.7)",
+          "oklch(47% 0.006 285.7)",
+          "oklch(60% 0.006 285.7)",
+          "oklch(72% 0.004 285.7)",
+          "oklch(84% 0.003 285.7)",
+          "oklch(95% 0.001 285.7)"
+        ]
+      },
+      "slate": {
+        "role": "neutral",
+        "displayName": "Board Slate",
+        "canonical": "#1c2127",
+        "oklch": "oklch(24.5% 0.014 253.1)",
+        "purpose": "The departures board, dock, info drawer, waiting cards: everything live.",
+        "tonalRamp": [
+          "oklch(15% 0.014 253.1)",
+          "oklch(25% 0.014 253.1)",
+          "oklch(35% 0.014 253.1)",
+          "oklch(47% 0.014 253.1)",
+          "oklch(60% 0.014 253.1)",
+          "oklch(72% 0.01 253.1)",
+          "oklch(84% 0.005 253.1)",
+          "oklch(95% 0.002 253.1)"
+        ]
+      },
+      "slate-raised": {
+        "role": "neutral",
+        "displayName": "Raised Slate",
+        "canonical": "#262c33",
+        "oklch": "oklch(29% 0.015 252.4)",
+        "purpose": "Unflipped status cells, inactive dock cells, hovered rows, hover on solid buttons. CSS var --slate-2.",
+        "tonalRamp": [
+          "oklch(15% 0.015 252.4)",
+          "oklch(25% 0.015 252.4)",
+          "oklch(35% 0.015 252.4)",
+          "oklch(47% 0.015 252.4)",
+          "oklch(60% 0.015 252.4)",
+          "oklch(72% 0.011 252.4)",
+          "oklch(84% 0.006 252.4)",
+          "oklch(95% 0.002 252.4)"
+        ]
+      },
+      "slate-line": {
+        "role": "neutral",
+        "displayName": "Slate Seam",
+        "canonical": "#353c45",
+        "oklch": "oklch(35.3% 0.018 254.8)",
+        "purpose": "Rules inside slate objects, dock separator.",
+        "tonalRamp": [
+          "oklch(15% 0.018 254.8)",
+          "oklch(25% 0.018 254.8)",
+          "oklch(35% 0.018 254.8)",
+          "oklch(47% 0.018 254.8)",
+          "oklch(60% 0.018 254.8)",
+          "oklch(72% 0.013 254.8)",
+          "oklch(84% 0.007 254.8)",
+          "oklch(95% 0.003 254.8)"
+        ]
+      },
+      "steel": {
+        "role": "neutral",
+        "displayName": "Steel",
+        "canonical": "#5f656c",
+        "oklch": "oklch(50.4% 0.013 252.2)",
+        "purpose": "Labels and secondary text on light (5.6:1 on panel). Darkened from the contract #6B7178.",
+        "tonalRamp": [
+          "oklch(15% 0.013 252.2)",
+          "oklch(25% 0.013 252.2)",
+          "oklch(35% 0.013 252.2)",
+          "oklch(47% 0.013 252.2)",
+          "oklch(60% 0.013 252.2)",
+          "oklch(72% 0.009 252.2)",
+          "oklch(84% 0.005 252.2)",
+          "oklch(95% 0.002 252.2)"
+        ]
+      },
+      "steel-on-slate": {
+        "role": "neutral",
+        "displayName": "Steel on Slate",
+        "canonical": "#a9b0b8",
+        "oklch": "oklch(75.4% 0.014 251.6)",
+        "purpose": "Labels and muted text on slate (7.4:1).",
+        "tonalRamp": [
+          "oklch(15% 0.014 251.6)",
+          "oklch(25% 0.014 251.6)",
+          "oklch(35% 0.014 251.6)",
+          "oklch(47% 0.014 251.6)",
+          "oklch(60% 0.014 251.6)",
+          "oklch(72% 0.01 251.6)",
+          "oklch(84% 0.006 251.6)",
+          "oklch(95% 0.002 251.6)"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Perforation Grey",
+        "canonical": "#c7cbd0",
+        "oklch": "oklch(84% 0.008 253.9)",
+        "purpose": "Hairlines, dashed perforations, input borders.",
+        "tonalRamp": [
+          "oklch(15% 0.008 253.9)",
+          "oklch(25% 0.008 253.9)",
+          "oklch(35% 0.008 253.9)",
+          "oklch(47% 0.008 253.9)",
+          "oklch(60% 0.008 253.9)",
+          "oklch(72% 0.006 253.9)",
+          "oklch(84% 0.003 253.9)",
+          "oklch(95% 0.001 253.9)"
+        ]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Counter Grey",
+        "canonical": "#e6e8eb",
+        "oklch": "oklch(93% 0.005 258.3)",
+        "purpose": "Page ground, open segment, drawers, stub notches, neutral notes and tags.",
+        "tonalRamp": [
+          "oklch(15% 0.005 258.3)",
+          "oklch(25% 0.005 258.3)",
+          "oklch(35% 0.005 258.3)",
+          "oklch(47% 0.005 258.3)",
+          "oklch(60% 0.005 258.3)",
+          "oklch(72% 0.003 258.3)",
+          "oklch(84% 0.002 258.3)",
+          "oklch(95% 0.001 258.3)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Pass White",
+        "canonical": "#ffffff",
+        "oklch": "oklch(100% 0 89.9)",
+        "purpose": "Passes, inputs, option tickets, ready status cell, active dock cell.",
+        "tonalRamp": [
+          "oklch(15% 0 89.9)",
+          "oklch(25% 0 89.9)",
+          "oklch(35% 0 89.9)",
+          "oklch(47% 0 89.9)",
+          "oklch(60% 0 89.9)",
+          "oklch(72% 0 89.9)",
+          "oklch(84% 0 89.9)",
+          "oklch(95% 0 89.9)"
+        ]
+      },
+      "alert": {
+        "role": "primary",
+        "displayName": "Gate Yellow",
+        "canonical": "#ffd400",
+        "oklch": "oklch(88.1% 0.181 94)",
+        "purpose": "The one primary action per view, unseen changes, focus on slate, the mark, selection.",
+        "tonalRamp": [
+          "oklch(15% 0.181 94)",
+          "oklch(25% 0.181 94)",
+          "oklch(35% 0.181 94)",
+          "oklch(47% 0.181 94)",
+          "oklch(60% 0.181 94)",
+          "oklch(72% 0.126 94)",
+          "oklch(84% 0.072 94)",
+          "oklch(95% 0.027 94)"
+        ]
+      },
+      "alert-hover": {
+        "role": "primary",
+        "displayName": "Gate Yellow Hover",
+        "canonical": "#ffe14d",
+        "oklch": "oklch(90.9% 0.163 97.5)",
+        "purpose": "Primary button hover only. Hard-coded literal in app.css.",
+        "tonalRamp": [
+          "oklch(15% 0.163 97.5)",
+          "oklch(25% 0.163 97.5)",
+          "oklch(35% 0.163 97.5)",
+          "oklch(47% 0.163 97.5)",
+          "oklch(60% 0.163 97.5)",
+          "oklch(72% 0.114 97.5)",
+          "oklch(84% 0.065 97.5)",
+          "oklch(95% 0.024 97.5)"
+        ]
+      },
+      "alert-wash": {
+        "role": "primary",
+        "displayName": "Gate Yellow Wash",
+        "canonical": "#fff6c2",
+        "oklch": "oklch(96.8% 0.067 99.3)",
+        "purpose": "Advisory notes in the stub. Hard-coded literal in app.css.",
+        "tonalRamp": [
+          "oklch(15% 0.067 99.3)",
+          "oklch(25% 0.067 99.3)",
+          "oklch(35% 0.067 99.3)",
+          "oklch(47% 0.067 99.3)",
+          "oklch(60% 0.067 99.3)",
+          "oklch(72% 0.047 99.3)",
+          "oklch(84% 0.027 99.3)",
+          "oklch(95% 0.01 99.3)"
+        ]
+      },
+      "fail": {
+        "role": "error",
+        "displayName": "Fail Red",
+        "canonical": "#b3261e",
+        "oklch": "oklch(50.1% 0.178 28.7)",
+        "purpose": "Failure text on light, failure toast.",
+        "tonalRamp": [
+          "oklch(15% 0.178 28.7)",
+          "oklch(25% 0.178 28.7)",
+          "oklch(35% 0.178 28.7)",
+          "oklch(47% 0.178 28.7)",
+          "oklch(60% 0.178 28.7)",
+          "oklch(72% 0.125 28.7)",
+          "oklch(84% 0.071 28.7)",
+          "oklch(95% 0.027 28.7)"
+        ]
+      },
+      "fail-on-slate": {
+        "role": "error",
+        "displayName": "Fail on Slate",
+        "canonical": "#ff8a80",
+        "oklch": "oklch(75.9% 0.144 26.1)",
+        "purpose": "Failed status text and failed pip on slate.",
+        "tonalRamp": [
+          "oklch(15% 0.144 26.1)",
+          "oklch(25% 0.144 26.1)",
+          "oklch(35% 0.144 26.1)",
+          "oklch(47% 0.144 26.1)",
+          "oklch(60% 0.144 26.1)",
+          "oklch(72% 0.1 26.1)",
+          "oklch(84% 0.057 26.1)",
+          "oklch(95% 0.022 26.1)"
+        ]
+      },
+      "fail-wash": {
+        "role": "error",
+        "displayName": "Fail Wash",
+        "canonical": "#fbe3e1",
+        "oklch": "oklch(93.5% 0.027 23.4)",
+        "purpose": "Behind failure tags and notes (note text #7a1712). Hard-coded literal.",
+        "tonalRamp": [
+          "oklch(15% 0.027 23.4)",
+          "oklch(25% 0.027 23.4)",
+          "oklch(35% 0.027 23.4)",
+          "oklch(47% 0.027 23.4)",
+          "oklch(60% 0.027 23.4)",
+          "oklch(72% 0.019 23.4)",
+          "oklch(84% 0.011 23.4)",
+          "oklch(95% 0.004 23.4)"
+        ]
+      },
+      "log-ink": {
+        "role": "neutral",
+        "displayName": "Log Ink",
+        "canonical": "#d5dae0",
+        "oklch": "oklch(88.6% 0.01 252.8)",
+        "purpose": "Monospace log output on ink/slate. Hard-coded literal, used three times.",
+        "tonalRamp": [
+          "oklch(15% 0.01 252.8)",
+          "oklch(25% 0.01 252.8)",
+          "oklch(35% 0.01 252.8)",
+          "oklch(47% 0.01 252.8)",
+          "oklch(60% 0.01 252.8)",
+          "oklch(72% 0.007 252.8)",
+          "oklch(84% 0.004 252.8)",
+          "oklch(95% 0.001 252.8)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Segment Figure",
+        "purpose": "The four pass segment values; container-sized, two lines reserved. clamp(26px, 8cqi, 40px) under a 540px pass. font-stretch 75%, uppercase, tabular."
+      },
+      "display-issued": {
+        "displayName": "Issued Number",
+        "purpose": "The kept variant number on the issued pass. Largest type in the system."
+      },
+      "headline": {
+        "displayName": "Board Title",
+        "purpose": "Board view heading, e.g. \"04 variants\"."
+      },
+      "title": {
+        "displayName": "Pass / Board Title",
+        "purpose": "Pass head 22px, board head 18px, board row variant numbers 22px (18px on phones)."
+      },
+      "body": {
+        "displayName": "Prose",
+        "purpose": "System sans for sentences: hints 13px max 70ch, board summaries 13px max 62ch."
+      },
+      "data": {
+        "displayName": "Data",
+        "purpose": "Values, inputs, readouts; font-stretch 87.5%, tabular-nums. Stub values 600 14px."
+      },
+      "label": {
+        "displayName": "Field Label",
+        "purpose": "Every field name and column head, uppercase; steel on light, steel-on-slate on slate."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Buttons uppercase 12px (13px big, 11px small); toggles and status cells 11px."
+      }
+    },
+    "fonts": [
+      {
+        "family": "Martian Mono",
+        "source": "ui/fonts/martian-mono.woff2",
+        "format": "woff2-variations",
+        "weight": "100 800",
+        "stretch": "75% 112.5%",
+        "licence": "OFL",
+        "display": "swap",
+        "note": "Self-hosted; no CDN fonts. Width is set with font-stretch (75% figures, 87.5% labels/data)."
+      }
+    ],
+    "tailwindTheme": {
+      "note": "How to carry this system into Tailwind v4 @theme for site/. Names follow frontmatter keys.",
+      "colors": "--color-<frontmatter colors key>, e.g. --color-ink, --color-slate, --color-slate-raised, --color-alert",
+      "fonts": {
+        "--font-mono": "'Martian Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace",
+        "--font-sans": "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+      },
+      "radii": {
+        "--radius-flap": "3px",
+        "--radius-keycap": "4px",
+        "--radius-control": "6px",
+        "--radius-pass": "10px",
+        "--radius-dock": "12px"
+      },
+      "shadows": "--shadow-lift, --shadow-dock, --shadow-flag, --shadow-cell (values in shadows below)",
+      "ease": {
+        "--ease-gate": "cubic-bezier(0.16, 1, 0.3, 1)"
+      }
+    },
+    "shadows": [
+      {
+        "name": "lift",
+        "value": "0 1px 1px rgb(13 13 16 / 0.06), 0 8px 24px -12px rgb(13 13 16 / 0.28)",
+        "purpose": "Passes, boards, waiting cards, info drawer, help, toasts."
+      },
+      {
+        "name": "dock",
+        "value": "0 1px 0 rgb(255 255 255 / 0.06) inset, 0 18px 40px -14px rgb(13 13 16 / 0.65)",
+        "purpose": "The dock floating over the user site."
+      },
+      {
+        "name": "flag",
+        "value": "0 10px 30px -12px rgb(13 13 16 / 0.5)",
+        "purpose": "Summary flag above the dock."
+      },
+      {
+        "name": "cell",
+        "value": "0 8px 16px -8px rgb(0 0 0 / 0.7)",
+        "purpose": "Active dock cell, with translateY(-3px)."
+      },
+      {
+        "name": "grip",
+        "value": "0 6px 20px -6px rgb(13 13 16 / 0.5)",
+        "purpose": "BEFORE/AFTER grip on the compare divider."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-gate",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The only easing curve; all transitions and the row FLIP."
+      },
+      {
+        "name": "state",
+        "value": "160ms",
+        "purpose": "Hover, background and border transitions."
+      },
+      {
+        "name": "chrome",
+        "value": "240ms",
+        "purpose": "Dock and tag tuck/untuck."
+      },
+      {
+        "name": "flag",
+        "value": "300ms",
+        "purpose": "Summary flag in/out."
+      },
+      {
+        "name": "flap",
+        "value": "420ms",
+        "purpose": "Status text rotates through the seam on change."
+      },
+      {
+        "name": "rerank",
+        "value": "520ms",
+        "purpose": "Board rows FLIP to their new position, identity preserved."
+      },
+      {
+        "name": "working",
+        "value": "1.2s infinite",
+        "purpose": "Three 3px working bars; working pip pulses at 1.4s."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "none",
+        "purpose": "prefers-reduced-motion removes all animation and transition."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "640px",
+        "purpose": "Dock spans edge to edge and wraps; board drops Time/Files/Latest."
+      },
+      {
+        "name": "narrow",
+        "value": "860px",
+        "purpose": "Stub moves below the pass; page padding 16px."
+      },
+      {
+        "name": "stack",
+        "value": "1100px",
+        "purpose": "Check-in stacks the pass over the board."
+      },
+      {
+        "name": "pass-compact (container)",
+        "value": "540px",
+        "purpose": "Segment figures shrink to clamp(26px, 8cqi, 40px)."
+      },
+      {
+        "name": "pass-wide (container)",
+        "value": "1000px",
+        "purpose": "Segments go four in a row. PENDING USER ACCEPTANCE: the contract specified 2x2 at every width."
+      }
+    ],
+    "pending": [
+      {
+        "item": "Check-in segment grid",
+        "current": "2x2 by default; four in a row when the pass main body container is >= 1000px",
+        "contract": "2x2 at every width",
+        "status": "Finish review round 2 (verdict \"fix\"): all 8 fixes resolved except this one, which awaits user acceptance."
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Gate Yellow; exactly one per view.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Generate 4 variants <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"/><path d=\"M13 6l6 6-6 6\"/></svg></button>",
+      "css": ".ds-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 18px;border:1px solid #ffd400;border-radius:6px;font:700 12px/1 'Martian Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;font-stretch:87.5%;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background 160ms cubic-bezier(.16,1,.3,1),transform 160ms cubic-bezier(.16,1,.3,1)}.ds-btn svg{width:16px;height:16px}.ds-btn:active{transform:translateY(1px)}.ds-btn:focus-visible{outline:2px solid #0d0d10;outline-offset:2px}.ds-btn-primary{background:#ffd400;color:#0d0d10}.ds-btn-primary:hover{background:#ffe14d}"
+    },
+    {
+      "name": "Solid Button",
+      "kind": "button",
+      "refersTo": "button-solid",
+      "description": "Ink button for non-primary actions on light.",
+      "html": "<button class=\"ds-btn-solid\">Retry</button>",
+      "css": ".ds-btn-solid{display:inline-flex;align-items:center;height:40px;padding:0 18px;border:1px solid #0d0d10;border-radius:6px;background:#0d0d10;color:#fff;font:700 12px/1 'Martian Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;font-stretch:87.5%;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background 160ms cubic-bezier(.16,1,.3,1),transform 160ms cubic-bezier(.16,1,.3,1)}.ds-btn-solid:hover{background:#262c33}.ds-btn-solid:focus-visible{outline:2px solid #0d0d10;outline-offset:2px}.ds-btn-solid:active{transform:translateY(1px)}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Transparent, ink-bordered; on slate the border is steel-on-slate and the text white.",
+      "html": "<button class=\"ds-btn-outline\">Stop variantly</button>",
+      "css": ".ds-btn-outline{display:inline-flex;align-items:center;height:40px;padding:0 18px;border:1px solid #0d0d10;border-radius:6px;background:transparent;color:#0d0d10;font:700 12px/1 'Martian Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;font-stretch:87.5%;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background 160ms cubic-bezier(.16,1,.3,1)}.ds-btn-outline:hover{background:#fff}.ds-btn-outline:focus-visible{outline:2px solid #0d0d10;outline-offset:2px}"
+    },
+    {
+      "name": "Labelled Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "White field, rule border, mono data type, label above.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-label\">Dev command</span><input class=\"ds-input\" value=\"npm run dev\"></label>",
+      "css": ".ds-field{display:grid;gap:6px}.ds-label{font:500 10.5px/1.2 'Martian Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;font-stretch:87.5%;letter-spacing:.08em;text-transform:uppercase;color:#5f656c}.ds-input{min-height:40px;padding:9px 12px;border:1px solid #c7cbd0;border-radius:6px;background:#fff;color:#0d0d10;font:500 13px/1.45 'Martian Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;font-stretch:87.5%;transition:border-color 160ms cubic-bezier(.16,1,.3,1)}.ds-input:hover{border-color:#5f656c}.ds-input:focus{outline:none;border-color:#0d0d10;box-shadow:0 0 0 1px #0d0d10}"
+    },
+    {
+      "name": "Pass Segment",
+      "kind": "card",
+      "refersTo": "pass-segment",
+      "description": "A labelled pass field holding one large condensed value; open state underlined in ink.",
+      "html": "<div class=\"ds-pass\"><button class=\"ds-seg\"><span class=\"ds-seg-l\">From</span><span class=\"ds-seg-f\">NEXT.JS</span><span class=\"ds-seg-s\">repo root · variantly starts it</span></button><button class=\"ds-seg\" aria-expanded=\"true\"><span class=\"ds-seg-l\">Variants</span><span class=\"ds-seg-f\">04</span><span class=\"ds-seg-s\">2 at a time</span></button></div>",
+      "css": ".ds-pass{display:grid;grid-template-columns:1fr 1fr;background:#fff;border:1px solid #c7cbd0;border-radius:10px;overflow:hidden;box-shadow:0 1px 1px rgb(13 13 16/.06),0 8px 24px -12px rgb(13 13 16/.28)}.ds-seg{all:unset;position:relative;display:grid;gap:8px;padding:18px 22px 20px;cursor:pointer;transition:background 160ms cubic-bezier(.16,1,.3,1)}.ds-seg+.ds-seg{border-left:1px solid #c7cbd0}.ds-seg:hover{background:#f5f6f7}.ds-seg[aria-expanded=true]{background:#e6e8eb}.ds-seg[aria-expanded=true]::after{content:'';position:absolute;left:22px;right:22px;bottom:0;height:3px;background:#0d0d10}.ds-seg:focus-visible{outline:2px solid #0d0d10;outline-offset:-4px}.ds-seg-l{font:500 10.5px/1.2 'Martian Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;font-stretch:87.5%;letter-spacing:.08em;text-transform:uppercase;color:#5f656c}.ds-seg-f{font:700 44px/.95 'Martian Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;font-stretch:75%;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:#0d0d10}.ds-seg-s{font:13.5px/1.5 system-ui,sans-serif;color:#5f656c}"
+    },
+    {
+      "name": "Split-flap Status Cell",
+      "kind": "chip",
+      "refersTo": "status-cell",
+      "description": "Board status; flips on change, holds Gate Yellow until seen.",
+      "html": "<div class=\"ds-board\"><span class=\"ds-flap\">Scheduled</span><span class=\"ds-flap ds-flap-ready\">Ready</span><span class=\"ds-flap ds-flap-unseen\">Ready</span></div>",
+      "css": ".ds-board{display:flex;gap:8px;padding:14px 18px;background:#1c2127;border-radius:10px}.ds-flap{position:relative;isolation:isolate;display:inline-block;min-width:11ch;padding:5px 7px;border-radius:3px;background:#262c33;color:#a9b0b8;font:700 11px/1 'Martian Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;font-stretch:87.5%;letter-spacing:.06em;text-transform:uppercase;text-align:center}.ds-flap::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:rgb(0 0 0/.3);z-index:-1}.ds-flap-ready{background:#fff;color:#0d0d10}.ds-flap-ready::after,.ds-flap-unseen::after{background:rgb(0 0 0/.12)}.ds-flap-unseen{background:#ffd400;color:#0d0d10}"
+    },
+    {
+      "name": "Dock",
+      "kind": "nav",
+      "refersTo": "dock",
+      "description": "The board shrunk to one strip of numbered cells in compare; the current cell lifts, the rest dim.",
+      "html": "<nav class=\"ds-dock\"><button class=\"ds-cell ds-orig\">ORIG</button><button class=\"ds-cell\" aria-current=\"true\">V02</button><button class=\"ds-cell\">V03<i class=\"ds-pip\"></i></button><button class=\"ds-dock-keep\">Keep V02</button></nav>",
+      "css": ".ds-dock{display:inline-flex;align-items:center;gap:3px;padding:6px;background:#1c2127;border-radius:12px;box-shadow:0 1px 0 rgb(255 255 255/.06) inset,0 18px 40px -14px rgb(13 13 16/.65)}.ds-cell{position:relative;display:grid;place-items:center;min-width:46px;height:36px;padding:0 8px;border:0;border-radius:6px;background:#262c33;color:#fff;opacity:.55;font:700 15px/1 'Martian Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;font-stretch:75%;font-variant-numeric:tabular-nums;cursor:pointer;transition:opacity 160ms cubic-bezier(.16,1,.3,1),transform 200ms cubic-bezier(.16,1,.3,1),background 160ms cubic-bezier(.16,1,.3,1)}.ds-orig{font-size:11px;letter-spacing:.06em}.ds-cell:hover{opacity:.9}.ds-cell:focus-visible{outline:2px solid #ffd400;outline-offset:2px}.ds-cell[aria-current=true]{opacity:1;background:#fff;color:#0d0d10;font-size:24px;min-width:62px;transform:translateY(-3px);box-shadow:0 8px 16px -8px rgb(0 0 0/.7)}.ds-pip{position:absolute;top:4px;right:4px;width:6px;height:6px;border-radius:50%;background:#ffd400}.ds-dock-keep{margin-left:6px;height:36px;padding:0 18px;border:0;border-radius:6px;background:#ffd400;color:#0d0d10;font:700 12px/1 'Martian Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;font-stretch:87.5%;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}.ds-dock-keep:hover{background:#ffe14d}.ds-dock-keep:focus-visible{outline:2px solid #ffd400;outline-offset:2px}"
+    },
+    {
+      "name": "Tag",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "Small label flap; ok fills ink, bad uses the fail wash.",
+      "html": "<span class=\"ds-tag\">Detected</span> <span class=\"ds-tag ds-tag-ok\">Installed</span> <span class=\"ds-tag ds-tag-bad\">Missing</span>",
+      "css": ".ds-tag{display:inline-flex;align-items:center;padding:4px 6px;border-radius:3px;background:#e6e8eb;color:#0d0d10;font:600 10px/1 'Martian Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;font-stretch:87.5%;letter-spacing:.08em;text-transform:uppercase}.ds-tag-ok{background:#0d0d10;color:#fff}.ds-tag-bad{background:#fbe3e1;color:#b3261e}"
+    },
+    {
+      "name": "Scan Block",
+      "kind": "custom",
+      "description": "The barcode at the foot of a stub; the only ornament besides the flap seam.",
+      "html": "<div class=\"ds-scan\" aria-hidden=\"true\"></div>",
+      "css": ".ds-scan{height:34px;width:240px;border-radius:2px;opacity:.85;background:repeating-linear-gradient(90deg,#0d0d10 0 2px,transparent 2px 4px,#0d0d10 4px 5px,transparent 5px 8px,#0d0d10 8px 11px,transparent 11px 12px)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Gate Board",
+    "overview": "Variants depart like flights. The system is built from two travel materials and nothing else: white boarding passes cut into labelled segments, lying on a cool grey counter, and a slate departures board whose status cells flip as agents work. A change stays lit in alert yellow until it has been seen. The vernacular is airport ephemera (perforations, stubs, tabular figures, a barcode block), never a dashboard of cards with spinners.\n\nThe chrome is monochrome so that the sites being compared are the only colour on screen. Hierarchy is carried by size rather than weight or hue: a few large condensed mono figures (the segment values, the variant number) against small tracked uppercase labels and plain system-sans prose. Density is moderate and documentary; every value has a label above it, the way a pass has field names.\n\nThese tokens also govern the marketing site (site/, Next.js + Tailwind v4). Every frontmatter colour key carries 1:1 into `@theme` as `--color-<key>`, the two stacks as `--font-mono` / `--font-sans`, and the radii as `--radius-<key>`; the material rules below are what keep the site in the same world, not the token names.",
+    "keyCharacteristics": [
+      "Two materials: white pass on grey panel (light, documentary) and slate board (dark, live).",
+      "One alert yellow, rationed to change, the single primary action, and focus on slate.",
+      "Martian Mono, condensed (wdth 75) for figures, semi-condensed (wdth 87.5) for labels and data; system sans for prose only.",
+      "Split-flap status cells and a barcode scan block are the only ornaments.",
+      "Soft, low shadows that lift whole objects; no outlines-as-decoration, no gradients."
+    ],
+    "rules": [
+      {
+        "name": "The One Yellow Rule",
+        "body": "Yellow means change or go. Use it only for the one primary action in a view, for unseen changes, and for focus on slate; never for decoration, headings, borders or a second button.",
+        "section": "colors"
+      },
+      {
+        "name": "The Sites Are the Colour Rule",
+        "body": "Chrome stays ink, slate, steel, grey and white. Anything that is not the user's site and not Gate Yellow or a failure state carries no hue.",
+        "section": "colors"
+      },
+      {
+        "name": "The Size Not Weight Rule",
+        "body": "Hierarchy comes from scale. Large figures are condensed 700; everything else stays small. In compare, the active variant number in the dock (24px) is the only large figure in the chrome.",
+        "section": "typography"
+      },
+      {
+        "name": "The Mono Scans, Sans Reads Rule",
+        "body": "Anything a person reads as a sentence is system sans; anything they scan, compare or copy (values, numbers, paths, statuses) is Martian Mono with tabular figures.",
+        "section": "typography"
+      },
+      {
+        "name": "The Objects Lift, Content Doesn't Rule",
+        "body": "Shadows belong to whole physical objects (pass, board, dock, flag). Rows, segments, fields and buttons stay flat and change by tone.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Perforation Rule",
+        "body": "A dashed line means \"tear here\": it only separates a pass from its stub or its remarks. Section breaks elsewhere are solid hairlines.",
+        "section": "shapes"
+      }
+    ],
+    "dos": [
+      "Do keep Gate Yellow to the one primary action per view, unseen changes, and focus on slate.",
+      "Do put a label above every value, the way a pass names its fields.",
+      "Do set figures in condensed Martian Mono 700 with tabular numerals, and set sentences in system sans.",
+      "Do use the slate material for anything live (board, dock, logs, waiting) and the white pass for anything you fill in or are issued.",
+      "Do flip a status cell on change and hold it yellow until seen; rerank rows in place without losing their identity.",
+      "Do use 2px ink focus rings on light surfaces and Gate Yellow rings on slate; respect prefers-reduced-motion by removing all animation.",
+      "Do ship the font locally; the app must work offline."
+    ],
+    "donts": [
+      "Don't introduce a second accent or tint the chrome; the sites being compared are the only colour.",
+      "Don't render progress as cards with spinners; progress is a board row and a flipping cell.",
+      "Don't use dashed lines anywhere except a pass's tear lines.",
+      "Don't shadow rows, segments, fields or buttons; only whole objects lift.",
+      "Don't let compare chrome compete with the site: one large figure (the active cell), everything else small and tuckable.",
+      "Don't use text glyphs as icons; icons are inline SVG strokes."
+    ]
+  },
+  "accepted": [],
+  "pending": []
+}

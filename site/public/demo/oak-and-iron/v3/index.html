@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Oak &amp; Iron Furniture | Home</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="topbar">Free delivery in Styria on orders over €500!!</div>
+    <nav class="navbar">
+      <a class="logo" href="index.html">🪵 Oak &amp; Iron</a>
+      <ul>
+        <li><a href="index.html" class="active">Home</a></li>
+        <li><a href="#shop">Shop</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+
+    <header class="hero">
+      <h1>Welcome to Oak &amp; Iron Furniture!</h1>
+      <p>Handmade furniture for real homes. Quality you can trust since 2019.</p>
+      <a class="btn" href="#shop">Browse the collection</a>
+      <a class="btn btn-outline" href="#contact">Contact us</a>
+    </header>
+
+    <section class="features">
+      <div class="feature">
+        <span class="icon">✔</span>
+        <h3>Handmade</h3>
+        <p>Every piece is built by hand in our workshop outside Graz.</p>
+      </div>
+      <div class="feature">
+        <span class="icon">♻</span>
+        <h3>Reclaimed oak</h3>
+        <p>We use reclaimed oak and forged steel wherever we can.</p>
+      </div>
+      <div class="feature">
+        <span class="icon">🚚</span>
+        <h3>Personal delivery</h3>
+        <p>Delivered by the person who built it. Lead time 6–8 weeks.</p>
+      </div>
+    </section>
+
+    <section id="shop" class="shop">
+      <h2>This Month's Products</h2>
+      <div class="cards">
+        <div class="card">
+          <div class="card-img img1"></div>
+          <h3>The Long Table</h3>
+          <p>2.4 m of reclaimed oak on steel trestles.</p>
+          <p class="price">€ 2.890,-</p>
+          <button type="button">Add to cart</button>
+        </div>
+        <div class="card">
+          <div class="card-img img2"></div>
+          <h3>Smithy Stool</h3>
+          <p>Hand-forged legs, oiled seat.</p>
+          <p class="price">€ 340,-</p>
+          <button type="button">Add to cart</button>
+        </div>
+        <div class="card">
+          <div class="card-img img3"></div>
+          <h3>Wall Shelf No. 4</h3>
+          <p>Three shelves, one bracket, no screws visible.</p>
+          <p class="price">€ 410,-</p>
+          <button type="button">Add to cart</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="newsletter">
+      <h2>Sign up for our Newsletter</h2>
+      <p>Get news about new products and workshop days.</p>
+      <form id="newsletter">
+        <input type="email" placeholder="Your email address" required />
+        <button>Subscribe</button>
+      </form>
+    </section>
+
+    <footer id="contact">
+      <p>Oak &amp; Iron Furniture · Werkstattgasse 4 · 8010 Graz · hello@oak-and-iron.example</p>
+      <p class="small">© 2026 Oak &amp; Iron. A fictional shop: demo content for variantly.</p>
+    </footer>
+    <script>
+      document.getElementById('newsletter').addEventListener('submit', (e) => {
+        e.preventDefault();
+        e.target.querySelector('button').textContent = 'Thanks!';
+      });
+    </script>
+  </body>
+</html>

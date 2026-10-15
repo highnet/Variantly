@@ -1,0 +1,208 @@
+/* Oak & Iron: a template-ish site that works and looks like every other one. */
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #333;
+  background: #f4f4f4;
+}
+
+.topbar {
+  background: #ff6b35;
+  color: white;
+  text-align: center;
+  padding: 6px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #2c3e50;
+  padding: 15px 40px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.navbar .logo {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.navbar ul {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar a {
+  color: #ecf0f1;
+  text-decoration: none;
+}
+
+.navbar a.active,
+.navbar a:hover {
+  color: #3498db;
+  text-decoration: underline;
+}
+
+.hero {
+  background: linear-gradient(135deg, #3498db, #8e44ad);
+  color: white;
+  text-align: center;
+  padding: 90px 20px;
+}
+
+.hero h1 {
+  font-size: 48px;
+  margin: 0 0 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.hero p {
+  font-size: 20px;
+  margin-bottom: 30px;
+}
+
+.hero-small {
+  padding: 40px 20px;
+}
+
+.btn {
+  display: inline-block;
+  background: #e74c3c;
+  color: white;
+  padding: 14px 30px;
+  border-radius: 25px;
+  text-decoration: none;
+  font-weight: bold;
+  margin: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid white;
+  box-shadow: none;
+}
+
+.features {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 50px 20px;
+  background: white;
+  flex-wrap: wrap;
+}
+
+.feature {
+  width: 260px;
+  text-align: center;
+}
+
+.feature .icon {
+  display: inline-block;
+  font-size: 30px;
+  background: #3498db;
+  color: white;
+  width: 60px;
+  height: 60px;
+  line-height: 60px;
+  border-radius: 50%;
+}
+
+.shop {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 50px 20px;
+  text-align: center;
+}
+
+.shop h2,
+.newsletter h2 {
+  font-size: 32px;
+  color: #2c3e50;
+}
+
+.lead {
+  font-size: 18px;
+  line-height: 1.6;
+}
+
+.cards {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.card {
+  background: white;
+  width: 290px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  padding-bottom: 20px;
+  overflow: hidden;
+}
+
+.card-img {
+  height: 180px;
+}
+
+.img1 {
+  background: linear-gradient(45deg, #d35400, #f39c12);
+}
+
+.img2 {
+  background: linear-gradient(45deg, #16a085, #2ecc71);
+}
+
+.img3 {
+  background: linear-gradient(45deg, #2980b9, #6dd5fa);
+}
+
+.price {
+  font-size: 22px;
+  font-weight: bold;
+  color: #27ae60;
+}
+
+.card button,
+.newsletter button {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.newsletter {
+  background: #ecf0f1;
+  text-align: center;
+  padding: 50px 20px;
+}
+
+.newsletter input {
+  padding: 10px;
+  width: 260px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+footer {
+  background: #2c3e50;
+  color: #bdc3c7;
+  text-align: center;
+  padding: 25px;
+}
+
+.small {
+  font-size: 12px;
+}

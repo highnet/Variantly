@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>variantly</title>
+    <link rel="icon" href="/__variantly/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/__variantly/app.css" />
+    <script type="module" src="/__variantly/app.js"></script>
+  </head>
+  <body>
+    <header class="bar">
+      <a class="wordmark" href="/" aria-label="variantly home">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="4" height="16" /><rect x="9" y="4" width="2" height="16" /><rect x="13" y="4" width="4" height="16" /><rect x="19" y="4" width="2" height="16" /></svg>
+        variantly
+      </a>
+      <span class="bar-project" id="project"></span>
+      <span class="bar-phase" id="phase" aria-live="polite"></span>
+      <span class="bar-spacer"></span>
+      <button class="ghost" id="help-toggle" type="button" aria-expanded="false" aria-controls="help">Keys</button>
+    </header>
+    <main id="view" tabindex="-1"></main>
+    <aside id="help" class="help" hidden>
+      <h2>Keyboard</h2>
+      <dl>
+        <dt><kbd>1</kbd>–<kbd>9</kbd>, <kbd>0</kbd></dt><dd>show variant 1–10</dd>
+        <dt><kbd>←</kbd> <kbd>→</kbd></dt><dd>previous / next variant</dd>
+        <dt><kbd>o</kbd></dt><dd>show the original</dd>
+        <dt><kbd>s</kbd></dt><dd>cycle slider · single · side by side</dd>
+        <dt><kbd>[</kbd> <kbd>]</kbd></dt><dd>nudge the slider</dd>
+        <dt><kbd>Esc</kbd></dt><dd>close panels</dd>
+      </dl>
+    </aside>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  </body>
+</html>

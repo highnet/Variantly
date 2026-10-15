@@ -1,0 +1,518 @@
+// @ts-check
+/*
+ * One variantly session: a project, a configuration from the wizard, and the
+ * variants generated from it. The session owns the worktrees, the agent runs,
+ * and the server pool, and persists its state so that running `variantly`
+ * again in the same project picks up where the last run left off.
+ */
+import { EventEmitter } from 'node:events';
+import { createHash } from 'node:crypto';
+import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { agentById } from './agents.mjs';
+import { defaultDirections, extractSummary, writeBrief } from './brief.mjs';
+import * as git from './git.mjs';
+import { LineBuffer, killTree, runOk, spawnArgs } from './proc.mjs';
+import { ServerPool } from './servers.mjs';
+import { adapterById, fill, packageRunner, pythonFor } from './stacks.mjs';
+
+const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+/**
+ * @typedef {object} Config
+ * @property {string} appRel
+ * @property {string} stackId
+ * @property {string} command          dev command template, {port} unresolved
+ * @property {string} originalUrl      '' = variantly starts the original too
+ * @property {string} agent
+ * @property {string} model
+ * @property {'safe' | 'full'} permissions
+ * @property {'redesign' | 'refine'} approach
+ * @property {number} count
+ * @property {string[]} directions
+ * @property {string} brief
+ * @property {string[]} routes
+ * @property {number} concurrency
+ * @property {number} maxLive
+ * @property {'link' | 'install'} deps
+ * @property {number} agentTimeoutMin
+ */
+
+/**
+ * @typedef {'queued' | 'preparing' | 'running' | 'committing' | 'done' | 'failed' | 'cancelled'} VariantStatus
+ * @typedef {object} Variant
+ * @property {number} n
+ * @property {string} direction
+ * @property {VariantStatus} status
+ * @property {string} summary
+ * @property {string[]} files
+ * @property {string} [error]
+ * @property {number} [startedAt]
+ * @property {number} [finishedAt]
+ * @property {number} [costUsd]   what the agent reported the session cost (Claude Code only)
+ */
+
+/**
+ * @typedef {object} State
+ * @property {number} version
+ * @property {'setup' | 'generating' | 'ready' | 'finalized'} phase
+ * @property {string} runId
+ * @property {string} base
+ * @property {Config | null} config
+ * @property {Variant[]} variants
+ * @property {number | null} chosen
+ * @property {{ files: string[], conflicts: string[], depsChanged: boolean } | null} result
+ */
+
+/** @param {string} repo */
+export const stateDirFor = (repo) => {
+  const hash = createHash('sha1').update(path.resolve(repo).toLowerCase()).digest('hex').slice(0, 8);
+  const slug = path.basename(repo).replace(/[^\w.-]+/g, '-').slice(0, 24);
+  return path.join(process.env.VARIANTLY_HOME ?? path.join(os.homedir(), '.variantly'), `${slug}-${hash}`);
+};
+
+export class Session extends EventEmitter {
+  /**
+   * @param {{ repo: string, maxLive?: number, local?: import('./proxy.mjs').ProxyOptions['local'] }} opts
+   */
+  constructor(opts) {
+    super();
+    this.repo = opts.repo;
+    this.dir = stateDirFor(opts.repo);
+    /** @type {State} */
+    this.state = { version: 1, phase: 'setup', runId: '', base: '', config: null, variants: [], chosen: null, result: null };
+    /** @type {Map<number, { child?: import('node:child_process').ChildProcess, log: LineBuffer, cancelled?: boolean }>} */
+    this.runs = new Map();
+    this.pool = new ServerPool({
+      inject: (id) => frameScriptTag(id),
+      local: opts.local,
+      maxLive: opts.maxLive ?? 3,
+    });
+    this.pool.on('state', (s) => this.emit('server', s));
+    this.pool.on('log', (id, lines) => lines.length && this.emit('log', { target: id, lines }));
+  }
+
+  async load() {
+    try {
+      const saved = JSON.parse(await readFile(path.join(this.dir, 'state.json'), 'utf8'));
+      if (saved.version === 1) this.state = saved;
+    } catch {}
+    // A run that was interrupted mid-generation can't be resumed: those
+    // agents are gone. Mark what didn't finish so the user can retry it.
+    if (this.state.phase === 'generating') {
+      for (const v of this.state.variants) {
+        if (!['done', 'failed', 'cancelled'].includes(v.status)) {
+          v.status = 'failed';
+          v.error = 'variantly stopped while this variant was being generated.';
+        }
+      }
+      this.state.phase = this.state.variants.some((v) => v.status === 'done') ? 'ready' : 'setup';
+    }
+    if (this.state.config) this.pool.maxLive = this.state.config.maxLive;
+    if (this.state.phase === 'ready' && this.state.config) await this.#registerTargets();
+    return this.state;
+  }
+
+  async save() {
+    await mkdir(this.dir, { recursive: true });
+    await writeFile(path.join(this.dir, 'state.json'), JSON.stringify(this.state, null, 2));
+    this.emit('state', this.snapshot());
+  }
+
+  snapshot() {
+    return {
+      ...this.state,
+      repo: this.repo,
+      servers: this.pool.all(),
+    };
+  }
+
+  /** @param {number} n */
+  worktreeFor(n) {
+    return path.join(this.dir, `v${n}`);
+  }
+
+  /** @param {number} n */
+  branchFor(n) {
+    return `variantly/${this.state.runId}/v${n}`;
+  }
+
+  /** @param {number} n */
+  logFor(n) {
+    return this.runs.get(n)?.log.tail(200) ?? [];
+  }
+
+  /**
+   * Start a new run with this configuration. Previous variants (if any) are
+   * thrown away first: a run is one decision.
+   * @param {Config} config
+   */
+  async generate(config) {
+    if (this.state.phase === 'generating') throw new Error('A run is already in progress.');
+    await this.discard();
+    if (!(await git.hasCommits(this.repo))) {
+      throw new Error('This repository has no commits yet. Commit once so variantly has a base to branch from.');
+    }
+    const count = Math.max(1, Math.min(10, Math.round(config.count)));
+    const directions = config.directions.length >= count ? config.directions.slice(0, count) : defaultDirections(config.approach, count);
+    const snap = await git.snapshotBase(this.repo);
+    this.state = {
+      version: 1,
+      phase: 'generating',
+      runId: new Date().toISOString().replace(/[-:T]/g, '').slice(0, 12),
+      base: snap.base,
+      config: { ...config, count, directions },
+      variants: directions.map((direction, i) => ({ n: i + 1, direction, status: 'queued', summary: '', files: [] })),
+      chosen: null,
+      result: null,
+    };
+    this.pool.maxLive = this.state.config?.maxLive ?? this.pool.maxLive;
+    await this.save();
+    await this.#registerTargets();
+    this.pool.ensure('original').catch(() => {});
+    this.#runQueue().catch((err) => this.emit('error', err));
+    return { untracked: snap.untracked.length, dirty: snap.dirty };
+  }
+
+  async #runQueue() {
+    const config = /** @type {Config} */ (this.state.config);
+    const queue = this.state.variants.filter((v) => v.status === 'queued');
+    const workers = Array.from({ length: Math.max(1, Math.min(config.concurrency, queue.length)) }, async () => {
+      for (let v = queue.shift(); v; v = queue.shift()) await this.#generateOne(v);
+    });
+    await Promise.all(workers);
+    if (this.state.phase === 'generating') {
+      this.state.phase = this.state.variants.some((v) => v.status === 'done') ? 'ready' : 'setup';
+      await this.save();
+    }
+  }
+
+  /** @param {number} n */
+  async retry(n) {
+    const v = this.state.variants.find((x) => x.n === n);
+    if (!v || this.state.phase === 'finalized') return;
+    v.status = 'queued';
+    v.error = undefined;
+    v.summary = '';
+    v.files = [];
+    const wasIdle = this.state.phase !== 'generating';
+    this.state.phase = 'generating';
+    await this.save();
+    if (wasIdle) this.#runQueue().catch((err) => this.emit('error', err));
+  }
+
+  /** @param {number} n */
+  async cancel(n) {
+    const run = this.runs.get(n);
+    const v = this.state.variants.find((x) => x.n === n);
+    if (!v || ['done', 'failed', 'cancelled'].includes(v.status)) return;
+    if (run) {
+      run.cancelled = true;
+      if (run.child) await killTree(run.child);
+    }
+    v.status = 'cancelled';
+    await this.save();
+  }
+
+  /** @param {Variant} v */
+  async #generateOne(v) {
+    const config = /** @type {Config} */ (this.state.config);
+    const adapter = adapterById(config.stackId);
+    const agent = agentById(config.agent);
+    const log = new LineBuffer(2000);
+    /** @type {{ child?: import('node:child_process').ChildProcess, log: LineBuffer, cancelled?: boolean, costUsd?: number }} */
+    const run = { log };
+    this.runs.set(v.n, run);
+    const say = (/** @type {string} */ line) => {
+      log.push(line + '\n');
+      this.emit('log', { target: `v${v.n}`, lines: [line] });
+    };
+    const update = async (/** @type {Partial<Variant>} */ patch) => {
+      Object.assign(v, patch);
+      await this.save();
+    };
+
+    try {
+      if (!agent) throw new Error(`Unknown agent "${config.agent}".`);
+      await update({ status: 'preparing', startedAt: Date.now() });
+      const wt = this.worktreeFor(v.n);
+      say(`Creating worktree ${wt}`);
+      await git.addWorktree(this.repo, wt, this.branchFor(v.n), this.state.base);
+      const placed = await this.#prepareWorktree(wt, config, adapter, say);
+      if (run.cancelled) return;
+
+      const briefPath = path.join(this.dir, 'briefs', `v${v.n}.md`);
+      await mkdir(path.dirname(briefPath), { recursive: true });
+      const appDir = path.join(wt, config.appRel);
+      await writeFile(
+        briefPath,
+        writeBrief({
+          variant: v.n,
+          count: config.count,
+          approach: config.approach,
+          direction: v.direction,
+          brief: config.brief,
+          routes: config.routes,
+          appRel: config.appRel,
+          stackName: adapter.name,
+          stackId: adapter.id,
+          styles: adapter.styles,
+          hasProduct: existsSync(path.join(appDir, 'PRODUCT.md')) || existsSync(path.join(wt, 'PRODUCT.md')),
+          hasDesign: existsSync(path.join(appDir, 'DESIGN.md')) || existsSync(path.join(wt, 'DESIGN.md')),
+        }),
+      );
+
+      await update({ status: 'running' });
+      const inv = agent.invocation({ cwd: wt, briefPath, model: config.model || undefined, permissions: config.permissions });
+      say(`$ ${agent.bin} ${inv.args.map((a) => (/\s/.test(a) ? JSON.stringify(a) : a)).join(' ')}`);
+      const output = await this.#runAgent(run, inv, wt, config.agentTimeoutMin, say);
+      if (run.cancelled) return;
+
+      await update({ status: 'committing' });
+      const exclude = placed.map((p) => path.posix.join(config.appRel.replace(/\\/g, '/'), p));
+      const files = await git.commitAll(wt, `variantly: variant ${v.n} (${v.direction})`, exclude);
+      if (!files.length) throw new Error('The agent finished without changing any files.');
+      say(`Committed ${files.length} changed file${files.length === 1 ? '' : 's'}.`);
+      await update({ status: 'done', files, summary: extractSummary(output), finishedAt: Date.now(), costUsd: run.costUsd });
+      // Warm the first finished variant so there is something to compare.
+      if (this.state.variants.filter((x) => x.status === 'done').length === 1) {
+        this.pool.ensure(`v${v.n}`).catch(() => {});
+      }
+    } catch (err) {
+      if (run.cancelled) return;
+      const message = err instanceof Error ? err.message : String(err);
+      say(`Failed: ${message}`);
+      await update({ status: 'failed', error: message.split('\n').slice(0, 8).join('\n'), finishedAt: Date.now() });
+    } finally {
+      run.child = undefined;
+    }
+  }
+
+  /**
+   * Give a fresh worktree what it needs to run that git doesn't carry.
+   * @param {string} wt
+   * @param {Config} config
+   * @param {import('./stacks.mjs').StackAdapter} adapter
+   * @param {(line: string) => void} say
+   * @returns {Promise<string[]>} paths placed under the app root
+   */
+  async #prepareWorktree(wt, config, adapter, say) {
+    const appSrc = path.join(this.repo, config.appRel);
+    const appDst = path.join(wt, config.appRel);
+    const install = config.deps === 'install';
+    const link = install ? adapter.link.filter((p) => p !== 'node_modules') : adapter.link;
+    const placed = await git.placeShared(appSrc, appDst, { link, copy: adapter.copy });
+    if (config.appRel && !install) {
+      // Workspaces hoist dependencies to the repository root.
+      await git.placeShared(this.repo, wt, { link: ['node_modules'], copy: [] });
+    }
+    // Agent skills and Impeccable's project context are often untracked.
+    for (const rel of ['.claude/skills', '.agents/skills', '.codex/skills', '.github/skills', '.impeccable', 'PRODUCT.md', 'DESIGN.md']) {
+      const src = path.join(this.repo, rel);
+      const dst = path.join(wt, rel);
+      if (existsSync(src) && !existsSync(dst)) {
+        await cp(src, dst, { recursive: true });
+        placed.push(path.posix.relative(config.appRel.replace(/\\/g, '/') || '.', rel));
+      }
+    }
+    if (placed.length) say(`Linked or copied: ${placed.join(', ')}`);
+    if (install) {
+      const pm = packageRunner(appSrc, this.repo);
+      say(`$ ${pm.install}`);
+      await runOk(pm.install.split(' ')[0], pm.install.split(' ').slice(1), { cwd: appDst, timeout: 600_000 });
+    }
+    return placed;
+  }
+
+  /**
+   * @param {{ child?: import('node:child_process').ChildProcess, cancelled?: boolean, costUsd?: number }} run
+   * @param {import('./agents.mjs').AgentRun} inv
+   * @param {string} cwd
+   * @param {number} timeoutMin
+   * @param {(line: string) => void} say
+   * @returns {Promise<string>} the agent's final text
+   */
+  #runAgent(run, inv, cwd, timeoutMin, say) {
+    return new Promise((resolve, reject) => {
+      const child = spawnArgs(inv.file, inv.args, { cwd, env: { ...process.env, ...inv.env } });
+      run.child = child;
+      child.stdin?.end();
+      let text = '';
+      let partial = '';
+      const onLine = (/** @type {string} */ line) => {
+        if (!line.trim()) return;
+        if (inv.output === 'claude-stream') {
+          const event = parseJson(line);
+          if (!event) return say(line);
+          for (const msg of describeClaudeEvent(event)) say(msg);
+          if (event.type === 'result' && typeof event.result === 'string') text += '\n' + event.result;
+          if (event.type === 'result' && typeof event.total_cost_usd === 'number') run.costUsd = event.total_cost_usd;
+          if (event.type === 'assistant') {
+            for (const block of event.message?.content ?? []) if (block.type === 'text') text += '\n' + block.text;
+          }
+        } else {
+          text += line + '\n';
+          say(line);
+        }
+      };
+      const onData = (/** @type {Buffer} */ chunk) => {
+        const parts = (partial + chunk.toString()).split(/\r?\n/);
+        partial = parts.pop() ?? '';
+        parts.forEach(onLine);
+      };
+      child.stdout?.on('data', onData);
+      child.stderr?.on('data', (d) => String(d).split(/\r?\n/).filter(Boolean).forEach((l) => say(l)));
+      const timer = setTimeout(() => {
+        say(`Timed out after ${timeoutMin} minutes.`);
+        killTree(child);
+      }, timeoutMin * 60_000);
+      child.on('error', (err) => {
+        clearTimeout(timer);
+        reject(new Error(`Could not start ${inv.file}: ${err.message}`));
+      });
+      child.on('exit', (code) => {
+        clearTimeout(timer);
+        if (partial) onLine(partial);
+        if (run.cancelled) return resolve(text);
+        if (code === 0) resolve(text);
+        else reject(new Error(`The agent exited with code ${code}.`));
+      });
+    });
+  }
+
+  /** Register the original and every finished variant with the server pool. */
+  async #registerTargets() {
+    const config = /** @type {Config} */ (this.state.config);
+    const adapter = adapterById(config.stackId);
+    const values = (/** @type {string} */ appDir) => ({
+      run: packageRunner(path.join(this.repo, config.appRel), this.repo).run,
+      python: pythonFor(path.join(this.repo, config.appRel)),
+      node: JSON.stringify(process.execPath),
+      variantly: VARIANTLY_ROOT,
+      app: appDir,
+    });
+    const common = {
+      bootTimeout: adapter.bootTimeout ?? 120_000,
+      fixedPort: adapter.fixedPorts,
+      defaultPort: adapter.defaultPort,
+    };
+    const originalDir = path.join(this.repo, config.appRel);
+    await this.pool.add({
+      id: 'original',
+      cwd: originalDir,
+      command: fill(config.command, values(originalDir)),
+      external: config.originalUrl || undefined,
+      ...common,
+    });
+    for (const v of this.state.variants) {
+      const appDir = path.join(this.worktreeFor(v.n), config.appRel);
+      await this.pool.add({
+        id: `v${v.n}`,
+        cwd: appDir,
+        command: fill(config.command, values(appDir)),
+        env: { CARGO_TARGET_DIR: path.join(this.dir, 'cargo', `v${v.n}`) },
+        ...common,
+      });
+    }
+    this.emit('state', this.snapshot());
+  }
+
+  /**
+   * Keep variant n: apply its changes to the user's working tree, then
+   * tear everything else down. Variant branches are kept so nothing is lost.
+   * @param {number} n
+   */
+  async finalize(n) {
+    const v = this.state.variants.find((x) => x.n === n);
+    if (!v || v.status !== 'done') throw new Error(`Variant ${n} isn't finished.`);
+    if (this.state.phase === 'generating') {
+      for (const other of this.state.variants) await this.cancel(other.n);
+    }
+    await this.pool.closeAll();
+    const result = await git.applyBranch(this.repo, this.state.base, this.branchFor(n));
+    const depsChanged = result.files.some((f) => /(^|\/)(package\.json|package-lock\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lockb?|composer\.(json|lock)|Gemfile(\.lock)?|go\.(mod|sum)|Cargo\.(toml|lock)|requirements.*\.txt|pyproject\.toml)$/.test(f));
+    // The change is already applied: a worktree Windows won't release yet is
+    // left for `variantly clean` rather than failing the keep.
+    for (const other of this.state.variants) {
+      await git.removeWorktree(this.repo, this.worktreeFor(other.n)).catch(() => {});
+    }
+    this.state.phase = 'finalized';
+    this.state.chosen = n;
+    this.state.result = { files: result.files, conflicts: result.conflicts, depsChanged };
+    await this.save();
+    return this.state.result;
+  }
+
+  /**
+   * Throw away the current run: servers, worktrees, branches, state. After a
+   * variant was kept, the run's branches stay (they are the record of what
+   * the other variants were) until `variantly clean`.
+   */
+  async discard() {
+    const keepBranches = this.state.phase === 'finalized';
+    for (const v of this.state.variants) await this.cancel(v.n);
+    await this.pool.closeAll();
+    /** @type {string[]} */
+    const leftovers = [];
+    for (const v of this.state.variants) {
+      await git.removeWorktree(this.repo, this.worktreeFor(v.n)).catch(() => leftovers.push(this.worktreeFor(v.n)));
+    }
+    if (leftovers.length) {
+      this.emit('error', new Error(`Could not remove ${leftovers.join(', ')} yet; \`variantly clean\` will.`));
+    }
+    if (this.state.runId && !keepBranches) await git.deleteBranches(this.repo, `variantly/${this.state.runId}/`);
+    this.runs.clear();
+    const config = this.state.config;
+    this.state = { version: 1, phase: 'setup', runId: '', base: '', config, variants: [], chosen: null, result: null };
+    await rm(path.join(this.dir, 'briefs'), { recursive: true, force: true });
+    await rm(path.join(this.dir, 'cargo'), { recursive: true, force: true });
+    await this.save();
+  }
+
+  async close() {
+    for (const [, run] of this.runs) if (run.child) await killTree(run.child);
+    await this.pool.closeAll();
+  }
+}
+
+/** @param {string} id */
+const frameScriptTag = (id) => `<script src="/__variantly/frame.js" data-variantly="${id}" defer></script>`;
+
+/** @param {string} line */
+const parseJson = (line) => {
+  try {
+    return JSON.parse(line);
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Turn Claude Code's stream-json events into short human log lines.
+ * @param {any} event
+ * @returns {string[]}
+ */
+const describeClaudeEvent = (event) => {
+  if (event.type === 'system' && event.subtype === 'init') return [`Claude Code session started (${event.model ?? 'default model'})`];
+  if (event.type === 'assistant') {
+    /** @type {string[]} */
+    const out = [];
+    for (const block of event.message?.content ?? []) {
+      if (block.type === 'text' && block.text.trim()) out.push(block.text.trim());
+      if (block.type === 'tool_use') {
+        const input = block.input ?? {};
+        const target = input.file_path ?? input.path ?? input.pattern ?? input.command ?? input.skill ?? '';
+        out.push(`→ ${block.name}${target ? ` ${String(target).slice(0, 140)}` : ''}`);
+      }
+    }
+    return out;
+  }
+  if (event.type === 'result') {
+    const cost = typeof event.total_cost_usd === 'number' ? `, $${event.total_cost_usd.toFixed(2)}` : '';
+    return [`Finished in ${Math.round((event.duration_ms ?? 0) / 1000)}s${cost}`];
+  }
+  return [];
+};
