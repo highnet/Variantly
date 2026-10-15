@@ -15,7 +15,7 @@ import { Icon, Mark } from './Icon';
 import { ProgressCard } from './Progress';
 import { api } from '@/lib/api';
 import { fetchLog } from '@/lib/live';
-import { STATUS, directionLabel, isPickable, pad, plural, scoreText, vname, vsBase } from '@/lib/format';
+import { LIVE, STATUS, directionLabel, isPickable, pad, plural, scoreText, vname, vsBase } from '@/lib/format';
 import { getState, seen, serverOf, setState, toast, useStore, type UiState } from '@/lib/store';
 import type { Audit, ServerState, Variant } from '@/lib/types';
 
@@ -342,7 +342,8 @@ const useJustDone = (v: Variant | undefined) => {
   useEffect(() => {
     const was = prev.current;
     prev.current = v ? `${v.n}:${v.status}` : undefined;
-    if (v && was === `${v.n}:running` && v.status === 'done') {
+    // Any live status (running, reviewing, committing) straight to done.
+    if (v && was?.startsWith(`${v.n}:`) && LIVE.includes(was.split(':')[1] as Variant['status']) && v.status === 'done') {
       setHold(v.n);
       const t = setTimeout(() => setHold(null), 1600);
       return () => clearTimeout(t);
