@@ -9,7 +9,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { agentById, binCandidates, isKnownShim, probeAgent, versionFrom } from '../src/agents.mjs';
 import { createParser, unavailableReason } from '../src/agent-output.mjs';
-import { runOk } from '../src/proc.mjs';
+import { runOk, which } from '../src/proc.mjs';
 import { detectProject, normalizeConfig } from '../src/server.mjs';
 import { Session } from '../src/session.mjs';
 
@@ -80,7 +80,10 @@ test('a run with the launcher fails once with its message and starts nothing els
 
   const saved = { PATH: process.env.PATH, APPDATA: process.env.APPDATA, HOME: process.env.VARIANTLY_HOME };
   // The shim first, then the rest of PATH (git, node), but no real copilot.
-  process.env.PATH = [shimDir, saved.PATH].join(path.delimiter);
+  // Only node and git besides the shim, so a real Copilot CLI installed on
+  // the machine can't be found.
+  const gitDir = path.dirname(/** @type {string} */ (which('git')));
+  process.env.PATH = [shimDir, path.dirname(process.execPath), gitDir, ...(win ? [path.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32')] : ['/usr/bin', '/bin'])].join(path.delimiter);
   process.env.APPDATA = path.join(tmp, 'appdata');
   process.env.VARIANTLY_HOME = path.join(tmp, 'home');
   const session = new Session({ repo });
