@@ -158,3 +158,33 @@ test('local handler answers variantly paths without upstream', async (t) => {
   t.after(() => proxy.close());
   assert.equal(await (await fetch(`http://127.0.0.1:${proxy.port}/__variantly/frame.js`)).text(), 'frame');
 });
+
+test('makes absolute URLs to the dev server relative, even split across chunks', async (t) => {
+  /** @type {string} */
+  let page = '';
+  const up = await upstream((req, res) => {
+    res.writeHead(200, { 'content-type': 'text/html' });
+    const cut = Number(new URL(req.url ?? '/', 'http://x').searchParams.get('cut'));
+    // Flush the two halves separately so the URL straddles a chunk edge.
+    res.write(page.slice(0, cut));
+    setTimeout(() => res.end(page.slice(cut)), 5);
+  });
+  const port = new URL(up.url).port;
+  page =
+    `<!doctype html><html><head><link rel="stylesheet" href="http://127.0.0.1:${port}/static/css/main.css"></head>` +
+    `<body><a href="http://localhost:${port}">home</a><a href="http://127.0.0.1:${port}0/x">other port</a>` +
+    `<img src="//[::1]:${port}/logo.png"></body></html>`;
+  const want =
+    `<!doctype html><html><head>${INJECT}<link rel="stylesheet" href="/static/css/main.css"></head>` +
+    `<body><a href="/">home</a><a href="http://127.0.0.1:${port}0/x">other port</a>` +
+    `<img src="/logo.png"></body></html>`;
+  const proxy = await createProxy({ target: up.url, inject: INJECT });
+  t.after(async () => {
+    await proxy.close();
+    up.server.close();
+  });
+  for (let cut = 1; cut < page.length; cut += 1) {
+    const body = await (await fetch(`http://127.0.0.1:${proxy.port}/?cut=${cut}`)).text();
+    assert.equal(body, want, `split at ${cut}`);
+  }
+});
