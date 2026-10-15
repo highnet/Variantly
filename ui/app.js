@@ -46,6 +46,10 @@ const icon = (name) => {
     refresh: ['M20 11a8 8 0 1 0-2.3 5.7', 'M20 5v6h-6'],
     desktop: ['M3 4h18v12H3z', 'M8 20h8', 'M12 16v4'],
     mobile: ['M7 3h10v18H7z', 'M11 18h2'],
+    check: ['M5 12.5l4.5 4.5L19 7.5'],
+    alert: ['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', 'M12 7.5v5.5', 'M12 16.2v.3'],
+    copy: ['M9 9h11v11H9z', 'M5 15H4V4h11v1'],
+    handoff: ['M4 12h11', 'M11 6l6 6-6 6', 'M20 4v16'],
   };
   return h(
     'svg',
@@ -79,14 +83,27 @@ const api = async (method, route, body) => {
   return data;
 };
 
-let toastTimer = 0;
-const toast = (message, bad = false) => {
-  const el = $('#toast');
-  el.textContent = message;
-  el.classList.toggle('bad', bad);
-  el.hidden = false;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => (el.hidden = true), bad ? 7000 : 3500);
+/*
+ * Toasts stack bottom right, pop in with an icon, show the time they have
+ * left and can be dismissed. toast(message, bad) keeps its old shape;
+ * pass { title } to put a headline above the message.
+ */
+const toast = (message, bad = false, opts = {}) => {
+  const stack = $('#toasts');
+  const life = opts.life ?? (bad ? 7000 : 3500);
+  const item = h('li', { class: `toast${bad ? ' bad' : ''}` }, [
+    h('span', { class: 'toast-icon' }, icon(bad ? 'alert' : opts.icon ?? 'check')),
+    h('span', { class: 'toast-text' }, [opts.title ? h('strong', {}, opts.title) : null, h('span', {}, message)]),
+    h('button', { class: 'toast-close', type: 'button', 'aria-label': 'Dismiss', onClick: () => leave() }, icon('close')),
+    h('span', { class: 'toast-life', style: { animationDuration: `${life}ms` } }),
+  ]);
+  const leave = () => {
+    item.classList.add('leaving');
+    setTimeout(() => item.remove(), 220);
+  };
+  item.querySelector('.toast-life').addEventListener('animationend', leave);
+  while (stack.children.length > 2) stack.firstElementChild.remove();
+  stack.append(item);
 };
 
 // State -------------------------------------------------------------------
@@ -879,6 +896,77 @@ const installImpeccable = async (agent) => {
   }
 };
 
+// Handoff -------------------------------------------------------------------
+
+/*
+ * A prompt that moves this run into the person's own agent session, with
+ * everything that agent needs to pick it up without the web UI. The run is
+ * not touched: copying only reads the snapshot.
+ */
+const handoffPrompt = () => {
+  const snap = S.snap;
+  const c = snap.config ?? {};
+  const place = (n) => snap.places?.find((p) => p.n === n) ?? {};
+  const rows = snap.variants.map((v) => {
+    const p = place(v.n);
+    const step = typeof v.step === 'number' ? STEPS[v.step] ?? '' : '';
+    return `| ${v.n} | ${v.picked || v.direction || 'Impeccable picks'} | ${v.status}${step && v.status === 'running' ? ` (${step})` : ''} | \`${p.worktree ?? '?'}\` | \`${p.branch ?? '?'}\` |`;
+  });
+  const problems = snap.variants.filter((v) => v.error).map((v) => `- V${pad(v.n)}: ${v.error}`);
+  const done = snap.variants.filter((v) => v.status === 'done').map((v) => v.n);
+  return [
+    '# Handoff: a variantly run, to continue here',
+    '',
+    `I started a variantly run on \`${snap.repo}\` and want to follow it from this session instead of the variantly web page. **The run is still going in the background. Do not stop, restart or re-run it** unless I ask.`,
+    '',
+    '## The run',
+    '',
+    `- Project: \`${snap.repo}\`${c.appRel ? ` (app in \`${c.appRel}/\`)` : ''}`,
+    `- Agent: ${c.agent ?? '?'} · ${snap.variants.length} variants · phase: **${snap.phase}**`,
+    `- Base commit: \`${snap.base}\` (every variant branches from it)`,
+    `- variantly's state folder: \`${snap.stateDir}\` (\`state.json\` there is the source of truth)`,
+    c.brief ? `- What I asked for: ${c.brief}` : null,
+    c.routes?.length ? `- Pages in scope: ${c.routes.join(', ')}` : null,
+    '',
+    '## Variants',
+    '',
+    '| # | Direction | Status | Worktree | Branch |',
+    '| - | --------- | ------ | -------- | ------ |',
+    ...rows,
+    '',
+    `Each variant's brief, the exact instructions its agent got, is at \`${snap.stateDir}/briefs/v<n>.md\`.`,
+    problems.length ? ['', '## Problems so far', '', ...problems].join('\n') : null,
+    '',
+    '## What to do',
+    '',
+    '1. Read the briefs so you know what each variant was asked to do.',
+    `2. From \`${snap.repo}\`, follow progress with \`npx variantly status\` (it only reads a file, so it is cheap). Check every minute or two until the phase is \`ready\`; tell me as each variant finishes.`,
+    `3. For each finished variant${done.length ? ` (so far: ${done.map((n) => `V${pad(n)}`).join(', ')})` : ''}, summarise it for me: the look in one line, then \`git diff --stat ${snap.base}..<branch>\` and the two or three files that changed most. Keep it short so I can compare.`,
+    '4. If a variant failed, explain why from its error and offer to finish it by hand in its worktree, following its brief. Ask me first.',
+    '5. When I name the one to keep, run `npx variantly keep <n>`. That applies it to my working tree and cleans up the rest. Nothing reaches my files before that.',
+    '',
+    '## Rules',
+    '',
+    "- Don't commit, push, rebase or delete branches: variantly owns the `variantly/…` branches and worktrees.",
+    "- Don't edit my main working tree until I have chosen a variant.",
+    "- Don't start, stop or restart variantly's dev servers or its background process.",
+    '- Ask before installing anything.',
+    '',
+    'Start by confirming what you see in `npx variantly status`, in a few lines.',
+  ]
+    .filter((x) => x !== null)
+    .join('\n');
+};
+
+const copyHandoff = async () => {
+  try {
+    await navigator.clipboard.writeText(handoffPrompt());
+    toast('Paste it into your agent. This run keeps going here.', false, { title: 'Handoff prompt copied', icon: 'copy' });
+  } catch (err) {
+    toast(`Couldn't copy the handoff prompt: ${err.message}`, true);
+  }
+};
+
 // Board ---------------------------------------------------------------------
 
 const mountBoardView = (main) => {
@@ -888,6 +976,7 @@ const mountBoardView = (main) => {
         h('header', { class: 'board-head' }, [
           h('div', { style: { display: 'grid', gap: '6px' } }, [h('h1', { id: 'board-title', class: 'figure' }), h('div', { class: 'label readout', id: 'board-meta' })]),
           h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } }, [
+            h('button', { class: 'btn outline', type: 'button', id: 'handoff', onClick: copyHandoff, title: 'Copy a prompt that hands this run to the AI assistant in your terminal. The run keeps going.' }, icon('handoff'), 'Hand off'),
             h('button', { class: 'btn outline', type: 'button', id: 'discard', onClick: discard }, 'Discard run'),
             h('button', { class: 'btn primary', type: 'button', id: 'to-compare', onClick: () => goCompare() }, 'Compare', icon('arrow')),
           ]),
