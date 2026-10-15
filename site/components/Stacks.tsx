@@ -14,11 +14,11 @@ const Stacks = () => (
     <div className="grid content-start gap-5">
       <div className="grid gap-2">
         <Typography variant="headline" as="h2" id="stacks-title">
-          Runs on your stack
+          Works with the site you have
         </Typography>
         <Typography variant="body" color="steel">
-          variantly runs your project&apos;s own dev server once per variant, behind a local preview
-          proxy, so anything with a dev server works, hot reload or not.
+          If your site runs on your computer with a start command, variantly can redesign it. These
+          are the setups it recognises on its own; anything else works with one extra answer.
         </Typography>
       </div>
       <ul className="rounded-pass border-rule bg-rule m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-px overflow-hidden border p-0">
@@ -37,11 +37,11 @@ const Stacks = () => (
     <div className="grid content-start gap-5">
       <div className="grid gap-2">
         <Typography variant="headline" as="h2">
-          Your agent, your bill
+          Uses the AI assistant you already have
         </Typography>
         <Typography variant="body" color="steel">
-          variantly has no model and no account. Each variant is one session of the agent you
-          already use, signed in as you.
+          There is no variantly account and nothing to pay us. Each design is one session of your
+          own assistant, on your own plan.
         </Typography>
       </div>
       <ul className="m-0 grid list-none gap-2 p-0">

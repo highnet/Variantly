@@ -25,9 +25,9 @@ const HowItWorks = () => (
           <Typography variant="small" color="steel">
             {s.body}
           </Typography>
-          <code className="bg-panel condensed rounded-keycap mt-2 w-max max-w-full truncate px-2 py-1 font-mono text-[13px]">
+          <span className="bg-panel condensed rounded-keycap mt-2 w-max max-w-full truncate px-2 py-1 font-mono text-[13px]">
             {s.artifact}
-          </code>
+          </span>
         </li>
       ))}
     </ol>

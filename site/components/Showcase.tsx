@@ -215,6 +215,20 @@ const Showcase = () => {
         >
           Your website needs a fresh look
         </Typography>
+        <Typography variant="lead" color="steel" className="max-w-[62ch]">
+          variantly asks the AI coding assistant you already use to redesign your site several
+          different ways. You click through each one as a working site, keep your favourite, and
+          your current site stays untouched until you do.
+        </Typography>
+        <div data-keep-cycle className="grid max-w-xl gap-2">
+          <CommandCopy command={INSTALL} accent />
+          <Typography variant="small" color="steel">
+            Paste it into a terminal opened in your website&apos;s folder.{' '}
+            <a href="#install-title" className="text-ink underline">
+              What you need first
+            </a>
+          </Typography>
+        </div>
         <ul className="border-rule m-0 grid list-none grid-cols-2 border-y p-0 md:grid-cols-4">
           {SELLING_POINTS.map((point) => (
             <li key={point} className="py-3 pr-4 text-[15px] leading-snug font-semibold md:py-4">
@@ -274,7 +288,7 @@ const Showcase = () => {
 
             <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex justify-between gap-3">
               <Typography variant="tag" className="bg-ink text-surface rounded-flap px-2 py-1.5">
-                Before<span className="hidden sm:inline"> · the original</span>
+                Before<span className="hidden sm:inline"> · today’s site</span>
               </Typography>
               <Typography variant="tag" className="bg-ink text-surface rounded-flap px-2 py-1.5">
                 {vname(selected)} · {current.direction}
@@ -346,15 +360,12 @@ const Showcase = () => {
                 Read the brief
               </a>
             </p>
-            <div data-keep-cycle className="w-full sm:w-auto">
-              <CommandCopy command={INSTALL} tone="slate" accent />
-            </div>
           </div>
         </div>
 
         <Typography variant="caption" color="ink">
-          Six redesigns of a fictional shop, each made by Claude Code with Impeccable from the brief
-          variantly writes. Press 1–6, or drag the line.
+          A real example: six redesigns of a made-up furniture shop. Drag the line to compare before
+          and after, or tap 01–06 to switch designs.
         </Typography>
       </div>
     </section>

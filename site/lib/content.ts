@@ -59,31 +59,51 @@ export const DEMO_VARIANTS: DemoVariant[] = [
   },
 ];
 
-// The promise under the hero, in the owner's words.
+// The promise under the hero, in plain words.
 export const SELLING_POINTS = [
-  'Get dozens of variants in a single day',
-  'Pick the one you like the most',
-  'Works with any stack, any agent',
-  'Try again',
+  'Several complete redesigns from one command',
+  'Click through each one as a working site',
+  'Keep the one you like; nothing changes until you do',
+  'Not quite right? Run it again',
 ];
 
 export const STEPS: { label: string; title: string; body: string; artifact: string }[] = [
   {
-    label: 'You run',
-    title: 'One command in your project',
-    body: 'A short wizard reads your stack, finds your agent and asks what the site is for.',
+    label: 'Step 1',
+    title: 'Paste one command',
+    body: 'Open a terminal in your website’s folder and run it. A short wizard asks what your site is for and how many designs you want.',
     artifact: 'npx variantly',
   },
   {
-    label: 'Your agent makes',
-    title: 'N redesigns at once',
-    body: 'Each variant is its own git worktree and agent session; Impeccable picks a different world for each.',
-    artifact: '~/.variantly/<project>/v1 … vN',
+    label: 'Step 2',
+    title: 'Your AI assistant redesigns it',
+    body: 'The coding assistant you already use (like Claude Code) makes each design in its own copy of your site, so your real files stay untouched.',
+    artifact: 'about 4 designs is a good start',
   },
   {
-    label: 'You keep',
-    title: 'The one you like',
-    body: 'Every variant runs as your real site. Flick between them, keep one, or run it again.',
-    artifact: '1–9 · drag the line · Keep',
+    label: 'Step 3',
+    title: 'Compare and keep one',
+    body: 'A page opens in your browser. Click through the designs, slide between before and after, and press Keep on your favourite.',
+    artifact: 'Keep · or run it again',
+  },
+];
+
+// Plain answers to the questions a first-time visitor asks.
+export const FAQ: { q: string; a: string }[] = [
+  {
+    q: 'Do I need to be a developer?',
+    a: 'You need to be comfortable pasting a command into a terminal. Your AI coding assistant does the design work, and it can set variantly up for you: send it this page.',
+  },
+  {
+    q: 'What does it cost?',
+    a: 'variantly is free and open source. Each design is one session of your own AI assistant, so it uses your plan or credits. Start with four.',
+  },
+  {
+    q: 'Can it break my site?',
+    a: 'No. Every design is made in a separate copy. Nothing in your project changes until you press Keep, and even then the change is left for you to review.',
+  },
+  {
+    q: 'Can I try it without any AI?',
+    a: 'Yes. The demo runs the whole flow with ready-made designs, so you can see how it works first.',
   },
 ];

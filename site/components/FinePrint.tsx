@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { CommandCopy } from '@/components/CommandCopy';
 import { Typography } from '@/components/ui/Typography';
+import { FAQ } from '@/lib/content';
 import { REPO_URL } from '@/lib/site';
 
 /*
@@ -15,34 +16,57 @@ const FinePrint = () => (
         <Typography variant="headline" as="h2" id="install-title">
           Try it on your site
         </Typography>
-        <Typography variant="label" color="steel" as="p">
-          From your project, once
+        <Typography variant="body" color="steel">
+          Open a terminal in your website&apos;s folder and paste:
         </Typography>
         <CommandCopy command="npx variantly" />
-        <Typography variant="label" color="steel" as="p">
-          No agent yet? The whole flow, no AI
+        <Typography variant="body" color="steel">
+          Want to see how it works first, without using any AI?
         </Typography>
         <CommandCopy command="npx variantly --demo" />
-        <Typography variant="label" color="steel" as="p">
-          Or let Claude Code drive it
+        <Typography variant="body" color="steel">
+          Use Claude Code? Let it do the setup:
         </Typography>
         <CommandCopy command="/plugin marketplace add highnet/ProjectHusky" />
         <Typography variant="small" color="steel">
-          <code className="condensed font-mono text-[13px]">npx variantly doctor</code> checks
-          everything.
+          Something not working?{' '}
+          <code className="condensed font-mono text-[13px]">npx variantly doctor</code> checks your
+          setup and tells you what to fix.
         </Typography>
       </div>
       <div className="grid content-start gap-3">
         <Typography variant="title" as="h3">
-          Requirements
+          What you need first
         </Typography>
         <ul className="text-steel m-0 grid list-disc gap-2 pl-5 text-[15px] leading-relaxed">
-          <li>Node 20.11+, git, and at least one commit.</li>
-          <li>A dev command that takes a port ({'{port}'} or a PORT variable).</li>
-          <li>Commit what the site needs: untracked files aren&apos;t copied into variants.</li>
-          <li>Every variant is one full agent session on your account. Start with four.</li>
+          <li>
+            An AI coding assistant on your computer: Claude Code, Codex or GitHub Copilot CLI.
+          </li>
+          <li>
+            Your website&apos;s code on your computer, saved with git (at least one commit), and
+            Node.js 20.11 or newer.
+          </li>
+          <li>
+            A way to start your site locally, like{' '}
+            <code className="condensed font-mono text-[13px]">npm run dev</code>.
+          </li>
+          <li>Files that aren&apos;t committed to git won&apos;t be copied into the designs.</li>
         </ul>
       </div>
+    </div>
+
+    <div className="grid gap-5">
+      <Typography variant="headline" as="h2">
+        Common questions
+      </Typography>
+      <dl className="m-0 grid gap-x-10 gap-y-6 md:grid-cols-2">
+        {FAQ.map((f) => (
+          <div key={f.q} className="grid content-start gap-1.5">
+            <dt className="text-[17px] font-semibold">{f.q}</dt>
+            <dd className="text-steel m-0 text-[15px] leading-relaxed">{f.a}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
 
     <footer className="border-rule text-steel flex flex-wrap items-center justify-between gap-4 border-t pt-6 text-sm">
