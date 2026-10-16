@@ -20,6 +20,22 @@ script.json ──► voice.mjs ──► audio/<scene>.wav + word timings
                                                out/variantly-demo.gif
 ```
 
+## Run it on your machine
+
+```sh
+cd demo
+npm run setup                              # once: dependencies + Chromium
+cp .env.example .env                       # once: ELEVEN_API_KEY, ELEVEN_VOICE_ID
+npx variantly doctor ../examples/tallyboard    # preflight: Claude Code signed in, Impeccable installed
+npm run voice                              # narration in your voice
+npm run record:dry                         # rehearsal: variantly's demo agent, no AI, ~3 min
+npm run record                             # the real take, light theme: Claude Code, 4 variants, 2 at a time
+npm run record -- --reuse --theme dark     # dark take: reopens the finished run, no new generation
+npm run edit -- --theme light && npm run edit -- --theme dark
+npm run probe                              # look at probe/*.png
+node build.mjs all                         # both themes: 16:9, 9:16, silent, poster, GIF
+```
+
 ## What you need
 
 - **Node 22.18+** (SeekReel is TypeScript run directly by Node).
@@ -52,7 +68,7 @@ Or step by step:
 | --- | --- | --- | --- |
 | Voice | `npm run voice` | ~30 s | Only re-reads lines whose text changed. `node voice.mjs hook` forces one. |
 | Rehearse | `npm run record:dry` | ~3 min | variantly's built-in demo agent: no AI, no cost. Checks every click. |
-| Record | `npm run record` | 20–60 min | A real run with Claude Code: **4 designs, real tokens**. |
+| Record | `npm run record` | 20–60 min | A real run with Claude Code: **4 variants, real tokens**. |
 | Edit | `npm run edit` | ~1 min | Cuts the recording, writes captions, cues and configs. |
 | Check | `npm run probe` | ~10 s | Renders 5 frames into `probe/`. Look at them before building. |
 | Build | `npm run build` | ~45 min | 16:9 MP4, silent MP4 and poster. Roughly one second per frame. |
@@ -75,7 +91,7 @@ and the Playwright `actions` that happen while it is spoken:
 | `scroll` | `{ "scroll": 700, "ms": 1800 }` |
 | `drag` | the compare slider: `{ "drag": "role=slider[…]", "to": [20, 80, 50] }` (percentages) |
 | `waitPanes` | wait until both compare panes have loaded |
-| `waitApi` | `{ "waitApi": "allDone" }` waits on `/api/state` until every design is built and scored |
+| `waitApi` | `{ "waitApi": "allDone" }` waits on `/api/state` until every variant is built and scored |
 
 Scene extras: `title` (the opening card), `presenter` (the lower third),
 `terminal` (the typed command card), `timelapse` (sped up to fit its line),
@@ -125,7 +141,7 @@ follows the cursor across the recording.
   change in seconds.
 - **Transitions:** `TRANSITIONS` in `edit.mjs`. Any ffmpeg xfade name works
   (`fade`, `fadeblack`, `wipeleft`, `slideup`, `circleopen`…).
-- **Which design is kept:** `keep` in `script.json`.
+- **Which variant is kept:** `keep` in `script.json`.
 
 ## Between takes
 
