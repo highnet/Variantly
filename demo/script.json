@@ -5,8 +5,10 @@
   "scenes": [
     {
       "id": "hook",
+      "step": "The before",
+      "presenter": { "name": "Joaquin", "role": "Variantly" },
       "title": { "kicker": "variantly", "line": "N redesigns of your site, side by side. Keep one." },
-      "text": "This landing page works. It just looks like every other template. Variantly redesigns your site several ways at once, and you keep the one you like.",
+      "text": "Hi, I'm Joaquin from Variantly. Here's a landing page that works, but looks like every other template. Variantly redesigns it several ways at once, and you keep the one you like.",
       "actions": [
         { "goto": "{{site}}" },
         { "wait": 2200 },
@@ -17,6 +19,7 @@
     },
     {
       "id": "launch",
+      "step": "Launch",
       "terminal": "npx variantly",
       "text": "Run npx variantly in your project. It opens a wizard in your browser, and uses the coding agent you already have. Here, Claude Code.",
       "actions": [
@@ -28,7 +31,8 @@
     },
     {
       "id": "setup",
-      "text": "Setup checks the app, the agent, and the Impeccable design skill.",
+      "step": "Setup",
+      "text": "Setup finds your app, your agent and the Impeccable design skill.",
       "actions": [
         { "wait": 600 },
         { "click": "role=button[name=/^Continue to (variants|designs)$/]", "zoom": true }
@@ -36,6 +40,7 @@
     },
     {
       "id": "designs",
+      "step": "Variants",
       "text": "Choose how many variants to make: two, four or six. We'll take four.",
       "actions": [
         { "wait": 500 },
@@ -46,6 +51,7 @@
     },
     {
       "id": "brief",
+      "step": "Your site",
       "text": "Say who the site is for, what it offers, and what must stay. Here: the prices, the sign-up button and the FAQ.",
       "actions": [
         { "fill": "role=textbox[name=/Who is it for/]", "text": "Small agencies and studios who bill clients by the hour." },
@@ -56,6 +62,7 @@
     },
     {
       "id": "review",
+      "step": "Review",
       "text": "Review the brief, and make the variants. Nothing in your project changes yet.",
       "actions": [
         { "wait": 1200 },
@@ -64,6 +71,7 @@
     },
     {
       "id": "generate",
+      "step": "Generation",
       "timelapse": true,
       "text": "Each variant gets its own git worktree and its own dev server. Your agent works headless, two at a time, checks its work in a real browser, and every result is scored with axe-core and Lighthouse.",
       "actions": [
@@ -76,6 +84,7 @@
     },
     {
       "id": "compare",
+      "step": "Compare",
       "text": "Then compare, on your real site. Drag the divider for a before and after.",
       "actions": [
         { "waitFor": "body[data-view=\"compare\"]" },
@@ -86,6 +95,7 @@
     },
     {
       "id": "switch",
+      "step": "Directions",
       "text": "Every direction was designed from scratch for this site. Switch between them in one click.",
       "actions": [
         { "click": "role=button[name=/^V02/]", "sound": "pop" },
@@ -101,6 +111,7 @@
     },
     {
       "id": "scores",
+      "step": "Scores",
       "text": "Accessibility, performance, best practices and SEO, each measured against the original.",
       "actions": [
         { "click": "role=button[name=/^V0{{keep}}/]", "sound": "pop" },
@@ -112,6 +123,7 @@
     },
     {
       "id": "keep",
+      "step": "Keep",
       "text": "Keep the one you like. It's applied to your working tree with a three-way merge. The others stay as branches.",
       "actions": [
         { "click": "role=button[name=/^Keep V0/]", "zoom": true },
@@ -121,8 +133,9 @@
     },
     {
       "id": "outro",
+      "step": "Try it",
       "cta": { "command": "npx variantly", "url": "variantly.style" },
-      "text": "Variantly. It runs on your machine, with your own agent. Try it with npx variantly.",
+      "text": "Variantly. Light or dark, it runs on your machine, with your own agent. Try it with npx variantly.",
       "actions": [{ "wait": 500 }]
     }
   ]

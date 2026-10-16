@@ -191,7 +191,7 @@ class Director {
   }
 
   fill(text, theme = 'light') {
-    return String(text).replace(/\{\{(\w+)\}\}/g, (_, k) => (k === 'app' ? `${this.vars.app}/?theme=${theme}` : this.vars[k] ?? ''));
+    return String(text).replace(/\{\{(\w+)\}\}/g, (_, k) => (k === 'app' ? `${this.vars.app}/?theme=${theme}&recording=1` : this.vars[k] ?? ''));
   }
 
   async showCursor() {
@@ -312,11 +312,12 @@ class Director {
     await this.all(async (page) => {
       await page.waitForFunction(
         () =>
-          document.querySelectorAll('.compare .pane').length > 0 &&
+          document.querySelector('.compare[data-panes-ready="true"]') ||
+          (document.querySelectorAll('.compare .pane').length > 0 &&
           [...document.querySelectorAll('.compare .pane')].every((pane) => {
             const wait = pane.querySelector('.pane-wait');
             return !wait || wait.hidden || getComputedStyle(wait).display === 'none';
-          }),
+          })),
         null,
         { timeout: 120_000 },
       );
