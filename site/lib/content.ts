@@ -114,7 +114,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Can it break my site?',
-    a: 'No. Designs are made in **separate copies**. **Nothing changes** until you press Keep, and then it’s left **for you to review**.',
+    a: 'No. Designs are made in **separate copies**. When you press Keep, the change is left **for you to review**.',
   },
   {
     q: 'What if I don’t like any of them?',
