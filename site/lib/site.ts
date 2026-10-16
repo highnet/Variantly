@@ -10,5 +10,6 @@ export const DEMO = 'npx variantly --demo';
 export const DEMO_VIDEO_ID = '';
 
 // Booking page (Cal.com, Calendly, Google Calendar appointment schedule…) for
-// "Book a live demo". Empty hides the button; set it and the button appears.
-export const DEMO_BOOKING_URL = process.env.NEXT_PUBLIC_DEMO_BOOKING_URL ?? '';
+// "Book a live demo", shown with the demo video. Empty hides the button.
+export const DEMO_BOOKING_URL =
+  process.env.NEXT_PUBLIC_DEMO_BOOKING_URL ?? 'https://calendly.com/joaquintelleria/30min';
