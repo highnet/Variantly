@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.0](https://github.com/highnet/Variantly/compare/variantly-v0.2.0...variantly-v0.3.0) (2026-10-16)
+
+
+### Features
+
+* **site:** package manager picker, Node hint, wrap long commands ([8a632a7](https://github.com/highnet/Variantly/commit/8a632a7463222a63346a3c195c5c8061af0a040c))
+* **site:** package manager picker, Node hint, wrap long commands ([7acdcaf](https://github.com/highnet/Variantly/commit/7acdcaf0be76b14f65eb7c3a451acfcf3d654310))
+* **ui-next:** add dark theme, theme toggle and reading aids ([#63](https://github.com/highnet/Variantly/issues/63)) ([c7b70fc](https://github.com/highnet/Variantly/commit/c7b70fc64c2bb6dd3cf1a13d367fab34f3798e56))
+
+
+### Bug Fixes
+
+* **checks:** retry an audit once when npx hands back a half-installed package ([57dc5a4](https://github.com/highnet/Variantly/commit/57dc5a4742cad612ee2848a45b0958a57ab3bbc4))
+* issues found in a live end-to-end run ([#59](https://github.com/highnet/Variantly/issues/59)) ([922beb7](https://github.com/highnet/Variantly/commit/922beb706a6c37ee6d94f55304e1f08dda3d5c64))
+* pre-demo review fixes across CLI, UI, site and docs ([#56](https://github.com/highnet/Variantly/issues/56)) ([5446030](https://github.com/highnet/Variantly/commit/544603051e583c4a835b2d318de2d4a62f60ade3))
+* say variant, not design, for generated variants ([#60](https://github.com/highnet/Variantly/issues/60)) ([779ba43](https://github.com/highnet/Variantly/commit/779ba4364c0d1e5421ff5bc2277915be720d5ea4))
+* track copilot's spend as premium requests ([6827531](https://github.com/highnet/Variantly/commit/6827531f8e6d8e05d2034fd0ff33a3c7faf3f464))
+* track copilot's spend as premium requests ([2fbe781](https://github.com/highnet/Variantly/commit/2fbe7813906fb69e331ec58b81935aad4ae3aa32))
+* wait for queued state writes when a session closes ([#62](https://github.com/highnet/Variantly/issues/62)) ([3f1a62c](https://github.com/highnet/Variantly/commit/3f1a62cef48d85e1967b83892391bfa41839cd2c))
+
 ## [0.2.0](https://github.com/highnet/Variantly/compare/variantly-v0.1.0...variantly-v0.2.0) (2026-10-15)
 
 
