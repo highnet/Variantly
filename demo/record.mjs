@@ -334,10 +334,12 @@ const context = await browser.newContext({
 await context.addInitScript(CURSOR);
 // A clean wizard: no draft left over from an earlier take.
 await context.addInitScript(() => {
-  if (window.top === window && !sessionStorage.__demoClean) {
-    for (const key of Object.keys(localStorage)) if (key.startsWith('variantly:')) localStorage.removeItem(key);
-    sessionStorage.__demoClean = '1';
-  }
+  try {
+    if (window.top === window && !sessionStorage.__demoClean) {
+      for (const key of Object.keys(localStorage)) if (key.startsWith('variantly:')) localStorage.removeItem(key);
+      sessionStorage.__demoClean = '1';
+    }
+  } catch {} // about:blank and file:// pages have no storage
 });
 const page = await context.newPage();
 const t0 = Date.now();

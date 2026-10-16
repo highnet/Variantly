@@ -1,68 +1,115 @@
+/* The film's look is variantly.style's: Martian Mono on its width axis for
+   figures and chrome, the system sans for reading text, the site's tokens.
+   body.light / body.dark pick the theme; body.wide / body.tall the shape. */
 @font-face {
   font-family: 'Martian Mono';
   src: url('martian-mono.woff2') format('woff2');
   font-weight: 100 800;
+  font-stretch: 75% 112.5%;
 }
 :root {
-  --ink: #0d0d10;
-  --slate: #1c2127;
-  --alert: #ffd400;
-  --paper: #ffffff;
-  --mono: 'Martian Mono', ui-monospace, monospace;
-  --sans: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  --mono: 'Martian Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
+body.light {
+  --ground: #e6e8eb;   /* --panel */
+  --surface: #ffffff;
+  --ink: #0d0d10;
+  --steel: #5f656c;
+  --rule: #c7cbd0;
+  --slate: #1c2127;
+  --slate-line: #353c45;
+  --on-slate: #ffffff;
+  --steel-on-slate: #a9b0b8;
+  --alert: #ffd400;
+  --alert-ink: #0d0d10;
+  --lift: 0 1px 1px rgb(13 13 16 / 0.06), 0 24px 60px -24px rgb(13 13 16 / 0.45);
+  --veil: rgb(230 232 235 / 0.94);
+}
+body.dark {
+  --ground: #0e1114;
+  --surface: #171b20;
+  --ink: #e8ebee;
+  --steel: #9aa3ad;
+  --rule: #2c333b;
+  --slate: #1e242b;
+  --slate-line: #3a434d;
+  --on-slate: #e8ebee;
+  --steel-on-slate: #aab2bb;
+  --alert: #f2c94c;
+  --alert-ink: #0d0d10;
+  --lift: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 24px 60px -20px rgb(0 0 0 / 0.8);
+  --veil: rgb(14 17 20 / 0.94);
+}
+
 * { box-sizing: border-box; }
-html, body { margin: 0; overflow: hidden; background: var(--ink); color: var(--paper); font-family: var(--sans); }
+html, body { margin: 0; overflow: hidden; }
+body { background: var(--ground); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
 body.wide { width: 1920px; height: 1080px; }
 body.tall { width: 1080px; height: 1920px; }
 
-.screen { position: absolute; overflow: hidden; background: #fff; }
-.screen img { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
-.wide .screen { inset: 0; }
-.tall .screen { left: 0; top: 400px; width: 1080px; height: 1080px; }
+/* A condensed, uppercase board figure, as on the site. */
+.figure { font-family: var(--mono); font-stretch: 75%; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; line-height: 0.95; }
 
-.veil { position: absolute; inset: 0; background: var(--ink); }
+/* ------------------------------------------------------------ the recording
+   An inset window on the ground, like the site's hero demo. .lens is the
+   1920×1080 recording scaled to the window; the img inside it carries the
+   punch-in. */
+.screen { position: absolute; overflow: hidden; border-radius: 14px; border: 1px solid var(--rule); background: var(--surface); box-shadow: var(--lift); }
+.lens { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: hidden; }
+.lens img { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+.wide .screen { left: 192px; top: 60px; width: 1536px; height: 864px; }
+.wide .lens { transform: scale(0.8); }
+.tall .screen { left: 40px; top: 360px; width: 1000px; height: 1000px; }
+.tall .lens { width: 1080px; height: 1080px; transform: scale(0.92593); }
 
-.bug { position: absolute; display: flex; align-items: center; gap: 12px; font: 600 22px var(--mono); letter-spacing: -0.02em; }
-.bug img { width: 38px; height: 38px; }
-.wide .bug { right: 36px; bottom: 34px; padding: 10px 16px 10px 10px; border-radius: 12px; background: rgb(13 13 16 / 0.82); }
-.tall .bug { left: 60px; top: 120px; font-size: 40px; gap: 20px; }
-.tall .bug img { width: 72px; height: 72px; }
+/* ------------------------------------------------------------ chrome */
+.bug { position: absolute; display: flex; align-items: center; gap: 14px; font: 700 26px var(--mono); font-stretch: 87.5%; letter-spacing: -0.02em; color: var(--ink); }
+.bug img { width: 36px; height: 36px; border-radius: 8px; }
+.wide .bug { left: 192px; top: 950px; }
+.tall .bug { left: 40px; top: 150px; font-size: 44px; gap: 20px; }
+.tall .bug img { width: 72px; height: 72px; border-radius: 14px; }
+.step { position: absolute; font: 600 20px var(--mono); font-stretch: 87.5%; letter-spacing: 0.04em; text-transform: uppercase; color: var(--steel); }
+.wide .step { right: 192px; top: 958px; }
+.tall .step { left: 40px; top: 250px; font-size: 28px; }
 
-.caption { position: absolute; left: 50%; transform: translateX(-50%); text-align: center; color: #fff; font-weight: 600; }
-.caption span { display: inline-block; background: rgb(13 13 16 / 0.86); border-radius: 12px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
-.wide .caption { bottom: 70px; width: 1500px; font-size: 42px; line-height: 1.3; }
-.wide .caption span { padding: 10px 24px; }
-.tall .caption { top: 1540px; width: 960px; font-size: 56px; line-height: 1.3; }
-.tall .caption span { padding: 14px 28px; background: transparent; }
+/* Captions sit under the window, in the margin, never over the UI. */
+.caption { position: absolute; text-align: center; font-weight: 600; color: var(--ink); text-wrap: balance; }
+.wide .caption { left: 420px; width: 1080px; top: 940px; font-size: 38px; line-height: 1.25; }
+.tall .caption { left: 60px; width: 960px; top: 1440px; font-size: 54px; line-height: 1.25; }
 
-.card { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; gap: 28px; }
-.kicker { font: 700 120px var(--mono); letter-spacing: -0.04em; display: flex; align-items: center; gap: 36px; justify-content: center; }
-.kicker img { width: 120px; height: 120px; }
-.line { font-size: 46px; color: #d5d9de; max-width: 1300px; margin: 0 auto; }
-.tall .kicker { font-size: 92px; flex-direction: column; gap: 30px; }
+/* Split-flap chip, the site's status style. */
+.chip { position: absolute; isolation: isolate; display: flex; align-items: center; gap: 14px; padding: 10px 18px; border-radius: 6px; background: var(--alert); color: var(--alert-ink); font: 700 26px var(--mono); font-stretch: 75%; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.chip::after { content: ''; position: absolute; inset: 50% 0 auto; height: 1px; z-index: -1; background: rgb(0 0 0 / 0.3); }
+.wide .chip { right: 216px; top: 84px; }
+.tall .chip { right: 64px; top: 384px; font-size: 32px; }
+
+.veil { position: absolute; inset: 0; background: var(--veil); }
+
+/* ------------------------------------------------------------ cards */
+.card { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; text-align: center; gap: 34px; }
+.kicker { display: flex; align-items: center; gap: 32px; font-size: 150px; }
+.kicker img { width: 132px; height: 132px; border-radius: 26px; }
+.line { font-size: 44px; color: var(--steel); max-width: 1300px; text-wrap: balance; }
+.tall .kicker { flex-direction: column; font-size: 120px; gap: 36px; }
 .tall .line { font-size: 52px; max-width: 900px; }
 
-.term { position: absolute; width: 900px; border-radius: 16px; background: var(--slate); box-shadow: 0 40px 80px -20px rgb(0 0 0 / 0.6); overflow: hidden; font: 500 34px/1.6 var(--mono); }
-.wide .term { left: 510px; top: 360px; }
+.lower { position: absolute; display: grid; gap: 6px; padding: 18px 30px 18px 24px; border-left: 8px solid var(--alert); background: var(--slate); color: var(--on-slate); border-radius: 0 10px 10px 0; box-shadow: var(--lift); }
+.lower b { font: 700 46px var(--mono); font-stretch: 75%; text-transform: uppercase; letter-spacing: -0.01em; }
+.lower span { font: 500 22px var(--mono); font-stretch: 87.5%; color: var(--steel-on-slate); }
+.wide .lower { left: 192px; top: 720px; }
+.tall .lower { left: 40px; top: 1180px; }
+
+.term { position: absolute; border-radius: 12px; background: var(--slate); color: var(--on-slate); border: 1px solid var(--slate-line); box-shadow: var(--lift); overflow: hidden; font: 500 34px/1.6 var(--mono); }
+.wide .term { left: 510px; top: 380px; width: 900px; }
 .tall .term { left: 60px; top: 760px; width: 960px; }
-.term .bar { display: flex; gap: 10px; padding: 16px 20px; background: #15191e; }
-.term .bar i { width: 14px; height: 14px; border-radius: 50%; background: #3a434d; }
+.term .bar { display: flex; gap: 10px; padding: 16px 20px; border-bottom: 1px solid var(--slate-line); }
+.term .bar i { width: 14px; height: 14px; border-radius: 50%; background: var(--slate-line); }
 .term pre { margin: 0; padding: 28px 36px 36px; font: inherit; white-space: pre-wrap; }
 .term .prompt { color: var(--alert); }
-.term .dim { color: #a9b0b8; }
+.term .dim { color: var(--steel-on-slate); }
 .term .caret { display: inline-block; width: 0.6em; height: 1.1em; vertical-align: -0.2em; background: var(--alert); }
 
-.chip { position: absolute; display: flex; align-items: center; gap: 14px; padding: 12px 22px; border-radius: 999px; background: var(--alert); color: var(--ink); font: 700 26px var(--mono); }
-.wide .chip { right: 36px; top: 110px; }
-.tall .chip { right: 60px; top: 300px; font-size: 30px; }
-
-.cmd { font: 700 72px var(--mono); padding: 26px 48px; border: 4px solid var(--alert); border-radius: 18px; color: var(--alert); margin: 0 auto; }
-.url { font: 500 44px var(--mono); color: #d5d9de; }
-.tall .cmd { font-size: 64px; }
-
-.lower { position: absolute; display: grid; gap: 4px; padding: 18px 28px 18px 24px; border-left: 6px solid var(--alert); background: rgb(13 13 16 / 0.88); border-radius: 0 12px 12px 0; }
-.lower b { font-size: 36px; }
-.lower span { font: 500 22px var(--mono); color: #a9b0b8; }
-.wide .lower { left: 0; top: 760px; }
-.tall .lower { left: 0; top: 1300px; }
+.cmd { font: 700 76px var(--mono); padding: 26px 52px; border-radius: 10px; background: var(--slate); color: var(--alert); border: 1px solid var(--slate-line); }
+.url { font: 600 40px var(--mono); font-stretch: 87.5%; color: var(--steel); }
+.tall .cmd { font-size: 60px; }

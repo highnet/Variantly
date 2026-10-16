@@ -40,17 +40,20 @@ function focusX(clicks) {
 
 const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
-export async function mount(layout) {
-  const tl = await (await fetch('../timeline.json')).json();
-  const film = await loadFootage('../.work/footage');
+export async function mount(layout, theme = 'light') {
+  document.body.classList.add(layout, theme);
+  const tl = await (await fetch(`../timeline.${theme}.json`)).json();
+  const film = await loadFootage(`../.work/${theme}/footage`);
   const tall = layout === 'tall';
   const scene = tl.scenes.find((s) => t >= s.start && t < s.end) ?? tl.scenes.at(-1);
   const first = tl.scenes[0];
 
   // ---------------------------------------------------------------- screen
   const screen = el('div', 'screen');
+  const lens = el('div', 'lens');
   const img = await film.image(t);
-  screen.append(img);
+  lens.append(img);
+  screen.append(lens);
   document.body.append(screen);
 
   const zoom = zoomAt(tl.clicks);
@@ -66,11 +69,18 @@ export async function mount(layout) {
   // ---------------------------------------------------------------- chrome
   const bug = el('div', 'bug', `<img src="icon.svg" alt=""><span>variantly</span>`);
   document.body.append(bug);
+  // A board-style step marker: which scene of how many.
+  const index = tl.scenes.indexOf(scene);
+  if (scene.step) {
+    const step = el('div', 'step', `${String(index + 1).padStart(2, '0')} / ${String(tl.scenes.length).padStart(2, '0')} · ${esc(scene.step)}`);
+    step.style.opacity = window_(scene.start, scene.end, 0.3);
+    document.body.append(step);
+  }
 
   // Timelapse: a chip with the speed and the real time that has gone by.
   if (scene.speed > 1) {
     const real = (t - scene.start) * scene.speed;
-    const chip = el('div', 'chip', `▶▶ ${Math.round(scene.speed)}× &nbsp;${clock(real)}`);
+    const chip = el('div', 'chip', `▶▶ ${Math.round(scene.speed)}× · ${clock(real)} real time`);
     chip.style.opacity = window_(scene.start, scene.end, 0.3);
     document.body.append(chip);
   }
@@ -91,7 +101,7 @@ export async function mount(layout) {
       const card = el(
         'div',
         'card',
-        `<div class="kicker"><img src="icon.svg" alt="">${esc(first.title.kicker)}</div><div class="line">${esc(first.title.line)}</div>`,
+        `<div class="kicker figure"><img src="icon.svg" alt="">${esc(first.title.kicker)}</div><div class="line">${esc(first.title.line)}</div>`,
       );
       card.style.opacity = k;
       card.style.transform = `translateY(${(1 - ease(span(0, 0.8))) * 30}px)`;
@@ -145,7 +155,7 @@ export async function mount(layout) {
     const card = el(
       'div',
       'card',
-      `<div class="kicker"><img src="icon.svg" alt="">variantly</div><div class="cmd">${esc(outro.cta.command)}</div><div class="url">${esc(outro.cta.url)}</div>`,
+      `<div class="kicker figure"><img src="icon.svg" alt="">variantly</div><div class="cmd">${esc(outro.cta.command)}</div><div class="url">${esc(outro.cta.url)}</div>`,
     );
     card.style.opacity = ease(span(outro.start + 0.3, outro.start + 1.0));
     document.body.append(veil, card);

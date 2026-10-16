@@ -9,7 +9,6 @@ video/
 probe/
 out/
 
-timeline.json
-cues.json
-seekreel.config.json
-seekreel.vertical.json
+build/
+timeline.*.json
+seekreel.*.json

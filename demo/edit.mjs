@@ -1,22 +1,28 @@
-// Cut the raw recording into the film's timebase, and write everything the
+// Cut one take of the recording into the film, and write everything the
 // SeekReel stage and the soundtrack read.
 //
-//   node edit.mjs
+//   node edit.mjs --theme light|dark
 //
-// In:  video/raw.webm, video/raw-timeline.json, audio/*.json
-// Out: seekreel.config.json   with a footage edit list: one clip per scene,
-//                              the wait sped up, transitions between some
-//      .work/footage/          SeekReel's cut: one JPEG per film frame
-//      timeline.json           scenes, clicks and caption cues, in film time
-//      out/variantly-demo.srt  captions for YouTube
-//      cues.json               voice tracks, UI sounds and the music bed
-//      seekreel.vertical.json
+// In:  video/<theme>/raw.webm + raw-timeline.json, audio/*
+// Out: seekreel.<theme>.json           with a footage edit list: one clip per
+//                                      scene, the wait sped up, transitions
+//      build/<theme>/footage/          SeekReel's cut: one JPEG per film frame
+//      timeline.<theme>.json           scenes, clicks and captions in film time
+//      build/<theme>/cues.json         voice, UI sounds and the music bed
+//      out/variantly-demo-<theme>.srt  captions for YouTube
+//      seekreel.<theme>.vertical.json
 import { existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { at, FPS, HEIGHT, log, PAD_MS, readJson, run, script, seekreelDir, VOICE_LEAD, WIDTH, writeJson } from './lib/common.mjs';
 
 const film = script();
-const raw = readJson(at('video', 'raw-timeline.json'));
+// --theme light|dark: which take to cut. Each theme is its own recording, so
+// the app on screen matches the film around it.
+const themeArg = process.argv.indexOf('--theme');
+const THEME = themeArg > -1 ? process.argv[themeArg + 1] : 'light';
+if (!['light', 'dark'].includes(THEME)) throw new Error(`--theme must be light or dark, got ${THEME}`);
+const BUILD = `build/${THEME}`;
+const raw = readJson(at('video', THEME, 'raw-timeline.json'));
 const durations = readJson(at('audio', 'durations.json'), {});
 const byId = Object.fromEntries(film.scenes.map((s) => [s.id, s]));
 
@@ -33,7 +39,7 @@ const clips = raw.scenes.map((scene) => {
   const target = scene.timelapse ? Math.max(lineSeconds(scene.id) + PAD_MS / 1000, 5) : length;
   return {
     label: scene.id,
-    src: 'video/raw.webm',
+    src: `video/${THEME}/raw.webm`,
     from: Number(scene.start.toFixed(3)),
     to: Number(scene.end.toFixed(3)),
     ...(scene.timelapse ? { speed: Number(Math.max(1, length / target).toFixed(4)) } : {}),
@@ -45,26 +51,26 @@ const SEEKREEL = seekreelDir();
 const base = {
   fps: FPS,
   background: '#0d0d10',
-  audio: { engine: 'cues', cues: 'cues.json', wav: '.work/soundtrack.wav' },
+  audio: { engine: 'cues', cues: `${BUILD}/cues.json`, wav: `${BUILD}/soundtrack.wav` },
   probe: 'probe',
   deliver: 'out',
   encode: { crf: 18, keyint: FPS },
 };
 const wide = {
-  name: 'variantly-demo',
-  stage: 'stage/index.html',
+  name: `variantly-demo-${THEME}`,
+  stage: `stage/${THEME}.html`,
   duration: 'footage',
   width: WIDTH,
   height: HEIGHT,
-  out: '.work/frames-16x9',
-  footage: { out: '.work/footage', fit: 'cover', quality: 3, clips },
+  out: `${BUILD}/frames-16x9`,
+  footage: { out: `${BUILD}/footage`, fit: 'cover', quality: 3, clips },
   ...base,
   variants: [{ name: '' }, { name: 'silent', audio: false }],
 };
-writeJson(at('seekreel.config.json'), wide);
+writeJson(at(`seekreel.${THEME}.json`), wide);
 log('edit', `cutting ${clips.length} clips with SeekReel`);
-await run(process.execPath, [path.join(SEEKREEL, 'bin', 'seekreel.ts'), 'footage', '-c', at('seekreel.config.json')]);
-const footage = readJson(at('.work', 'footage', 'footage.json'));
+await run(process.execPath, [path.join(SEEKREEL, 'bin', 'seekreel.ts'), 'footage', '-c', at(`seekreel.${THEME}.json`)]);
+const footage = readJson(at(BUILD, 'footage', 'footage.json'));
 const total = footage.duration;
 
 const placed = Object.fromEntries(footage.clips.map((c) => [c.label, c]));
@@ -121,6 +127,7 @@ const scenes = footage.clips.map((clip, i) => {
     voice: lineSeconds(clip.label),
     title: def.title ?? null,
     presenter: def.presenter ?? null,
+    step: def.step ?? null,
     terminal: def.terminal ?? null,
     cta: def.cta ?? null,
     captions: cuesFrom(wordsFor(clip.label, voiceAt)),
@@ -138,7 +145,7 @@ const clicks = raw.clicks
   .map((c) => ({ ...c, t: toFilm(c.t) }))
   .filter((c) => c.t !== null && c.t < total);
 
-writeJson(at('timeline.json'), { fps: FPS, width: WIDTH, height: HEIGHT, duration: total, scenes, clicks, captions });
+writeJson(at(`timeline.${THEME}.json`), { fps: FPS, width: WIDTH, height: HEIGHT, duration: total, scenes, clicks, captions });
 
 const stamp = (t) => {
   const ms = Math.round(t * 1000);
@@ -147,7 +154,7 @@ const stamp = (t) => {
 };
 mkdirSync(at('out'), { recursive: true });
 writeFileSync(
-  at('out', 'variantly-demo.srt'),
+  at('out', `variantly-demo-${THEME}.srt`),
   captions.map((c, i) => `${i + 1}\n${stamp(c.start)} --> ${stamp(c.end)}\n${c.text}\n`).join('\n'),
 );
 
@@ -160,7 +167,7 @@ const UI = {
   stamp: { sound: 'stamp', gain: 0.45 },
 };
 const outro = scenes.find((s) => s.cta);
-writeJson(at('cues.json'), {
+writeJson(at(BUILD, 'cues.json'), {
   duration: total,
   sampleRate: 48000,
   bed: {
@@ -179,7 +186,8 @@ writeJson(at('cues.json'), {
   },
   tracks: scenes
     .filter((s) => existsSync(at('audio', `${s.id}.wav`)))
-    .map((s) => ({ at: Number(s.voiceAt.toFixed(3)), file: `audio/${s.id}.wav`, gain: 1.0 })),
+    // Paths are relative to the cue sheet, which lives in build/<theme>/.
+    .map((s) => ({ at: Number(s.voiceAt.toFixed(3)), file: `../../audio/${s.id}.wav`, gain: 1.0 })),
   duck: { gain: 0.22, attack: 0.15, release: 0.6 },
   cues: [
     { at: 0.05, sound: 'swell', note: 'D2', dur: 1.6, gain: 0.5 },
@@ -192,16 +200,16 @@ writeJson(at('cues.json'), {
 // ------------------------------------------------------------ SeekReel configs
 
 const compare = scenes.find((s) => s.id === 'compare');
-writeJson(at('seekreel.config.json'), { ...wide, poster: compare ? Number((compare.start + 2.5).toFixed(2)) : 1 });
+writeJson(at(`seekreel.${THEME}.json`), { ...wide, poster: compare ? Number((compare.start + 2.5).toFixed(2)) : 1 });
 // The vertical cut shows the same 16:9 footage through a moving window, so it
 // reads the frames the wide config cut instead of cutting its own.
-writeJson(at('seekreel.vertical.json'), {
-  name: 'variantly-demo',
-  stage: 'stage/vertical.html',
+writeJson(at(`seekreel.${THEME}.vertical.json`), {
+  name: `variantly-demo-${THEME}`,
+  stage: `stage/vertical-${THEME}.html`,
   duration: total,
   width: 1080,
   height: 1920,
-  out: '.work/frames-9x16',
+  out: `${BUILD}/frames-9x16`,
   ...base,
   variants: [{ name: 'vertical' }],
 });
