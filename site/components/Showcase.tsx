@@ -28,7 +28,11 @@ const STAGGER_MS = 28;
 // The order letters pass the hinge on a real board.
 const DRUM = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ&';
 
-const page = (n: number) => `/demo/oak-and-iron/v${n}/index.html`;
+// Phones get each design's phone edition: the same bands at the same heights
+// in every variant, so a split only a few hundred pixels wide still lines up.
+const page = (n: number, phone: boolean) =>
+  `/demo/oak-and-iron/v${n}/${phone ? 'phone' : 'index'}.html`;
+const PHONE_QUERY = '(max-width: 639px)';
 const vname = (n: number) => `V${String(n).padStart(2, '0')}`;
 const LONGEST = Math.max(...DEMO_VARIANTS.map((v) => v.direction.length));
 
@@ -130,6 +134,7 @@ const Showcase = () => {
   const [auto, setAuto] = useState(true);
   const [ready, setReady] = useState(false);
   const [hover, setHover] = useState(false);
+  const [phone, setPhone] = useState(false);
   const hoverRef = useRef(false);
   const pos = useRef(50);
   const anim = useRef(0);
@@ -387,6 +392,14 @@ const Showcase = () => {
     hoverRef.current = hover;
   }, [hover]);
 
+  useEffect(() => {
+    const mq = window.matchMedia(PHONE_QUERY);
+    const sync = () => setPhone(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
   // Follow mode needs a mouse; drop it when there isn't one any more.
   useEffect(() => {
     const mq = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -469,7 +482,8 @@ const Showcase = () => {
             </Typography>
             <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">
               <strong className="text-surface">One command.</strong> Your own AI assistant redesigns
-              your site <strong className="text-surface">several ways</strong>. Try each{' '}
+              your site <strong className="text-surface">several ways</strong>,{' '}
+              <strong className="text-surface">from scratch</strong>: no preset themes. Try each{' '}
               <strong className="text-surface">live</strong>,{' '}
               <strong className="text-surface">keep one</strong>. Nothing changes until you do.
             </p>
@@ -518,113 +532,146 @@ const Showcase = () => {
           </div>
         </div>
       </div>
-      <div
-        ref={stage}
-        id="demo-stage"
-        className={cn(
-          'group/stage relative isolate h-[62svh] min-h-[380px] overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]',
-        )}
-      >
-        <PageSkeleton className={cn('z-10', ready && 'pointer-events-none opacity-0')} />
-        {auto && ready && (
-          <div
-            key={selected}
-            aria-hidden="true"
-            className="bg-alert absolute inset-x-0 top-0 z-30 h-1 origin-left animate-[cycle_12s_linear_forwards] motion-reduce:hidden"
-          />
-        )}
-        <iframe
-          ref={(el) => {
-            frames.current[0] = el;
-          }}
-          onLoad={() => onFrameLoad(0)}
-          src={page(0)}
-          title="Oak & Iron as it was: the original"
-          className="absolute inset-0 size-full border-0 bg-white"
-        />
-        {DEMO_VARIANTS.map((v) => (
-          <iframe
-            key={v.n}
-            ref={(el) => {
-              frames.current[v.n] = el;
-            }}
-            onLoad={() => onFrameLoad(v.n)}
-            src={page(v.n)}
-            title={`${vname(v.n)}: ${v.direction}`}
-            aria-hidden={v.n !== selected}
-            tabIndex={v.n === selected ? 0 : -1}
-            loading={v.n === 1 ? 'eager' : 'lazy'}
-            className={cn(
-              'absolute inset-0 size-full border-0 transition-opacity duration-1000 ease-in-out [clip-path:inset(0_0_0_var(--split))]',
-              v.n === selected ? 'opacity-100' : 'pointer-events-none opacity-0',
-            )}
-          />
-        ))}
-        {/* The panes stay scrollable; this band either side of the line is
-            the drag surface, so nobody has to hit the grip exactly. */}
+      {/* Phones get the stage to themselves: the dock drops below it, so
+          nothing but the line sits over the two narrow halves. */}
+      <div className="relative">
         <div
-          className="absolute inset-y-0 left-[var(--split)] z-20 w-16 -translate-x-1/2 cursor-ew-resize touch-pan-y group-data-[dragging=true]/stage:inset-x-0 group-data-[dragging=true]/stage:left-0 group-data-[dragging=true]/stage:w-auto group-data-[dragging=true]/stage:translate-x-0"
-          onPointerDown={onDown}
-          onPointerMove={onMove}
-          onPointerUp={onUp}
-          onPointerCancel={onUp}
-          onLostPointerCapture={onUp}
-          onDoubleClick={() => tween(50, 300)}
-        />
-
-        <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex justify-between gap-3">
-          <Typography
-            variant="tag"
-            className="bg-ink text-surface rounded-flap px-2 py-1.5 opacity-[var(--before-o,1)]"
-          >
-            Before<span className="hidden sm:inline"> · today’s site</span>
-          </Typography>
-          <Typography
-            variant="tag"
-            className="bg-ink text-surface rounded-flap px-2 py-1.5 opacity-[var(--after-o,1)]"
-          >
-            After · {current.direction}
-          </Typography>
-        </div>
-
-        <div
-          ref={track}
-          role="scrollbar"
-          aria-label="Scroll the pages"
-          aria-controls="demo-stage"
-          aria-orientation="vertical"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={0}
-          tabIndex={0}
-          onKeyDown={(e) => {
-            const view = stage.current?.clientHeight ?? 600;
-            const by: Record<string, number> = {
-              ArrowDown: 60,
-              ArrowUp: -60,
-              PageDown: view * 0.9,
-              PageUp: -view * 0.9,
-            };
-            if (e.key === 'Home') scrollTo(0);
-            else if (e.key === 'End') scrollTo(Infinity);
-            else if (e.key in by) scrollTo(scrollPos.current.y + by[e.key]);
-            else return;
-            e.preventDefault();
-            takeOver();
-          }}
-          onPointerDown={onTrackDown}
-          onPointerMove={onTrackMove}
-          onPointerUp={onTrackUp}
-          onPointerCancel={onTrackUp}
-          title="Drag to scroll the pages"
-          className="group/track absolute inset-y-3 right-1.5 z-30 w-3 cursor-grab touch-none rounded-full bg-black/10 focus-visible:outline-2 focus-visible:outline-offset-2 active:cursor-grabbing data-[empty=true]:hidden"
+          ref={stage}
+          id="demo-stage"
+          className={cn(
+            'group/stage relative isolate h-[62svh] min-h-[380px] overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]',
+          )}
         >
-          <div className="bg-ink/70 group-hover/track:bg-ink group-active/track:bg-ink absolute inset-x-0.5 top-[var(--thumb-top,0px)] h-[var(--thumb-h,40px)] rounded-full shadow-[0_0_0_1px_rgb(255_255_255/.5)] transition-colors" />
-        </div>
+          <PageSkeleton className={cn('z-10', ready && 'pointer-events-none opacity-0')} />
+          {auto && ready && (
+            <div
+              key={selected}
+              aria-hidden="true"
+              className="bg-alert absolute inset-x-0 top-0 z-30 h-1 origin-left animate-[cycle_12s_linear_forwards] motion-reduce:hidden"
+            />
+          )}
+          <iframe
+            ref={(el) => {
+              frames.current[0] = el;
+            }}
+            onLoad={() => onFrameLoad(0)}
+            src={page(0, phone)}
+            title="Oak & Iron as it was: the original"
+            className="absolute inset-0 size-full border-0 bg-white"
+          />
+          {DEMO_VARIANTS.map((v) => (
+            <iframe
+              key={v.n}
+              ref={(el) => {
+                frames.current[v.n] = el;
+              }}
+              onLoad={() => onFrameLoad(v.n)}
+              src={page(v.n, phone)}
+              title={`${vname(v.n)}: ${v.direction}`}
+              aria-hidden={v.n !== selected}
+              tabIndex={v.n === selected ? 0 : -1}
+              loading={v.n === 1 ? 'eager' : 'lazy'}
+              className={cn(
+                'absolute inset-0 size-full border-0 transition-opacity duration-1000 ease-in-out [clip-path:inset(0_0_0_var(--split))]',
+                v.n === selected ? 'opacity-100' : 'pointer-events-none opacity-0',
+              )}
+            />
+          ))}
+          {/* The panes stay scrollable; this band either side of the line is
+            the drag surface, so nobody has to hit the grip exactly. */}
+          <div
+            className="absolute inset-y-0 left-[var(--split)] z-20 w-16 -translate-x-1/2 cursor-ew-resize touch-pan-y group-data-[dragging=true]/stage:inset-x-0 group-data-[dragging=true]/stage:left-0 group-data-[dragging=true]/stage:w-auto group-data-[dragging=true]/stage:translate-x-0"
+            onPointerDown={onDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerCancel={onUp}
+            onLostPointerCapture={onUp}
+            onDoubleClick={() => tween(50, 300)}
+          />
 
+          <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex justify-between gap-3">
+            <Typography
+              variant="tag"
+              className="bg-ink text-surface rounded-flap px-1.5 py-1 text-[10px] opacity-[var(--before-o,1)] sm:px-2 sm:py-1.5 sm:text-[length:inherit]"
+            >
+              Before<span className="hidden sm:inline"> · today’s site</span>
+            </Typography>
+            <Typography
+              variant="tag"
+              className="bg-ink text-surface rounded-flap mr-4 px-1.5 py-1 text-[10px] opacity-[var(--after-o,1)] sm:mr-0 sm:px-2 sm:py-1.5 sm:text-[length:inherit]"
+            >
+              After<span className="hidden sm:inline"> · {current.direction}</span>
+            </Typography>
+          </div>
+
+          <div
+            ref={track}
+            role="scrollbar"
+            aria-label="Scroll the pages"
+            aria-controls="demo-stage"
+            aria-orientation="vertical"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={0}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              const view = stage.current?.clientHeight ?? 600;
+              const by: Record<string, number> = {
+                ArrowDown: 60,
+                ArrowUp: -60,
+                PageDown: view * 0.9,
+                PageUp: -view * 0.9,
+              };
+              if (e.key === 'Home') scrollTo(0);
+              else if (e.key === 'End') scrollTo(Infinity);
+              else if (e.key in by) scrollTo(scrollPos.current.y + by[e.key]);
+              else return;
+              e.preventDefault();
+              takeOver();
+            }}
+            onPointerDown={onTrackDown}
+            onPointerMove={onTrackMove}
+            onPointerUp={onTrackUp}
+            onPointerCancel={onTrackUp}
+            title="Drag to scroll the pages"
+            className="group/track absolute inset-y-3 right-1 z-30 w-2 cursor-grab touch-none rounded-full bg-black/10 focus-visible:outline-2 focus-visible:outline-offset-2 active:cursor-grabbing data-[empty=true]:hidden sm:right-1.5 sm:w-3"
+          >
+            <div className="bg-ink/70 group-hover/track:bg-ink group-active/track:bg-ink absolute inset-x-0.5 top-[var(--thumb-top,0px)] h-[var(--thumb-h,40px)] rounded-full shadow-[0_0_0_1px_rgb(255_255_255/.5)] transition-colors" />
+          </div>
+
+          <div className="pointer-events-none absolute inset-y-0 left-[var(--split)] z-20 w-0">
+            {/* A soft shadow the line casts on the after side: depth, not a filter on the page. */}
+            <div className="absolute inset-y-0 left-0 w-10 bg-linear-to-r from-black/15 to-transparent" />
+            <div className="bg-ink shadow-divider absolute inset-y-0 -left-px w-0.5" />
+            <Button
+              ref={grip}
+              variant="grip"
+              size="grip"
+              role="slider"
+              aria-label="Before and after divider"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={50}
+              aria-valuetext="50% original"
+              onKeyDown={onGripKey}
+              onPointerDown={onDown}
+              onPointerMove={onMove}
+              onPointerUp={onUp}
+              onPointerCancel={onUp}
+              onDoubleClick={() => tween(50, 300)}
+              className="pointer-events-auto absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 touch-pan-y transition-[scale,box-shadow] duration-200 ease-[cubic-bezier(.3,1.6,.5,1)] group-data-[dragging=true]/stage:scale-115 group-data-[dragging=true]/stage:shadow-[0_6px_20px_rgb(0_0_0/.45)] max-sm:h-10 max-sm:gap-0 max-sm:px-1.5"
+            >
+              <ChevronLeft aria-hidden="true" />
+              <span className="hidden sm:inline">Before</span>
+              <i className="bg-slate-line mx-1 hidden h-4 w-px sm:block" />
+              <span className="hidden sm:inline">After</span>
+              <ChevronRight aria-hidden="true" />
+            </Button>
+          </div>
+        </div>
         <div
           data-keep-cycle
-          className="bg-slate shadow-grip rounded-chip absolute bottom-3 left-1/2 z-30 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-x-4 gap-y-2 px-2 py-2 font-mono [font-stretch:87.5%]"
+          className="bg-slate border-slate-line sm:shadow-grip sm:rounded-chip flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t px-2 py-2 font-mono [font-stretch:87.5%] sm:absolute sm:bottom-3 sm:left-1/2 sm:z-30 sm:max-w-[calc(100%-1.5rem)] sm:-translate-x-1/2 sm:border-t-0"
         >
           <div role="group" aria-label="Redesigns" className="flex flex-wrap justify-center gap-1">
             <Button
@@ -696,36 +743,6 @@ const Showcase = () => {
             <Score label="A11y" value={current.a11y} was={DEMO_ORIGINAL_SCORES.a11y} />
             <Score label="axe" value={current.axe} was={DEMO_ORIGINAL_SCORES.axe} lowerIsBetter />
           </div>
-        </div>
-
-        <div className="pointer-events-none absolute inset-y-0 left-[var(--split)] z-20 w-0">
-          {/* A soft shadow the line casts on the after side: depth, not a filter on the page. */}
-          <div className="absolute inset-y-0 left-0 w-10 bg-linear-to-r from-black/15 to-transparent" />
-          <div className="bg-ink shadow-divider absolute inset-y-0 -left-px w-0.5" />
-          <Button
-            ref={grip}
-            variant="grip"
-            size="grip"
-            role="slider"
-            aria-label="Before and after divider"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={50}
-            aria-valuetext="50% original"
-            onKeyDown={onGripKey}
-            onPointerDown={onDown}
-            onPointerMove={onMove}
-            onPointerUp={onUp}
-            onPointerCancel={onUp}
-            onDoubleClick={() => tween(50, 300)}
-            className="pointer-events-auto absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 touch-pan-y transition-[scale,box-shadow] duration-200 ease-[cubic-bezier(.3,1.6,.5,1)] group-data-[dragging=true]/stage:scale-115 group-data-[dragging=true]/stage:shadow-[0_6px_20px_rgb(0_0_0/.45)]"
-          >
-            <ChevronLeft aria-hidden="true" />
-            Before
-            <i className="bg-slate-line mx-1 h-4 w-px" />
-            After
-            <ChevronRight aria-hidden="true" />
-          </Button>
         </div>
       </div>
     </section>

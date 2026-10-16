@@ -1,0 +1,28 @@
+/* Phone edition: Nordic catalogue. */
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;600&display=swap");
+:root{color-scheme:light;--birch:#f3eee4;--paper:#fbf8f2;--ink:#1f3a5f;--text:#22262b;--mute:#5a5f66;--rule:#d8cfbf;--wood:#e4d8c3;--on-ink:#fff;--field:#fff}
+html[data-theme="dark"]{color-scheme:dark;--birch:#13171c;--paper:#1a1f26;--ink:#a9c3e3;--text:#e6e1d7;--mute:#a4a9b0;--rule:#343c46;--wood:#242b33;--on-ink:#13171c;--field:#11151a}
+body{background:var(--paper);color:var(--text);font:400 16px/1.55 "Source Sans 3",system-ui,sans-serif}
+a{color:var(--ink)}
+.b-head{border-bottom:1px solid var(--ink)}
+.logo{font-weight:600;letter-spacing:.14em;text-transform:uppercase;font-size:15px}
+.kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+h1{font-weight:300;font-size:40px;line-height:1.08;color:var(--ink)}
+.intro{color:var(--mute)}
+.btn,button{background:var(--ink);color:var(--on-ink);border:0;border-radius:0;padding:12px 20px;font:600 15px "Source Sans 3",sans-serif;text-decoration:none}
+.b-sec{font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+.b-sec::before{content:"";position:absolute;inset:auto 20px 50px;border-top:1px solid var(--ink)}
+.num{display:inline-block;width:3em;font-weight:300}
+.b-feat{border-bottom:1px solid var(--rule)}
+.b-feat h3{font-weight:600;font-size:20px;color:var(--ink)}
+.b-feat p{color:var(--mute)}
+.b-item{background:var(--birch);border-bottom:20px solid var(--paper)}
+.b-item .art{background:var(--wood);color:var(--ink);padding:32px 40px}
+.no{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
+.b-item h3{font-size:22px;font-weight:600;color:var(--ink)}
+.desc{color:var(--mute)}
+.price{font-size:18px;font-weight:600;color:var(--ink)}
+.b-news label{font-size:14px;font-weight:600}
+.b-news input{background:var(--field);color:var(--text);border:1px solid var(--ink);padding:0 12px}
+.b-foot{border-top:1px solid var(--ink);color:var(--mute);font-size:14px}
+.small{font-size:12px}

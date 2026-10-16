@@ -104,7 +104,7 @@ const PrefsMenu = () => {
           id="a11y-menu"
           role="dialog"
           aria-label="Accessibility settings"
-          className="bg-slate on-slate text-surface border-slate-line shadow-dock absolute top-11 right-0 z-40 grid w-[300px] gap-4 rounded-[12px] border p-4"
+          className="bg-slate on-slate text-surface border-slate-line shadow-dock fixed inset-x-4 top-16 z-40 grid max-h-[calc(100dvh-5rem)] gap-4 overflow-y-auto rounded-[12px] border p-4 sm:absolute sm:inset-x-auto sm:top-11 sm:right-0 sm:max-h-none sm:w-[300px]"
         >
           <fieldset className="m-0 grid gap-2 border-0 p-0">
             <legend className="mb-2 text-[13px] font-bold">Motion</legend>

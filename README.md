@@ -34,6 +34,7 @@ npx variantly
 - **Impeccable [live mode](https://impeccable.style/docs/live/)**: variants of **one element** in your running page.
 - **variantly**: the same idea for the **whole site** (tokens, type, layout, components, every file).
 - Each variant gets its **own git worktree** and **dev server**; a local proxy shows them side by side.
+- **No preset themes:** no theme library, template or palette. Each variant is **designed from scratch** for your site, in a direction you describe or one Impeccable rolls. **Run twice, get different designs.**
 - **Workflow:** variantly to **choose a direction** → `/impeccable live` to **tune details**.
 - **Not a hosted service:** no account, no model, no server. Runs **on your machine** with **your** agent subscription or API key.
 

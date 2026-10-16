@@ -1,0 +1,32 @@
+/* Phone edition: Art Deco. */
+@import url('https://fonts.googleapis.com/css2?family=Poiret+One&family=Limelight&family=Josefin+Sans:wght@400;600&display=swap');
+:root{color-scheme:dark;--green:#0f2e25;--green-2:#163d31;--green-3:#1f4f40;--brass:#c9a55a;--brass-lt:#e3c987;--ivory:#f3ead6;--ivory-dim:#d6ccb4;--display:'Limelight',Georgia,serif;--deco:'Poiret One',Georgia,serif;--body:'Josefin Sans','Gill Sans',sans-serif}
+html[data-theme="light"]{color-scheme:light;--green:#f5eedc;--green-2:#ece2c8;--green-3:#e3d6b5;--brass:#80612a;--brass-lt:#6e5119;--ivory:#14302a;--ivory-dim:#3d4c43}
+body{background:var(--green);color:var(--ivory);font:400 16px/1.6 var(--body);box-shadow:inset 0 0 0 6px var(--green),inset 0 0 0 7px var(--brass)}
+.b-head{align-items:center;border-bottom:1px solid var(--brass)}
+.logo{font:24px var(--display);color:var(--brass-lt);letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+.logo-mark{width:18px;height:18px;border:2px solid var(--brass);transform:rotate(45deg)}
+.b-hero{text-align:center;align-items:center;background:repeating-conic-gradient(from 0deg at 50% 100%,rgba(201,165,90,.08) 0 4deg,transparent 4deg 10deg)}
+.kicker{font:600 12px var(--body);letter-spacing:.3em;text-transform:uppercase;color:var(--brass)}
+h1{font:56px/1 var(--display);color:var(--brass-lt);letter-spacing:.04em;text-transform:uppercase}
+.amp{font-family:var(--deco);color:var(--ivory)}
+.intro{color:var(--ivory-dim)}
+.ctas{justify-content:center;flex-direction:column}
+.btn,button{background:var(--brass);color:var(--green);border:0;padding:12px 24px;font:600 13px var(--body);letter-spacing:.2em;text-transform:uppercase;text-decoration:none}
+.link{color:var(--brass-lt);font:600 13px var(--body);letter-spacing:.2em;text-transform:uppercase;border:1px solid var(--brass);padding:11px 22px;text-decoration:none}
+.b-sec{text-align:center;align-items:center;font:22px var(--deco);font-weight:400;color:var(--brass-lt);letter-spacing:.1em;text-transform:uppercase}
+.b-sec span{padding:0 14px;border-left:3px double var(--brass);border-right:3px double var(--brass)}
+.b-feat{text-align:center;align-items:center;background:var(--green-2);border-top:1px solid var(--brass)}
+.b-feat h3{font:24px var(--deco);color:var(--brass-lt)}
+.b-feat p{color:var(--ivory-dim)}
+.b-item{text-align:center;align-items:center;background:var(--green-2);border:1px solid var(--brass);margin:0 20px 20px;height:400px}
+.b-item .art{align-self:stretch;background:var(--green-3);color:var(--brass);border-bottom:1px solid var(--brass)}
+.no{font:600 12px var(--body);letter-spacing:.3em;color:var(--brass)}
+.b-item h3{font:22px var(--display);color:var(--brass-lt)}
+.desc{color:var(--ivory-dim)}
+.buy{flex-direction:column;align-self:stretch}
+.price{font:22px var(--deco);color:var(--ivory)}
+.b-news{text-align:center}
+.b-news input{background:var(--green-2);color:var(--ivory);border:1px solid var(--brass);padding:0 12px}
+.b-foot{text-align:center;color:var(--ivory-dim);border-top:1px solid var(--brass)}
+.small{font-size:12px;color:var(--brass)}
