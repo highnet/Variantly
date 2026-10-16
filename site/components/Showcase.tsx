@@ -499,12 +499,6 @@ const Showcase = () => {
               />
               <RunnerPicker tone="slate" />
               <CommandCopy command={INSTALL} tone="slate" accent />
-              <p className="text-steel-on-slate m-0 text-[14px] leading-snug">
-                Paste in your site&apos;s folder.{' '}
-                <a href="#start-title" className="text-surface underline underline-offset-2">
-                  Check what you need first
-                </a>
-              </p>
               <details className="text-steel-on-slate text-[14px] leading-snug">
                 <summary className="text-surface cursor-pointer underline underline-offset-2">
                   Never used a terminal? Start here
