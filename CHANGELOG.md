@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.0](https://github.com/highnet/Variantly/compare/variantly-v0.3.0...variantly-v0.4.0) (2026-10-16)
+
+
+### Features
+
+* **demo:** automated product video pipeline and Tallyboard example ([#65](https://github.com/highnet/Variantly/issues/65)) ([4b1bcae](https://github.com/highnet/Variantly/commit/4b1bcaed57681dbdcbecd848cc6e43507b22b518))
+* **demo:** refuse to film a stale or edited variantly ([#67](https://github.com/highnet/Variantly/issues/67)) ([a06c450](https://github.com/highnet/Variantly/commit/a06c4507bab8d578bf70e414279f2ce9808d6bba))
+* **demo:** walkthrough v2 recorder and motion design ([#70](https://github.com/highnet/Variantly/issues/70)) ([548d458](https://github.com/highnet/Variantly/commit/548d4582d982b03309f5b7e709540644387d8ce2))
+
+
+### Bug Fixes
+
+* **demo:** pin playwright, smoke-test recording, rehearsal voice, tighter timing ([#68](https://github.com/highnet/Variantly/issues/68)) ([b20d745](https://github.com/highnet/Variantly/commit/b20d7455d53d0303fa264fc5468477ff3c3906c4))
+* **demo:** smooth 60 fps screencast capture; drop the light/dark outro line ([#69](https://github.com/highnet/Variantly/issues/69)) ([8c53139](https://github.com/highnet/Variantly/commit/8c5313943d8a7fba8b7c22d98bbdb85f1246445a))
+
 ## [0.3.0](https://github.com/highnet/Variantly/compare/variantly-v0.2.0...variantly-v0.3.0) (2026-10-16)
 
 
