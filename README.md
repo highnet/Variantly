@@ -16,7 +16,7 @@ npx variantly
   (works for every command below).
 - **No `npx`?** Install [Node.js](https://nodejs.org/en/download); it ships with npx.
 - **Opens a browser wizard:** app location, agent, brief, number of variants. Then watch and compare.
-- **For agents:** [SKILLS.md](SKILLS.md). **Homepage:** [variantly.tools](https://variantly.tools).
+- **For agents:** [SKILLS.md](SKILLS.md). **Homepage:** [variantly.style](https://variantly.style).
 
 **Contents**
 

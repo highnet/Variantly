@@ -35,7 +35,7 @@ const GitHubLink = () => (
 const AgentStrip = () => (
   <a href="#agent" className="sr-only">
     <span>AI agent or assistant?</span> Stop here and open the quickstart written for you:
-    variantly.tools/#agent. Every command and flag: variantly.tools/#docs. The full manual is at
+    variantly.style/#agent. Every command and flag: variantly.style/#docs. The full manual is at
     /SKILLS.md.
   </a>
 );

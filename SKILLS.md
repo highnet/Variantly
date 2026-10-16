@@ -4,13 +4,13 @@ What this is: the operating manual for driving variantly, without the
 homepage's pitch or the README's prose. Fetch the latest copy at any time:
 
 ```sh
-curl -fsSL https://variantly.tools/SKILLS.md
+curl -fsSL https://variantly.style/SKILLS.md
 ```
 
 (or `https://raw.githubusercontent.com/highnet/ProjectHusky/main/SKILLS.md`)
 
 If you are a person, the README is friendlier and
-[variantly.tools](https://variantly.tools) is friendlier still.
+[variantly.style](https://variantly.style) is friendlier still.
 
 ## In one paragraph
 
