@@ -39,7 +39,7 @@ Options
   -v, --version
 
 Your agent does the design work with your own subscription or API key;
-variantly brings no model. Docs: https://variantly.tools · agents: https://variantly.tools/SKILLS.md`;
+variantly brings no model. Docs: https://variantly.style · agents: https://variantly.style/SKILLS.md`;
 
 const main = async () => {
   /** @type {ReturnType<typeof parseArgs>} */

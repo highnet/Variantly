@@ -125,7 +125,7 @@ kbd {
   font-variant-numeric: tabular-nums;
 }
 
-/* Dark theme, matching variantly.tools: a cool blue-black ground with the
+/* Dark theme, matching variantly.style: a cool blue-black ground with the
    passes one step up and the board above that. The board and other slate
    panels were already dark, so inside them the light-theme values stay. */
 :root[data-theme='dark'] {

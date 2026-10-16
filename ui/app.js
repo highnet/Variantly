@@ -902,7 +902,7 @@ const installImpeccable = async (agent) => {
 // Theme and accessibility ---------------------------------------------------
 
 /*
- * The same two header controls as variantly.tools: a theme switch and a
+ * The same two header controls as variantly.style: a theme switch and a
  * menu of reading aids. Saved in this browser, applied as data attributes
  * on <html> (the inline script in index.html applies them before paint).
  */
