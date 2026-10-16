@@ -356,7 +356,15 @@ const MoreSettings = ({ d, f }: PartProps) => (
         value={f.approach}
         onPick={(v) => updateForm({ approach: v as Form['approach'] })}
       />
-      <p className="hint">{f.approach === 'refine' ? 'Keep your look. Impeccable finds what to improve in each design.' : 'Replace your look. Impeccable picks a different visual world for every design.'}</p>
+      <p className="hint">
+        {f.agent === 'demo'
+          ? f.approach === 'refine'
+            ? 'Keep your look. The demo agent applies a fixed restyle to each design.'
+            : 'Replace your look. The demo agent applies a different fixed restyle to every design.'
+          : f.approach === 'refine'
+            ? 'Keep your look. Impeccable finds what to improve in each design.'
+            : 'Replace your look. Impeccable picks a different visual world for every design.'}
+      </p>
     </div>
     <div className="field">
       <span className="label">Your own directions (optional)</span>
@@ -367,7 +375,7 @@ const MoreSettings = ({ d, f }: PartProps) => (
             <input
               aria-label={`Direction for V${pad(i + 1)}`}
               value={f.directions[i] ?? ''}
-              placeholder="Impeccable picks"
+              placeholder={f.agent === 'demo' ? 'Picked for you' : 'Impeccable picks'}
               onChange={(e) => {
                 const directions = [...f.directions];
                 directions[i] = e.target.value;
@@ -402,7 +410,7 @@ const MoreSettings = ({ d, f }: PartProps) => (
           <input type="checkbox" checked={checkOn(f, key)} disabled={f.agent === 'demo' && key !== 'audit'} onChange={(e) => updateForm({ [key]: e.target.checked } as Partial<Form>)} />
           <span>
             <span className="name">{title}</span>
-            <span className="hint">{detail}</span>
+            <span className="hint">{f.agent === 'demo' && key !== 'audit' ? `Not used by the demo agent. ${detail}` : detail}</span>
           </span>
         </label>
       ))}
@@ -424,7 +432,7 @@ type CheckRowProps = {
 const CheckRow = ({ ok, text, detail }: CheckRowProps) => (
   <motion.li className={clsx('check', ok ? 'ok' : 'bad')} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}>
     <motion.span className="mark" aria-hidden="true" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 18, delay: 0.1 }}>
-      {ok ? '✓' : '!'}
+      {ok ? <Icon name="check" /> : '!'}
     </motion.span>
     <span>
       <strong>{text}</strong>
@@ -467,7 +475,15 @@ const DesignsStep = ({ d, f }: StepBodyProps) => {
   const a = agentOf(d, f);
   return (
     <>
-      <fieldset className="field picks">
+      <fieldset
+        className="field picks"
+        onKeyDown={(e) => {
+          // Browsers don't submit a form on Enter in a radio; this step does.
+          if (e.key !== 'Enter' || (e.target as HTMLInputElement).type !== 'radio') return;
+          e.preventDefault();
+          e.currentTarget.form?.requestSubmit();
+        }}
+      >
         <legend className="label">How many designs?</legend>
         <div className="pick-row">
           {[2, 4, 6].map((n) => (
@@ -537,7 +553,9 @@ type ProductFieldProps = {
 const ProductField = ({ f, k, label, placeholder }: ProductFieldProps) => (
   <label className="field">
     <span className="label">
-      {label} {f.product[k].trim() && <motion.span className="valid" initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}>✓</motion.span>}
+      {label} {f.product[k].trim() && <motion.span className="valid" initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}>
+          <Icon name="check" />
+        </motion.span>}
     </span>
     <textarea className="input" rows={2} placeholder={placeholder} value={f.product[k]} onChange={(e) => updateForm({ product: { ...f.product, [k]: e.target.value } })} />
   </label>
@@ -548,9 +566,9 @@ const SiteStep = ({ d, f }: StepBodyProps) => (
     <p className="hint">{d.hasProduct ? 'Your PRODUCT.md already tells the designers about your site. Add anything else below, or just continue.' : 'Optional. A few words help the designers aim at your audience instead of guessing. Skip it if you like.'}</p>
     {!d.hasProduct && (
       <>
-        <ProductField f={f} k="users" label="Who is it for?" placeholder="e.g. People who want to see where satellites are right now" />
-        <ProductField f={f} k="purpose" label="What does it offer?" placeholder="e.g. A live 3D globe of every tracked satellite" />
-        <ProductField f={f} k="keep" label="What must stay?" placeholder="e.g. The name, the globe, the data sources" />
+        <ProductField f={f} k="users" label="Who is it for?" placeholder="e.g. Small teams who need to book meeting rooms" />
+        <ProductField f={f} k="purpose" label="What does it offer?" placeholder="e.g. Online booking, opening hours and a menu" />
+        <ProductField f={f} k="keep" label="What must stay?" placeholder="e.g. The name, the logo, the product photos" />
       </>
     )}
     <label className="field">
@@ -580,7 +598,7 @@ const ReviewStep = ({ d, f, goStep }: StepBodyProps) => {
   const rows: [string, string, number][] = [
     ['App', `${stackName(d, f)} · ${f.appRel || 'repo root'}`, 0],
     ['Agent', f.agent === 'demo' ? 'Demo agent (no AI)' : (a?.name ?? f.agent), 0],
-    ['Designs', `${f.count}, ${f.approach === 'refine' ? 'refining your current look' : 'each a new look Impeccable picks'}`, 1],
+    ['Designs', `${f.count}, ${f.approach === 'refine' ? 'refining your current look' : f.agent === 'demo' ? 'each a new look' : 'each a new look Impeccable picks'}`, 1],
     ['Pages', f.routes.map((r) => (r === '/' ? 'Home' : r)).join(', '), 1],
     ['Extras', extras.length ? extras.join(', ') : 'None', 1],
     ['Your site', b.site === 'PRODUCT.md' ? 'From your PRODUCT.md' : b.site, 2],

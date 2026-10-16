@@ -1,5 +1,6 @@
 'use client';
 
+import { Fragment } from 'react';
 import { motion } from 'motion/react';
 import { CommandBlock } from './CommandBlock';
 import { api } from '@/lib/api';
@@ -98,8 +99,15 @@ const Kept = () => {
             </div>
             <div>
               <dt className="label">Branch</dt>
-              <dd style={{ wordBreak: 'break-all' }}>
-                {n === null ? '—' : `variantly/${snap.runId}/v${n}`}
+              <dd className="branch">
+                {n === null
+                  ? '—'
+                  : `variantly/${snap.runId}/v${n}`.split('/').map((part, i, all) => (
+                      <Fragment key={i}>
+                        <span>{i < all.length - 1 ? `${part}/` : part}</span>
+                        <wbr />
+                      </Fragment>
+                    ))}
               </dd>
             </div>
           </dl>
