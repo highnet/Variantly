@@ -12,6 +12,7 @@
   --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 body.light {
+  --dim: rgb(13 13 16 / 0.55);
   --ground: #e6e8eb;   /* --panel */
   --surface: #ffffff;
   --ink: #0d0d10;
@@ -27,6 +28,7 @@ body.light {
   --veil: rgb(230 232 235 / 0.94);
 }
 body.dark {
+  --dim: rgb(0 0 0 / 0.62);
   --ground: #0e1114;
   --surface: #171b20;
   --ink: #e8ebee;
@@ -75,7 +77,7 @@ body.tall { width: 1080px; height: 1920px; }
 .tall .bug { left: 40px; top: 150px; font-size: 44px; gap: 20px; }
 .tall .bug img { width: 72px; height: 72px; border-radius: 14px; }
 .step { position: absolute; font: 600 20px var(--mono); font-stretch: 87.5%; letter-spacing: 0.04em; text-transform: uppercase; color: var(--steel); }
-.wide .step { right: 192px; top: 958px; }
+.wide .step { right: 192px; top: 18px; }
 .tall .step { left: 40px; top: 250px; font-size: 28px; }
 
 /* Captions sit under the window, in the margin, never over the UI. */
@@ -118,3 +120,45 @@ body.tall { width: 1080px; height: 1920px; }
 .cmd { font: 700 76px var(--mono); padding: 26px 52px; border-radius: 10px; background: var(--slate); color: var(--alert); border: 1px solid var(--slate-line); }
 .url { font: 600 40px var(--mono); font-stretch: 87.5%; color: var(--steel); }
 .tall .cmd { font-size: 60px; }
+
+/* ------------------------------------------------------------ v2 motion design */
+.spot { position: absolute; border-radius: 14px; box-shadow: 0 0 0 4000px var(--dim); outline: 3px solid var(--alert); outline-offset: 2px; pointer-events: none; }
+.callout { position: absolute; max-width: 540px; padding: 12px 18px; border-radius: 10px; background: var(--slate); color: var(--on-slate); border-left: 5px solid var(--alert); font: 500 24px/1.35 var(--sans); box-shadow: var(--lift); }
+
+.band { position: absolute; display: flex; align-items: baseline; gap: 18px; padding: 14px 26px 16px 22px; border-radius: 0 12px 12px 0; background: var(--slate); color: var(--on-slate); border-left: 8px solid var(--alert); box-shadow: var(--lift); }
+.band .figure { font-size: 64px; color: var(--alert); }
+.band b { font: 700 40px var(--mono); font-stretch: 75%; text-transform: uppercase; letter-spacing: -0.01em; }
+.wide .band { left: 0; top: 96px; }
+.tall .band { left: 0; top: 300px; }
+
+.keycap { position: absolute; min-width: 64px; height: 64px; padding: 0 16px; display: grid; place-items: center; border-radius: 12px; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); border-bottom-width: 5px; font: 700 30px var(--mono); box-shadow: var(--lift); }
+.wide .keycap { left: 50%; top: 840px; margin-left: -32px; }
+.tall .keycap { left: 50%; top: 1380px; margin-left: -32px; }
+
+.term.side { left: auto; right: 220px; top: 150px; width: 760px; font-size: 22px; }
+.term.side pre { white-space: pre; }
+
+.diagram { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: grid; justify-items: center; gap: 22px; width: 1500px; }
+.diagram .repo, .diagram .wt { display: grid; gap: 6px; padding: 18px 24px; border-radius: 12px; background: var(--surface); color: var(--ink); border: 1px solid var(--rule); box-shadow: var(--lift); text-align: center; }
+.diagram .repo b { font: 700 34px var(--mono); font-stretch: 87.5%; }
+.diagram .repo span, .diagram .wt span { font: 500 20px var(--sans); color: var(--steel); }
+.diagram .wts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 100%; }
+.diagram .wt b { font: 700 30px var(--mono); color: var(--ink); }
+.diagram .wt code { font: 500 17px var(--mono); color: var(--steel); }
+.diagram .arrow { font: 500 24px var(--mono); color: var(--ink); }
+
+.kinetic .big { font-size: 96px; max-width: 1500px; line-height: 1.05; }
+.kinetic .big span { display: inline-block; }
+.tall .kinetic .big { font-size: 80px; max-width: 920px; }
+.card .credit { font: 500 26px var(--mono); font-stretch: 87.5%; color: var(--steel); margin-top: 10px; }
+.caret { animation: none; }
+
+/* ------------------------------------------------------------ thumbnail */
+body.thumb { width: 1280px; height: 720px; }
+.thumb .grid { position: absolute; right: 40px; top: 40px; width: 720px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; transform: rotate(-3deg); }
+.thumb .grid img { width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--rule); box-shadow: var(--lift); }
+.thumb .title { position: absolute; left: 56px; top: 70px; width: 520px; display: grid; gap: 26px; }
+.thumb .kicker { font-size: 48px; gap: 16px; justify-content: start; }
+.thumb .kicker img { width: 52px; height: 52px; border-radius: 12px; }
+.thumb .big { font-size: 76px; line-height: 0.98; }
+.thumb .cmd { font-size: 36px; padding: 14px 24px; justify-self: start; }

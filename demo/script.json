@@ -4,43 +4,97 @@
   "keep": 2,
   "scenes": [
     {
-      "id": "hook",
-      "step": "The before",
-      "presenter": {
+      "id": "cold",
+      "montage": true,
+      "hold": 7000,
+      "step": "Variantly",
+      "kinetic": {
+        "text": "Four redesigns. One command.",
+        "sub": "npx variantly",
+        "from": 3.6
+      },
+      "text": "",
+      "actions": []
+    },
+    {
+      "id": "hi",
+      "chapter": {
+        "n": 1,
+        "title": "Hi"
+      },
+      "step": "Hi",
+      "lower": {
         "name": "Joaquin",
         "role": "Variantly"
       },
-      "title": {
-        "kicker": "variantly",
-        "line": "N redesigns of your site, side by side. Keep one."
-      },
-      "text": "Hi, I'm Joaquin from Variantly. Here's a landing page that works, but looks like every other template. Variantly redesigns it several ways at once, and you keep the one you like.",
+      "text": "Hi, I'm Joaquin from Variantly. This is Tallyboard. It works. It just looks like every other template on the internet, and redesigning it means picking one direction and hoping it was the right one. Variantly takes a different approach. Your own coding agent redesigns your whole site several times over, each in a different direction. Every redesign runs as your real site, side by side. You keep the one you like.",
       "actions": [
         {
           "goto": "{{site}}"
         },
         {
-          "wait": 2200
+          "wait": 3000
         },
         {
-          "scroll": 700,
-          "ms": 1800
+          "scroll": 900,
+          "ms": 3200
         },
         {
-          "wait": 600
+          "wait": 2500
+        },
+        {
+          "scroll": 2000,
+          "ms": 3000
+        },
+        {
+          "wait": 2000
         },
         {
           "scroll": 0,
-          "ms": 1200
+          "ms": 2500
         }
       ]
     },
     {
-      "id": "launch",
-      "step": "Launch",
-      "terminal": "npx variantly",
-      "text": "All you need is Node and Claude Code. In your project, run npx variantly. It opens a wizard in your browser.",
+      "id": "promise",
+      "step": "Hi",
+      "hold": 2800,
+      "kinetic": {
+        "text": "Nothing changes until you keep one."
+      },
+      "text": "",
       "actions": [
+        {
+          "wait": 300
+        }
+      ]
+    },
+    {
+      "id": "need",
+      "chapter": {
+        "n": 2,
+        "title": "What you need"
+      },
+      "step": "What you need",
+      "terminal": {
+        "lines": [
+          "$ node -v",
+          "v22.18.0",
+          "$ claude --version",
+          "Claude Code",
+          "$ npx variantly"
+        ]
+      },
+      "lower": {
+        "name": "Designs by Impeccable",
+        "role": "impeccable.style",
+        "from": 14
+      },
+      "text": "You need two things: Node, and Claude Code signed in. Codex and Copilot work too. In your project, run npx variantly. It opens a wizard in your browser. The design work itself is done by Impeccable, an open-source design skill for coding agents. If your agent doesn't have it yet, Variantly installs it for you in one click.",
+      "actions": [
+        {
+          "wait": 5500
+        },
         {
           "goto": "{{app}}"
         },
@@ -48,41 +102,140 @@
           "waitFor": "#wiz-title"
         },
         {
-          "wait": 800
+          "wait": 1500
         },
         {
-          "hover": "text=/Claude Code|Demo agent/"
+          "realOnly": true,
+          "click": "role=button[name=\"Install Impeccable\"]",
+          "zoom": true,
+          "optional": true
+        },
+        {
+          "realOnly": true,
+          "waitFor": "text=/Claude Code ready/",
+          "timeoutMs": 240000,
+          "optional": true
         }
       ]
     },
     {
       "id": "setup",
+      "chapter": {
+        "n": 3,
+        "title": "Setup"
+      },
       "step": "Setup",
-      "text": "Setup finds your app and Claude Code, and installs the Impeccable design skill in one click if it's missing.",
+      "text": "Setup finds your app and how to run it, checks your agent and Impeccable, and tells you anything that would get in the way. Each variant will run your dev command on its own port. By default the agent may only edit files, inside its own copy of your project.",
       "actions": [
         {
-          "wait": 600
+          "spotlight": "text=/app found/",
+          "ms": 1950,
+          "point": true
         },
         {
-          "click": "role=button[name=/^Continue to (variants|designs)$/]",
+          "spotlight": "text=/ ready/",
+          "ms": 1650,
+          "point": true
+        },
+        {
+          "click": "text=Use a different app or agent"
+        },
+        {
+          "spotlight": "text=Dev command",
+          "ms": 1800,
+          "pad": 60
+        },
+        {
+          "spotlight": "text=Permissions",
+          "ms": 1800,
+          "pad": 40,
+          "optional": true
+        },
+        {
+          "click": "text=Use a different app or agent"
+        },
+        {
+          "click": "role=button[name=/^Continue to variants$/]",
           "zoom": true
         }
       ]
     },
     {
-      "id": "designs",
-      "step": "Variants",
-      "text": "Choose how many variants to make: two, four or six. We'll take four.",
+      "id": "make",
+      "chapter": {
+        "n": 4,
+        "title": "What to make"
+      },
+      "step": "What to make",
+      "text": "Pick how many variants: two, four or six. We'll take four, for the home page. Extras are optional Impeccable passes: sharper copy, motion, small moments of delight, a phone pass, or hardening for accessibility. Under more settings, Redesign gives every variant a different visual world, and Refine keeps your look and improves it. Leave a direction blank and Impeccable chooses one, or type your own. Two agents work at a time. Each one gets a real browser to check its own work, then a review pass critiques and fixes it, and everything is scored with axe-core and Lighthouse, on your machine.",
       "actions": [
-        {
-          "wait": 500
-        },
         {
           "click": "role=radio[name=\"4\"]",
           "zoom": true
         },
         {
-          "wait": 700
+          "wait": 800
+        },
+        {
+          "spotlight": "text=Which pages?",
+          "ms": 1800,
+          "pad": 40
+        },
+        {
+          "spotlight": "label.pick:has-text(\"Rewrite the copy\")",
+          "ms": 1500,
+          "callout": "Sharper headlines, buttons and labels. Facts, prices and names stay.",
+          "point": true
+        },
+        {
+          "spotlight": "label.pick:has-text(\"Add motion\")",
+          "ms": 1500,
+          "callout": "Purposeful transitions and entrances, with reduced motion respected.",
+          "point": true
+        },
+        {
+          "spotlight": "label.pick:has-text(\"Add delight\")",
+          "ms": 1500,
+          "callout": "Small moments of personality: empty states, hovers, details.",
+          "point": true
+        },
+        {
+          "spotlight": "label.pick:has-text(\"Polish for phones\")",
+          "ms": 1500,
+          "callout": "Check every chosen page at phone width and fix what breaks.",
+          "point": true
+        },
+        {
+          "spotlight": "label.pick:has-text(\"Harden\")",
+          "ms": 1500,
+          "callout": "Accessibility, focus states, long text and error states.",
+          "point": true
+        },
+        {
+          "click": "text=More settings"
+        },
+        {
+          "spotlight": "text=Approach",
+          "ms": 3200,
+          "pad": 50
+        },
+        {
+          "spotlight": "text=/Your own directions/",
+          "ms": 3000,
+          "pad": 60
+        },
+        {
+          "spotlight": "text=At a time",
+          "ms": 1800,
+          "pad": 30
+        },
+        {
+          "spotlight": "text=Around Impeccable",
+          "ms": 5200,
+          "pad": 90
+        },
+        {
+          "click": "text=More settings"
         },
         {
           "click": "role=button[name=\"Continue to your site\"]"
@@ -90,24 +243,33 @@
       ]
     },
     {
-      "id": "brief",
-      "step": "Your site",
-      "text": "Say who the site is for, what it offers, and what must stay. Here: the prices, the sign-up button and the FAQ.",
+      "id": "site",
+      "chapter": {
+        "n": 5,
+        "title": "About your site"
+      },
+      "step": "About your site",
+      "text": "Then a few words about your site: who it's for, what it offers, and, most importantly, what must stay. Here: the prices, the sign-up button and the FAQ. Agents change presentation, never behaviour: every page, form and piece of copy stays.",
       "actions": [
         {
           "fill": "role=textbox[name=/Who is it for/]",
           "text": "Small agencies that bill by the hour.",
-          "delay": 16
+          "delay": 30
         },
         {
           "fill": "role=textbox[name=/What does it offer/]",
           "text": "Timers, timesheets and invoices.",
-          "delay": 16
+          "delay": 30
         },
         {
           "fill": "role=textbox[name=/What must stay/]",
           "text": "Prices, the sign-up button, the FAQ.",
-          "delay": 16
+          "delay": 30
+        },
+        {
+          "spotlight": "role=textbox[name=/What must stay/]",
+          "ms": 3500,
+          "pad": 30
         },
         {
           "click": "role=button[name=\"Continue to review\"]"
@@ -116,11 +278,20 @@
     },
     {
       "id": "review",
+      "chapter": {
+        "n": 6,
+        "title": "Review"
+      },
       "step": "Review",
-      "text": "Review the brief, and make the variants. Nothing in your project changes yet.",
+      "text": "The review shows exactly what will run, and how many agent sessions it uses on your own account. Make four variants.",
       "actions": [
         {
-          "wait": 1200
+          "wait": 800
+        },
+        {
+          "spotlight": "text=/Uses \\d+ sessions|Nothing is spent/",
+          "ms": 4000,
+          "pad": 20
         },
         {
           "click": "role=button[name=/^Make \\d+ variants?$/]",
@@ -130,23 +301,80 @@
       ]
     },
     {
-      "id": "generate",
-      "step": "Generation",
-      "timelapse": true,
-      "text": "Each variant gets its own git worktree and its own dev server. Your agent works headless, two at a time, checks its work in a real browser, and every result is scored with axe-core and Lighthouse.",
+      "id": "worktrees",
+      "chapter": {
+        "n": 7,
+        "title": "The run"
+      },
+      "step": "The run",
+      "diagram": "worktrees",
+      "text": "Each variant gets its own git worktree, outside your project, and its own dev server. Your checkout isn't touched.",
       "actions": [
         {
           "waitFor": "body[data-view=\"board\"]"
         },
         {
-          "wait": 1500
+          "wait": 500
+        }
+      ]
+    },
+    {
+      "id": "board",
+      "step": "The run",
+      "text": "The board shows every variant live: its direction, status, the files it changed, and what it's using on your account as it goes.",
+      "actions": [
+        {
+          "spotlight": "role=columnheader[name=\"Direction\"]",
+          "ms": 1800,
+          "pad": 30
         },
+        {
+          "spotlight": "role=columnheader[name=\"Status\"]",
+          "ms": 1500,
+          "pad": 30
+        },
+        {
+          "spotlight": "role=columnheader[name=\"Files\"]",
+          "ms": 1500,
+          "pad": 30
+        },
+        {
+          "spotlight": "role=columnheader[name=\"Usage\"]",
+          "ms": 1800,
+          "pad": 30
+        }
+      ]
+    },
+    {
+      "id": "agent",
+      "step": "The run",
+      "text": "Here's one agent at work. It reads your site, lets Impeccable choose a direction, and builds it. Then it opens its variant in a real browser, at desktop and phone width, and fixes what it sees. A second session reviews the result with Impeccable's critique and audit, and fixes the worst problems without changing the direction. If a variant goes wrong, stop it or retry it on its own. The others keep going.",
+      "actions": [
         {
           "click": "role=button[name=\"Show V01 output\"]"
         },
         {
+          "wait": 14000
+        },
+        {
+          "spotlight": "role=button[name=\"Stop\"]",
+          "ms": 3000,
+          "pad": 20,
+          "point": true,
+          "optional": true
+        }
+      ]
+    },
+    {
+      "id": "lapse",
+      "step": "The run",
+      "timelapse": true,
+      "hold": 9000,
+      "text": "",
+      "actions": [
+        {
           "waitApi": "allDone",
-          "timeoutMin": 90
+          "timeoutMin": 120
         },
         {
           "wait": 1500
@@ -155,14 +383,22 @@
     },
     {
       "id": "compare",
+      "chapter": {
+        "n": 8,
+        "title": "Compare"
+      },
       "step": "Compare",
       "text": "Then compare, on your real site. Drag the divider for a before and after.",
       "actions": [
         {
+          "click": "role=button[name=/^Compare/]",
+          "optional": true
+        },
+        {
           "waitFor": "body[data-view=\"compare\"]"
         },
         {
-          "click": "role=button[name=/^V01/]"
+          "key": "1"
         },
         {
           "waitPanes": true
@@ -174,36 +410,73 @@
             80,
             50
           ],
-          "ms": 1050,
+          "ms": 1200,
           "zoom": true
         }
       ]
     },
     {
-      "id": "switch",
-      "step": "Directions",
-      "text": "Every direction was designed from scratch for this site. Switch between them in a single click, and compare each one with the original.",
+      "id": "walk",
+      "step": "Compare",
+      "afterTake": true,
+      "text": "Each variant went its own way. Here's the first, the second, the third, and the fourth. Switch with the number keys, see them side by side, or check the phone layout.",
       "actions": [
         {
-          "click": "role=button[name=/^V02/]",
-          "sound": "pop",
-          "moveMs": 380
+          "key": "2"
         },
         {
           "waitPanes": true
         },
         {
-          "click": "role=button[name=/^V03/]",
-          "sound": "pop",
-          "moveMs": 380
+          "wait": 900
+        },
+        {
+          "key": "3"
         },
         {
           "waitPanes": true
         },
         {
-          "click": "role=button[name=/^V04/]",
-          "sound": "pop",
-          "moveMs": 380
+          "wait": 900
+        },
+        {
+          "key": "4"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "wait": 900
+        },
+        {
+          "key": "s"
+        },
+        {
+          "wait": 400
+        },
+        {
+          "key": "s"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "wait": 1100
+        },
+        {
+          "key": "m"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "wait": 1100
+        },
+        {
+          "key": "m"
+        },
+        {
+          "key": "s"
         },
         {
           "waitPanes": true
@@ -212,36 +485,61 @@
     },
     {
       "id": "scores",
-      "step": "Scores",
-      "text": "Accessibility, performance, best practices and SEO, each measured against the original.",
+      "step": "Compare",
+      "text": "The details show what changed, file by file, and how each variant scores against your original for accessibility, performance, best practices and SEO.",
       "actions": [
         {
-          "click": "role=button[name=/^V0{{keep}}/]",
-          "sound": "pop"
+          "key": "{{keep}}"
         },
         {
           "waitPanes": true
         },
         {
-          "click": "role=button[name=\"Variant details\"]",
-          "zoom": true
+          "key": "i"
         },
         {
-          "wait": 1800
+          "wait": 600
         },
         {
-          "press": "Escape"
+          "spotlight": "text=/Scores · axe-core/",
+          "ms": 4500,
+          "pad": 120
+        },
+        {
+          "spotlight": "text=/files changed/",
+          "ms": 2500,
+          "pad": 60,
+          "optional": true
+        },
+        {
+          "key": "Escape"
         }
       ]
     },
     {
       "id": "keep",
+      "chapter": {
+        "n": 9,
+        "title": "Keep"
+      },
       "step": "Keep",
-      "text": "Keep the one you like. It's applied to your working tree with a three-way merge. The others stay as branches.",
+      "terminal": {
+        "diffstat": true,
+        "after": [
+          "$ npx variantly clean"
+        ]
+      },
+      "text": "Keep the one you like. Variantly applies it to your working tree. If you've edited files since the run started, it merges with your changes. Nothing is committed: review it with git diff. The other variants stay as branches until you clean them up.",
       "actions": [
         {
           "click": "role=button[name=/^Keep V0/]",
           "zoom": true
+        },
+        {
+          "spotlight": "role=alertdialog",
+          "ms": 2800,
+          "pad": 20,
+          "optional": true
         },
         {
           "click": "role=button[name=/^Apply V0/]",
@@ -249,17 +547,48 @@
         },
         {
           "waitFor": "body[data-view=\"kept\"]"
+        },
+        {
+          "gitStat": true
+        },
+        {
+          "wait": 1500
+        },
+        {
+          "spotlight": "text=/Applied to your working tree/",
+          "ms": 3000,
+          "pad": 80,
+          "optional": true
         }
       ]
     },
     {
-      "id": "outro",
+      "id": "call",
+      "step": "Keep",
+      "hold": 2400,
+      "kinetic": {
+        "text": "Your code. Your call."
+      },
+      "text": "",
+      "actions": [
+        {
+          "wait": 300
+        }
+      ]
+    },
+    {
+      "id": "wrap",
+      "chapter": {
+        "n": 10,
+        "title": "Wrap"
+      },
       "step": "Try it",
       "cta": {
         "command": "npx variantly",
-        "url": "variantly.style"
+        "url": "variantly.style",
+        "credit": "Designs by Impeccable · impeccable.style"
       },
-      "text": "Variantly. It runs on your machine, and all it needs is Node and Claude Code. Try it with npx variantly.",
+      "text": "Variantly runs entirely on your machine, with your own agent subscription. There's no account and no server, and it never sees a model. All you need is Node and Claude Code. Try it with npx variantly.",
       "actions": [
         {
           "wait": 500

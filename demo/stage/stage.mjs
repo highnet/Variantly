@@ -155,7 +155,6 @@ export async function mount(layout, theme = 'light') {
   const film = await loadFootage(`../build/${theme}/footage`);
   const tall = layout === 'tall';
   const scene = tl.scenes.find((s) => t >= s.start && t < s.end) ?? tl.scenes.at(-1);
-  const first = tl.scenes[0];
 
   // ---------------------------------------------------------------- screen
   const screen = el('div', 'screen');
@@ -168,113 +167,216 @@ export async function mount(layout, theme = 'light') {
   lens.append(shot);
   screen.append(lens);
   document.body.append(screen);
-  drawCursor(pointer, tl.cursor);
+  if (!scene.montage) drawCursor(pointer, tl.cursor);
 
-  const zoom = zoomAt(tl.clicks);
-  const scale = 1 + 0.2 * zoom.k;
+  // ---------------------------------------------------------------- camera
+  // Punch in on zoomed clicks and, more gently, on spotlit elements; drift a
+  // few pixels against the cursor for depth. All of it eased, all from t.
+  const cold = scene.montage;
+  const spots = tl.spotlights ?? [];
+  let focus = zoomAt(tl.clicks);
+  let amount = 0.2 * focus.k;
+  for (const sp of spots) {
+    const k = window_(sp.t0 - 0.3, sp.t1 + 0.2, 0.6) * 0.55;
+    if (0.2 * k > amount) {
+      amount = 0.2 * k;
+      focus = { x: sp.box[0] + sp.box[2] / 2, y: sp.box[1] + sp.box[3] / 2, k };
+    }
+  }
+  const scale = 1 + amount;
   if (tall) {
     // 1:1 pixels, a 1080-wide window onto the 1920-wide recording.
     const fx = focusX(tl.clicks);
-    shot.style.transform = `translate(${540 - fx * scale}px, ${-zoom.y * (scale - 1)}px) scale(${scale})`;
+    shot.style.transform = `translate(${540 - fx * scale}px, ${-focus.y * (scale - 1)}px) scale(${scale})`;
   } else {
-    shot.style.transform = punchIn(tl.clicks.filter((c) => c.zoom), { scale: 1.2, lead: 0.9, hold: 0.8, ease: 0.7, t });
+    shot.style.transform = `translate(${-focus.x * (scale - 1)}px, ${-focus.y * (scale - 1)}px) scale(${scale})`;
+    const c = !cold && springAt(tl.cursor?.path ?? [], t);
+    if (c) screen.style.translate = `${((c.x - 960) / 960) * -6}px ${((c.y - 540) / 540) * -4}px`;
+  }
+
+  // Spotlight: dim everything but one element, in the shot so it zooms with it.
+  for (const sp of spots) {
+    const k = window_(sp.t0 - 0.25, sp.t1 + 0.15, 0.35);
+    if (k <= 0) continue;
+    const [x, y, w, h] = sp.box;
+    const hole = el('div', 'spot');
+    Object.assign(hole.style, { left: `${x}px`, top: `${y}px`, width: `${w}px`, height: `${h}px`, opacity: String(k) });
+    pointer.before(hole);
+    if (sp.callout) {
+      const note = el('div', 'callout', esc(sp.callout));
+      const below = y + h + 150 < 1080;
+      Object.assign(note.style, { left: `${Math.min(1920 - 560, Math.max(20, x))}px`, top: `${below ? y + h + 14 : y - 84}px`, opacity: String(k) });
+      note.style.transform = `translateY(${(1 - k) * 8}px)`;
+      pointer.before(note);
+    }
   }
 
   // ---------------------------------------------------------------- chrome
+  const chapter = [...tl.scenes].reverse().find((s) => s.chapter && s.start <= t + 0.001)?.chapter;
   const bug = el('div', 'bug', `<img src="icon.svg" alt=""><span>variantly</span>`);
   document.body.append(bug);
-  // A board-style step marker: which scene of how many.
-  const index = tl.scenes.indexOf(scene);
-  if (scene.step) {
-    const step = el('div', 'step', `${String(index + 1).padStart(2, '0')} / ${String(tl.scenes.length).padStart(2, '0')} · ${esc(scene.step)}`);
-    step.style.opacity = window_(scene.start, scene.end, 0.3);
-    document.body.append(step);
+  if (chapter && !cold) {
+    const chip = el('div', 'step', `${String(chapter.n).padStart(2, '0')} · ${esc(chapter.title)}`);
+    document.body.append(chip);
+  }
+  if (cold) bug.style.opacity = '0';
+
+  // Chapter band: the number and title slide in at each chapter's start.
+  for (const s of tl.scenes) {
+    if (!s.chapter) continue;
+    const k = window_(s.start + 0.1, s.start + 2.6, 0.45);
+    if (k <= 0) continue;
+    const band = el('div', 'band', `<span class="figure">${String(s.chapter.n).padStart(2, '0')}</span><b>${esc(s.chapter.title)}</b>`);
+    band.style.opacity = String(k);
+    band.style.transform = `translateX(${(1 - ease(k)) * -40}px)`;
+    document.body.append(band);
   }
 
-  // Timelapse: a chip with the speed and the real time that has gone by.
+  // Timelapse: how much real time it covers, and how much faster it runs.
   if (scene.speed > 1) {
+    const total = Math.round(((scene.end - scene.start) * scene.speed) / 60);
     const real = (t - scene.start) * scene.speed;
-    const chip = el('div', 'chip', `▶▶ ${Math.round(scene.speed)}× · ${clock(real)} real time`);
+    const chip = el('div', 'chip', `▶▶ ~${Math.max(1, total)} min, sped up ${Math.round(scene.speed)}× · ${clock(real)}`);
     chip.style.opacity = window_(scene.start, scene.end, 0.3);
     document.body.append(chip);
   }
 
+  // Keycaps for the keys pressed in compare.
+  for (const k of tl.keys ?? []) {
+    const v = window_(k.t - 0.05, k.t + 1.1, 0.2);
+    if (v <= 0) continue;
+    const label = k.key === 'Escape' ? 'Esc' : k.key.length === 1 ? k.key.toUpperCase() : k.key;
+    const cap = el('div', 'keycap', esc(label));
+    cap.style.opacity = String(v);
+    cap.style.transform = `translateY(${(1 - v) * 10}px) scale(${1 - 0.08 * Math.max(0, 1 - (t - k.t) / 0.12)})`;
+    document.body.append(cap);
+  }
+
   // ---------------------------------------------------------------- captions
   const cue = captionAt(tl.captions, t);
-  if (cue && !scene.cta) {
-    const caption = el('div', 'caption', `<span>${esc(cue.text)}</span>`);
-    document.body.append(caption);
+  if (cue && !scene.cta) document.body.append(el('div', 'caption', `<span>${esc(cue.text)}</span>`));
+
+  // ---------------------------------------------------------------- lower thirds
+  for (const s of tl.scenes) {
+    if (!s.lower) continue;
+    const from = s.start + (s.lower.from ?? 0.6);
+    const k = window_(from, Math.min(s.end - 0.2, from + 5), 0.45);
+    if (k <= 0) continue;
+    const lower = el('div', 'lower', `<b>${esc(s.lower.name)}</b><span>${esc(s.lower.role)}</span>`);
+    lower.style.opacity = String(k);
+    lower.style.transform = `translateX(${(1 - k) * -24}px)`;
+    document.body.append(lower);
   }
 
-  // ---------------------------------------------------------------- intro card
-  if (first.title) {
-    const k = 1 - ease(span(first.start + 3.0, first.start + 3.7));
-    if (k > 0) {
+  // ---------------------------------------------------------------- terminal cards
+  for (const s of tl.scenes) {
+    if (!s.terminal) continue;
+    const diff = s.terminal.diffstat;
+    const a = diff ? s.start + 7 : s.start + 0.4;
+    const b = diff ? s.end - 0.3 : s.start + 6.5;
+    const k = window_(a, b, 0.35);
+    if (k <= 0) continue;
+    const lines = diff
+      ? ['$ git diff --stat', ...(tl.diffstat || ' (no changes)').split('\n').map((l) => l.replace(/^\s+/, ' ')), ...(s.terminal.after ?? [])]
+      : s.terminal.lines;
+    // Lines appear one by one; commands type out.
+    const per = diff ? 0.12 : 1.1;
+    let html = '';
+    lines.forEach((line, i) => {
+      const at = a + 0.3 + i * per;
+      if (t < at) return;
+      const cmd = line.startsWith('$ ');
+      const shownText = cmd && !diff ? line.slice(0, 2 + Math.round((line.length - 2) * span(at, at + 0.6))) : line;
+      html += cmd ? `<span class="prompt">$</span> ${esc(shownText.slice(2))}\n` : `<span class="dim">${esc(shownText)}</span>\n`;
+    });
+    const term = el('div', `term${diff ? ' side' : ''}`, `<div class="bar"><i></i><i></i><i></i></div><pre>${html}<span class="caret"></span></pre>`);
+    term.style.opacity = String(k);
+    term.style.transform = `translateY(${(1 - k) * 20}px)`;
+    if (!diff) {
       const veil = el('div', 'veil');
-      veil.style.opacity = 0.94 * k;
-      const card = el(
-        'div',
-        'card',
-        `<div class="kicker figure"><img src="icon.svg" alt="">${esc(first.title.kicker)}</div><div class="line">${esc(first.title.line)}</div>`,
-      );
-      card.style.opacity = k;
-      card.style.transform = `translateY(${(1 - ease(span(0, 0.8))) * 30}px)`;
+      veil.style.opacity = String(0.55 * k);
+      document.body.append(veil);
+    }
+    document.body.append(term);
+  }
+
+  // ---------------------------------------------------------------- diagram
+  const wt = tl.scenes.find((s) => s.diagram === 'worktrees');
+  if (wt) {
+    const k = window_(wt.start + 0.2, wt.end - 0.1, 0.4);
+    if (k > 0) {
+      const branches = tl.branches?.length ? tl.branches : [1, 2, 3, 4].map((n) => `variantly/<run>/v${n}`);
+      const step = (i) => ease(span(wt.start + 0.5 + i * 0.35, wt.start + 0.9 + i * 0.35));
+      const cols = branches
+        .slice(0, 4)
+        .map((b, i) => `<div class="wt" style="opacity:${step(i + 1)}"><b>V0${i + 1}</b><code>${esc(b)}</code><span>dev server</span></div>`)
+        .join('');
+      const card = el('div', 'diagram', `<div class="repo" style="opacity:${step(0)}"><b>Your project</b><span>untouched</span></div><div class="arrow" style="opacity:${step(1)}">↓ one git worktree each, outside your project</div><div class="wts">${cols}</div><div class="arrow" style="opacity:${step(5)}">↓ side by side in one preview</div>`);
+      card.style.opacity = String(k);
+      const veil = el('div', 'veil');
+      veil.style.opacity = String(0.82 * k);
       document.body.append(veil, card);
-      bug.style.opacity = 1 - k;
     }
   }
 
-  // ---------------------------------------------------------------- presenter
-  // A lower third naming who is speaking, once the title card has cleared.
-  if (first.presenter) {
-    const k = window_(first.start + 3.6, first.end - 0.2, 0.45);
-    if (k > 0) {
-      const lower = el('div', 'lower', `<b>${esc(first.presenter.name)}</b><span>${esc(first.presenter.role)}</span>`);
-      lower.style.opacity = k;
-      lower.style.transform = `translateX(${(1 - k) * -24}px)`;
-      document.body.append(lower);
+  // ---------------------------------------------------------------- kinetic type
+  for (const s of tl.scenes) {
+    if (!s.kinetic) continue;
+    const a = s.start + (s.kinetic.from ?? 0);
+    const k = window_(a, s.end + 0.15, 0.4);
+    if (k <= 0) continue;
+    const words = s.kinetic.text.split(' ');
+    const big = words
+      .map((w, i) => {
+        const v = ease(span(a + i * 0.09, a + i * 0.09 + 0.35));
+        return `<span style="opacity:${v};transform:translateY(${(1 - v) * 18}px)">${esc(w)}</span>`;
+      })
+      .join(' ');
+    let sub = '';
+    if (s.kinetic.sub) {
+      const typed = s.kinetic.sub.slice(0, Math.round(s.kinetic.sub.length * span(a + 1.0, a + 1.8)));
+      sub = `<div class="cmd">${esc(typed)}<span class="caret"></span></div>`;
     }
-  }
-
-  // ---------------------------------------------------------------- terminal
-  const launch = tl.scenes.find((s) => s.terminal);
-  if (launch) {
-    const a = launch.start;
-    const shown = window_(a, a + 3.4, 0.35);
-    if (shown > 0) {
-      const command = launch.terminal;
-      const typed = command.slice(0, Math.round(command.length * span(a + 0.35, a + 1.25)));
-      const answered = t > a + 1.6;
-      const term = el(
-        'div',
-        'term',
-        `<div class="bar"><i></i><i></i><i></i></div><pre><span class="prompt">$</span> ${esc(typed)}${answered ? '' : '<span class="caret"></span>'}${
-          answered ? `\n<span class="dim">  ➜  opening the wizard in your browser</span>` : ''
-        }</pre>`,
-      );
-      term.style.opacity = shown;
-      term.style.transform = `translateY(${(1 - shown) * 20}px)`;
-      const veil = el('div', 'veil');
-      veil.style.opacity = 0.55 * shown;
-      document.body.append(veil, term);
-    }
-  }
-
-  // ---------------------------------------------------------------- outro
-  const outro = tl.scenes.find((s) => s.cta);
-  if (outro && t >= outro.start) {
-    const k = ease(span(outro.start, outro.start + 0.7));
     const veil = el('div', 'veil');
-    veil.style.opacity = k;
-    const card = el(
-      'div',
-      'card',
-      `<div class="kicker figure"><img src="icon.svg" alt="">variantly</div><div class="cmd">${esc(outro.cta.command)}</div><div class="url">${esc(outro.cta.url)}</div>`,
-    );
-    card.style.opacity = ease(span(outro.start + 0.3, outro.start + 1.0));
+    veil.style.opacity = String((cold ? 0.88 : 0.94) * k);
+    const card = el('div', 'card kinetic', `<div class="big figure">${big}</div>${sub}`);
+    card.style.opacity = String(k);
     document.body.append(veil, card);
   }
 
+  // ---------------------------------------------------------------- end card
+  const outro = tl.scenes.find((s) => s.cta);
+  if (outro && t >= outro.start + 6) {
+    const a = outro.start + 6;
+    const k = ease(span(a, a + 0.8));
+    const veil = el('div', 'veil');
+    veil.style.opacity = String(k);
+    const card = el(
+      'div',
+      'card',
+      `<div class="kicker figure"><img src="icon.svg" alt="">variantly</div><div class="cmd">${esc(outro.cta.command)}</div><div class="url">${esc(outro.cta.url)}</div>${
+        outro.cta.credit ? `<div class="credit">${esc(outro.cta.credit)}</div>` : ''
+      }`,
+    );
+    card.style.opacity = String(ease(span(a + 0.3, a + 1.1)));
+    document.body.append(veil, card);
+  }
+
+  await document.fonts.ready;
+  markReady();
+}
+
+/** The thumbnail: a 2×2 grid of the four variants under the title. */
+export async function mountThumbnail(theme = 'light') {
+  document.body.classList.add('thumb', theme);
+  const tl = await (await fetch(`../timeline.${theme}.json`)).json();
+  const film = await loadFootage(`../build/${theme}/footage`);
+  const cold = tl.scenes.find((s) => s.montage);
+  const at = cold ? [0, 1, 2, 3].map((i) => cold.start + 0.45 + i * 0.9) : [1, 2, 3, 4].map((i) => (tl.duration * i) / 5);
+  const grid = el('div', 'grid');
+  for (const time of at) grid.append(await film.image(time));
+  const title = el('div', 'title', `<div class="kicker figure"><img src="icon.svg" alt="">variantly</div><div class="big figure">Four redesigns.<br>One command.</div><div class="cmd">npx variantly</div>`);
+  document.body.append(grid, title);
   await document.fonts.ready;
   markReady();
 }
