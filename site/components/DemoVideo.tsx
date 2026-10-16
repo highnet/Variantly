@@ -1,5 +1,6 @@
 import { Typography } from '@/components/ui/Typography';
-import { DEMO_VIDEO_ID } from '@/lib/site';
+import { buttonVariants } from '@/components/ui/Button';
+import { DEMO_BOOKING_URL, DEMO_VIDEO_ID } from '@/lib/site';
 
 /*
  * The narrated live demo, straight after the showcase: people who just saw
@@ -47,6 +48,25 @@ const DemoVideo = () => (
         </div>
       )}
     </div>
+    {DEMO_BOOKING_URL && (
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+        <a
+          href={DEMO_BOOKING_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonVariants({ variant: 'primary', size: 'big' })}
+        >
+          <svg viewBox="0 0 24 24" className="fill-none stroke-current stroke-2" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="16" rx="2" />
+            <path d="M3 10h18M8 3v4M16 3v4" />
+          </svg>
+          Book a live demo
+        </a>
+        <span className="text-steel text-[15px]">
+          Thirty minutes, on your own site, with someone who builds variantly.
+        </span>
+      </div>
+    )}
   </section>
 );
 
