@@ -11,12 +11,13 @@
     "voice": "node --env-file-if-exists=.env voice.mjs",
     "record": "node --env-file-if-exists=.env record.mjs",
     "record:dry": "node --env-file-if-exists=.env record.mjs --dry",
-    "edit": "node edit.mjs",
-    "probe": "node build.mjs probe",
-    "build": "node build.mjs wide",
-    "build:vertical": "node build.mjs vertical",
-    "gif": "node build.mjs gif",
-    "all": "npm run voice && npm run record && npm run edit && node build.mjs all"
+    "edit": "node --env-file-if-exists=.env edit.mjs --theme light && node --env-file-if-exists=.env edit.mjs --theme dark",
+    "probe": "node --env-file-if-exists=.env build.mjs probe",
+    "build": "node --env-file-if-exists=.env build.mjs wide",
+    "build:vertical": "node --env-file-if-exists=.env build.mjs vertical",
+    "gif": "node --env-file-if-exists=.env build.mjs gif",
+    "all": "npm run voice && npm run record && npm run edit && npm run build:all",
+    "build:all": "node --env-file-if-exists=.env build.mjs all"
   },
   "devDependencies": {
     "ffmpeg-static": "^5.2.0",

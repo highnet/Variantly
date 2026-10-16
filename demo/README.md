@@ -31,30 +31,66 @@ npm run voice                              # narration in your voice
 npm run record:dry                         # rehearsal: variantly's demo agent, no AI, ~3 min
 npm run record                             # the real take: Claude Code, 4 variants, 2 at a time,
                                            # filmed in light and dark at once, in lockstep
-npm run edit -- --theme light && npm run edit -- --theme dark
+npm run edit                               # cuts both themes
 npm run probe                              # look at probe/*.png
-node build.mjs all                         # both themes: 16:9, 9:16, silent, poster, GIF
+npm run build:all                          # both themes: 16:9, 9:16, silent, poster, GIF
 ```
 
-## What you need
+## Set up your machine (once)
 
-- **Node 22.18+** (SeekReel is TypeScript run directly by Node).
-- **git**, and **Python 3** (SeekReel's cue engine mixes the soundtrack). On
-  Windows that is usually `python`, which the scripts use by default.
-- **SeekReel** checked out next to this repo (`../seekreel`), or `SEEKREEL_DIR`
-  pointing at it, with `npm install` run inside it.
-- **Claude Code**, signed in, with Impeccable installed. `record` runs
-  `variantly doctor` first and stops if anything is missing.
-- An **ElevenLabs** API key and your voice ID.
+Everything runs locally: voice, recording and rendering. Nothing needs this
+repository's CI or any cloud service except ElevenLabs.
+
+**1. Tools**
+
+| | Windows | macOS |
+| --- | --- | --- |
+| Node **22.18+** (SeekReel runs TypeScript directly) | `winget install OpenJS.NodeJS.LTS`, or nodejs.org | `brew install node`, or nodejs.org |
+| git | `winget install Git.Git` | `xcode-select --install` |
+| Python 3 (SeekReel's sound mixer) | `winget install Python.Python.3.12`; the scripts call `python` | preinstalled `python3`, or `brew install python` |
+| Claude Code, signed in | `npm install -g @anthropic-ai/claude-code`, then `claude` | same |
+| Impeccable for Claude | `npx impeccable install --providers=claude --scope=global --yes --no-hooks` | same |
+
+**ffmpeg needs no install.** Both the demo and SeekReel use the `ffmpeg-static`
+build from npm. To use your own, set `FFMPEG` (and `FFPROBE`) in `.env`.
+
+Check with `node -v` (22.18 or later), `git --version` and `python --version`
+(`python3 --version` on macOS).
+
+**2. Repositories, side by side**
 
 ```sh
-cd demo
-npm run setup              # npm install + Playwright's Chromium
-cp .env.example .env       # then fill in ELEVEN_API_KEY and ELEVEN_VOICE_ID
+git clone https://github.com/highnet/Variantly
+git clone https://github.com/highnet/seekreel
+cd Variantly && git checkout claude/variantly-demo-video-48r2g7 && npm install && npm run build:ui
+cd ../seekreel && git checkout claude/variantly-demo-video-48r2g7 && npm install
 ```
 
-`.env` is git-ignored. The npm scripts load it, so nothing secret is ever
-typed into a command or committed.
+The demo finds SeekReel at `../seekreel`. If you keep it elsewhere, set
+`SEEKREEL_DIR` in `.env`, e.g. `C:\code\seekreel` or `/Users/you/code/seekreel`.
+
+`npm run build:ui` builds the app interface the video films (ui-next). Run it
+again after pulling Variantly changes.
+
+**3. The demo**
+
+```sh
+cd Variantly/demo
+npm run setup              # dependencies + Playwright's Chromium (npx playwright install chromium)
+```
+
+Copy `.env.example` to `.env` (Windows: `copy .env.example .env`, macOS:
+`cp .env.example .env`) and fill in:
+
+- `ELEVEN_API_KEY`: ElevenLabs → Profile → API keys.
+- `ELEVEN_VOICE_ID`: your voice's ID, under ElevenLabs → Voices → your voice → ID.
+
+`.env` is git-ignored. The npm scripts load it with Node's `--env-file`, so
+the key is never typed into a command or committed.
+
+**Paths with spaces** (e.g. `C:\Users\Jane Doe\code`) work. Keep the
+checkout outside OneDrive or iCloud-synced folders: a sync client locking files
+mid-render slows it down and can break git worktrees.
 
 ## Make the film
 
@@ -69,10 +105,11 @@ Or step by step:
 | Voice | `npm run voice` | ~30 s | Only re-reads lines whose text changed. `node voice.mjs hook` forces one. |
 | Rehearse | `npm run record:dry` | ~3 min | variantly's built-in demo agent: no AI, no cost. Checks every click. |
 | Record | `npm run record` | 20–60 min | A real run with Claude Code: **4 variants, real tokens**. |
-| Edit | `npm run edit` | ~1 min | Cuts the recording, writes captions, cues and configs. |
+| Edit | `npm run edit` | ~5 min | Cuts both themes' recordings, writes captions, cues and configs. |
 | Check | `npm run probe` | ~10 s | Renders 5 frames into `probe/`. Look at them before building. |
-| Build | `npm run build` | ~45 min | 16:9 MP4, silent MP4 and poster. Roughly one second per frame. |
-| Vertical | `npm run build:vertical` | ~45 min | 9:16 for Reels, Shorts and TikTok. |
+| Build | `npm run build` | ~30 min per theme | 16:9 MP4, silent MP4 and poster. About half a second per frame. |
+| Vertical | `npm run build:vertical` | ~30 min per theme | 9:16 for Reels, Shorts and TikTok. |
+| Everything | `npm run build:all` | ~2 h | Both themes, both shapes, GIFs. Leave it running. |
 | GIF | `npm run gif` | ~10 s | Six seconds of the before/after slider. Needs the 16:9 film. |
 
 `npm run probe -- 12.5,40,61` probes particular seconds.
