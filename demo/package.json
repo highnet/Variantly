@@ -18,7 +18,8 @@
     "gif": "node --env-file-if-exists=.env build.mjs gif",
     "all": "npm run voice && npm run record && npm run edit && npm run build:all",
     "build:all": "node --env-file-if-exists=.env build.mjs all",
-    "voice:local": "node voice.mjs --voice local"
+    "voice:local": "node voice.mjs --voice local",
+    "thumbnail": "node --env-file-if-exists=.env build.mjs thumbnail"
   },
   "devDependencies": {
     "ffmpeg-static": "^5.2.0",

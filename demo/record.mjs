@@ -17,7 +17,8 @@
 //    video/raw-timeline.json (scene and click times in seconds from the light
 //    page's start; offsets.<theme> is when that page started, relative to it).
 import { spawn } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, rmSync, statSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, renameSync, rmSync, statSync } from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
@@ -39,6 +40,7 @@ const HOME = path.join(WORK, 'home');
 
 /** Narration length for a scene; an estimate at 150 wpm until voice.mjs has run. */
 function lineSeconds(scene) {
+  if (!scene.text) return (scene.hold ?? 0) / 1000;
   if (durations[scene.id]) return durations[scene.id];
   const words = scene.text.split(/\s+/).length;
   return (words / 150) * 60;
@@ -78,7 +80,13 @@ function startVariantly() {
   const args = [path.join(REPO, 'bin', 'variantly.mjs'), SITE, '--agent', agent, '--no-open', '-p', String(port)];
   const child = spawn(process.execPath, args, {
     cwd: SITE,
-    env: { ...process.env, VARIANTLY_HOME: HOME },
+    env: {
+      ...process.env,
+      VARIANTLY_HOME: HOME,
+      // A dry run paces the demo agent like a real one, so the board scenes
+      // have a board to film (each demo variant takes about a minute).
+      ...(agent === 'demo' && !process.env.VARIANTLY_DEMO_DELAY ? { VARIANTLY_DEMO_DELAY: '60000' } : {}),
+    },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   child.stderr.on('data', (d) => process.stderr.write(`  [variantly] ${d}`));
@@ -189,6 +197,78 @@ const CURSOR = () => {
   };
 };
 
+// ---------------------------------------------------------------- clean data
+
+/**
+ * No machine paths on screen: the take's working folders are rewritten to
+ * the short paths a viewer would recognise, in every text node, as the app
+ * renders them (the wizard's repo line, worktree paths in agent logs).
+ */
+const MASKS = [
+  [HOME, '~/.variantly'],
+  [SITE, '~/tallyboard'],
+  [process.execPath, 'node'],
+  [REPO, 'variantly'],
+  [os.homedir(), '~'],
+].flatMap(([from, to]) => [[from, to], [from.replace(/\\/g, '/'), to]]);
+
+const MASK = (masks) => {
+  const fix = (text) => masks.reduce((out, [from, to]) => (from && out.includes(from) ? out.split(from).join(to) : out), text);
+  const walk = (node) => {
+    if (node.nodeType === 3) {
+      const next = fix(node.nodeValue);
+      if (next !== node.nodeValue) node.nodeValue = next;
+    } else node.childNodes.forEach(walk);
+  };
+  const start = () => {
+    walk(document.documentElement);
+    new MutationObserver((records) => {
+      for (const r of records) {
+        if (r.type === 'characterData') walk(r.target);
+        r.addedNodes.forEach(walk);
+      }
+    }).observe(document.documentElement, { subtree: true, childList: true, characterData: true });
+  };
+  if (document.documentElement) start();
+  else document.addEventListener('DOMContentLoaded', start, { once: true });
+};
+
+// ---------------------------------------------------------------- impeccable
+
+/**
+ * --fresh-impeccable films the one-click Impeccable install for real: the
+ * agent's installed copy is set aside for the take, so the wizard offers to
+ * install it, and put back if the take did not install a new one.
+ */
+const FRESH_IMPECCABLE = process.argv.includes('--fresh-impeccable');
+const IMPECCABLE_DIRS = ['.claude', '.agents', '.github', '.copilot', '.codex'].map((d) => path.join(os.homedir(), d, 'skills', 'impeccable'));
+const setAside = [];
+
+function hideImpeccable() {
+  if (!FRESH_IMPECCABLE || agent === 'demo') return;
+  for (const dir of IMPECCABLE_DIRS) {
+    if (!existsSync(dir)) continue;
+    const backup = `${dir}.variantly-demo-backup`;
+    rmSync(backup, { recursive: true, force: true });
+    renameSync(dir, backup);
+    setAside.push([dir, backup]);
+    log('record', `set aside ${dir} for the take (restored afterwards)`);
+  }
+}
+
+function restoreImpeccable() {
+  for (const [dir, backup] of setAside.splice(0)) {
+    if (!existsSync(backup)) continue;
+    if (existsSync(path.join(dir, 'SKILL.md'))) rmSync(backup, { recursive: true, force: true });
+    else {
+      rmSync(dir, { recursive: true, force: true });
+      renameSync(backup, dir);
+    }
+  }
+}
+process.on('exit', restoreImpeccable);
+process.on('SIGINT', () => process.exit(130));
+
 // ---------------------------------------------------------------- driver
 
 class Director {
@@ -202,6 +282,10 @@ class Director {
     this.clicks = [];
     this.path = [];
     this.motion = [];
+    this.spotlights = [];
+    this.keys = [];
+    this.diffstat = '';
+    this.branches = [];
     this.presses = [];
     this.warnings = [];
   }
@@ -270,10 +354,10 @@ class Director {
   }
 
   /** Where a target is, measured on the primary page; the mirror must show it too. */
-  async box(selector) {
+  async box(selector, timeout = 30_000) {
     const locators = await this.all(async (page) => {
       const locator = page.locator(this.fill(selector)).first();
-      await locator.waitFor({ state: 'visible', timeout: 30_000 });
+      await locator.waitFor({ state: 'visible', timeout });
       await locator.scrollIntoViewIfNeeded();
       return locator;
     });
@@ -287,10 +371,35 @@ class Director {
     await this.all((page) => page.mouse.click(x, y));
   }
 
+  /**
+   * Hold on one element while the stage dims everything else around it,
+   * optionally with a callout (for hints that only exist as tooltips, which a
+   * screen capture never shows). The box is logged; the stage draws the rest.
+   */
+  async spotlight(step) {
+    let target;
+    try {
+      target = await this.box(step.spotlight, step.optional ? 5_000 : 30_000);
+    } catch (error) {
+      if (step.optional) return;
+      throw error;
+    }
+    if (step.point) await this.moveTo(target.box.x + Math.min(target.box.width - 8, 24), target.y, 600);
+    const pad = step.pad ?? 12;
+    const t0 = this.now();
+    await this.page.waitForTimeout(step.ms ?? 2000);
+    this.spotlights.push({
+      t0: Number(t0.toFixed(3)),
+      t1: Number(this.now().toFixed(3)),
+      box: [target.box.x - pad, target.box.y - pad, target.box.width + pad * 2, target.box.height + pad * 2].map(Math.round),
+      callout: step.callout ?? null,
+    });
+  }
+
   async click(step) {
     let target;
     try {
-      target = await this.box(step.click);
+      target = await this.box(step.click, step.optional ? 5_000 : 30_000);
     } catch (error) {
       if (step.optional) return;
       throw error;
@@ -386,6 +495,8 @@ class Director {
   }
 
   async act(step) {
+    // Steps that only make sense with a real agent (installing Impeccable).
+    if (step.realOnly && agent === 'demo') return;
     const began = Date.now();
     const from = this.now();
     try {
@@ -403,7 +514,19 @@ class Director {
       await this.all((page, view) => page.goto(this.fill(step.goto, view.theme)));
       await this.showCursor();
     } else if (step.wait) await this.page.waitForTimeout(step.wait);
-    else if (step.waitFor) await this.all((page) => page.locator(this.fill(step.waitFor)).first().waitFor({ state: 'attached', timeout: 120_000 }));
+    else if (step.waitFor) {
+      const wait = this.all((page) => page.locator(this.fill(step.waitFor)).first().waitFor({ state: 'attached', timeout: step.timeoutMs ?? 120_000 }));
+      await (step.optional ? wait.catch(() => {}) : wait);
+    } else if (step.spotlight) await this.spotlight(step);
+    else if (step.key) {
+      const key = this.fill(step.key);
+      this.keys.push({ t: Number(this.now().toFixed(3)), key });
+      await this.all((page) => page.keyboard.press(key));
+      await this.page.waitForTimeout(350);
+    } else if (step.gitStat) {
+      this.diffstat = (await run('git', ['diff', '--stat'], { cwd: SITE, quiet: true }).catch(() => '')).trimEnd();
+      this.branches = (await run('git', ['branch', '--list', 'variantly/*', '--format=%(refname:short)'], { cwd: SITE, quiet: true }).catch(() => '')).trim().split('\n').filter(Boolean);
+    }
     else if (step.click) await this.click(step);
     else if (step.fill) await this.type(step);
     else if (step.hover) {
@@ -471,6 +594,7 @@ if (filmed.problems.length) {
 log('record', `agent: ${agent}${agent === 'demo' ? ' (dry run, no AI)' : ''}; themes: ${THEMES.join(', ')}`);
 await smokeTest();
 await prepareSite();
+hideImpeccable();
 await preflight();
 const { child, url: app } = await startVariantly();
 log('record', `variantly at ${app}`);
@@ -486,12 +610,14 @@ const browser = await chromium.launch({
 async function openView(theme, mirror) {
   const context = await browser.newContext({
     viewport: { width: WIDTH, height: HEIGHT },
-    deviceScaleFactor: 1,
+    // Rendered at 2× and downsampled by the screencast: crisper text.
+    deviceScaleFactor: Number(process.env.CAPTURE_SCALE || 2),
     colorScheme: theme,
     reducedMotion: 'no-preference',
   });
   await context.addInitScript(CURSOR);
   await context.addInitScript(REPAINT);
+  await context.addInitScript(MASK, MASKS);
   // A clean wizard: no draft left over from an earlier take.
   await context.addInitScript(() => {
     try {
@@ -564,10 +690,12 @@ let endedAt = Date.now();
 try {
   await director.all((page) => page.goto('about:blank'));
   for (const scene of film.scenes) {
+    // The cold open is cut later from footage of other scenes.
+    if (scene.montage) continue;
     const start = director.now();
     log('record', `${scene.id} @ ${start.toFixed(1)}s`);
     for (const step of scene.actions) await director.act(step);
-    if (scene.id === 'launch') {
+    if (scene.id === 'need') {
       for (const view of views) schemes[view.theme] = await view.page.evaluate(() => ({ media: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light', ui: document.documentElement.dataset.theme ?? null }));
     }
     // Hold until the line has been spoken, plus a breath.
@@ -611,6 +739,10 @@ writeJson(at('video', 'raw-timeline.json'), {
   scenes,
   clicks: director.clicks,
   cursor: { path: director.path, presses: director.presses },
+  spotlights: director.spotlights,
+  keys: director.keys,
+  diffstat: director.diffstat,
+  branches: director.branches,
   warnings: director.warnings,
   pageErrors,
 });

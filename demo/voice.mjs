@@ -65,9 +65,9 @@ function spreadWords(text, seconds) {
 
 const model = process.env.ELEVEN_MODEL || 'eleven_multilingual_v2';
 const settings = {
-  stability: Number(process.env.ELEVEN_STABILITY ?? 0.5),
+  stability: Number(process.env.ELEVEN_STABILITY ?? 0.55),
   similarity_boost: Number(process.env.ELEVEN_SIMILARITY ?? 0.8),
-  style: Number(process.env.ELEVEN_STYLE ?? 0.15),
+  style: Number(process.env.ELEVEN_STYLE ?? 0.1),
   use_speaker_boost: true,
 };
 

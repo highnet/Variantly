@@ -29,14 +29,15 @@ const OFFSET = raw.offsets?.[THEME] ?? 0;
 const durations = readJson(at('audio', 'durations.json'), {});
 const byId = Object.fromEntries(film.scenes.map((s) => [s.id, s]));
 
-const lineSeconds = (id) => durations[id] ?? (byId[id].text.split(/\s+/).length / 150) * 60;
+const lineSeconds = (id) =>
+  !byId[id]?.text ? (byId[id]?.hold ?? 0) / 1000 : durations[id] ?? (byId[id].text.split(/\s+/).length / 140) * 60;
 
 // ------------------------------------------------------------ the edit
 
 // One clip per scene, cut from the raw recording. A timelapse is sped up to
 // fit its line; a few scene changes get a transition. SeekReel's `footage`
 // step does the cutting and reports where every clip landed.
-const TRANSITIONS = { generate: { type: 'fade', duration: 0.4 }, compare: { type: 'fadeblack', duration: 0.5 } };
+const TRANSITIONS = { hi: { type: 'fade', duration: 0.5 }, lapse: { type: 'fade', duration: 0.4 }, compare: { type: 'fadeblack', duration: 0.5 } };
 const round3 = (n) => Math.round(n * 1000) / 1000;
 const clips = raw.scenes.map((scene) => {
   const length = scene.end - scene.start;
@@ -52,6 +53,24 @@ const clips = raw.scenes.map((scene) => {
     ...(TRANSITIONS[scene.id] ? { transition: TRANSITIONS[scene.id] } : {}),
   };
 });
+
+// The cold open: the payoff first. Four quick cuts of the variants from the
+// compare chapter (just after each number key), then a hold under the title.
+const cold = film.scenes.find((s) => s.montage);
+const shown = (raw.keys ?? []).filter((k) => /^[1-9]$/.test(k.key)).slice(0, 4);
+if (cold && shown.length) {
+  const cut = 0.9;
+  const montage = shown.map((k, i) => ({
+    label: `cold${i}`,
+    src: `video/${THEME}/raw.mp4`,
+    from: round3(k.t + 1.4 - OFFSET),
+    to: round3(k.t + 1.4 - OFFSET + cut),
+  }));
+  const last = shown.at(-1);
+  const rest = Math.max(1, (cold.hold ?? 7000) / 1000 - cut * shown.length);
+  montage.push({ label: `cold${shown.length}`, src: `video/${THEME}/raw.mp4`, from: round3(last.t + 1.4 + cut - OFFSET), to: round3(last.t + 1.4 + cut - OFFSET + rest) });
+  clips.unshift(...montage);
+}
 
 const SEEKREEL = seekreelDir();
 const base = {
@@ -118,11 +137,19 @@ function cuesFrom(words) {
   return out;
 }
 
-const scenes = footage.clips.map((clip, i) => {
+// The cold open's cuts are one scene.
+const sceneClips = [];
+for (const clip of footage.clips) {
+  const label = clip.label.startsWith('cold') ? cold.id : clip.label;
+  const prev = sceneClips.at(-1);
+  if (prev && prev.label === label) prev.end = clip.end;
+  else sceneClips.push({ ...clip, label });
+}
+const scenes = sceneClips.map((clip, i) => {
   const def = byId[clip.label];
   // A scene starts once the transition into it has finished.
   const start = clip.start + clip.transition.duration;
-  const end = footage.clips[i + 1]?.start ?? clip.end;
+  const end = sceneClips[i + 1]?.start ?? clip.end;
   const voiceAt = start + VOICE_LEAD;
   return {
     id: clip.label,
@@ -131,12 +158,15 @@ const scenes = footage.clips.map((clip, i) => {
     speed: Number(clip.speed.toFixed(2)),
     voiceAt,
     voice: lineSeconds(clip.label),
-    title: def.title ?? null,
-    presenter: def.presenter ?? null,
     step: def.step ?? null,
+    chapter: def.chapter ?? null,
+    lower: def.lower ?? null,
+    kinetic: def.kinetic ?? null,
+    diagram: def.diagram ?? null,
     terminal: def.terminal ?? null,
     cta: def.cta ?? null,
-    captions: cuesFrom(wordsFor(clip.label, voiceAt)),
+    montage: !!def.montage,
+    captions: def.text ? cuesFrom(wordsFor(clip.label, voiceAt)) : [],
   };
 });
 const captions = scenes.flatMap((s) => s.captions);
@@ -162,7 +192,13 @@ const presses = (raw.cursor?.presses ?? [])
   .filter((p) => p.t !== null && p.t < total);
 const cursor = { path: path_, presses };
 
-writeJson(at(`timeline.${THEME}.json`), { variantly: raw.variantly ?? null, fps: FPS, width: WIDTH, height: HEIGHT, duration: total, scenes, clicks, captions, cursor });
+const spotlights = (raw.spotlights ?? [])
+  .map((s) => ({ ...s, t0: toFilm(s.t0), t1: toFilm(s.t1) }))
+  .filter((s) => s.t0 !== null && s.t1 !== null);
+const keys = (raw.keys ?? []).map((k) => ({ ...k, t: toFilm(k.t) })).filter((k) => k.t !== null);
+const chapters = scenes.filter((s) => s.chapter || s.montage).map((s) => ({ t: s.montage ? 0 : s.start, title: s.chapter?.title ?? 'Intro' }));
+
+writeJson(at(`timeline.${THEME}.json`), { variantly: raw.variantly ?? null, fps: FPS, width: WIDTH, height: HEIGHT, duration: total, scenes, clicks, captions, cursor, spotlights, keys, chapters, diffstat: raw.diffstat ?? '', branches: raw.branches ?? [] });
 
 const stamp = (t) => {
   const ms = Math.round(t * 1000);
@@ -173,6 +209,22 @@ mkdirSync(at('out'), { recursive: true });
 writeFileSync(
   at('out', `variantly-demo-${THEME}.srt`),
   captions.map((c, i) => `${i + 1}\n${stamp(c.start)} --> ${stamp(c.end)}\n${c.text}\n`).join('\n'),
+);
+
+const mmss = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+writeFileSync(
+  at('out', `youtube-description-${THEME}.txt`),
+  [
+    'N redesigns of your site, side by side. Keep one. All you need is Node and Claude Code: npx variantly',
+    '',
+    'variantly.style',
+    'Designs by Impeccable · impeccable.style',
+    '',
+    'Chapters',
+    ...chapters.map((c) => `${mmss(c.t)} ${c.title}`),
+    '',
+    'Music: generated with SeekReel',
+  ].join('\n') + '\n',
 );
 
 // ------------------------------------------------------------ soundtrack
@@ -208,6 +260,10 @@ writeJson(at(BUILD, 'cues.json'), {
   duck: { gain: 0.22, attack: 0.15, release: 0.6 },
   cues: [
     { at: 0.05, sound: 'swell', note: 'D2', dur: 1.6, gain: 0.5 },
+    // A hit on each cut of the cold open, a riser into every chapter.
+    ...footage.clips.filter((c) => c.label.startsWith('cold')).map((c) => ({ at: Number(c.start.toFixed(3)), sound: 'stamp', gain: 0.5 })),
+    ...scenes.filter((sc) => sc.chapter).map((sc) => ({ at: Number(Math.max(0, sc.start - 0.9).toFixed(3)), sound: 'swell', note: 'A2', dur: 1.1, gain: 0.32 })),
+    ...keys.map((k) => ({ at: Number(k.t.toFixed(3)), sound: 'tick', gain: 0.2 })),
     ...clicks.map((c) => ({ at: Number(c.t.toFixed(3)), ...(UI[c.sound] ?? UI.tick) })),
     ...(outro ? [{ at: outro.start + 0.1, sound: 'chime', note: 'A5', gain: 0.35 }] : []),
   ],
@@ -220,6 +276,17 @@ const compare = scenes.find((s) => s.id === 'compare');
 writeJson(at(`seekreel.${THEME}.json`), { ...wide, poster: compare ? Number((compare.start + 2.5).toFixed(2)) : 1 });
 // The vertical cut shows the same 16:9 footage through a moving window, so it
 // reads the frames the wide config cut instead of cutting its own.
+writeJson(at(`seekreel.${THEME}.thumb.json`), {
+  name: `variantly-demo-${THEME}-thumbnail`,
+  stage: `stage/thumb-${THEME}.html`,
+  duration: 1,
+  fps: 1,
+  width: 1280,
+  height: 720,
+  out: `${BUILD}/frames-thumb`,
+  probe: `${BUILD}/thumb`,
+  deliver: 'out',
+});
 writeJson(at(`seekreel.${THEME}.vertical.json`), {
   name: `variantly-demo-${THEME}`,
   stage: `stage/vertical-${THEME}.html`,

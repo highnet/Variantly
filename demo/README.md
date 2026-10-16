@@ -87,6 +87,14 @@ other apps, or use `record --single` for a light-only take. A take needs a few
 GB of free disk for the captured frames, which are deleted after encoding
 (`KEEP_FRAMES=1` keeps them).
 
+**Filming the Impeccable install.** `npm run record -- --fresh-impeccable`
+sets your agent's installed Impeccable skill aside for the take, so the wizard
+offers "Install Impeccable" and the one-click install is filmed for real. If
+the take does not install it, your copy is put back when the take ends.
+
+**Crisp text.** Pages render at 2× and the screencast downsamples them to
+1080p. On a slow machine, `CAPTURE_SCALE=1` halves the work.
+
 **Rehearse without keys.** `npm run voice:local` (or `voice` with no keys in
 `.env`) uses the system's own speech: Windows' built-in voices, macOS `say`,
 or `espeak-ng` on Linux. It writes the same files as ElevenLabs, with approximate word
