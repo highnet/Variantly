@@ -1,0 +1,143 @@
+/* Tallyboard theme v3.2-final-FINAL (do not touch!!) */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Comic Neue", "Comic Sans MS", cursive; color: #333; background: #f3f0ff linear-gradient(180deg, #fdf4ff 0%, #e0f7ff 50%, #fffbe0 100%); text-align: center; line-height: 1.35; }
+a { color: #0066ff; }
+h1, h2 { font-family: "Lobster", cursive; font-weight: 400; text-shadow: 3px 3px 0 #ffd6f5, 5px 5px 8px rgba(0,0,0,.25); }
+h3 { font-family: "Poppins", sans-serif; font-weight: 800; }
+
+.countdown { background: #000; color: #39ff14; font-family: "Courier New", monospace; font-size: 15px; padding: 7px; letter-spacing: 1px; }
+.countdown b { background: #ff0040; color: #fff; padding: 1px 5px; border-radius: 3px; margin: 0 1px; }
+.announce { background: repeating-linear-gradient(90deg, #ff00cc 0 40px, #ffcc00 40px 80px); color: #fff; font: 800 15px "Poppins", sans-serif; padding: 9px 0; white-space: nowrap; overflow: hidden; text-shadow: 1px 1px 0 #000, -1px -1px 0 #000; border-bottom: 4px dashed #00e5ff; }
+.announce span { display: inline-block; padding-left: 4%; }
+
+.nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 18px; background: linear-gradient(90deg, #1a0b3d, #3b0f6b 60%, #0f5f7a); box-shadow: 0 6px 18px rgba(255,0,200,.4); position: sticky; top: 0; z-index: 5; }
+.nav ul { display: flex; flex-wrap: wrap; gap: 4px 14px; list-style: none; margin: 0; padding: 0; justify-content: center; }
+.nav ul a { color: #c9b8ff; text-decoration: none; font: 400 14px "Poppins", sans-serif; }
+.nav ul a.active { color: #ffea00; text-decoration: underline wavy #ff00cc; }
+.hiring { background: #ff0040; color: #fff; font-size: 9px; padding: 2px 5px; border-radius: 9px; vertical-align: super; font-weight: 800; }
+.logo { font-family: "Pacifico", cursive; font-size: 26px; color: #fff; text-decoration: none; text-shadow: 0 0 10px #ff00cc, 0 0 20px #00e5ff; white-space: nowrap; }
+.logo-mark { display: inline-block; background: linear-gradient(135deg, #ffea00, #ff00cc); border-radius: 50% 10% 50% 10%; padding: 0 6px; }
+.nav-cta { display: flex; gap: 10px; align-items: center; white-space: nowrap; }
+.nav-cta .link { color: #888; font-size: 13px; }
+
+.btn { display: inline-block; padding: 14px 26px; border-radius: 40px; background: #6c2bd9; color: #fff; font: 800 17px "Poppins", sans-serif; text-decoration: none; border: 3px solid #fff; box-shadow: 0 8px 0 #3b0f6b, 0 12px 25px rgba(0,0,0,.35); cursor: pointer; }
+.btn-sm { padding: 8px 16px; font-size: 13px; border-radius: 6px; }
+.rainbow { background: linear-gradient(90deg, #ff0040, #ff8c00, #ffea00, #39ff14, #00e5ff, #6c2bd9, #ff00cc); text-shadow: 1px 1px 2px #000; }
+.btn-ghost { background: transparent; color: #6c2bd9; border: 3px dotted #ff00cc; border-radius: 4px; box-shadow: 4px 4px 0 #00e5ff; }
+.btn-lime { background: #b6ff00; color: #333; border-radius: 0 20px 0 20px; box-shadow: 0 0 20px #b6ff00, 5px 5px 0 #000; }
+
+.hero { position: relative; display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; padding: 50px 60px 70px; background: radial-gradient(circle at 20% 30%, #ff9de6 0, transparent 45%), radial-gradient(circle at 80% 70%, #7af0ff 0, transparent 40%), linear-gradient(120deg, #7b2ff7, #f107a3 55%, #ff9a00); color: #fff; overflow: hidden; }
+.hero-small { grid-template-columns: 1fr; }
+.badge { display: inline-block; background: #ffea00; color: #ff0040; font: 800 13px "Poppins", sans-serif; padding: 6px 14px; border-radius: 3px; transform: rotate(-3deg); box-shadow: 4px 4px 0 #000; }
+.hero h1 { font-size: 64px; line-height: 1.05; margin: 22px 0 14px; text-shadow: 4px 4px 0 #3b0f6b, 8px 8px 15px rgba(0,0,0,.4); }
+.grad { background: linear-gradient(90deg, #ffea00, #39ff14, #00e5ff); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; }
+.script { font-family: "Pacifico", cursive; color: #ffea00; font-size: .8em; }
+.lead { font-size: 21px; color: #f5d0ff; max-width: 640px; margin: 0 auto 26px; }
+.hero-ctas { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+.fine { font-size: 12px; color: #e9a6e0; margin-top: 22px; }
+.hero-art { position: relative; min-height: 420px; }
+.mock { position: absolute; top: 40px; left: 10px; width: 470px; background: #fff; border-radius: 4px 30px 4px 30px; transform: rotate(4deg) skewY(-2deg); box-shadow: 20px 20px 0 #ffea00, 0 30px 60px rgba(0,0,0,.5); overflow: hidden; color: #555; text-align: left; border: 5px solid #00e5ff; }
+.mock-bar { background: linear-gradient(90deg, #eee, #ccc); padding: 8px; font-size: 11px; color: #999; }
+.mock-bar i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #ff5f57; margin-right: 4px; }
+.mock-body { display: flex; }
+.mock-side { width: 70px; background: #3b0f6b; padding: 10px; }
+.mock-side b { display: block; height: 10px; background: #ff00cc; margin: 10px 0; border-radius: 9px; opacity: .6; }
+.mock-main { flex: 1; padding: 14px; background: #fafafa; }
+.mock-timer { font: 800 38px "Bebas Neue", sans-serif; color: #f107a3; }
+.mock-rows p { display: flex; justify-content: space-between; margin: 6px 0; font-size: 13px; border-bottom: 1px dashed #ccc; }
+.mock-rows em { color: #39b54a; font-weight: 700; }
+.mock-chart { display: flex; gap: 8px; align-items: flex-end; height: 70px; margin-top: 10px; }
+.mock-chart i { flex: 1; background: linear-gradient(#00e5ff, #6c2bd9); border-radius: 6px 6px 0 0; }
+.float { position: absolute; background: #fff; color: #222; padding: 10px 16px; border-radius: 14px; font: 800 15px "Poppins", sans-serif; box-shadow: 0 10px 30px rgba(0,0,0,.4), 0 0 0 4px #ffea00; z-index: 2; }
+.float-a { top: 10px; right: 30px; transform: rotate(6deg); }
+.float-b { bottom: 40px; left: -20px; transform: rotate(-8deg); background: #39ff14; }
+.float-c { top: 200px; right: -10px; background: #ff0040; color: #fff; transform: rotate(12deg); }
+.blob { position: absolute; border-radius: 50%; filter: blur(2px); opacity: .7; }
+.blob-1 { width: 140px; height: 140px; background: #ffea00; bottom: -30px; right: 80px; }
+.blob-2 { width: 80px; height: 80px; background: #00e5ff; top: -20px; left: 200px; }
+
+.newsletter { position: absolute; right: 70px; bottom: 30px; width: 300px; background: #fffbe0; color: #444; border: 4px dashed #ff0040; border-radius: 0; padding: 18px; box-shadow: 15px 15px 0 rgba(0,0,0,.35); z-index: 4; transform: rotate(-2deg); }
+.newsletter h3 { margin: 0 0 6px; color: #ff0040; font-family: "Lobster", cursive; font-weight: 400; font-size: 26px; }
+.newsletter p { font-size: 14px; margin: 0 0 10px; }
+.newsletter input { width: 100%; padding: 9px; border: 2px solid #ccc; margin-bottom: 10px; font-family: inherit; }
+.newsletter .btn { font-size: 14px; padding: 10px 14px; width: 100%; }
+.newsletter small { display: block; margin-top: 8px; color: #bbb; font-size: 11px; text-decoration: underline; }
+.newsletter .x { position: absolute; top: -14px; right: -14px; background: #000; color: #fff; width: 28px; height: 28px; border-radius: 50%; line-height: 28px; font-size: 14px; }
+
+.featured { background: #222; padding: 16px; color: #777; border-top: 6px solid #ffea00; }
+.featured p { margin: 0 0 6px; font-size: 12px; letter-spacing: 4px; color: #555; }
+.featured .logo-row span { color: #666; font-size: 24px; margin: 0 22px; }
+.f1 { font-family: "Bebas Neue"; } .f2 { font-family: "Lobster"; } .f3 { font-family: "Poppins"; font-weight: 800; } .f4 { font-family: "Pacifico"; } .f5 { font-family: Georgia, serif; font-style: italic; }
+.logos { padding: 30px 10px; background: #e8e8e8; }
+.logos p { color: #c4c4c4; font-size: 12px; letter-spacing: 3px; margin: 0 0 10px; }
+.logos .logo-row span { color: #bdbdbd; font: 800 22px "Poppins", sans-serif; margin: 0 26px; }
+
+section { padding: 64px 40px; }
+.eyebrow { color: #ff00cc; font: 800 13px "Poppins", sans-serif; letter-spacing: 5px; }
+section h2 { font-size: 50px; margin: 6px 0 10px; color: #3b0f6b; }
+.sub { color: #aaa; font-size: 19px; }
+.features { background: linear-gradient(160deg, #e0ffe9, #fff3c4); }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px 18px; max-width: 1180px; margin: 36px auto 0; }
+.card { position: relative; background: #fff; padding: 30px 20px; border-radius: 26px 4px 26px 4px; box-shadow: 0 14px 30px rgba(108,43,217,.35), inset 0 -6px 0 #ffd6f5; border: 2px solid #e5e5e5; }
+.card:nth-child(2) { border-radius: 0; background: #fffbe0; }
+.card:nth-child(4) { border-radius: 50px; background: #e7fbff; }
+.card:nth-child(5) { transform: rotate(-1.5deg); }
+.card-hot { background: linear-gradient(135deg, #ff00cc, #6c2bd9); color: #fff; transform: scale(1.06); }
+.card-hot p { color: #f8c6ff; }
+.new { position: absolute; top: -12px; right: 14px; background: #39ff14; color: #000; font: 800 12px "Poppins"; padding: 4px 9px; border-radius: 3px; transform: rotate(8deg); }
+.card .icon { display: inline-block; font-size: 42px; background: linear-gradient(135deg, #ffea00, #ff8c00); border-radius: 50%; padding: 12px; box-shadow: 0 6px 0 #c76b00; }
+.card h3 { font-size: 22px; margin: 16px 0 6px; }
+.card p { color: #9a9a9a; font-size: 16px; }
+.more { color: #ff00cc; font-weight: 700; text-decoration: underline dotted; }
+
+.stats { display: flex; justify-content: space-around; background: linear-gradient(90deg, #000, #3b0f6b); padding: 40px; }
+.stats div { display: flex; flex-direction: column; }
+.stats strong { font: 400 60px "Bebas Neue", sans-serif; color: #39ff14; text-shadow: 0 0 15px #39ff14; }
+.stats span { color: #6b5b8a; font-size: 15px; }
+
+.pricing { background: #fff0fb repeating-linear-gradient(45deg, transparent 0 20px, rgba(255,0,204,.05) 20px 40px); }
+.tiers { display: flex; justify-content: center; gap: 22px; margin-top: 40px; align-items: center; }
+.tier { position: relative; width: 320px; background: #fff; border: 3px solid #ddd; border-radius: 8px; padding: 30px 26px; box-shadow: 8px 8px 0 #00e5ff, 0 20px 40px rgba(0,0,0,.2); }
+.tier:last-child { border-radius: 30px; box-shadow: -8px 8px 0 #b6ff00, 0 20px 40px rgba(0,0,0,.2); }
+.tier-pop { transform: scale(1.12); background: linear-gradient(160deg, #3b0f6b, #f107a3); color: #fff; border: 4px solid #ffea00; z-index: 1; }
+.ribbon { position: absolute; top: -20px; left: 50%; transform: translateX(-50%) rotate(-4deg); background: #ff0040; color: #fff; font: 800 13px "Poppins"; padding: 7px 14px; white-space: nowrap; box-shadow: 3px 3px 0 #000; }
+.tier h3 { font-size: 26px; margin: 0; }
+.price { font: 400 70px "Bebas Neue", sans-serif; margin: 10px 0; }
+.price s { font-size: 30px; color: #ff9ad5; }
+.price small { font: 400 14px "Comic Neue"; color: #aaa; }
+.tier ul { list-style: none; padding: 0; text-align: center; margin: 0 0 24px; }
+.tier li { padding: 5px; border-bottom: 1px dotted #ddd; }
+.tier li.no { color: #ccc; text-decoration: line-through; }
+
+.quote { background: linear-gradient(135deg, #00e5ff, #6c2bd9); color: #fff; }
+.stars { color: #ffea00; font-size: 44px; text-shadow: 2px 2px 0 #ff0040; letter-spacing: 6px; }
+blockquote { font: italic 400 28px Georgia, serif; max-width: 860px; margin: 16px auto; }
+.who { color: #b8f5ff; }
+.avatar { display: inline-block; width: 44px; height: 44px; line-height: 44px; border-radius: 50%; background: #ff00cc; border: 3px solid #ffea00; font-weight: 700; }
+.dots i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,.4); margin: 0 4px; }
+.dots i.on { background: #ffea00; }
+
+.faq { background: #f4f4f4; }
+.faq details { max-width: 760px; margin: 12px auto; background: #fff; border: 2px solid #6c2bd9; border-radius: 12px 0; padding: 14px 20px; text-align: left; box-shadow: 5px 5px 0 #ffd6f5; }
+.faq details:nth-child(odd) { border-color: #ff8c00; border-radius: 0 30px; }
+.faq summary { font: 800 18px "Poppins", sans-serif; color: #3b0f6b; cursor: pointer; }
+.faq p { color: #b0b0b0; }
+
+.cta { background: linear-gradient(90deg, #ff0040, #ff8c00, #ffea00); color: #fff; }
+.cta h2 { color: #fff; text-shadow: 3px 3px 0 #ff0040, 6px 6px 0 #6c2bd9; }
+.news { display: flex; justify-content: center; gap: 10px; margin-top: 20px; }
+.news input { padding: 14px 18px; width: 340px; border-radius: 40px 0 0 40px; border: 3px solid #fff; font: inherit; }
+
+.footer { display: flex; flex-wrap: wrap; justify-content: space-around; gap: 30px; background: #1a0b3d; color: #6b5b8a; padding: 50px 40px 110px; }
+.footer h4 { color: #ffea00; font-family: "Lobster"; font-weight: 400; font-size: 20px; margin: 0 0 8px; }
+.footer a { display: block; color: #6b5b8a; margin: 4px 0; }
+.footer .logo { display: inline-block; color: #fff; }
+.copy { width: 100%; font-size: 12px; color: #4a3d63; }
+
+.cookie { position: fixed; left: 20px; bottom: 20px; width: 520px; background: #fff; color: #555; border: 3px solid #ff8c00; border-radius: 10px; padding: 14px 16px; font-size: 14px; box-shadow: 0 10px 40px rgba(0,0,0,.45); z-index: 10; text-align: left; }
+.cookie button { font: 800 13px "Poppins"; border: 0; padding: 8px 14px; margin-top: 8px; cursor: pointer; }
+.cookie .ok { background: linear-gradient(90deg, #39ff14, #00e5ff); border-radius: 20px; }
+.cookie .meh { background: none; color: #ccc; text-decoration: underline; }
+.chat { position: fixed; right: 24px; bottom: 24px; width: 70px; height: 70px; border-radius: 50%; background: linear-gradient(135deg, #ff00cc, #6c2bd9); font-size: 34px; line-height: 70px; text-decoration: none; box-shadow: 0 0 0 6px rgba(255,0,204,.3), 0 10px 25px rgba(0,0,0,.4); z-index: 10; }
+.chat-bubble { position: absolute; right: 80px; bottom: 16px; width: 230px; background: #fff; color: #333; font: 400 14px "Comic Neue"; line-height: 1.3; padding: 10px 12px; border-radius: 16px 16px 0 16px; box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+.chat-count { position: absolute; top: -4px; right: -4px; background: #ff0040; color: #fff; font: 800 13px/22px "Poppins"; width: 22px; height: 22px; border-radius: 50%; }

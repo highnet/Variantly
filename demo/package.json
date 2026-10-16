@@ -1,0 +1,27 @@
+{
+  "name": "variantly-demo",
+  "private": true,
+  "type": "module",
+  "description": "The variantly product video: recorded by Playwright, voiced by ElevenLabs, rendered by SeekReel.",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "setup": "npm install && npx playwright install chromium",
+    "voice": "node --env-file-if-exists=.env voice.mjs",
+    "record": "node --env-file-if-exists=.env record.mjs",
+    "record:dry": "node --env-file-if-exists=.env record.mjs --dry",
+    "edit": "node --env-file-if-exists=.env edit.mjs --theme light && node --env-file-if-exists=.env edit.mjs --theme dark",
+    "probe": "node --env-file-if-exists=.env build.mjs probe",
+    "build": "node --env-file-if-exists=.env build.mjs wide",
+    "build:vertical": "node --env-file-if-exists=.env build.mjs vertical",
+    "gif": "node --env-file-if-exists=.env build.mjs gif",
+    "all": "npm run voice && npm run record && npm run edit && npm run build:all",
+    "build:all": "node --env-file-if-exists=.env build.mjs all"
+  },
+  "devDependencies": {
+    "ffmpeg-static": "^5.2.0",
+    "ffprobe-static": "^3.1.0",
+    "playwright": "^1.48.0"
+  }
+}

@@ -1,0 +1,276 @@
+{
+  "site": "../examples/tallyboard",
+  "agent": "claude",
+  "keep": 2,
+  "scenes": [
+    {
+      "id": "hook",
+      "step": "The before",
+      "presenter": {
+        "name": "Joaquin",
+        "role": "Variantly"
+      },
+      "title": {
+        "kicker": "variantly",
+        "line": "N redesigns of your site, side by side. Keep one."
+      },
+      "text": "Hi, I'm Joaquin from Variantly. Here's a landing page that works, but looks like every other template. Variantly redesigns it several ways at once, and you keep the one you like.",
+      "actions": [
+        {
+          "goto": "{{site}}"
+        },
+        {
+          "wait": 2200
+        },
+        {
+          "scroll": 700,
+          "ms": 1800
+        },
+        {
+          "wait": 600
+        },
+        {
+          "scroll": 0,
+          "ms": 1200
+        }
+      ]
+    },
+    {
+      "id": "launch",
+      "step": "Launch",
+      "terminal": "npx variantly",
+      "text": "All you need is Node and Claude Code. In your project, run npx variantly. It opens a wizard in your browser.",
+      "actions": [
+        {
+          "goto": "{{app}}"
+        },
+        {
+          "waitFor": "#wiz-title"
+        },
+        {
+          "wait": 800
+        },
+        {
+          "hover": "text=/Claude Code|Demo agent/"
+        }
+      ]
+    },
+    {
+      "id": "setup",
+      "step": "Setup",
+      "text": "Setup finds your app and Claude Code, and installs the Impeccable design skill in one click if it's missing.",
+      "actions": [
+        {
+          "wait": 600
+        },
+        {
+          "click": "role=button[name=/^Continue to (variants|designs)$/]",
+          "zoom": true
+        }
+      ]
+    },
+    {
+      "id": "designs",
+      "step": "Variants",
+      "text": "Choose how many variants to make: two, four or six. We'll take four.",
+      "actions": [
+        {
+          "wait": 500
+        },
+        {
+          "click": "role=radio[name=\"4\"]",
+          "zoom": true
+        },
+        {
+          "wait": 700
+        },
+        {
+          "click": "role=button[name=\"Continue to your site\"]"
+        }
+      ]
+    },
+    {
+      "id": "brief",
+      "step": "Your site",
+      "text": "Say who the site is for, what it offers, and what must stay. Here: the prices, the sign-up button and the FAQ.",
+      "actions": [
+        {
+          "fill": "role=textbox[name=/Who is it for/]",
+          "text": "Small agencies and studios who bill clients by the hour.",
+          "delay": 16
+        },
+        {
+          "fill": "role=textbox[name=/What does it offer/]",
+          "text": "Timers, weekly timesheets, approvals and invoices from tracked hours.",
+          "delay": 16
+        },
+        {
+          "fill": "role=textbox[name=/What must stay/]",
+          "text": "The name, the three plans and their prices, the sign-up button, the FAQ.",
+          "delay": 16
+        },
+        {
+          "click": "role=button[name=\"Continue to review\"]"
+        }
+      ]
+    },
+    {
+      "id": "review",
+      "step": "Review",
+      "text": "Review the brief, and make the variants. Nothing in your project changes yet.",
+      "actions": [
+        {
+          "wait": 1200
+        },
+        {
+          "click": "role=button[name=/^Make \\d+ variants?$/]",
+          "zoom": true,
+          "sound": "whoosh"
+        }
+      ]
+    },
+    {
+      "id": "generate",
+      "step": "Generation",
+      "timelapse": true,
+      "text": "Each variant gets its own git worktree and its own dev server. Your agent works headless, two at a time, checks its work in a real browser, and every result is scored with axe-core and Lighthouse.",
+      "actions": [
+        {
+          "waitFor": "body[data-view=\"board\"]"
+        },
+        {
+          "wait": 1500
+        },
+        {
+          "click": "role=button[name=\"Show V01 output\"]"
+        },
+        {
+          "waitApi": "allDone",
+          "timeoutMin": 90
+        },
+        {
+          "wait": 1500
+        }
+      ]
+    },
+    {
+      "id": "compare",
+      "step": "Compare",
+      "text": "Then compare, on your real site. Drag the divider for a before and after.",
+      "actions": [
+        {
+          "waitFor": "body[data-view=\"compare\"]"
+        },
+        {
+          "click": "role=button[name=/^V01/]"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "drag": "role=slider[name=\"Before and after divider\"]",
+          "to": [
+            20,
+            80,
+            50
+          ],
+          "ms": 1400,
+          "zoom": true
+        }
+      ]
+    },
+    {
+      "id": "switch",
+      "step": "Directions",
+      "text": "Every direction was designed from scratch for this site. Switch between them in one click.",
+      "actions": [
+        {
+          "click": "role=button[name=/^V02/]",
+          "sound": "pop"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "wait": 500
+        },
+        {
+          "click": "role=button[name=/^V03/]",
+          "sound": "pop"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "wait": 500
+        },
+        {
+          "click": "role=button[name=/^V04/]",
+          "sound": "pop"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "wait": 500
+        }
+      ]
+    },
+    {
+      "id": "scores",
+      "step": "Scores",
+      "text": "Accessibility, performance, best practices and SEO, each measured against the original.",
+      "actions": [
+        {
+          "click": "role=button[name=/^V0{{keep}}/]",
+          "sound": "pop"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "click": "role=button[name=\"Variant details\"]",
+          "zoom": true
+        },
+        {
+          "wait": 1800
+        },
+        {
+          "press": "Escape"
+        }
+      ]
+    },
+    {
+      "id": "keep",
+      "step": "Keep",
+      "text": "Keep the one you like. It's applied to your working tree with a three-way merge. The others stay as branches.",
+      "actions": [
+        {
+          "click": "role=button[name=/^Keep V0/]",
+          "zoom": true
+        },
+        {
+          "click": "role=button[name=/^Apply V0/]",
+          "sound": "stamp"
+        },
+        {
+          "waitFor": "body[data-view=\"kept\"]"
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "step": "Try it",
+      "cta": {
+        "command": "npx variantly",
+        "url": "variantly.style"
+      },
+      "text": "Variantly. Light or dark, all it needs is Node and Claude Code. Try it with npx variantly.",
+      "actions": [
+        {
+          "wait": 500
+        }
+      ]
+    }
+  ]
+}
