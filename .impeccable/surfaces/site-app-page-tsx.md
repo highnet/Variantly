@@ -5,9 +5,9 @@ primary_target: "site/app/page.tsx"
 related_targets: ["site/components"]
 ---
 
-# Surface brief: variantly.tools homepage (site/app/page.tsx)
+# Surface brief: variantly.style homepage (site/app/page.tsx)
 
-Scope: the homepage of variantly.tools, with the "I'm a human" / "I'm an agent"
+Scope: the homepage of variantly.style, with the "I'm a human" / "I'm an agent"
 fork. Visitor mode: Persuade (human view); the agent view is a Read-mode
 quickstart. Inherits the Gate Board world from DESIGN.md (no new identity).
 
