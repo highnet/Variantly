@@ -47,7 +47,8 @@ cd demo
 npm run setup                              # once: dependencies + Chromium
 cp .env.example .env                       # once: ELEVEN_API_KEY, ELEVEN_VOICE_ID
 npx variantly doctor ../examples/tallyboard    # preflight: Claude Code signed in, Impeccable installed
-npm run voice                              # narration in your voice
+npm run voice:local                        # rehearsal voice, no keys (Windows SAPI / macOS say / espeak)
+npm run voice                              # narration in your ElevenLabs voice
 npm run record:dry                         # rehearsal: variantly's demo agent, no AI, ~3 min
 npm run record                             # the real take: Claude Code, 4 variants, 2 at a time,
                                            # filmed in light and dark at once, in lockstep
@@ -70,6 +71,18 @@ repository's CI or any cloud service except ElevenLabs.
 | Python 3 (SeekReel's sound mixer) | `winget install Python.Python.3.12`; the scripts call `python` | preinstalled `python3`, or `brew install python` |
 | Claude Code, signed in | `npm install -g @anthropic-ai/claude-code`, then `claude` | same |
 | Impeccable for Claude | `npx impeccable install --providers=claude --scope=global --yes --no-hooks` | same |
+
+**Playwright is pinned to 1.63.0** in the demo and in SeekReel, so the one
+`npx playwright install chromium` that `npm run setup` runs serves both. If you
+point at another browser with `CHROMIUM`, it must match that version. `record`
+films a two-second test clip first and stops with the fix if recording does
+not work, instead of failing after an hour-long take.
+
+**Rehearse without keys.** `npm run voice:local` (or `voice` with no keys in
+`.env`) uses the system's own speech: Windows' built-in voices, macOS `say`,
+or `espeak-ng` on Linux. It writes the same files as ElevenLabs, with approximate word
+timings, so `record:dry`, `edit` and `build` all work. Run `npm run voice`
+with your keys before the real take; it re-voices every line.
 
 **ffmpeg needs no install.** Both the demo and SeekReel use the `ffmpeg-static`
 build from npm. To use your own, set `FFMPEG` (and `FFPROBE`) in `.env`.

@@ -96,17 +96,17 @@
       "actions": [
         {
           "fill": "role=textbox[name=/Who is it for/]",
-          "text": "Small agencies and studios who bill clients by the hour.",
+          "text": "Small agencies that bill by the hour.",
           "delay": 16
         },
         {
           "fill": "role=textbox[name=/What does it offer/]",
-          "text": "Timers, weekly timesheets, approvals and invoices from tracked hours.",
+          "text": "Timers, timesheets and invoices.",
           "delay": 16
         },
         {
           "fill": "role=textbox[name=/What must stay/]",
-          "text": "The name, the three plans and their prices, the sign-up button, the FAQ.",
+          "text": "Prices, the sign-up button, the FAQ.",
           "delay": 16
         },
         {
@@ -174,7 +174,7 @@
             80,
             50
           ],
-          "ms": 1400,
+          "ms": 1050,
           "zoom": true
         }
       ]
@@ -182,37 +182,31 @@
     {
       "id": "switch",
       "step": "Directions",
-      "text": "Every direction was designed from scratch for this site. Switch between them in one click.",
+      "text": "Every direction was designed from scratch for this site. Switch between them in a single click, and compare each one with the original.",
       "actions": [
         {
           "click": "role=button[name=/^V02/]",
-          "sound": "pop"
+          "sound": "pop",
+          "moveMs": 380
         },
         {
           "waitPanes": true
-        },
-        {
-          "wait": 500
         },
         {
           "click": "role=button[name=/^V03/]",
-          "sound": "pop"
+          "sound": "pop",
+          "moveMs": 380
         },
         {
           "waitPanes": true
-        },
-        {
-          "wait": 500
         },
         {
           "click": "role=button[name=/^V04/]",
-          "sound": "pop"
+          "sound": "pop",
+          "moveMs": 380
         },
         {
           "waitPanes": true
-        },
-        {
-          "wait": 500
         }
       ]
     },

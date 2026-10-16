@@ -17,7 +17,7 @@
 //    video/raw-timeline.json (scene and click times in seconds from the light
 //    page's start; offsets.<theme> is when that page started, relative to it).
 import { spawn } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, renameSync, rmSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, renameSync, rmSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
@@ -293,7 +293,7 @@ class Director {
       if (step.optional) return;
       throw error;
     }
-    await this.moveTo(target.x, target.y);
+    await this.moveTo(target.x, target.y, step.moveMs ?? 650);
     await this.page.waitForTimeout(120);
     this.clicks.push({ t: this.now(), x: target.x, y: target.y, zoom: !!step.zoom, sound: step.sound ?? 'tick' });
     await this.press(target.x, target.y);
@@ -380,7 +380,7 @@ class Director {
         await frame.waitForLoadState('load', { timeout: 30_000 }).catch(() => {});
       }
     });
-    await this.page.waitForTimeout(900);
+    await this.page.waitForTimeout(400);
   }
 
   async act(step) {
@@ -415,6 +415,36 @@ class Director {
   }
 }
 
+/**
+ * Record two seconds of a blank page and check the file landed, before a take
+ * that can run for an hour. A Playwright whose browser or ffmpeg build does
+ * not match only fails when the video is saved, at the very end.
+ */
+async function smokeTest() {
+  const dir = at('video', 'smoke');
+  rmSync(dir, { recursive: true, force: true });
+  let file = null;
+  try {
+    const probe = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM || undefined });
+    const context = await probe.newContext({ viewport: { width: 640, height: 360 }, recordVideo: { dir, size: { width: 640, height: 360 } } });
+    const page = await context.newPage();
+    await page.setContent('<body style="background:#ffd400"></body>');
+    await page.waitForTimeout(1500);
+    await context.close();
+    file = await page.video()?.path();
+    await probe.close();
+  } catch (error) {
+    log('record', `NOT READY: the browser could not record a test clip: ${String(error.message).split('\n')[0]}`);
+  }
+  const ok = file && existsSync(file) && statSync(file).size > 0;
+  rmSync(dir, { recursive: true, force: true });
+  if (!ok) {
+    log('record', 'NOT READY: Playwright could not record video. Fix: cd demo && npm ci && npx playwright install chromium');
+    process.exit(1);
+  }
+  log('record', 'video recording works');
+}
+
 // ---------------------------------------------------------------- main
 
 // Film the variantly people will install, never a stale or edited clone.
@@ -429,6 +459,7 @@ if (filmed.problems.length) {
   log('record', 'ALLOW_STALE is set: recording anyway. Do not publish this take.');
 }
 log('record', `agent: ${agent}${agent === 'demo' ? ' (dry run, no AI)' : ''}; themes: ${THEMES.join(', ')}`);
+await smokeTest();
 await prepareSite();
 await preflight();
 const { child, url: app } = await startVariantly();
