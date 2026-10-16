@@ -310,6 +310,35 @@ Small 10px label-type flaps (3px radius) in Counter Grey; ok fills ink; bad uses
 ### Navigation
 A 48px Counter Grey bar with a rule beneath: wordmark (barcode mark plus condensed 15px uppercase name), the project path in steel data type behind a rule, an ink phase chip, and a ghost "Keys" toggle opening a white help card with keycap kbd elements.
 
+## Dark Theme
+
+**Night shift at the gate.** The same two materials after dark, not an inversion: a cool blue-black counter, passes lifted one step, the slate board one step above that, so depth always reads ground < pass < board. Gate Yellow is pulled back to a lamp so it reads as light, not glare; washes become low warm or red darks. It matches variantly.style's dark theme value for value so the app sits inside the site in the demo.
+
+Applied as `html[data-theme='dark']` (both the app and the site). The default follows `prefers-color-scheme`; the choice is saved under `localStorage['variantly:prefs']` and set by an inline script before first paint. `?theme=dark|light` sets and saves it.
+
+- **Night Counter** (panel, `#0e1114`): Ground; 15.8:1 under ink.
+- **Night Pass** (surface, `#171b20`): Passes, inputs, tickets: one step above the ground; 14.5:1 under ink.
+- **Board Slate (night)** (slate, `#1e242b`): Board, dock, drawers: one step above the pass; white text 15.6:1.
+- **Raised Slate (night)** (slate-raised, `#29313a`): Unflipped cells, done wizard marks, a chosen ticket.
+- **Slate Seam (night)** (slate-line, `#3a434d`): Rules inside slate objects.
+- **Ticket Ink (night)** (ink, `#e8ebee`): Text on the night ground and passes.
+- **Steel (night)** (steel, `#9aa3ad`): Labels: 7.4:1 on ground, 6.8:1 on pass.
+- **Steel on Slate (night)** (steel-on-slate, `#aab2bb`): Labels on the board: 7.3:1.
+- **Perforation (night)** (rule, `#2c333b`): Hairlines and input borders.
+- **Gate Lamp** (alert, `#f2c94c`): Gate Yellow pulled back to a lamp; ink on it 12.2:1, on slate 9.9:1.
+- **Gate Lamp hover** (alert-hover, `#f8d872`): Primary hover; ink on it 13.9:1.
+- **Lamp Wash** (alert-wash, `#2e2a14`): Advisory notes, with #f6e7a6 text (11.6:1).
+- **Fail (night)** (fail, `#ff8f85`): Failure on passes: 7.8:1.
+- **Fail on Slate (night)** (fail-on-slate, `#ff9a91`): Failure on the board: 7.7:1.
+- **Fail Wash (night)** (fail-wash, `#36191a`): Failure notes and tags, with #ffc9c4 text (11.0:1).
+- **Open Segment (night)** (drawer, `#1d2228`): Open segment / drawer; 13.4:1 under ink.
+- **Placeholder (night)** (placeholder, `#858e98`): Input placeholders: 5.2:1 on pass.
+
+### Named Rules
+**The Board Stays Lit Rule.** Slate objects (board, dock, drawers, logs, waiting cards, toasts, the prefs menu) were already dark; inside them the light-theme values stay, so ready flaps and the active dock cell keep white-on-slate contrast.
+
+**No White Blots Rule.** Anything filled with ink in light (wizard done marks, check marks, a chosen ticket) becomes raised slate after dark, keeping the yellow check (8.3:1 on raised slate) instead of turning into a white disc.
+
 ## Do's and Don'ts
 
 ### Do:

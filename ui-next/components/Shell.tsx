@@ -7,6 +7,7 @@ import { ViewSkeleton } from './Skeleton';
 import { Checkin } from './Checkin';
 import { Compare } from './Compare';
 import { Kept } from './Kept';
+import { Prefs } from './Prefs';
 import { setState, useStore, type UiState } from '@/lib/store';
 
 type View = 'loading' | 'checkin' | 'board' | 'compare' | 'kept' | 'stopped';
@@ -76,6 +77,7 @@ const Shell = () => {
         <button className="ghost" type="button" aria-expanded={helpOpen} aria-controls="help" onClick={() => setState({ helpOpen: !helpOpen })}>
           Keys
         </button>
+        <Prefs />
       </header>
       <main id="view" tabIndex={-1}>
         {view === 'loading' && <ViewSkeleton label="Connecting to variantly…" />}

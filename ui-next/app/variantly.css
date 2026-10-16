@@ -23,6 +23,14 @@
   --alert-ink: #0d0d10;
   --fail: #b3261e;
   --fail-on-slate: #ff8a80;
+  --alert-hover: #ffe14d;
+  --alert-wash: #fff6c2;
+  --alert-wash-ink: var(--ink);
+  --fail-wash: #fbe3e1;
+  --fail-wash-ink: #7a1712;
+  --hover-tint: #f5f6f7;
+  --drawer: #f3f4f6;
+  --placeholder: #767c83;
 
   --mono: 'Martian Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
   --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -123,6 +131,233 @@ kbd {
   font: 500 13px/1.4 var(--mono);
   font-stretch: 87.5%;
   font-variant-numeric: tabular-nums;
+}
+
+/* Night shift at the gate ------------------------------------------------
+   The same two materials after dark, matching variantly.style: a cool
+   blue-black counter (ground), passes lifted one step (surface), the slate
+   board one step above that, so depth reads ground < pass < board. Ink turns
+   light; Gate Yellow is pulled back to a lamp rather than a glare; washes
+   become low, warm or red-tinted darks. Ratios are against the ground they sit
+   on (see DESIGN.md, Dark theme). */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  accent-color: var(--alert);
+  --panel: #0e1114; /* ground */
+  --surface: #171b20; /* pass, +1 */
+  --slate: #1e242b; /* board, +2 */
+  --slate-2: #29313a;
+  --slate-line: #3a434d;
+  --ink: #e8ebee; /* 15.8:1 on ground, 14.5:1 on pass */
+  --steel: #9aa3ad; /* 7.4:1 on ground, 6.8:1 on pass */
+  --steel-on-slate: #aab2bb; /* 7.3:1 on board */
+  --rule: #2c333b;
+  --alert: #f2c94c; /* ink on it 12.2:1 */
+  --alert-hover: #f8d872;
+  --alert-wash: #2e2a14;
+  --alert-wash-ink: #f6e7a6; /* 11.6:1 */
+  --fail: #ff8f85; /* 7.8:1 on pass */
+  --fail-on-slate: #ff9a91; /* 7.7:1 on board */
+  --fail-wash: #36191a;
+  --fail-wash-ink: #ffc9c4; /* 11.0:1 */
+  --hover-tint: #1b2026;
+  --drawer: #1d2228; /* open segment, 13.4:1 under ink */
+  --placeholder: #858e98; /* 5.2:1 on pass */
+  --lift: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 10px 28px -12px rgb(0 0 0 / 0.7);
+}
+
+/* The slate board and every live object built from it were already dark, so
+   inside them the light values stay (the site's .on-slate rule). Ink-on-white
+   cells such as a ready flap or the active dock cell keep their contrast. */
+:root[data-theme='dark'] :is(.on-slate, .board, .logpanel, .wait-card, .modes, .action-dock, .info, .pane-wait, .prefs-menu, .toast, .dock, .progress-card, .terminal, .cmd, .wiz-bank, .tags) {
+  --ink: #0d0d10;
+  --surface: #ffffff;
+  --panel: #e6e8eb;
+  --rule: #c7cbd0;
+  --steel: #5f656c;
+  --alert-wash-ink: #0d0d10;
+}
+
+/* Solid-ink marks would turn into white blots on the night counter. After
+   dark they become raised-slate tokens: the yellow check stays a lamp on
+   slate (8.3:1) and a chosen ticket reads as pressed, not inverted. */
+:root[data-theme='dark'] ul.checks .check .mark {
+  background: var(--slate-2);
+}
+
+:root[data-theme='dark'] .wiz-item.done .wiz-dot circle {
+  fill: var(--slate-2);
+  stroke: var(--slate-line);
+}
+
+:root[data-theme='dark'] .pick:has(input:checked),
+:root[data-theme='dark'] .wiz-chip.now {
+  border-color: var(--ink);
+  background: var(--slate-2);
+  color: var(--ink);
+}
+
+:root[data-theme='dark'] ::selection {
+  background: var(--alert);
+  color: var(--alert-ink);
+}
+
+/* Accessibility menu ------------------------------------------------------ */
+
+:root[data-contrast='true'] {
+  --steel: var(--ink);
+  --steel-on-slate: #eceef1;
+  --rule: var(--ink);
+  --slate-line: #8a929b;
+}
+
+:root[data-large='true'] {
+  zoom: 1.125;
+}
+
+:root[data-readable='true'] body,
+:root[data-readable='true'] body * {
+  font-family: 'Atkinson Hyperlegible', Verdana, Tahoma, sans-serif !important;
+  letter-spacing: 0.02em !important;
+  word-spacing: 0.08em !important;
+}
+
+:root[data-calm='true'] * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+:root[data-calm='true'] main {
+  filter: saturate(0.6);
+}
+
+:root[data-motion='calm'] *,
+:root[data-motion='calm'] *::before,
+:root[data-motion='calm'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Header theme switch and reading-aids toggle: quiet ghost circles in the bar. */
+.prefs {
+  position: relative;
+  display: flex;
+  gap: 4px;
+}
+
+.bar-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--steel);
+  cursor: pointer;
+}
+
+.bar-btn:hover,
+.bar-btn[aria-expanded='true'] {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.bar-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.prefs-menu {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  z-index: 40;
+  display: grid;
+  gap: 16px;
+  width: 300px;
+  padding: 16px;
+  border: 1px solid var(--slate-line);
+  border-radius: 12px;
+  background: var(--slate);
+  color: var(--surface);
+  box-shadow: 0 18px 40px -14px rgb(0 0 0 / 0.65);
+  font: 14px/1.4 var(--sans);
+}
+
+.prefs-menu[hidden] {
+  display: none;
+}
+
+.prefs-menu fieldset {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.prefs-menu legend {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.prefs-motion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  background: #0d0d10;
+}
+
+.prefs-motion button {
+  padding: 10px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--steel-on-slate);
+  font: 600 13px var(--sans);
+  cursor: pointer;
+}
+
+.prefs-motion button[aria-pressed='true'] {
+  background: #7ee2a8;
+  color: #0d0d10;
+}
+
+.prefs-aid {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--slate-line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.prefs-aid:has(input:checked) {
+  border-color: #7ee2a8;
+}
+
+.prefs-aid input {
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: #7ee2a8;
+}
+
+.prefs-aid strong {
+  display: block;
+  font-size: 14px;
+}
+
+.prefs-aid span span {
+  color: var(--steel-on-slate);
+  font-size: 12px;
 }
 
 /* Header ---------------------------------------------------------------- */
@@ -233,7 +468,7 @@ body[data-view='compare'] {
 }
 
 .btn.primary:hover {
-  background: #ffe14d;
+  background: var(--alert-hover);
 }
 
 .btn.outline {
@@ -375,7 +610,7 @@ body[data-view='compare'] {
 }
 
 .segment:hover {
-  background: #f5f6f7;
+  background: var(--hover-tint);
 }
 
 .segment[aria-expanded='true'] {
@@ -596,7 +831,7 @@ textarea.input {
 }
 
 .input::placeholder {
-  color: #767c83;
+  color: var(--placeholder);
 }
 
 .hint {
@@ -695,7 +930,7 @@ textarea.input {
 }
 
 .tag.bad {
-  background: #fbe3e1;
+  background: var(--fail-wash);
   color: var(--fail);
 }
 
@@ -858,12 +1093,13 @@ textarea.input {
 }
 
 .note.alert {
-  background: #fff6c2;
+  background: var(--alert-wash);
+  color: var(--alert-wash-ink);
 }
 
 .note.bad {
-  background: #fbe3e1;
-  color: #7a1712;
+  background: var(--fail-wash);
+  color: var(--fail-wash-ink);
 }
 
 .cost {
@@ -2209,11 +2445,11 @@ body[data-view='compare'] .help {
 }
 
 .panel .segment[aria-expanded='true'] {
-  background: #f3f4f6;
+  background: var(--drawer);
 }
 
 .panel .drawer {
-  background: #f3f4f6;
+  background: var(--drawer);
 }
 
 .about {

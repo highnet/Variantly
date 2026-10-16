@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { PREFS_BOOT } from '@/lib/prefs';
 import './variantly.css';
 
 export const metadata: Metadata = {
@@ -12,7 +13,10 @@ type RootLayoutProps = {
 };
 
 const RootLayout = ({ children }: RootLayoutProps) => (
-  <html lang="en">
+  <html lang="en" suppressHydrationWarning>
+    <head>
+      <script dangerouslySetInnerHTML={{ __html: PREFS_BOOT }} />
+    </head>
     <body>{children}</body>
   </html>
 );

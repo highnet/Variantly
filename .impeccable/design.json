@@ -445,7 +445,103 @@
         "contract": "2x2 at every width",
         "status": "Finish review round 2 (verdict \"fix\"): all 8 fixes resolved except this one, which awaits user acceptance."
       }
-    ]
+    ],
+    "themes": {
+      "dark": {
+        "selector": ":root[data-theme='dark']",
+        "description": "Night shift at the gate: ground < pass < board, matching variantly.style. Slate objects keep their light-theme inner values.",
+        "colors": {
+          "panel": {
+            "value": "#0e1114",
+            "displayName": "Night Counter",
+            "purpose": "Ground; 15.8:1 under ink."
+          },
+          "surface": {
+            "value": "#171b20",
+            "displayName": "Night Pass",
+            "purpose": "Passes, inputs, tickets: one step above the ground; 14.5:1 under ink."
+          },
+          "slate": {
+            "value": "#1e242b",
+            "displayName": "Board Slate (night)",
+            "purpose": "Board, dock, drawers: one step above the pass; white text 15.6:1."
+          },
+          "slate-raised": {
+            "value": "#29313a",
+            "displayName": "Raised Slate (night)",
+            "purpose": "Unflipped cells, done wizard marks, a chosen ticket."
+          },
+          "slate-line": {
+            "value": "#3a434d",
+            "displayName": "Slate Seam (night)",
+            "purpose": "Rules inside slate objects."
+          },
+          "ink": {
+            "value": "#e8ebee",
+            "displayName": "Ticket Ink (night)",
+            "purpose": "Text on the night ground and passes."
+          },
+          "steel": {
+            "value": "#9aa3ad",
+            "displayName": "Steel (night)",
+            "purpose": "Labels: 7.4:1 on ground, 6.8:1 on pass."
+          },
+          "steel-on-slate": {
+            "value": "#aab2bb",
+            "displayName": "Steel on Slate (night)",
+            "purpose": "Labels on the board: 7.3:1."
+          },
+          "rule": {
+            "value": "#2c333b",
+            "displayName": "Perforation (night)",
+            "purpose": "Hairlines and input borders."
+          },
+          "alert": {
+            "value": "#f2c94c",
+            "displayName": "Gate Lamp",
+            "purpose": "Gate Yellow pulled back to a lamp; ink on it 12.2:1, on slate 9.9:1."
+          },
+          "alert-hover": {
+            "value": "#f8d872",
+            "displayName": "Gate Lamp hover",
+            "purpose": "Primary hover; ink on it 13.9:1."
+          },
+          "alert-wash": {
+            "value": "#2e2a14",
+            "displayName": "Lamp Wash",
+            "purpose": "Advisory notes, with #f6e7a6 text (11.6:1)."
+          },
+          "fail": {
+            "value": "#ff8f85",
+            "displayName": "Fail (night)",
+            "purpose": "Failure on passes: 7.8:1."
+          },
+          "fail-on-slate": {
+            "value": "#ff9a91",
+            "displayName": "Fail on Slate (night)",
+            "purpose": "Failure on the board: 7.7:1."
+          },
+          "fail-wash": {
+            "value": "#36191a",
+            "displayName": "Fail Wash (night)",
+            "purpose": "Failure notes and tags, with #ffc9c4 text (11.0:1)."
+          },
+          "drawer": {
+            "value": "#1d2228",
+            "displayName": "Open Segment (night)",
+            "purpose": "Open segment / drawer; 13.4:1 under ink."
+          },
+          "placeholder": {
+            "value": "#858e98",
+            "displayName": "Placeholder (night)",
+            "purpose": "Input placeholders: 5.2:1 on pass."
+          }
+        },
+        "shadows": {
+          "lift": "0 1px 0 rgb(255 255 255 / 0.04) inset, 0 10px 28px -12px rgb(0 0 0 / 0.7)"
+        }
+      }
+    }
   },
   "components": [
     {
@@ -485,7 +581,7 @@
       "kind": "card",
       "refersTo": "pass-segment",
       "description": "A labelled pass field holding one large condensed value; open state underlined in ink.",
-      "html": "<div class=\"ds-pass\"><button class=\"ds-seg\"><span class=\"ds-seg-l\">From</span><span class=\"ds-seg-f\">NEXT.JS</span><span class=\"ds-seg-s\">repo root · variantly starts it</span></button><button class=\"ds-seg\" aria-expanded=\"true\"><span class=\"ds-seg-l\">Variants</span><span class=\"ds-seg-f\">04</span><span class=\"ds-seg-s\">2 at a time</span></button></div>",
+      "html": "<div class=\"ds-pass\"><button class=\"ds-seg\"><span class=\"ds-seg-l\">From</span><span class=\"ds-seg-f\">NEXT.JS</span><span class=\"ds-seg-s\">repo root \u00b7 variantly starts it</span></button><button class=\"ds-seg\" aria-expanded=\"true\"><span class=\"ds-seg-l\">Variants</span><span class=\"ds-seg-f\">04</span><span class=\"ds-seg-s\">2 at a time</span></button></div>",
       "css": ".ds-pass{display:grid;grid-template-columns:1fr 1fr;background:#fff;border:1px solid #c7cbd0;border-radius:10px;overflow:hidden;box-shadow:0 1px 1px rgb(13 13 16/.06),0 8px 24px -12px rgb(13 13 16/.28)}.ds-seg{all:unset;position:relative;display:grid;gap:8px;padding:18px 22px 20px;cursor:pointer;transition:background 160ms cubic-bezier(.16,1,.3,1)}.ds-seg+.ds-seg{border-left:1px solid #c7cbd0}.ds-seg:hover{background:#f5f6f7}.ds-seg[aria-expanded=true]{background:#e6e8eb}.ds-seg[aria-expanded=true]::after{content:'';position:absolute;left:22px;right:22px;bottom:0;height:3px;background:#0d0d10}.ds-seg:focus-visible{outline:2px solid #0d0d10;outline-offset:-4px}.ds-seg-l{font:500 10.5px/1.2 'Martian Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;font-stretch:87.5%;letter-spacing:.08em;text-transform:uppercase;color:#5f656c}.ds-seg-f{font:700 44px/.95 'Martian Mono',ui-monospace,'Cascadia Mono',Consolas,monospace;font-stretch:75%;letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:#0d0d10}.ds-seg-s{font:13.5px/1.5 system-ui,sans-serif;color:#5f656c}"
     },
     {
