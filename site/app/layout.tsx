@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   description,
   icons: { icon: '/icon.svg' },
   openGraph: { title, description, url: SITE_URL, siteName: 'variantly', type: 'website' },
-  twitter: { card: 'summary_large_image', title, description },
+  twitter: { card: 'summary', title, description },
   alternates: { types: { 'text/markdown': '/SKILLS.md' } },
 };
 

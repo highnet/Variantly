@@ -7,7 +7,7 @@ homepage's pitch or the README's prose. Fetch the latest copy at any time:
 curl -fsSL https://variantly.tools/SKILLS.md
 ```
 
-(or `https://raw.githubusercontent.com/highnet/ProjectHusky/main/SKILLS.md`)
+(or `https://raw.githubusercontent.com/highnet/variantly/main/SKILLS.md`)
 
 If you are a person, the README is friendlier and
 [variantly.tools](https://variantly.tools) is friendlier still.
@@ -52,7 +52,7 @@ npx variantly install-skill --providers=codex --scope=project # .agents/skills/v
 Project scope writes `.claude/skills/`, `.agents/skills/` or `.github/skills/`
 in the repository, for everyone who clones it. Running it again updates the
 file in place. Claude Code can also use the plugin:
-`/plugin marketplace add highnet/ProjectHusky` then
+`/plugin marketplace add highnet/variantly` then
 `/plugin install variantly@variantly`. Restart the agent after installing.
 
 ## Requirements
