@@ -38,6 +38,12 @@ if (!meta) {
 const look = LOOKS[(meta.variant - 1) % LOOKS.length];
 const appDir = path.resolve(process.cwd(), meta.appRel || '.');
 console.log(`Demo agent: variant ${meta.variant} → ${look.name}`);
+// Long enough to watch the progress view (about 10s per variant); tests set
+// VARIANTLY_DEMO_DELAY=0.
+const delay = Number(process.env.VARIANTLY_DEMO_DELAY ?? 10_000);
+const pause = (/** @type {number} */ ms) => new Promise((r) => setTimeout(r, ms));
+console.log('→ Read the site and pick a look');
+await pause(delay / 2);
 
 const css = `
 /* variantly demo agent: ${look.name} */
@@ -80,5 +86,5 @@ if (target) {
     console.log(`→ Edit ${file}`);
   }
 }
-await new Promise((r) => setTimeout(r, Number(process.env.VARIANTLY_DEMO_DELAY ?? 600)));
+await pause(delay / 2);
 console.log(`SUMMARY: ${look.name}. A demo restyle: ${look.font.split(',')[0].replace(/"/g, '')} type on ${look.bg} with ${look.accent} accents.`);
