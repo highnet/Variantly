@@ -83,6 +83,7 @@ const StartChecklist = () => (
         Stuck? This says what&apos;s missing:
       </Typography>
       <CommandCopy command="npx variantly doctor" tone="slate" />
+      <PromptCopy prompt={PROMPTS.doctor} tone="slate" label="Copy as a prompt instead" />
     </div>
   </section>
 );
