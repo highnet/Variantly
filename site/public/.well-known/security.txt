@@ -1,3 +1,4 @@
+Contact: mailto:joaquintelleria@gmail.com
 Contact: https://github.com/highnet/variantly/security/advisories/new
 Expires: 2027-10-16T00:00:00.000Z
 Preferred-Languages: en
