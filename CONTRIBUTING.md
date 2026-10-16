@@ -68,3 +68,9 @@ Thank you for your contribution!
 - The local app (`ui/`) and the homepage (`site/`) are designed with
   [Impeccable](https://impeccable.style); read `PRODUCT.md` and `DESIGN.md`
   before changing how either looks.
+- Whenever the homepage, the local app or the docs name a third-party tool
+  (an AI assistant, git, Node.js, an editor, Impeccable…), link it to that
+  tool's own site or install page. In `site/lib/content.ts` copy, write
+  `[name](https://…)`. If variantly already installs or sets the tool up when
+  it's missing (as it does for Impeccable and the first git commit), say so
+  next to the mention, so nobody installs it by hand for nothing.
