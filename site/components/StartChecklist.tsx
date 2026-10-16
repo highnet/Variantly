@@ -69,7 +69,7 @@ const StartChecklist = () => (
 
       <div className="grid gap-3">
         <Typography variant="small" color="steel-on-slate">
-          <strong className="text-surface">Just looking?</strong> Ready-made designs, no AI:
+          <strong className="text-surface">Just looking?</strong> Ready-made variants, no AI:
         </Typography>
         <CommandCopy command="npx variantly --demo" tone="slate" />
         <PromptCopy prompt={PROMPTS.demo} tone="slate" label="Copy as a prompt instead" />

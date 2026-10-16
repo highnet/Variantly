@@ -2423,7 +2423,7 @@ body[data-view='compare'] .help {
   border-bottom: 1px dashed var(--slate-line);
 }
 
-/* Check-in wizard: Setup → Designs → Your site → Review */
+/* Check-in wizard: Setup → Variants → Your site → Review */
 .setup.wizard-wrap {
   grid-template-columns: minmax(0, 760px);
   justify-content: center;

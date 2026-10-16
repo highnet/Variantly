@@ -1,7 +1,7 @@
 'use client';
 
 /*
- * The check-in wizard: Setup → Designs → Your site → Review.
+ * The check-in wizard: Setup → Variants → Your site → Review.
  * The form in the store is the one source of truth; steps only read and
  * write it, so Back never loses anything. The step lives in the URL
  * (?step=designs) and the draft in localStorage, so refresh and the
@@ -20,8 +20,8 @@ import { getState, setState, toast, updateForm, useStore } from '@/lib/store';
 import type { Agent, Detect, Form } from '@/lib/types';
 
 const WIZ = [
-  { id: 'setup', name: 'Setup', title: 'Your setup', next: 'Continue to designs' },
-  { id: 'designs', name: 'Designs', title: 'What should we make?', next: 'Continue to your site' },
+  { id: 'setup', name: 'Setup', title: 'Your setup', next: 'Continue to variants' },
+  { id: 'designs', name: 'Variants', title: 'What should we make?', next: 'Continue to your site' },
   { id: 'site', name: 'Your site', title: 'About your site', next: 'Continue to review' },
   { id: 'review', name: 'Review', title: 'Ready when you are', next: '' },
 ] as const;
@@ -29,7 +29,7 @@ type StepId = (typeof WIZ)[number]['id'];
 
 const CHECKS: [keyof Form, string, string, string][] = [
   ['browser', 'Let the agent see its variant', 'browser', 'Each agent gets a headless browser (Playwright MCP) on its own live variant: it screenshots its work at desktop and phone widths and fixes what it sees.'],
-  ['review', 'Review pass', 'review', 'When the design is built, the agent runs again: Impeccable’s critique and audit, fed with the scores, then fixes the worst problems without changing the direction. A second session per variant.'],
+  ['review', 'Review pass', 'review', 'When the variant is built, the agent runs again: Impeccable’s critique and audit, fed with the scores, then fixes the worst problems without changing the direction. A second session per variant.'],
   ['audit', 'Scores', 'scores', 'axe-core and Lighthouse on the original and every variant: accessibility, performance, best practices, SEO. Runs on your machine, costs nothing.'],
 ];
 
@@ -359,11 +359,11 @@ const MoreSettings = ({ d, f }: PartProps) => (
       <p className="hint">
         {f.agent === 'demo'
           ? f.approach === 'refine'
-            ? 'Keep your look. The demo agent applies a fixed restyle to each design.'
-            : 'Replace your look. The demo agent applies a different fixed restyle to every design.'
+            ? 'Keep your look. The demo agent applies a fixed restyle to each variant.'
+            : 'Replace your look. The demo agent applies a different fixed restyle to every variant.'
           : f.approach === 'refine'
-            ? 'Keep your look. Impeccable finds what to improve in each design.'
-            : 'Replace your look. Impeccable picks a different visual world for every design.'}
+            ? 'Keep your look. Impeccable finds what to improve in each variant.'
+            : 'Replace your look. Impeccable picks a different visual world for every variant.'}
       </p>
     </div>
     <div className="field">
@@ -389,8 +389,8 @@ const MoreSettings = ({ d, f }: PartProps) => (
     </div>
     <div className="field-row">
       <div className="field">
-        <span className="label">Designs</span>
-        <Stepper label="Designs" value={f.count} min={1} max={10} onSet={(n) => updateForm({ count: n })} />
+        <span className="label">Variants</span>
+        <Stepper label="Variants" value={f.count} min={1} max={10} onSet={(n) => updateForm({ count: n })} />
       </div>
       <div className="field">
         <span className="label">At a time</span>
@@ -400,7 +400,7 @@ const MoreSettings = ({ d, f }: PartProps) => (
       <div className="field">
         <span className="label">Servers live</span>
         <Stepper label="Servers live" value={f.maxLive} min={2} max={8} onSet={(n) => updateForm({ maxLive: n })} />
-        <p className="hint">The original plus the designs you looked at last. The rest sleep.</p>
+        <p className="hint">The original plus the variants you looked at last. The rest sleep.</p>
       </div>
     </div>
     <fieldset className="field checks">
@@ -484,14 +484,14 @@ const DesignsStep = ({ d, f }: StepBodyProps) => {
           e.currentTarget.form?.requestSubmit();
         }}
       >
-        <legend className="label">How many designs?</legend>
+        <legend className="label">How many variants?</legend>
         <div className="pick-row">
           {[2, 4, 6].map((n) => (
             <Pick key={n} type="radio" name="count" label={String(n)} on={f.count === n} onToggle={() => updateForm({ count: n })} />
           ))}
           {![2, 4, 6].includes(f.count) && <Pick type="radio" name="count" label={String(f.count)} on onToggle={() => {}} />}
         </div>
-        <p className="hint">{f.agent === 'demo' ? 'The demo agent costs nothing.' : `Each design is one ${a?.name ?? 'agent'} session on your account, about 10–20 minutes, ${f.concurrency} at a time.`}</p>
+        <p className="hint">{f.agent === 'demo' ? 'The demo agent costs nothing.' : `Each variant is one ${a?.name ?? 'agent'} session on your account, about 10–20 minutes, ${f.concurrency} at a time.`}</p>
       </fieldset>
       <fieldset className="field picks">
         <legend className="label">Which pages?</legend>
@@ -523,7 +523,7 @@ const DesignsStep = ({ d, f }: StepBodyProps) => {
             setAdding('');
           }}
         />
-        <p className="hint">Just the home page is fastest. Each extra page adds time to every design.</p>
+        <p className="hint">Just the home page is fastest. Each extra page adds time to every variant.</p>
       </fieldset>
       <fieldset className="field picks">
         <legend className="label">Extras (optional)</legend>
@@ -585,7 +585,7 @@ const banked = (d: Detect, f: Form): Record<StepId, string> => {
   const extras = (d.extras ?? []).filter((x) => f.extras.includes(x.id)).map((x) => x.label);
   return {
     setup: `${stackName(d, f)} · ${f.agent === 'demo' ? 'Demo' : (a?.name ?? f.agent)}`,
-    designs: `${plural(f.count, 'design')} · ${f.routes.map((r) => (r === '/' ? 'Home' : r)).join(', ')}${extras.length ? ` · ${extras.join(', ')}` : ''}`,
+    designs: `${plural(f.count, 'variant')} · ${f.routes.map((r) => (r === '/' ? 'Home' : r)).join(', ')}${extras.length ? ` · ${extras.join(', ')}` : ''}`,
     site: d.hasProduct ? 'PRODUCT.md' : answered ? plural(answered, 'answer') : 'Skipped',
     review: '',
   };
@@ -814,7 +814,7 @@ const Checkin = () => {
               whileTap={blocked ? undefined : { scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 500, damping: 24 }}
             >
-              {step.id === 'review' ? (going ? 'Starting…' : `Make ${plural(f.count, 'design')}`) : step.next} <Icon name="arrow" />
+              {step.id === 'review' ? (going ? 'Starting…' : `Make ${plural(f.count, 'variant')}`) : step.next} <Icon name="arrow" />
             </motion.button>
           </div>
         </form>

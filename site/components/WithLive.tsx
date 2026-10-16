@@ -9,7 +9,7 @@ const ROWS: { label: string; live: string; variantly: string }[] = [
   {
     label: 'How you compare',
     live: 'Swaps in place on your running page.',
-    variantly: 'Each design runs as its own site. Flick and slide before/after.',
+    variantly: 'Each variant runs as its own site. Flick and slide before/after.',
   },
   {
     label: 'What you choose',
@@ -19,7 +19,7 @@ const ROWS: { label: string; live: string; variantly: string }[] = [
   {
     label: 'Cost',
     live: 'Quick and light.',
-    variantly: 'One AI session per design. Start with four.',
+    variantly: 'One AI session per variant. Start with four.',
   },
 ];
 

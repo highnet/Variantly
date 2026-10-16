@@ -21,7 +21,7 @@ const DemoVideo = () => {
           Watch a run
         </Typography>
         <p className="text-steel m-0 text-[16px] leading-relaxed">
-          A live demo, narrated: one command, the wizard, designs being made, then picking one to
+          A live demo, narrated: one command, the wizard, variants being made, then picking one to
           keep.
         </p>
       </div>
