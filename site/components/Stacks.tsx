@@ -55,8 +55,10 @@ const Stacks = () => (
           Uses your own AI
         </Typography>
         <Typography variant="body" color="steel">
-          <strong className="text-ink">No account, nothing to pay us.</strong> Each variant ={' '}
-          <strong className="text-ink">one session</strong> on your own plan.
+          <strong className="text-ink">No account, nothing to pay us.</strong> Any of these, on your
+          own plan or an <strong className="text-ink">OpenRouter</strong> key (Claude Code, Codex).
+          variantly finds the one you have. Each variant ={' '}
+          <strong className="text-ink">one session</strong>.
         </Typography>
       </div>
       <ul className="m-0 grid list-none auto-rows-fr gap-2 p-0">

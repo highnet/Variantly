@@ -156,9 +156,9 @@ export const CHECKLIST: { id: string; need: string; how: string; prompt: string 
   {
     id: 'run',
     need: 'The site runs on your computer',
-    how: 'Starts locally and opens in a browser. **[Node.js](https://nodejs.org/en/download) 20.11+**.',
+    how: 'Starts locally and opens in a browser. Plus **[Node.js](https://nodejs.org/en/download) 20.11+**, whatever your site is built with: variantly itself runs on it (that’s what **npx** runs), and most AI agents install with it.',
     prompt:
-      'Get this website running locally. Check Node.js is 20.11 or newer, install its dependencies and start the dev server, then tell me the address to open.',
+      'Get this website running locally and tell me the address to open. Also check Node.js is 20.11 or newer (`node --version`) and install it if not: variantly runs on Node even if the site doesn’t.',
   },
 ];
 
