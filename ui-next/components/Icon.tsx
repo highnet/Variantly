@@ -6,6 +6,7 @@ const PATHS: Record<string, string[]> = {
   info: ['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', 'M12 11v6', 'M12 7.5v.5'],
   plus: ['M12 5v14', 'M5 12h14'],
   minus: ['M5 12h14'],
+  check: ['M5 12.5l4.5 4.5L19 7'],
   close: ['M6 6l12 12', 'M18 6L6 18'],
   arrow: ['M5 12h14', 'M13 6l6 6-6 6'],
   refresh: ['M20 11a8 8 0 1 0-2.3 5.7', 'M20 5v6h-6'],

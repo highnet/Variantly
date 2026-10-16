@@ -560,6 +560,11 @@ body[data-view='compare'] {
   gap: 16px;
 }
 
+/* Fields without a hint stay level with their siblings, not stretched. */
+.field-row > .field {
+  align-content: start;
+}
+
 .input,
 textarea.input,
 select.input {
@@ -1383,15 +1388,6 @@ textarea.input {
     transform 240ms var(--ease);
 }
 
-.dock.tucked {
-  opacity: 0.12;
-}
-
-.dock.tucked:hover,
-.dock.tucked:focus-within {
-  opacity: 1;
-}
-
 .dock .mark {
   display: grid;
   place-items: center;
@@ -1586,12 +1582,42 @@ textarea.input {
   color: var(--steel-on-slate);
 }
 
-/* Summary flag above the dock */
+/* The board's discard confirm: the Keep confirm bar, in place of the buttons. */
+.board-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 12px;
+  background: var(--slate);
+  color: var(--surface);
+  font-size: 14px;
+}
+
+.board-confirm .muted {
+  color: var(--steel-on-slate);
+}
+
+.board-confirm .btn.outline {
+  color: var(--surface);
+  border-color: var(--steel-on-slate);
+}
+
+.board-confirm .btn.outline:hover {
+  background: var(--slate-2);
+}
+
+/* Summary flag above the dock. Centred without a transform: the entrance
+   animation owns transform, and a translateX here would be overwritten,
+   pushing the flag off the right edge on a phone. */
 .flag {
   position: absolute;
-  left: 50%;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: fit-content;
   bottom: 74px;
-  transform: translateX(-50%);
   z-index: 4;
   max-width: min(680px, calc(100vw - 32px));
   display: flex;
@@ -1610,7 +1636,7 @@ textarea.input {
 
 .flag.gone {
   opacity: 0;
-  transform: translate(-50%, 6px);
+  transform: translateY(6px);
   pointer-events: none;
 }
 
@@ -1624,11 +1650,11 @@ textarea.input {
   position: absolute;
   top: 12px;
   right: 12px;
-  bottom: 78px;
+  max-height: calc(100% - 90px);
   width: min(380px, calc(100vw - 24px));
   z-index: 6;
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto minmax(0, auto) auto;
   background: var(--slate);
   color: var(--surface);
   border-radius: var(--r);
@@ -1654,6 +1680,7 @@ textarea.input {
 }
 
 .info .body {
+  overflow: auto;
   padding: 14px 18px;
   display: grid;
   gap: 12px;
@@ -1674,6 +1701,7 @@ textarea.input {
 }
 
 .info pre {
+  max-height: 32vh;
   margin: 0;
   padding: 12px 18px;
   overflow: auto;
@@ -1711,9 +1739,28 @@ textarea.input {
   margin: 0;
   padding: 0;
   list-style: none;
-  columns: 2 240px;
-  font: 12.5px/1.8 var(--mono);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  font: 12.5px/1.5 var(--mono);
   font-stretch: 87.5%;
+}
+
+.kept ul li {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--panel);
+  overflow-wrap: anywhere;
+}
+
+/* Branch names break only after a slash, never mid-token. */
+.stub .branch {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.stub .branch span {
+  white-space: nowrap;
 }
 
 .kept ol {
@@ -1837,7 +1884,7 @@ body[data-view='compare'] .help {
     display: none;
   }
   .path {
-    display: none;
+    width: 120px;
   }
   .checkin,
   .boardview {
@@ -1911,6 +1958,11 @@ body[data-view='compare'] .help {
   .dock .cell {
     flex: 1 0 auto;
   }
+  .dock .path {
+    flex: 1 1 80px;
+    min-width: 0;
+    width: auto;
+  }
   .dock .btn.primary {
     margin-left: auto;
   }
@@ -1922,7 +1974,7 @@ body[data-view='compare'] .help {
     bottom: 112px;
   }
   .info {
-    bottom: 112px;
+    max-height: calc(100% - 136px);
   }
   .tags .tag {
     font-size: 9px;
@@ -1982,6 +2034,14 @@ body[data-view='compare'] .help {
     padding-left: 12px;
     padding-right: 12px;
   }
+  /* Narrow: the step label wraps instead of truncating to "All…". */
+  .board .step-cell {
+    min-width: 96px;
+  }
+  .board .steps .now-label {
+    white-space: normal;
+    overflow: visible;
+  }
   .board .var {
     font-size: 18px;
   }
@@ -2007,7 +2067,6 @@ body[data-view='compare'] .help {
 
 /* Tucked chrome: dock and tags recede while you look at the site. */
 .compare.tucked .dock:not(:hover):not(:focus-within) {
-  opacity: 0.14;
   transform: translateX(-50%) translateY(6px);
 }
 
@@ -2291,6 +2350,16 @@ body[data-view='compare'] .help {
 
 .check input {
   margin-top: 3px;
+  accent-color: var(--ink);
+}
+
+/* Off for the demo agent: readable, just not clickable. */
+.check:has(input:disabled) {
+  cursor: default;
+}
+
+.check input:disabled + span .name {
+  color: var(--ink);
 }
 
 .check .name {
@@ -2440,7 +2509,8 @@ button.wiz-chip.done:hover {
   border-top: 1px solid var(--rule);
 }
 
-.checks {
+/* Setup's check rows (a list), not the settings checkboxes. */
+ul.checks {
   display: grid;
   gap: 10px;
   margin: 0;
@@ -2448,14 +2518,14 @@ button.wiz-chip.done:hover {
   list-style: none;
 }
 
-.check {
+ul.checks .check {
   display: flex;
   gap: 12px;
   align-items: baseline;
   font-size: 15px;
 }
 
-.check .mark {
+ul.checks .check .mark {
   display: inline-grid;
   place-items: center;
   flex: none;
@@ -2467,12 +2537,19 @@ button.wiz-chip.done:hover {
   font: 700 12px/1 var(--mono);
 }
 
-.check.bad .mark {
+/* An inline SVG, not a font glyph: no tiny fallback "✓" while fonts load. */
+ul.checks .check .mark svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.4;
+}
+
+ul.checks .check.bad .mark {
   background: var(--alert);
   color: var(--ink);
 }
 
-.check .detail {
+ul.checks .check .detail {
   color: var(--steel);
 }
 
@@ -3009,6 +3086,13 @@ button.wiz-hit:hover .wiz-name {
   display: inline-block;
   margin-left: 6px;
   color: var(--ink);
+  vertical-align: -2px;
+}
+
+.label .valid svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.4;
 }
 
 @media (max-width: 560px) {
@@ -3406,10 +3490,11 @@ button.wiz-hit:hover .wiz-name {
   border-color: var(--surface);
 }
 
-/* Tucked dock: recede, but stay findable. Fade the controls, never Keep. */
+/* Tucked dock: recede, but stay findable and opaque, so the site never shows
+   through. Fade the controls, never Keep. */
 .compare.tucked .dock:not(:hover):not(:focus-within) {
   opacity: 1;
-  background: rgb(13 13 16 / 0.55);
+  background: var(--slate);
   box-shadow: none;
 }
 
