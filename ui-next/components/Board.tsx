@@ -12,8 +12,6 @@ import { LIVE, STATUS, STEPS, agentShort, clock, compactTokens, directionLabel, 
 import { seen, setState, toast, useStore } from '@/lib/store';
 import type { Variant } from '@/lib/types';
 
-const ORDER: Record<string, number> = { done: 0, committing: 1, reviewing: 2, running: 3, preparing: 4, queued: 5, failed: 6, cancelled: 7 };
-
 const act = async (verb: string, n: number | string) => {
   if (verb === 'retry' && typeof n === 'number') clearLog(n);
   try {
@@ -89,6 +87,17 @@ const Board = () => {
   const now = useNow();
   // Status changes, announced once each (the table itself is not a live region).
   const [said, setSaid] = useState('');
+  const [asking, setAsking] = useState(false);
+  const [discarding, setDiscarding] = useState(false);
+  const confirmBtn = useRef<HTMLButtonElement>(null);
+  const discardBtn = useRef<HTMLButtonElement>(null);
+  const wasAsking = useRef(false);
+  useEffect(() => {
+    // Focus moves into the confirm bar on open and back to Discard when it closes.
+    if (asking) confirmBtn.current?.focus();
+    else if (wasAsking.current) discardBtn.current?.focus();
+    wasAsking.current = asking;
+  }, [asking]);
   const prevStatus = useRef<Record<number, string>>({});
   const statusKeyAll = (snap?.variants ?? []).map((v) => `${v.n}:${v.status}`).join(',');
   useEffect(() => {
@@ -104,7 +113,8 @@ const Board = () => {
   }, [statusKeyAll]);
   if (!snap) return null;
   const vs = snap.variants;
-  const list = [...vs].sort((a, b) => ORDER[a.status] - ORDER[b.status] || (a.finishedAt ?? 0) - (b.finishedAt ?? 0) || a.n - b.n);
+  // Rows keep their variant order: V01, V02… never reshuffled as they finish.
+  const list = [...vs].sort((a, b) => a.n - b.n);
 
   const starts = vs.map((v) => v.startedAt).filter((x): x is number => Boolean(x));
   const start = starts.length ? Math.min(...starts) : 0;
@@ -130,15 +140,18 @@ const Board = () => {
   };
 
   const discard = async () => {
-    const ask = snap.phase === 'finalized' ? 'Start over? The design you kept stays in your working tree.' : 'Throw away every variant in this run? Worktrees and branches are deleted.';
-    if (!confirm(ask)) return;
+    setDiscarding(true);
     try {
       await api('POST', 'discard', {});
       setState({ forceBoard: false, wantCompare: false });
     } catch (err) {
       toast((err as Error).message, true);
+    } finally {
+      setDiscarding(false);
+      setAsking(false);
     }
   };
+  const finalized = snap.phase === 'finalized';
 
   return (
     <div className={clsx('boardview', selected && 'with-terminal')}>
@@ -154,14 +167,46 @@ const Board = () => {
               ))}
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            <button className="btn outline" type="button" onClick={discard}>
-              Discard run
-            </button>
-            <button className="btn primary" type="button" disabled={!vs.some(isPickable)} onClick={() => goCompare()}>
-              Compare <Icon name="arrow" />
-            </button>
-          </div>
+          {asking ? (
+            <div
+              className="confirm board-confirm"
+              role="alertdialog"
+              aria-modal="true"
+              aria-label={finalized ? 'Start over?' : 'Discard this run?'}
+              onKeyDown={(e) => {
+                if (e.key !== 'Escape' || discarding) return;
+                e.stopPropagation();
+                setAsking(false);
+              }}
+            >
+              <span>
+                {finalized ? (
+                  <>
+                    Start over? <span className="muted">The design you kept stays in your working tree.</span>
+                  </>
+                ) : (
+                  <>
+                    Throw away every variant in this run? <span className="muted">Worktrees and branches are deleted.</span>
+                  </>
+                )}
+              </span>
+              <button className="btn outline small" type="button" disabled={discarding} onClick={() => setAsking(false)}>
+                Cancel
+              </button>
+              <button ref={confirmBtn} className="btn primary" type="button" disabled={discarding} onClick={discard}>
+                {discarding ? 'Discarding…' : finalized ? 'Start over' : 'Discard run'}
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button ref={discardBtn} className="btn outline" type="button" onClick={() => setAsking(true)}>
+                Discard run
+              </button>
+              <button className="btn primary" type="button" disabled={!vs.some(isPickable)} onClick={() => goCompare()}>
+                Compare <Icon name="arrow" />
+              </button>
+            </div>
+          )}
         </header>
         <table>
           <thead>
