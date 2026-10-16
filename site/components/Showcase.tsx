@@ -481,19 +481,26 @@ const Showcase = () => {
               Your website needs a fresh look
             </Typography>
             <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">
-              One command asks the AI coding assistant you already use to redesign your site several
-              different ways. No preset themes or templates: every design is made from scratch for your
-              site. Try each one live, like the shop below, and keep your favourite. Your
-              current site stays untouched until you do.
+              <strong className="text-surface">One command.</strong> Your own AI assistant redesigns
+              your site <strong className="text-surface">several ways</strong>,{' '}
+              <strong className="text-surface">from scratch</strong>: no preset themes. Try each{' '}
+              <strong className="text-surface">live</strong>,{' '}
+              <strong className="text-surface">keep one</strong>.
             </p>
           </div>
 
           <div className="grid content-start gap-4">
             <div data-keep-cycle className="grid gap-2">
+              <PromptCopy
+                prompt={PROMPTS.setup}
+                tone="slate"
+                accent
+                label="Copy prompt for your AI"
+              />
               <RunnerPicker tone="slate" />
               <CommandCopy command={INSTALL} tone="slate" accent />
               <p className="text-steel-on-slate m-0 text-[14px] leading-snug">
-                Paste it into a terminal in your website&apos;s folder.{' '}
+                Paste in your site&apos;s folder.{' '}
                 <a href="#start-title" className="text-surface underline underline-offset-2">
                   Check what you need first
                 </a>
@@ -521,11 +528,6 @@ const Showcase = () => {
                   </li>
                 </ol>
               </details>
-              <PromptCopy
-                prompt={PROMPTS.setup}
-                tone="slate"
-                label="Or copy a ready-made prompt for your AI assistant"
-              />
             </div>
             <div className="border-slate-line grid gap-2.5 border-t pt-4">
               <p
@@ -546,8 +548,9 @@ const Showcase = () => {
                 </a>
               </div>
               <p className="text-steel-on-slate m-0 text-[13px] leading-snug">
-                A made-up furniture shop, redesigned six ways by Claude Code. Drag the line or pick
-                a number below.
+                A made-up shop, redesigned <strong className="text-surface">six ways</strong> by
+                Claude Code. <strong className="text-surface">Drag the line</strong> or pick a
+                number.
               </p>
             </div>
           </div>
