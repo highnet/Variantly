@@ -1,6 +1,7 @@
 import { AgentQuickstart } from '@/components/AgentQuickstart';
 import { AudienceFork } from '@/components/AudienceFork';
 import { FinePrint } from '@/components/FinePrint';
+import { DemoVideo } from '@/components/DemoVideo';
 import { HowItWorks } from '@/components/HowItWorks';
 import { PrefsMenu } from '@/components/PrefsMenu';
 import { Brand } from '@/components/Brand';
@@ -43,6 +44,7 @@ const Human = () => (
     <AgentStrip />
     <Showcase />
     <div className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)] gap-24 px-4 pt-20 pb-16 sm:px-6">
+      <DemoVideo />
       <HowItWorks />
       <StartChecklist />
       <WithLive />
