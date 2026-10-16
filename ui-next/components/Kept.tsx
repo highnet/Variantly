@@ -3,19 +3,21 @@
 import { motion } from 'motion/react';
 import { CommandBlock } from './CommandBlock';
 import { api } from '@/lib/api';
+import { resetRun } from '@/lib/live';
 import { directionLabel, pad, plural, scoreText, vname } from '@/lib/format';
 import { setState, toast, useStore } from '@/lib/store';
 
 const Kept = () => {
   const snap = useStore((s) => s.snap);
   if (!snap) return null;
-  const n = snap.chosen ?? 0;
+  const n = snap.chosen;
   const v = snap.variants.find((x) => x.n === n);
   const r = snap.result ?? { files: [], conflicts: [], depsChanged: false };
 
   const newRun = async () => {
     try {
       await api('POST', 'discard', {});
+      resetRun();
       setState({ detect: null, form: null });
     } catch (err) {
       toast((err as Error).message, true);
@@ -38,7 +40,7 @@ const Kept = () => {
       >
         <div className="pass-main">
           <h1 id="kept-title" className="figure big" style={{ margin: 0 }}>
-            {vname(n)}
+            {n === null ? 'Kept' : vname(n)}
           </h1>
           <div>
             <h2>{directionLabel(v?.direction ?? '', v?.picked)}</h2>
@@ -87,7 +89,7 @@ const Kept = () => {
             <div>
               <dt className="label">Variant</dt>
               <dd>
-                {vname(n)} of {pad(snap.variants.length)}
+                {n === null ? '—' : `${vname(n)} of ${pad(snap.variants.length)}`}
               </dd>
             </div>
             <div>
@@ -97,7 +99,7 @@ const Kept = () => {
             <div>
               <dt className="label">Branch</dt>
               <dd style={{ wordBreak: 'break-all' }}>
-                variantly/{snap.runId}/v{n}
+                {n === null ? '—' : `variantly/${snap.runId}/v${n}`}
               </dd>
             </div>
           </dl>

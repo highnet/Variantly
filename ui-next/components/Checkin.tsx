@@ -14,15 +14,15 @@ import clsx from 'clsx';
 import { Icon } from './Icon';
 import { ViewSkeleton } from './Skeleton';
 import { api } from '@/lib/api';
-import { loadDetect } from '@/lib/live';
+import { loadDetect, resetRun } from '@/lib/live';
 import { pad, plural } from '@/lib/format';
 import { getState, setState, toast, updateForm, useStore } from '@/lib/store';
 import type { Agent, Detect, Form } from '@/lib/types';
 
 const WIZ = [
   { id: 'setup', name: 'Setup', title: 'Your setup', next: 'Continue to designs' },
-  { id: 'designs', name: 'Designs', title: 'What should we make?', next: 'Continue' },
-  { id: 'site', name: 'Your site', title: 'About your site', next: 'Review' },
+  { id: 'designs', name: 'Designs', title: 'What should we make?', next: 'Continue to your site' },
+  { id: 'site', name: 'Your site', title: 'About your site', next: 'Continue to review' },
   { id: 'review', name: 'Review', title: 'Ready when you are', next: '' },
 ] as const;
 type StepId = (typeof WIZ)[number]['id'];
@@ -38,6 +38,15 @@ const agentOf = (d: Detect, f: Form) => d.agents.find((a) => a.id === f.agent);
 const candidateOf = (d: Detect, f: Form) => d.candidates.find((c) => c.rel === f.appRel && c.stackId === f.stackId);
 const stackName = (d: Detect, f: Form) => candidateOf(d, f)?.name ?? d.stacks.find((s) => s.id === f.stackId)?.name ?? 'Custom';
 const draftKey = (d: Detect) => `variantly:draft:${d.repo}`;
+/** ":3000" from a URL (its host if it has no port); the raw text if it does not parse. */
+const where = (raw: string) => {
+  try {
+    const u = new URL(raw);
+    return u.port ? `:${u.port}` : u.host;
+  } catch {
+    return raw;
+  }
+};
 
 type Note = [kind: '' | 'bad' | 'alert', text: string, action?: ReactNode];
 
@@ -69,7 +78,19 @@ type FixButtonProps = {
 const FixButton = ({ label, onClick }: FixButtonProps) => {
   const [busy, setBusy] = useState(false);
   return (
-    <button className="btn small" type="button" disabled={busy} onClick={() => (setBusy(true), onClick())}>
+    <button
+      className="btn small"
+      type="button"
+      disabled={busy}
+      onClick={async () => {
+        setBusy(true);
+        try {
+          await onClick();
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
       {label}
     </button>
   );
@@ -80,7 +101,7 @@ const blockers = (d: Detect, f: Form): Note[] => {
   if (!d.hasCommits) list.push(['bad', 'This repository has no commits yet, so variants have nothing to start from.', <FixButton key="c" label="Commit everything now" onClick={() => runFix('commit', {}, 'First commit made.')} />]);
   const a = agentOf(d, f);
   if (f.agent !== 'demo' && !a?.installed)
-    list.push(['bad', `${a?.name ?? f.agent} isn't installed. Sign in to it once after installing.`, a?.install ? <FixButton key="i" label={`Install ${a.name}`} onClick={() => runFix('install-agent', { agent: a.id }, `Installing ${a.name}…`)} /> : undefined]);
+    list.push(['bad', `${a?.name ?? f.agent} isn't installed. Install it, then sign in once.`, a?.install ? <FixButton key="i" label={`Install ${a.name}`} onClick={() => runFix('install-agent', { agent: a.id }, `Installing ${a.name}…`)} /> : undefined]);
   if (f.agent !== 'demo' && a?.installed && a.signedIn === false)
     list.push([
       'bad',
@@ -97,7 +118,7 @@ const advisories = (d: Detect, f: Form): Note[] => {
   const list: Note[] = [];
   if (d.dirty) list.push(['', 'Your uncommitted edits to tracked files are included in every variant.']);
   if (d.untracked) list.push(['', `${plural(d.untracked, 'untracked file')} won't be in the variants. Commit what the site needs.`]);
-  if (!d.chrome && (checkOn(f, 'browser') || checkOn(f, 'audit'))) list.push(['alert', 'No Chrome found for the browser and scores. Set CHROME_PATH or turn them off under More settings.']);
+  if (!d.chrome && (checkOn(f, 'browser') || checkOn(f, 'audit'))) list.push(['alert', 'No Chrome found for the browser and scores. Set CHROME_PATH, or turn them off in the next step under More settings.']);
   return list;
 };
 
@@ -138,10 +159,11 @@ type SegToggleProps = {
   pairs: [string, string][];
   value: string;
   onPick: (v: string) => void;
+  labelledBy?: string;
 };
 
-const SegToggle = ({ pairs, value, onPick }: SegToggleProps) => (
-  <div className="seg-toggle" role="group">
+const SegToggle = ({ pairs, value, onPick, labelledBy }: SegToggleProps) => (
+  <div className="seg-toggle" role="group" aria-labelledby={labelledBy}>
     {pairs.map(([v, label]) => (
       <button key={v} type="button" aria-pressed={v === value} onClick={() => onPick(v)}>
         {label}
@@ -151,21 +173,22 @@ const SegToggle = ({ pairs, value, onPick }: SegToggleProps) => (
 );
 
 type StepperProps = {
+  label: string;
   value: number;
   min: number;
   max: number;
   onSet: (n: number) => void;
 };
 
-const Stepper = ({ value, min, max, onSet }: StepperProps) => (
-  <div className="stepper">
-    <button type="button" aria-label="Fewer" disabled={value <= min} onClick={() => onSet(Math.max(min, value - 1))}>
+const Stepper = ({ label, value, min, max, onSet }: StepperProps) => (
+  <div className="stepper" role="group" aria-label={label}>
+    <button type="button" aria-label={`Fewer: ${label}`} disabled={value <= min} onClick={() => onSet(Math.max(min, value - 1))}>
       <Icon name="minus" />
     </button>
     <span className="figure" aria-live="polite">
       {pad(value)}
     </span>
-    <button type="button" aria-label="More" disabled={value >= max} onClick={() => onSet(Math.min(max, value + 1))}>
+    <button type="button" aria-label={`More: ${label}`} disabled={value >= max} onClick={() => onSet(Math.min(max, value + 1))}>
       <Icon name="plus" />
     </button>
   </div>
@@ -207,7 +230,7 @@ const AppPicker = ({ d, f }: PartProps) => {
               name="app"
               checked={c.rel === f.appRel && c.stackId === f.stackId}
               title={c.name}
-              detail={`${c.rel || 'repo root'}${c.running ? ` · running at :${new URL(c.defaultUrl).port}` : ''}`}
+              detail={`${c.rel || 'repo root'}${c.running ? ` · running at ${where(c.defaultUrl)}` : ''}`}
               onChange={() => updateForm({ appRel: c.rel, stackId: c.stackId, command: c.command, originalUrl: c.running ? c.defaultUrl : '', deps: c.needsInstall ? 'install' : 'link' })}
             />
           ))}
@@ -223,8 +246,11 @@ const AppPicker = ({ d, f }: PartProps) => {
           </p>
         </label>
         <div className="field">
-          <span className="label">The original</span>
+          <span className="label" id="seg-original">
+            The original
+          </span>
           <SegToggle
+            labelledBy="seg-original"
             pairs={[
               ['start', 'variantly starts it'],
               ['running', 'Already running'],
@@ -241,8 +267,11 @@ const AppPicker = ({ d, f }: PartProps) => {
       </div>
       {cand?.note && <p className="note">{cand.note}</p>}
       <div className="field">
-        <span className="label">Dependencies in each variant</span>
+        <span className="label" id="seg-deps">
+          Dependencies in each variant
+        </span>
         <SegToggle
+          labelledBy="seg-deps"
           pairs={[
             ['link', 'Link yours'],
             ['install', 'Install fresh'],
@@ -292,8 +321,11 @@ const AgentPicker = ({ d, f }: PartProps) => {
             <input className="input" value={f.model} placeholder="the agent's default" onChange={(e) => updateForm({ model: e.target.value })} />
           </label>
           <div className="field">
-            <span className="label">Permissions</span>
+            <span className="label" id="seg-permissions">
+              Permissions
+            </span>
             <SegToggle
+              labelledBy="seg-permissions"
               pairs={[
                 ['safe', 'Edits only'],
                 ['full', 'Full auto'],
@@ -312,8 +344,11 @@ const AgentPicker = ({ d, f }: PartProps) => {
 const MoreSettings = ({ d, f }: PartProps) => (
   <>
     <div className="field">
-      <span className="label">Approach</span>
+      <span className="label" id="seg-approach">
+        Approach
+      </span>
       <SegToggle
+        labelledBy="seg-approach"
         pairs={[
           ['redesign', 'Redesign'],
           ['refine', 'Refine'],
@@ -347,16 +382,16 @@ const MoreSettings = ({ d, f }: PartProps) => (
     <div className="field-row">
       <div className="field">
         <span className="label">Designs</span>
-        <Stepper value={f.count} min={1} max={10} onSet={(n) => updateForm({ count: n })} />
+        <Stepper label="Designs" value={f.count} min={1} max={10} onSet={(n) => updateForm({ count: n })} />
       </div>
       <div className="field">
         <span className="label">At a time</span>
-        <Stepper value={f.concurrency} min={1} max={6} onSet={(n) => updateForm({ concurrency: n })} />
+        <Stepper label="At a time" value={f.concurrency} min={1} max={6} onSet={(n) => updateForm({ concurrency: n })} />
         <p className="hint">Agents running in parallel.</p>
       </div>
       <div className="field">
         <span className="label">Servers live</span>
-        <Stepper value={f.maxLive} min={2} max={8} onSet={(n) => updateForm({ maxLive: n })} />
+        <Stepper label="Servers live" value={f.maxLive} min={2} max={8} onSet={(n) => updateForm({ maxLive: n })} />
         <p className="hint">The original plus the designs you looked at last. The rest sleep.</p>
       </div>
     </div>
@@ -438,6 +473,7 @@ const DesignsStep = ({ d, f }: StepBodyProps) => {
           {[2, 4, 6].map((n) => (
             <Pick key={n} type="radio" name="count" label={String(n)} on={f.count === n} onToggle={() => updateForm({ count: n })} />
           ))}
+          {![2, 4, 6].includes(f.count) && <Pick type="radio" name="count" label={String(f.count)} on onToggle={() => {}} />}
         </div>
         <p className="hint">{f.agent === 'demo' ? 'The demo agent costs nothing.' : `Each design is one ${a?.name ?? 'agent'} session on your account, about 10–20 minutes, ${f.concurrency} at a time.`}</p>
       </fieldset>
@@ -531,7 +567,7 @@ const banked = (d: Detect, f: Form): Record<StepId, string> => {
   const extras = (d.extras ?? []).filter((x) => f.extras.includes(x.id)).map((x) => x.label);
   return {
     setup: `${stackName(d, f)} · ${f.agent === 'demo' ? 'Demo' : (a?.name ?? f.agent)}`,
-    designs: `${f.count} · ${f.routes.map((r) => (r === '/' ? 'Home' : r)).join(', ')}${extras.length ? ` · ${extras.join(', ')}` : ''}`,
+    designs: `${plural(f.count, 'design')} · ${f.routes.map((r) => (r === '/' ? 'Home' : r)).join(', ')}${extras.length ? ` · ${extras.join(', ')}` : ''}`,
     site: d.hasProduct ? 'PRODUCT.md' : answered ? plural(answered, 'answer') : 'Skipped',
     review: '',
   };
@@ -660,6 +696,7 @@ const Checkin = () => {
   const generate = async () => {
     setGoing(true);
     try {
+      resetRun();
       setState({ forceBoard: false, wantCompare: false, sel: null, unseen: [] });
       await api('POST', 'generate', getState().form);
       try {
@@ -743,7 +780,7 @@ const Checkin = () => {
           </div>
           <div className="wiz-nav">
             {at > 0 ? (
-              <button className="btn outline" type="button" onClick={() => window.history.back()}>
+              <button className="btn outline" type="button" onClick={() => (typeof window.history.state?.step === 'number' ? window.history.back() : goStep(at - 1))}>
                 Back
               </button>
             ) : (

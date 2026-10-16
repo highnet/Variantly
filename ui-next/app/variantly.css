@@ -948,6 +948,16 @@ textarea.input {
   white-space: nowrap;
 }
 
+.board .var .row-btn {
+  all: unset;
+  cursor: pointer;
+}
+
+.board .var .row-btn:focus-visible {
+  outline: 2px solid var(--alert);
+  outline-offset: 2px;
+}
+
 .board .dir {
   font: 600 13px/1.3 var(--mono);
   font-stretch: 87.5%;
@@ -1304,6 +1314,7 @@ textarea.input {
 }
 
 .grip span {
+  text-transform: uppercase;
   font: 700 10px/1 var(--mono);
   font-stretch: 87.5%;
   letter-spacing: 0.08em;
@@ -1438,6 +1449,9 @@ textarea.input {
 .cell.orig {
   font-size: 11px;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cell[disabled] {
@@ -2344,6 +2358,20 @@ body[data-view='compare'] .help {
 .setup.wizard-wrap {
   grid-template-columns: minmax(0, 760px);
   justify-content: center;
+}
+
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: -48px;
+  z-index: 100;
+  padding: 8px 12px;
+  background: var(--alert);
+  color: var(--alert-ink);
+}
+
+.skip-link:focus {
+  top: 8px;
 }
 
 .sr-only {

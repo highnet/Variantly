@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import clsx from 'clsx';
 import { Icon } from './Icon';
 import { Segments } from './Progress';
 import { Terminal } from './Terminal';
 import { api } from '@/lib/api';
-import { fetchLog } from '@/lib/live';
+import { clearLog, fetchLog } from '@/lib/live';
 import { LIVE, STATUS, STEPS, agentShort, clock, compactTokens, directionLabel, elapsed, isPickable, pad, scoreText, stepAt, stepState, statusKey, usageText, usageTitle, vname } from '@/lib/format';
 import { seen, setState, toast, useStore } from '@/lib/store';
 import type { Variant } from '@/lib/types';
@@ -15,6 +15,7 @@ import type { Variant } from '@/lib/types';
 const ORDER: Record<string, number> = { done: 0, committing: 1, reviewing: 2, running: 3, preparing: 4, queued: 5, failed: 6, cancelled: 7 };
 
 const act = async (verb: string, n: number | string) => {
+  if (verb === 'retry' && typeof n === 'number') clearLog(n);
   try {
     await api('POST', `${verb}/${n}`, {});
   } catch (err) {
@@ -53,7 +54,7 @@ const StepCell = ({ v, last }: StepCellProps) => {
       ? 'All steps done'
       : v.status === 'queued'
         ? `0/${STEPS.length} · Waiting for a free slot`
-        : `Stopped at: ${STEPS[Math.max(0, at)]}`;
+        : `Stopped at ${STEPS[Math.max(0, at)]}`;
   return (
     <div className="steps" title={last}>
       <Segments v={v} />
@@ -86,6 +87,21 @@ const Board = () => {
   const unseen = useStore((s) => s.unseen);
   const logs = useStore((s) => s.logs);
   const now = useNow();
+  // Status changes, announced once each (the table itself is not a live region).
+  const [said, setSaid] = useState('');
+  const prevStatus = useRef<Record<number, string>>({});
+  const statusKeyAll = (snap?.variants ?? []).map((v) => `${v.n}:${v.status}`).join(',');
+  useEffect(() => {
+    const changed: string[] = [];
+    for (const v of snap?.variants ?? []) {
+      const was = prevStatus.current[v.n];
+      if (was !== undefined && was !== v.status) changed.push(`${vname(v.n)} ${STATUS[v.status]}`);
+      prevStatus.current[v.n] = v.status;
+    }
+    if (changed.length) setSaid(changed.join('. '));
+    // keyed on statuses only
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusKeyAll]);
   if (!snap) return null;
   const vs = snap.variants;
   const list = [...vs].sort((a, b) => ORDER[a.status] - ORDER[b.status] || (a.finishedAt ?? 0) - (b.finishedAt ?? 0) || a.n - b.n);
@@ -114,7 +130,8 @@ const Board = () => {
   };
 
   const discard = async () => {
-    if (!confirm('Throw away every variant in this run? Worktrees and branches are deleted.')) return;
+    const ask = snap.phase === 'finalized' ? 'Start over? The design you kept stays in your working tree.' : 'Throw away every variant in this run? Worktrees and branches are deleted.';
+    if (!confirm(ask)) return;
     try {
       await api('POST', 'discard', {});
       setState({ forceBoard: false, wantCompare: false });
@@ -149,7 +166,7 @@ const Board = () => {
         <table>
           <thead>
             <tr>
-              <th className="label">Var</th>
+              <th className="label">Variant</th>
               <th className="label">Direction</th>
               <th className="label">Status</th>
               <th className="label">Time</th>
@@ -158,10 +175,10 @@ const Board = () => {
               <th className="label">Step</th>
             </tr>
           </thead>
-          <tbody aria-live="polite">
+          <tbody>
             {(snap.config?.audit || snap.baseline) && (
               <tr className="baseline">
-                <td className="var figure">Orig</td>
+                <td className="var figure">Original</td>
                 <td className="dir">
                   Your site as it is
                   <span className="summary scores">{snap.baseline ? scoreText(snap.baseline) : snap.baselineError ? `Not scored: ${snap.baselineError}` : 'Scoring with axe-core and Lighthouse…'}</span>
@@ -182,19 +199,24 @@ const Board = () => {
                   layout
                   transition={{ type: 'spring', stiffness: 380, damping: 34 }}
                   className={clsx('clickable', selected?.n === v.n && 'selected')}
-                  tabIndex={0}
-                  aria-pressed={selected?.n === v.n}
                   onClick={() => toggle(v.n)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      toggle(v.n);
-                    }
-                  }}
                   onMouseEnter={() => seen(v.n)}
                   onFocus={() => seen(v.n)}
                 >
-                  <td className="var figure">{vname(v.n)}</td>
+                  <td className="var figure">
+                    <button
+                      type="button"
+                      className="row-btn"
+                      aria-pressed={selected?.n === v.n}
+                      aria-label={`Show ${vname(v.n)} output`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggle(v.n);
+                      }}
+                    >
+                      {vname(v.n)}
+                    </button>
+                  </td>
                   <td className="dir">
                     {directionLabel(v.direction, v.picked)}
                     {v.summary ? <span className="summary">{v.summary}</span> : v.error ? <span className="summary">{v.error.split('\n')[0]}</span> : null}
@@ -232,6 +254,9 @@ const Board = () => {
         </table>
       </section>
       {selected && <Terminal key={selected.n} v={selected} />}
+      <p className="sr-only" aria-live="polite">
+        {said}
+      </p>
     </div>
   );
 };
