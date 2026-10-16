@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { AGENTS, agentById, hasSkill, skillLocations } from '../src/agents.mjs';
+import { AGENTS, agentById, binCandidates, codexProvider, hasSkill, skillLocations } from '../src/agents.mjs';
 import { writeBrief } from '../src/brief.mjs';
 import { installSkill, parseProviders, SKILL_SOURCE } from '../src/install-skill.mjs';
 
@@ -73,6 +73,81 @@ test('Copilot CLI invocation: -p with JSON output, deny list, brief and skill di
   }
 });
 
+test('Gemini CLI invocation: stream-json, auto_edit plus a shell policy, brief folder included', () => {
+  const safe = agent('gemini').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', model: 'gemini-3-pro' });
+  const policy = path.join(BRIEF_DIR, 'gemini-policy.toml');
+  assert.equal(safe.file, 'gemini');
+  assert.equal(safe.output, 'gemini-stream');
+  assert.deepEqual(safe.args, [
+    '-p', PROMPT, '--output-format', 'stream-json', '--skip-trust',
+    '--approval-mode', 'auto_edit', '--policy', policy,
+    '--include-directories', BRIEF_DIR,
+    '-m', 'gemini-3-pro',
+  ]);
+  assert.match(safe.files?.[policy] ?? '', /toolName = "run_shell_command"\ncommandPrefix = \[[^\]]*"npx impeccable"/);
+  const full = agent('gemini').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'full' });
+  assert.deepEqual(full.args, ['-p', PROMPT, '--output-format', 'stream-json', '--skip-trust', '--approval-mode', 'yolo', '--include-directories', BRIEF_DIR]);
+  assert.deepEqual(full.files, {});
+});
+
+test('Cursor CLI invocation: print mode, stream-json, trusted workspace, brief folder added', () => {
+  const safe = agent('cursor').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', model: 'sonnet-4.6' });
+  assert.equal(safe.file, 'cursor-agent');
+  assert.equal(safe.output, 'cursor-stream');
+  assert.deepEqual(safe.args, [
+    '-p', PROMPT, '--output-format', 'stream-json', '--trust',
+    '--workspace', CWD, '--add-dir', BRIEF_DIR, '--force',
+    '--model', 'sonnet-4.6',
+  ]);
+  const full = agent('cursor').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'full' });
+  assert.deepEqual(full.args.slice(-3), ['--force', '--sandbox', 'disabled']);
+});
+
+test('Codex through OpenRouter: the configured provider and its key variable are read', () => {
+  const home = tmp();
+  try {
+    assert.equal(codexProvider(home), null, 'no config.toml');
+    writeFileSync(path.join(home, 'config.toml'), 'model = "gpt-5.5"\n');
+    assert.equal(codexProvider(home), null, 'OpenAI by default');
+    writeFileSync(
+      path.join(home, 'config.toml'),
+      [
+        'model = "anthropic/claude-sonnet-4.6"',
+        'model_provider = "openrouter"',
+        '',
+        '[model_providers.openai]',
+        'env_key = "OPENAI_API_KEY"',
+        '',
+        '[model_providers.openrouter]',
+        'name = "OpenRouter"',
+        'base_url = "https://openrouter.ai/api/v1"',
+        'env_key = "OPENROUTER_API_KEY"',
+        '',
+      ].join('\n'),
+    );
+    assert.deepEqual(codexProvider(home), { id: 'openrouter', envKey: 'OPENROUTER_API_KEY' });
+    writeFileSync(path.join(home, 'config.toml'), '[profiles.x]\nmodel_provider = "openrouter"\n');
+    assert.equal(codexProvider(home), null, 'a provider inside a table is not the default');
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('binCandidates also looks in ~/.local/bin, where Cursor installs', () => {
+  const home = tmp();
+  try {
+    const bin = path.join(home, '.local', 'bin');
+    mkdirSync(bin, { recursive: true });
+    const file = path.join(bin, process.platform === 'win32' ? 'cursor-agent.CMD' : 'cursor-agent');
+    writeFileSync(file, '');
+    const found = binCandidates('cursor-agent', { PATH: '', HOME: home, USERPROFILE: home, PATHEXT: '.CMD' });
+    assert.equal(found.length, 1);
+    assert.equal(found[0].toLowerCase(), file.toLowerCase());
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
 test('skill locations match where each agent reads skills', () => {
   const home = path.join('H');
   const project = path.join('P');
@@ -93,6 +168,20 @@ test('skill locations match where each agent reads skills', () => {
     path.join(project, '.claude/skills', 'impeccable'),
     path.join(home, '.copilot', 'skills', 'impeccable'),
     path.join(home, '.agents', 'skills', 'impeccable'),
+  ]);
+  assert.deepEqual(skillLocations(agent('gemini'), 'impeccable', where), [
+    path.join(project, '.gemini/skills', 'impeccable'),
+    path.join(project, '.agents/skills', 'impeccable'),
+    path.join(home, '.gemini', 'skills', 'impeccable'),
+    path.join(home, '.agents', 'skills', 'impeccable'),
+  ]);
+  assert.deepEqual(skillLocations(agent('cursor'), 'impeccable', where), [
+    path.join(project, '.cursor/skills', 'impeccable'),
+    path.join(project, '.agents/skills', 'impeccable'),
+    path.join(project, '.claude/skills', 'impeccable'),
+    path.join(home, '.cursor', 'skills', 'impeccable'),
+    path.join(home, '.agents', 'skills', 'impeccable'),
+    path.join(home, '.claude', 'skills', 'impeccable'),
   ]);
   // Each CLI's home override is honoured.
   const env = { CLAUDE_CONFIG_DIR: path.resolve('C1'), CODEX_HOME: path.resolve('X1'), COPILOT_HOME: path.resolve('G1') };
@@ -180,7 +269,7 @@ test('install-skill --scope=project writes inside the repository', async () => {
 });
 
 test('install-skill rejects unknown providers and parses the flag', async () => {
-  await assert.rejects(installSkill({ providers: ['cursor'], scope: 'global', home: tmp(), env: {} }), /Unknown provider cursor/);
+  await assert.rejects(installSkill({ providers: ['aider'], scope: 'global', home: tmp(), env: {} }), /Unknown provider aider/);
   assert.deepEqual(parseProviders(' Claude, codex,,codex '), ['claude', 'codex']);
   assert.deepEqual(parseProviders(undefined), []);
 });
@@ -201,9 +290,24 @@ test('every agent gets the Playwright MCP server when the browser check is on', 
   const extra = JSON.parse(copilot.args[copilot.args.indexOf('--additional-mcp-config') + 1]);
   assert.deepEqual(extra.mcpServers.playwright, { type: 'local', tools: ['*'], ...mcp.playwright });
 
+  // Gemini and Cursor take MCP servers only from files, written beside the brief.
+  const gemini = agent('gemini').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', mcp });
+  const settings = path.join(BRIEF_DIR, 'gemini-settings.json');
+  assert.equal(gemini.env?.GEMINI_CLI_SYSTEM_SETTINGS_PATH, settings);
+  assert.deepEqual(JSON.parse(gemini.files?.[settings] ?? ''), { mcpServers: { playwright: { trust: true, ...mcp.playwright } } });
+  assert.deepEqual(gemini.args.slice(gemini.args.indexOf('--allowed-mcp-server-names'), gemini.args.indexOf('--allowed-mcp-server-names') + 2), ['--allowed-mcp-server-names', 'playwright']);
+
+  const cursor = agent('cursor').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', mcp });
+  const plugin = path.join(BRIEF_DIR, 'cursor-plugin');
+  assert.deepEqual(cursor.args.slice(cursor.args.indexOf('--approve-mcps'), cursor.args.indexOf('--approve-mcps') + 3), ['--approve-mcps', '--plugin-dir', plugin]);
+  assert.deepEqual(JSON.parse(cursor.files?.[path.join(plugin, '.mcp.json')] ?? ''), { mcpServers: mcp });
+  assert.equal(JSON.parse(cursor.files?.[path.join(plugin, '.cursor-plugin', 'plugin.json')] ?? '').name, 'variantly');
+
   // Without it, nothing changes.
-  for (const id of ['claude', 'codex', 'copilot']) {
-    const args = agent(id).invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', ...NO_HOME }).args.join(' ');
-    assert.doesNotMatch(args, /mcp/);
+  for (const id of ['claude', 'codex', 'copilot', 'gemini', 'cursor']) {
+    const inv = agent(id).invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', ...NO_HOME });
+    assert.doesNotMatch(inv.args.join(' '), /mcp/);
+    assert.ok(!Object.keys(inv.files ?? {}).some((f) => /settings|plugin/.test(f)));
+    assert.equal(inv.env, undefined);
   }
 });

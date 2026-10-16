@@ -4,7 +4,9 @@ import {
   siClaude,
   siDjango,
   siFastapi,
+  siCursor,
   siGithubcopilot,
+  siGooglegemini,
   siGo,
   siHtml5,
   siLaravel,
@@ -51,4 +53,6 @@ export const AGENT_LOGOS: (Logo & { name: string; install: string })[] = [
   { ...mark(siClaude), name: 'Claude Code', install: 'npm i -g @anthropic-ai/claude-code' },
   { title: 'Codex', path: null, name: 'Codex CLI', install: 'npm i -g @openai/codex' },
   { ...mark(siGithubcopilot), name: 'GitHub Copilot CLI', install: 'npm i -g @github/copilot' },
+  { ...mark(siGooglegemini), name: 'Gemini CLI', install: 'npm i -g @google/gemini-cli' },
+  { ...mark(siCursor), name: 'Cursor CLI', install: 'curl https://cursor.com/install -fsS | bash' },
 ];

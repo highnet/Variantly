@@ -1,3 +1,5 @@
+import { Plus } from 'lucide-react';
+
 import { CommandCopy } from '@/components/CommandCopy';
 import { LogoMark } from '@/components/LogoMark';
 import { Typography } from '@/components/ui/Typography';
@@ -10,7 +12,7 @@ import { AGENT_LOGOS, STACK_LOGOS } from '@/lib/logos';
 const Stacks = () => (
   <section
     aria-labelledby="stacks-title"
-    className="grid gap-x-12 gap-y-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:grid-rows-[auto_1fr]"
+    className="grid gap-x-12 gap-y-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[auto_1fr]"
   >
     {/* Both columns share the section's rows, so the two headings and the two
         panels line up whatever the copy length. */}
@@ -35,6 +37,15 @@ const Stacks = () => (
             </div>
           </li>
         ))}
+        <li className="bg-surface grid content-start gap-3 px-4 py-4">
+          <Plus aria-hidden="true" className="text-steel size-7" />
+          <div className="grid gap-0.5">
+            <span className="condensed font-mono text-[13px] font-bold uppercase">
+              Anything else
+            </span>
+            <span className="text-steel condensed font-mono text-[11px]">your start command</span>
+          </div>
+        </li>
       </ul>
     </div>
 
@@ -52,11 +63,11 @@ const Stacks = () => (
         {AGENT_LOGOS.map((a) => (
           <li
             key={a.name}
-            className="rounded-pass border-rule bg-surface grid content-center gap-2.5 border px-4 py-3.5"
+            className="rounded-pass border-rule bg-surface grid content-center gap-2 border px-3 py-2.5"
           >
-            <div className="flex items-center gap-3">
-              <LogoMark title={a.title} path={a.path} className="text-ink size-6 shrink-0" />
-              <span className="text-[15px] font-semibold">{a.name}</span>
+            <div className="flex items-center gap-2.5">
+              <LogoMark title={a.title} path={a.path} className="text-ink size-5 shrink-0" />
+              <span className="text-[14px] font-semibold">{a.name}</span>
             </div>
             <CommandCopy command={a.install} size="sm" />
           </li>

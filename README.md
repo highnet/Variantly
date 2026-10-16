@@ -47,18 +47,48 @@ npx variantly            # run it from your project
 npm install -g variantly # or keep it around
 ```
 
-You need **one** of these, signed in:
+You need **one** of these, signed in. The wizard detects the ones you have,
+and can install one and open its sign-in for you:
 
 | Agent | Install |
 | --- | --- |
 | Claude Code | `npm install -g @anthropic-ai/claude-code` |
 | Codex CLI | `npm install -g @openai/codex` |
 | GitHub Copilot CLI | `npm install -g @github/copilot` |
+| Gemini CLI | `npm install -g @google/gemini-cli` |
+| Cursor CLI | `curl https://cursor.com/install -fsS \| bash` (Windows: `irm 'https://cursor.com/install?win32=true' \| iex`) |
+
+The agent has to be the **command-line** one: variantly runs it headless.
+Lovable, Bolt, v0 and other browser builders can't run on your machine.
+
+**Using [OpenRouter](https://openrouter.ai)?** Point Claude Code or Codex at it
+before you start variantly; it counts as signed in.
+
+```sh
+# Claude Code
+export ANTHROPIC_BASE_URL=https://openrouter.ai/api
+export ANTHROPIC_AUTH_TOKEN=<your OpenRouter key>
+export ANTHROPIC_API_KEY=""
+```
+
+```toml
+# Codex: ~/.codex/config.toml, with OPENROUTER_API_KEY set in your shell
+model_provider = "openrouter"
+model = "anthropic/claude-sonnet-4.6"
+
+[model_providers.openrouter]
+name = "OpenRouter"
+base_url = "https://openrouter.ai/api/v1"
+env_key = "OPENROUTER_API_KEY"
+```
+
+Pick a model that is good at tool use; the agent edits files and runs
+commands for 10–20 minutes per variant.
 
 and Impeccable installed for it (the wizard offers to run this for you):
 
 ```sh
-npx impeccable install --providers=claude --scope=global --yes --no-hooks   # or codex, or copilot
+npx impeccable install --providers=claude --scope=global --yes --no-hooks   # or codex, copilot, gemini, cursor
 ```
 
 **No agent yet?** `npx variantly --demo` runs the full flow with fixed restyles: **no AI, no account**.
@@ -77,6 +107,8 @@ npx variantly install-skill --scope=project              # into this repo, for e
 | Claude Code | `~/.claude/skills/variantly/` | `.claude/skills/variantly/` | "redesign my site with variantly" or `/variantly` |
 | Codex CLI | `~/.agents/skills/variantly/` | `.agents/skills/variantly/` | "redesign my site with variantly" or `$variantly` |
 | GitHub Copilot CLI | `~/.copilot/skills/variantly/` | `.github/skills/variantly/` | "redesign my site with variantly" or `/variantly` |
+| Gemini CLI | `~/.gemini/skills/variantly/` | `.gemini/skills/variantly/` | "redesign my site with variantly" |
+| Cursor CLI | `~/.cursor/skills/variantly/` | `.cursor/skills/variantly/` | "redesign my site with variantly" or `/variantly` |
 
 **Claude Code plugin** alternative:
 
@@ -169,14 +201,16 @@ Then, under the hood:
 
 ## Agents and cost
 
-- **variantly never sees a model.** It starts `claude -p`, `codex exec` or
-  `copilot -p` per worktree, on **your account**.
+- **variantly never sees a model.** It starts `claude -p`, `codex exec`,
+  `copilot -p`, `gemini -p` or `cursor-agent -p` per worktree, on **your
+  account** (or your OpenRouter key).
 - **One variant = one full agent session.** Ten variants cost ten sessions.
   **Default: four.**
 - **Live board** from each agent's structured events: files read/edited,
   commands, skills, summaries.
-- **Usage as reported:** Claude Code shows **dollars**, Codex/Copilot show
-  **tokens**. variantly **never estimates** a price.
+- **Usage as reported:** Claude Code shows **dollars**, Codex, Gemini and
+  Cursor show **tokens**, Copilot shows **premium requests**. variantly
+  **never estimates** a price.
 
 **Default permissions**
 
@@ -187,14 +221,22 @@ Then, under the hood:
   an approval);
 - **Copilot** runs `copilot -p --allow-all-tools --no-ask-user` with
   `git push`, `git commit` and `rm` denied, and file access limited to the
-  worktree, the brief and your user-wide skills (`--add-dir`).
+  worktree, the brief and your user-wide skills (`--add-dir`);
+- **Gemini** runs `gemini -p --approval-mode auto_edit` with a policy file that
+  allows only the shell commands Impeccable needs (`npx impeccable`,
+  `git status`, `git diff`, `ls`);
+- **Cursor** runs `cursor-agent -p --force` in the worktree. Cursor has no
+  per-command allow list on the command line, so safe mode relies on Cursor's
+  own sandbox and settings.
 
 - **"Full auto"** removes those limits (`--dangerously-skip-permissions`,
-  `--dangerously-bypass-approvals-and-sandbox`, `--allow-all`). **Trusted projects only.**
+  `--dangerously-bypass-approvals-and-sandbox`, `--allow-all`,
+  `--approval-mode yolo`, `--sandbox disabled`). **Trusted projects only.**
 - **Browser check on:** each agent gets the `playwright` MCP server
   (`--mcp-config` + `mcp__playwright` allowed for Claude Code;
   `-c mcp_servers.playwright.*` for Codex; `--additional-mcp-config` for
-  Copilot), **headless** and `--isolated`: **no shared browser profile**.
+  Copilot; a settings file via `GEMINI_CLI_SYSTEM_SETTINGS_PATH` for Gemini;
+  a `--plugin-dir` with `--approve-mcps` for Cursor), **headless** and `--isolated`: **no shared browser profile**.
 
 ## Commands
 

@@ -22,7 +22,7 @@ Usage
 
 Options
   -p, --port <n>             port for the variantly app (default 4477)
-      --agent <id>           claude | codex | copilot | demo
+      --agent <id>           claude | codex | copilot | gemini | cursor | demo
       --count <n>            how many variants, 1–10
       --brief <text>         what you want, in your words
       --yes                  skip the wizard: generate with detected defaults
@@ -31,8 +31,8 @@ Options
       --no-browser           don't give the agent a browser (Playwright MCP)
       --no-review            skip the Impeccable critique and audit pass
       --no-audit             skip the axe-core and Lighthouse scores
-      --providers <ids>      install-skill: claude,codex,copilot (default: the
-                             agents on your PATH)
+      --providers <ids>      install-skill: claude,codex,copilot,gemini,cursor
+                             (default: the agents on your PATH)
       --scope <s>            install-skill: global (default, your user) or
                              project (dir, for everyone who clones it)
   -h, --help

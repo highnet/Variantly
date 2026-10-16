@@ -17,11 +17,12 @@ export const STEPS = /** @type {const} */ ([
 
 const index = (/** @type {string} */ id) => STEPS.findIndex((s) => s.id === id);
 const CODE = /\.(css|scss|sass|less|tsx?|jsx?|mjs|svelte|vue|astro|html?|php|erb|py|go|rs|templ)\b/i;
-const WRITE = /^→\s*(edit|write|create|str_replace|apply_patch|patch|multiedit|update)/i;
+// Gemini CLI edits with `replace` and writes with `write_file`.
+const WRITE = /^→\s*(edit|write|create|str_replace|apply_patch|patch|multiedit|update|replace)/i;
 // Agents without an edit tool (Copilot on Windows, Codex in a shell) write
 // files from the shell: PowerShell here-strings into Set-Content, redirects,
 // tee, or a script that opens a file for writing.
-const SHELL = /^→\s*(powershell|pwsh|bash|sh|shell|zsh|cmd|run|exec|command)\b/i;
+const SHELL = /^→\s*(powershell|pwsh|bash|sh|shell|zsh|cmd|run|run_shell_command|exec|command)\b/i;
 const SHELL_WRITE = /Set-Content|Out-File|Add-Content|WriteAllText|@'|@"|\btee\b|>>?\s*\S+\.\w+|cat\s*>|<<\s*['"]?\w+|write_text|writeFileSync|open\([^)]*['"][wa]['"]/i;
 
 /**

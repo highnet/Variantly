@@ -39,18 +39,20 @@ deployed production site.
 
 `npx variantly install-skill` writes the short form of this manual as a skill
 for every agent on the PATH, so the agent knows to reach for variantly when
-someone asks for a redesign. One `SKILL.md` serves all three agents.
+someone asks for a redesign. One `SKILL.md` serves every supported agent.
 
 ```sh
 npx variantly install-skill                                   # agents on PATH, user-wide
 npx variantly install-skill --providers=claude                # ~/.claude/skills/variantly/
 npx variantly install-skill --providers=codex                 # ~/.agents/skills/variantly/
 npx variantly install-skill --providers=copilot               # ~/.copilot/skills/variantly/
+npx variantly install-skill --providers=gemini                # ~/.gemini/skills/variantly/
+npx variantly install-skill --providers=cursor                # ~/.cursor/skills/variantly/
 npx variantly install-skill --providers=codex --scope=project # .agents/skills/variantly/ in the repo
 ```
 
-Project scope writes `.claude/skills/`, `.agents/skills/` or `.github/skills/`
-in the repository, for everyone who clones it. Running it again updates the
+Project scope writes `.claude/skills/`, `.agents/skills/`, `.github/skills/`,
+`.gemini/skills/` or `.cursor/skills/` in the repository, for everyone who clones it. Running it again updates the
 file in place. Claude Code can also use the plugin:
 `/plugin marketplace add highnet/variantly` then
 `/plugin install variantly@variantly`. Restart the agent after installing.
@@ -58,13 +60,18 @@ file in place. Claude Code can also use the plugin:
 ## Requirements
 
 - Node 20.11 or newer, git, and a repository with at least one commit.
-- One agent CLI on `PATH`, signed in: `claude`, `codex` or `copilot`.
+- One agent CLI on `PATH`, signed in: `claude`, `codex`, `copilot`, `gemini` or
+  `cursor-agent`. Claude Code and Codex may be pointed at OpenRouter instead
+  (README, "Using OpenRouter"); that counts as signed in.
 - The Impeccable skill installed for that agent:
-  `npx impeccable install --providers=<claude|codex|copilot> --scope=global --yes --no-hooks`.
+  `npx impeccable install --providers=<claude|codex|copilot|gemini|cursor> --scope=global --yes --no-hooks`.
   The wizard checks this and can run it. Where each agent looks: Claude Code
   `~/.claude/skills`, `.claude/skills`; Codex `~/.agents/skills`,
   `.agents/skills`; Copilot `~/.copilot/skills`, `~/.agents/skills`,
-  `.github/skills`, `.agents/skills`, `.claude/skills`.
+  `.github/skills`, `.agents/skills`, `.claude/skills`; Gemini `~/.gemini/skills`,
+  `~/.agents/skills`, `.gemini/skills`, `.agents/skills`; Cursor
+  `~/.cursor/skills`, `~/.agents/skills`, `~/.claude/skills` and the same three
+  in the project.
 - A project whose dev server can be told its port (`{port}` in the command,
   or a `PORT` environment variable). Static HTML needs nothing.
 
@@ -80,7 +87,7 @@ npx variantly clean              # remove every variantly worktree, branch, stat
 npx variantly install-skill      # put the variantly skill where your agents read skills
 ```
 
-Flags for the default command: `--agent claude|codex|copilot|demo`,
+Flags for the default command: `--agent claude|codex|copilot|gemini|cursor|demo`,
 `--count 1..10`, `--brief "<text>"`, `--yes` (skip the wizard and start
 generating with detected defaults), `--demo` (the built-in demo agent: no AI,
 crude fixed restyles, for trying the flow), `--no-open`, `--port <n>`.
@@ -90,7 +97,7 @@ crude fixed restyles, for trying the flow), `--no-open`, `--port <n>`.
 1. Run `npx variantly doctor` in the project. Fix what it marks `✗`: a missing
    commit (`git add -A && git commit -m "Before variantly"`), a missing agent,
    or a missing Impeccable install. Use your own id in what follows:
-   `claude`, `codex` or `copilot`.
+   `claude`, `codex`, `copilot`, `gemini` or `cursor`.
 2. Start a run. With the person present: `npx variantly` and let them use the
    wizard. Without the wizard:
 
@@ -98,6 +105,8 @@ crude fixed restyles, for trying the flow), `--no-open`, `--port <n>`.
    npx variantly --yes --agent claude  --count 4 --brief "warmer, less corporate"
    npx variantly --yes --agent codex   --count 4 --brief "warmer, less corporate"
    npx variantly --yes --agent copilot --count 4 --brief "warmer, less corporate"
+   npx variantly --yes --agent gemini  --count 4 --brief "warmer, less corporate"
+   npx variantly --yes --agent cursor  --count 4 --brief "warmer, less corporate"
    ```
 
    This prints the app URL (default `http://localhost:4477`) and keeps running.
