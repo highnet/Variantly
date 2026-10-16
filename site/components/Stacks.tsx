@@ -44,7 +44,7 @@ const Stacks = () => (
           Uses your own AI
         </Typography>
         <Typography variant="body" color="steel">
-          <strong className="text-ink">No account, nothing to pay us.</strong> Each design ={' '}
+          <strong className="text-ink">No account, nothing to pay us.</strong> Each variant ={' '}
           <strong className="text-ink">one session</strong> on your own plan.
         </Typography>
       </div>

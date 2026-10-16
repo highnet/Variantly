@@ -2,9 +2,9 @@ import { Typography } from '@/components/ui/Typography';
 
 const COMMANDS = [
   ['npx variantly', 'Open the wizard in the current folder.'],
-  ['npx variantly --demo', 'The full flow with ready-made designs. No AI, no account.'],
+  ['npx variantly --demo', 'The full flow with ready-made variants. No AI, no account.'],
   ['npx variantly doctor', 'Check Node, git, your AI assistants and the detected stack.'],
-  ['npx variantly keep <n>', 'Apply design n. The others stay as branches.'],
+  ['npx variantly keep <n>', 'Apply variant n. The others stay as branches.'],
   ['npx variantly status', 'The current run, as JSON.'],
   ['npx variantly clean', 'Remove every copy, branch and state file.'],
   ['npx variantly install-skill', 'Put the variantly skill where your assistants read skills.'],
@@ -12,7 +12,7 @@ const COMMANDS = [
 
 const FLAGS = [
   ['--agent <id>', 'claude, codex, copilot or demo'],
-  ['--count <n>', 'how many designs, 1–10'],
+  ['--count <n>', 'how many variants, 1–10'],
   ['--brief <txt>', 'what you want, in your words'],
   ['--yes', 'skip the wizard, use detected defaults'],
   ['--port <n>', 'app port (default 4477)'],

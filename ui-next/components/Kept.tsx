@@ -79,7 +79,7 @@ const Kept = () => {
                 <CommandBlock command="/impeccable live" />
               </li>
               <li>
-                The other designs are kept as branches (variantly/{snap.runId}/…). This removes them:
+                The other variants are kept as branches (variantly/{snap.runId}/…). This removes them:
                 <CommandBlock command="npx variantly clean" />
               </li>
             </ol>

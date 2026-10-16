@@ -214,14 +214,14 @@ const render = () => {
 const agentShort = { claude: 'Claude', codex: 'Codex', copilot: 'Copilot', demo: 'Demo' };
 
 /*
- * The check-in is a short wizard: Setup → Designs → Your site → Review.
+ * The check-in is a short wizard: Setup → Variants → Your site → Review.
  * S.form is the one source of truth; steps only read and write it, so Back
  * never loses anything. The step lives in the URL (?step=designs) and the
  * draft in localStorage, so refresh and the browser's back button work.
  */
 const WIZ = [
-  { id: 'setup', name: 'Setup', title: 'Your setup', next: 'Continue to designs' },
-  { id: 'designs', name: 'Designs', title: 'What should we make?', next: 'Continue' },
+  { id: 'setup', name: 'Setup', title: 'Your setup', next: 'Continue to variants' },
+  { id: 'designs', name: 'Variants', title: 'What should we make?', next: 'Continue' },
   { id: 'site', name: 'Your site', title: 'About your site', next: 'Review' },
   { id: 'review', name: 'Review', title: 'Ready when you are' },
 ];
@@ -280,7 +280,7 @@ const refreshWizard = (focus = false) => {
     h('div', { class: 'wiz-nav' }, [
       at > 0 ? h('button', { class: 'btn outline', type: 'button', onClick: () => history.back() }, 'Back') : h('span'),
       step.id === 'review'
-        ? h('button', { class: 'btn primary big', type: 'submit', id: 'wiz-go', disabled: blocks.length > 0 }, `Make ${plural(S.form.count, 'design')}`, icon('arrow'))
+        ? h('button', { class: 'btn primary big', type: 'submit', id: 'wiz-go', disabled: blocks.length > 0 }, `Make ${plural(S.form.count, 'variant')}`, icon('arrow'))
         : h('button', { class: 'btn primary', type: 'submit', disabled: step.id === 'setup' && blocks.length > 0 }, step.next, icon('arrow')),
     ]),
   ]);
@@ -326,11 +326,11 @@ const stepBody = {
     const f = S.form;
     return [
       h('fieldset', { class: 'field picks' }, [
-        h('legend', { class: 'label' }, 'How many designs?'),
+        h('legend', { class: 'label' }, 'How many variants?'),
         h('div', { class: 'pick-row' }, [2, 4, 6].map((n) =>
           h('label', { class: 'pick' }, [h('input', { type: 'radio', name: 'count', checked: f.count === n, onChange: () => ((f.count = n), refreshWizard()) }), h('span', {}, String(n))]),
         )),
-        h('p', { class: 'hint' }, f.agent === 'demo' ? 'The demo agent costs nothing.' : `Each design is one ${selectedAgent()?.name ?? 'agent'} session on your account, about 10–20 minutes, ${f.concurrency} at a time.`),
+        h('p', { class: 'hint' }, f.agent === 'demo' ? 'The demo agent costs nothing.' : `Each variant is one ${selectedAgent()?.name ?? 'agent'} session on your account, about 10–20 minutes, ${f.concurrency} at a time.`),
       ]),
       h('fieldset', { class: 'field picks' }, [
         h('legend', { class: 'label' }, 'Which pages?'),
@@ -346,7 +346,7 @@ const stepBody = {
           f.routes = [...new Set([...f.routes, r.startsWith('/') ? r : `/${r}`])];
           refreshWizard();
         } }),
-        h('p', { class: 'hint' }, 'Just the home page is fastest. Each extra page adds time to every design.'),
+        h('p', { class: 'hint' }, 'Just the home page is fastest. Each extra page adds time to every variant.'),
       ]),
       h('fieldset', { class: 'field picks' }, [
         h('legend', { class: 'label' }, 'Extras (optional)'),
@@ -469,7 +469,7 @@ const selectedAgent = () => S.detect.agents.find((a) => a.id === S.form.agent);
 /** The checks around Impeccable: key, title, short name, what it does. */
 const CHECKS = [
   ['browser', 'Let the agent see its variant', 'browser', 'Each agent gets a headless browser (Playwright MCP) on its own live variant: it screenshots its work at desktop and phone widths and fixes what it sees.'],
-  ['review', 'Review pass', 'review', 'When the design is built, the agent runs again: Impeccable’s critique and audit, fed with the scores, then fixes the worst problems without changing the direction. A second session per variant.'],
+  ['review', 'Review pass', 'review', 'When the variant is built, the agent runs again: Impeccable’s critique and audit, fed with the scores, then fixes the worst problems without changing the direction. A second session per variant.'],
   ['audit', 'Scores', 'scores', 'axe-core and Lighthouse on the original and every variant: accessibility, performance, best practices, SEO. Runs on your machine, costs nothing.'],
 ];
 /** A check is on unless turned off; the demo agent has no browser or review pass. */
@@ -1468,7 +1468,7 @@ const showProgress = (v) => {
       h('div', { class: 'wait-body' }, [
         h('p', { class: 'wait-dir' }, directionLabel(v.direction, v.picked)),
         stepList(v),
-        h('p', { class: 'wait-note' }, `${elapsed(v)} so far. It shows here when it's ready; look at another design meanwhile.`),
+        h('p', { class: 'wait-note' }, `${elapsed(v)} so far. It shows here when it's ready; look at another variant meanwhile.`),
       ]),
       last ? h('pre', { class: 'wait-last' }, last) : null,
     ]),
