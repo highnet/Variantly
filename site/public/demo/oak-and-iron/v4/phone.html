@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Oak &amp; Iron</title>
+    <!-- Phone edition for the narrow before/after split: every variant shares
+         ../phone.css, so each band sits at the same height in every design. -->
+    <link rel="stylesheet" href="../phone.css" />
+    <link rel="stylesheet" href="phone.css" />
+  </head>
+  <body>
+    <nav class="band b-head" aria-label="Main">
+      <a class="logo"><span class="logo-mark" aria-hidden="true"></span>Oak &amp; Iron</a>
+    </nav>
+    <header class="band b-hero">
+      <p class="kicker">Est. 2019 · Graz</p>
+      <h1>Oak <span class="amp">&amp;</span> Iron</h1>
+      <p class="intro">Handmade furniture of reclaimed oak and forged steel, delivered by the hands that made it.</p>
+      <p class="ctas"><a class="btn">View the collection</a> <a class="link">Contact us</a></p>
+    </header>
+    <h2 class="band b-sec"><span>The Workshop</span></h2>
+    <div class="band b-feat"><h3>Handmade</h3><p>Every piece is built by hand in our workshop outside Graz.</p></div>
+    <div class="band b-feat"><h3>Reclaimed oak</h3><p>We use reclaimed oak and forged steel wherever we can.</p></div>
+    <div class="band b-feat"><h3>Personal delivery</h3><p>Delivered by the person who built it. Lead time 6–8 weeks.</p></div>
+    <h2 class="band b-sec" id="shop"><span>The Collection</span></h2>
+    <article class="band b-item i1">
+      <div class="art" aria-hidden="true"><svg viewBox="0 0 200 100" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="10" y="30" width="180" height="8"/><path d="M30 38 20 90M30 38 40 90M170 38 160 90M170 38 180 90M25 64h10M165 64h10"/></svg></div>
+      <p class="no">No. I</p>
+      <h3>The Long Table</h3>
+      <p class="desc">2.4 m of reclaimed oak on steel trestles.</p>
+      <p class="buy"><span class="price">€ 2.890,-</span> <button type="button">Add to cart</button></p>
+    </article>
+    <article class="band b-item i2">
+      <div class="art" aria-hidden="true"><svg viewBox="0 0 200 140" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="100" cy="30" rx="45" ry="9"/><path d="M70 36 55 130M130 36 145 130M100 39v91M62 95h76"/></svg></div>
+      <p class="no">No. II</p>
+      <h3>Smithy Stool</h3>
+      <p class="desc">Hand-forged legs, oiled seat.</p>
+      <p class="buy"><span class="price">€ 340,-</span> <button type="button">Add to cart</button></p>
+    </article>
+    <article class="band b-item i3">
+      <div class="art" aria-hidden="true"><svg viewBox="0 0 200 140" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M100 10v120"/><rect x="30" y="30" width="140" height="6"/><rect x="30" y="68" width="140" height="6"/><rect x="30" y="106" width="140" height="6"/></svg></div>
+      <p class="no">No. III</p>
+      <h3>Wall Shelf No. 4</h3>
+      <p class="desc">Three shelves, one bracket, no screws visible.</p>
+      <p class="buy"><span class="price">€ 410,-</span> <button type="button">Add to cart</button></p>
+    </article>
+    <h2 class="band b-sec"><span>Correspondence</span></h2>
+    <form class="band b-news" id="newsletter">
+      <p>News about new products and workshop days. No spam.</p>
+      <label for="email">Email address</label>
+      <input id="email" type="email" placeholder="name@example.com" required />
+      <button>Subscribe</button>
+    </form>
+    <footer class="band b-foot" id="contact">
+      <p>Werkstattgasse 4 · 8010 Graz<br />hello@oak-and-iron.example</p>
+      <p class="small">© 2026 Oak &amp; Iron. A fictional shop: demo content for variantly.</p>
+    </footer>
+    <script>
+      document.getElementById('newsletter').addEventListener('submit', (e) => {
+        e.preventDefault();
+        e.target.querySelector('button').textContent = 'Thanks!';
+      });
+    </script>
+  </body>
+</html>

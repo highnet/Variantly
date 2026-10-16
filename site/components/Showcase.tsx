@@ -27,7 +27,11 @@ const STAGGER_MS = 28;
 // The order letters pass the hinge on a real board.
 const DRUM = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ&';
 
-const page = (n: number) => `/demo/oak-and-iron/v${n}/index.html`;
+// Phones get each design's phone edition: the same bands at the same heights
+// in every variant, so a split only a few hundred pixels wide still lines up.
+const page = (n: number, phone: boolean) =>
+  `/demo/oak-and-iron/v${n}/${phone ? 'phone' : 'index'}.html`;
+const PHONE_QUERY = '(max-width: 639px)';
 const vname = (n: number) => `V${String(n).padStart(2, '0')}`;
 const LONGEST = Math.max(...DEMO_VARIANTS.map((v) => v.direction.length));
 
@@ -129,6 +133,7 @@ const Showcase = () => {
   const [auto, setAuto] = useState(true);
   const [ready, setReady] = useState(false);
   const [hover, setHover] = useState(false);
+  const [phone, setPhone] = useState(false);
   const hoverRef = useRef(false);
   const pos = useRef(50);
   const anim = useRef(0);
@@ -386,6 +391,14 @@ const Showcase = () => {
     hoverRef.current = hover;
   }, [hover]);
 
+  useEffect(() => {
+    const mq = window.matchMedia(PHONE_QUERY);
+    const sync = () => setPhone(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+
   // Follow mode needs a mouse; drop it when there isn't one any more.
   useEffect(() => {
     const mq = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -537,7 +550,7 @@ const Showcase = () => {
               frames.current[0] = el;
             }}
             onLoad={() => onFrameLoad(0)}
-            src={page(0)}
+            src={page(0, phone)}
             title="Oak & Iron as it was: the original"
             className="absolute inset-0 size-full border-0 bg-white"
           />
@@ -548,7 +561,7 @@ const Showcase = () => {
                 frames.current[v.n] = el;
               }}
               onLoad={() => onFrameLoad(v.n)}
-              src={page(v.n)}
+              src={page(v.n, phone)}
               title={`${vname(v.n)}: ${v.direction}`}
               aria-hidden={v.n !== selected}
               tabIndex={v.n === selected ? 0 : -1}
