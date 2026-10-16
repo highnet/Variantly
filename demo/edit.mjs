@@ -37,14 +37,17 @@ const lineSeconds = (id) => durations[id] ?? (byId[id].text.split(/\s+/).length 
 // fit its line; a few scene changes get a transition. SeekReel's `footage`
 // step does the cutting and reports where every clip landed.
 const TRANSITIONS = { generate: { type: 'fade', duration: 0.4 }, compare: { type: 'fadeblack', duration: 0.5 } };
+const round3 = (n) => Math.round(n * 1000) / 1000;
 const clips = raw.scenes.map((scene) => {
   const length = scene.end - scene.start;
   const target = scene.timelapse ? Math.max(lineSeconds(scene.id) + PAD_MS / 1000, 5) : length;
   return {
     label: scene.id,
     src: `video/${THEME}/raw.webm`,
-    from: Number(Math.max(0, scene.start - OFFSET).toFixed(3)),
-    to: Number((scene.end - OFFSET).toFixed(3)),
+    // The length is computed once from the shared timeline, so both themes
+    // get clips of exactly the same length.
+    from: round3(Math.max(0, scene.start - OFFSET)),
+    to: round3(Math.max(0, scene.start - OFFSET) + round3(length)),
     ...(scene.timelapse ? { speed: Number(Math.max(1, length / target).toFixed(4)) } : {}),
     ...(TRANSITIONS[scene.id] ? { transition: TRANSITIONS[scene.id] } : {}),
   };

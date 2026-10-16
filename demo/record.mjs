@@ -121,12 +121,31 @@ async function waitAllDone(app, timeoutMin) {
       if ((!scoring && scored) || Date.now() - finishedAt > 10 * 60_000) {
         const failed = variants.filter((v) => v.status !== 'done');
         if (failed.length) log('record', `  warning: ${failed.length} variant(s) did not finish`);
+        await warmPreviews(app, ['original', ...variants.filter((v) => v.status === 'done').map((v) => `v${v.n}`)]);
         return;
       }
     }
     await new Promise((r) => setTimeout(r, 2000));
   }
   throw new Error(`Variants were not done after ${timeoutMin} minutes`);
+}
+
+/**
+ * Start every preview server while the timelapse is on screen, so compare and
+ * switching between variants are instant on camera instead of waiting for a
+ * dev server to boot.
+ */
+async function warmPreviews(app, targets) {
+  for (const id of targets) await api(app, `ensure/${id}`, 'POST').catch(() => {});
+  const deadline = Date.now() + 5 * 60_000;
+  for (const id of targets) {
+    while (Date.now() < deadline) {
+      const status = await api(app, `server/${id}`).catch(() => null);
+      if (status?.state === 'ready') break;
+      await new Promise((r) => setTimeout(r, 1000));
+    }
+  }
+  log('record', `  previews ready: ${targets.join(', ')}`);
 }
 
 // ---------------------------------------------------------------- cursor
@@ -205,17 +224,30 @@ class Director {
     });
   }
 
+  /**
+   * Run `frame(k)` from k = 0 to 1 over `ms` of wall-clock time. Progress
+   * comes from the clock, not a step count: each step is a round trip to
+   * every recording page, and on a busy machine a fixed number of steps
+   * stretched a 650 ms move to four seconds of dead air.
+   */
+  async glide(ms, frame) {
+    const start = Date.now();
+    for (;;) {
+      const k = Math.min(1, (Date.now() - start) / ms);
+      await frame(k);
+      if (k >= 1) return;
+      await this.page.waitForTimeout(12);
+    }
+  }
+
   /** Ease the cursor to (x, y), drawing it on every step. */
   async moveTo(x, y, ms = 650) {
     const from = { ...this.pos };
-    const steps = Math.max(8, Math.round(ms / 16));
-    for (let i = 1; i <= steps; i++) {
-      const k = i / steps;
+    await this.glide(ms, async (k) => {
       const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
       this.pos = { x: from.x + (x - from.x) * e, y: from.y + (y - from.y) * e };
       await this.pointer(this.pos.x, this.pos.y);
-      await this.page.waitForTimeout(ms / steps);
-    }
+    });
   }
 
   /** Where a target is, measured on the primary page; the mirror must show it too. */
@@ -255,13 +287,18 @@ class Director {
     this.clicks.push({ t: this.now(), x: target.x, y: target.y, zoom: false, sound: 'tick' });
     await this.all((page) => page.mouse.click(target.x, target.y));
     await Promise.all(target.locators.map((l) => l.fill('')));
+    // Typed at a steady pace by the clock: however many characters are due
+    // by now go in together, so slow round trips cannot stretch the line.
     const text = this.fill(step.text);
-    for (const ch of text) {
-      const t = Date.now();
-      await this.all((page) => page.keyboard.type(ch));
-      const rest = (step.delay ?? 22) - (Date.now() - t);
-      if (rest > 0) await this.page.waitForTimeout(rest);
-    }
+    let typed = 0;
+    await this.glide(text.length * (step.delay ?? 22), async (k) => {
+      const due = Math.round(text.length * k);
+      if (due > typed) {
+        const chunk = text.slice(typed, due);
+        typed = due;
+        await this.all((page) => page.keyboard.type(chunk));
+      }
+    });
   }
 
   async drag(step) {
@@ -274,14 +311,11 @@ class Director {
     for (const percent of step.to) {
       const x = area.x + (area.width * percent) / 100;
       const from = { ...this.pos };
-      const steps = Math.round(per / 16);
-      for (let i = 1; i <= steps; i++) {
-        const k = i / steps;
+      await this.glide(per, async (k) => {
         const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
         this.pos = { x: from.x + (x - from.x) * e, y: from.y };
         await this.pointer(this.pos.x, this.pos.y);
-        await this.page.waitForTimeout(per / steps);
-      }
+      });
       await this.page.waitForTimeout(250);
     }
     await this.all((page) => page.mouse.up());
@@ -329,6 +363,16 @@ class Director {
   }
 
   async act(step) {
+    const began = Date.now();
+    try {
+      await this.actInner(step);
+    } finally {
+      const ms = Date.now() - began;
+      if (ms > 1500 && !step.wait && !step.waitApi) log('record', `    slow: ${JSON.stringify(step).slice(0, 90)} took ${(ms / 1000).toFixed(1)}s`);
+    }
+  }
+
+  async actInner(step) {
     if (step.goto) {
       await this.all((page, view) => page.goto(this.fill(step.goto, view.theme)));
       await this.showCursor();
@@ -384,6 +428,26 @@ async function openView(theme, mirror) {
       }
     } catch {} // about:blank and file:// pages have no storage
   });
+  if (!mirror) {
+    // Keep every preview live at once (the wizard's "live previews" setting,
+    // default 3) so switching between four variants never waits for a server
+    // to restart on camera. Set on the generate request, so the wizard on
+    // screen is untouched.
+    await context.addInitScript(() => {
+      const real = window.fetch.bind(window);
+      window.fetch = (input, init = {}) => {
+        const url = new URL(typeof input === 'string' ? input : input.url, location.href);
+        if (url.pathname === '/api/generate' && typeof init.body === 'string') {
+          try {
+            const body = JSON.parse(init.body);
+            body.maxLive = Math.min(11, (body.count ?? 4) + 1);
+            init = { ...init, body: JSON.stringify(body) };
+          } catch {}
+        }
+        return real(input, init);
+      };
+    });
+  }
   if (mirror) {
     // The mirror must not change the run: answer its POSTs here (the UI
     // ignores their bodies and follows /api/state and /api/events). Only
@@ -430,7 +494,7 @@ try {
     log('record', `${scene.id} @ ${start.toFixed(1)}s`);
     for (const step of scene.actions) await director.act(step);
     if (scene.id === 'launch') {
-      for (const view of views) schemes[view.theme] = await view.page.evaluate(() => matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      for (const view of views) schemes[view.theme] = await view.page.evaluate(() => ({ media: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light', ui: document.documentElement.dataset.theme ?? null }));
     }
     // Hold until the line has been spoken, plus a breath.
     const hold = start + lineSeconds(scene) + PAD_MS / 1000 - director.now();

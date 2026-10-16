@@ -43,7 +43,7 @@ const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStar
 export async function mount(layout, theme = 'light') {
   document.body.classList.add(layout, theme);
   const tl = await (await fetch(`../timeline.${theme}.json`)).json();
-  const film = await loadFootage(`../.work/${theme}/footage`);
+  const film = await loadFootage(`../build/${theme}/footage`);
   const tall = layout === 'tall';
   const scene = tl.scenes.find((s) => t >= s.start && t < s.end) ?? tl.scenes.at(-1);
   const first = tl.scenes[0];
