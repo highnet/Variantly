@@ -1,4 +1,5 @@
 import { CommandCopy } from '@/components/CommandCopy';
+import { NodeHint, RunnerPicker } from '@/components/RunnerPicker';
 import { PromptCopy } from '@/components/PromptCopy';
 import { Typography } from '@/components/ui/Typography';
 import { CHECKLIST, PROMPTS } from '@/lib/content';
@@ -58,7 +59,9 @@ const StartChecklist = () => (
         <Typography variant="small" color="steel-on-slate">
           Open a terminal in your website&apos;s folder and paste:
         </Typography>
+        <RunnerPicker tone="slate" />
         <CommandCopy command="npx variantly" tone="slate" />
+        <NodeHint tone="slate" />
       </div>
 
       <div className="grid gap-3">

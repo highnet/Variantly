@@ -14,6 +14,7 @@ import {
 import { CommandCopy } from '@/components/CommandCopy';
 import { PageSkeleton } from '@/components/PageSkeleton';
 import { PromptCopy } from '@/components/PromptCopy';
+import { RunnerPicker } from '@/components/RunnerPicker';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
 import { applyPrefsToFrame, calmMotion, PREFS_EVENT, readPrefs, type Prefs } from '@/lib/prefs';
@@ -475,6 +476,7 @@ const Showcase = () => {
 
           <div className="grid content-start gap-4">
             <div data-keep-cycle className="grid gap-2">
+              <RunnerPicker tone="slate" />
               <CommandCopy command={INSTALL} tone="slate" accent />
               <p className="text-steel-on-slate m-0 text-[14px] leading-snug">
                 Paste it into a terminal in your website&apos;s folder.{' '}
