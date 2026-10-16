@@ -20,6 +20,26 @@ script.json ──► voice.mjs ──► audio/<scene>.wav + word timings
                                                out/variantly-demo.gif
 ```
 
+## Before every take
+
+Always film the latest variantly. In the Variantly clone:
+
+```sh
+git checkout main && git pull
+npm ci
+npm run build:ui
+```
+
+`record` checks this and **stops** with the fix if anything is off:
+
+- the version is older than 0.3.0, or the clone is behind `origin/main`;
+- `ui-next/out` is missing or older than its sources (pulled but forgot `npm run build:ui`);
+- there are uncommitted changes in `src/`, `ui-next/` or `bin/`.
+
+It prints the version and commit it is filming and writes them into
+`video/raw-timeline.json` and each `timeline.<theme>.json`. `ALLOW_STALE=1`
+skips the stop, for testing only: never publish such a take.
+
 ## Run it on your machine
 
 ```sh
