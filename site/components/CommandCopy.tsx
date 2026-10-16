@@ -33,7 +33,7 @@ const CommandCopy = ({
     try {
       await navigator.clipboard.writeText(shown);
       setCopied(true);
-      toast('Command copied', { body: 'Paste it into a terminal in your site’s folder.' });
+      toast('Command copied', { body: 'Paste it into a new terminal in your site’s folder and press Enter.' });
       setTimeout(() => setCopied(false), 1600);
     } catch {
       setCopied(false);
