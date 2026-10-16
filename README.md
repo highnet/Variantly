@@ -89,6 +89,18 @@ npx variantly install-skill --scope=project              # into this repo, for e
 
 ## How it works
 
+`npx variantly` opens a four-step wizard in your browser:
+
+1. **Setup.** Confirms the detected app and agent (installed, signed in,
+   Impeccable present); switch either if needed.
+2. **Designs.** How many (**2, 4 or 6**), which pages, optional extras.
+3. **Your site.** Who it's for, what it offers, what must stay, plus any
+   notes. Skipped if you have a `PRODUCT.md`.
+4. **Review.** A summary with Edit links and the session cost; **Make designs**
+   starts the run. Your files aren't touched until you keep one.
+
+Then, under the hood:
+
 1. **Snapshot.** Records your commit plus uncommitted tracked edits
    (`git stash create`, touches nothing) as the base.
 2. **Worktrees.** One per variant in `~/.variantly/`, **outside your project**,
