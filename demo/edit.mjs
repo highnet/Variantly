@@ -3,7 +3,7 @@
 //
 //   node edit.mjs --theme light|dark
 //
-// In:  video/<theme>/raw.webm + raw-timeline.json, audio/*
+// In:  video/<theme>/raw.webm, video/raw-timeline.json (shared), audio/*
 // Out: seekreel.<theme>.json           with a footage edit list: one clip per
 //                                      scene, the wait sped up, transitions
 //      build/<theme>/footage/          SeekReel's cut: one JPEG per film frame
@@ -16,13 +16,16 @@ import path from 'node:path';
 import { at, FPS, HEIGHT, log, PAD_MS, readJson, run, script, seekreelDir, VOICE_LEAD, WIDTH, writeJson } from './lib/common.mjs';
 
 const film = script();
-// --theme light|dark: which take to cut. Each theme is its own recording, so
-// the app on screen matches the film around it.
+// --theme light|dark: which recording to cut. Both come from one take.
 const themeArg = process.argv.indexOf('--theme');
 const THEME = themeArg > -1 ? process.argv[themeArg + 1] : 'light';
 if (!['light', 'dark'].includes(THEME)) throw new Error(`--theme must be light or dark, got ${THEME}`);
 const BUILD = `build/${THEME}`;
-const raw = readJson(at('video', THEME, 'raw-timeline.json'));
+// One take, two themes: both pages were driven in lockstep, so they share one
+// timeline. The dark recording started a moment after the light one; shift
+// every in and out point by that, and the two films cut identically.
+const raw = readJson(at('video', 'raw-timeline.json'));
+const OFFSET = raw.offsets?.[THEME] ?? 0;
 const durations = readJson(at('audio', 'durations.json'), {});
 const byId = Object.fromEntries(film.scenes.map((s) => [s.id, s]));
 
@@ -40,8 +43,8 @@ const clips = raw.scenes.map((scene) => {
   return {
     label: scene.id,
     src: `video/${THEME}/raw.webm`,
-    from: Number(scene.start.toFixed(3)),
-    to: Number(scene.end.toFixed(3)),
+    from: Number(Math.max(0, scene.start - OFFSET).toFixed(3)),
+    to: Number((scene.end - OFFSET).toFixed(3)),
     ...(scene.timelapse ? { speed: Number(Math.max(1, length / target).toFixed(4)) } : {}),
     ...(TRANSITIONS[scene.id] ? { transition: TRANSITIONS[scene.id] } : {}),
   };
@@ -78,7 +81,7 @@ function toFilm(t) {
   const scene = raw.scenes.find((s) => t >= s.start && t <= s.end);
   if (!scene) return null;
   const clip = placed[scene.id];
-  return clip.start + (t - clip.from) / clip.speed;
+  return clip.start + (t - OFFSET - clip.from) / clip.speed;
 }
 
 // ------------------------------------------------------------ captions

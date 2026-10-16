@@ -29,8 +29,8 @@ cp .env.example .env                       # once: ELEVEN_API_KEY, ELEVEN_VOICE_
 npx variantly doctor ../examples/tallyboard    # preflight: Claude Code signed in, Impeccable installed
 npm run voice                              # narration in your voice
 npm run record:dry                         # rehearsal: variantly's demo agent, no AI, ~3 min
-npm run record                             # the real take, light theme: Claude Code, 4 variants, 2 at a time
-npm run record -- --reuse --theme dark     # dark take: reopens the finished run, no new generation
+npm run record                             # the real take: Claude Code, 4 variants, 2 at a time,
+                                           # filmed in light and dark at once, in lockstep
 npm run edit -- --theme light && npm run edit -- --theme dark
 npm run probe                              # look at probe/*.png
 node build.mjs all                         # both themes: 16:9, 9:16, silent, poster, GIF
@@ -100,6 +100,13 @@ Scene extras: `title` (the opening card), `presenter` (the lower third),
 Selectors are Playwright selectors. Prefer `role=` and visible text, which
 survive UI restyles. `zoom: true` makes the stage punch in on that click, and
 `sound` picks the UI sound (`tick`, `pop`, `whoosh`, `stamp`).
+
+**One take, two themes.** `record.mjs` drives a light and a dark browser
+side by side against the same variantly run, with every move and click made
+on both at the same moment. Only the light page talks to variantly; the dark
+page's requests that would change anything are answered locally, and it
+follows the real run through the same live updates. So the two films are the
+same take — same variants, same cursor, same timing — and differ only in theme.
 
 **`record.mjs`** copies `examples/tallyboard` into `.work/tallyboard` as a
 fresh git repo, starts variantly on it with its own `VARIANTLY_HOME` (your own
