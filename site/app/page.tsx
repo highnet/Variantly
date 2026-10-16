@@ -28,14 +28,15 @@ const GitHubLink = () => (
 
 /*
  * Agents read a page top-down, so the first words on the human view send
- * them to the quickstart written for them.
+ * them to the quickstart written for them. Visually hidden (sr-only): it
+ * stays in the HTML and text extraction agents read, but humans never see it.
  */
 const AgentStrip = () => (
   <a
     href="#agent"
-    className="bg-ink text-surface hover:bg-slate block px-4 py-2.5 text-center font-mono text-[12px] font-semibold no-underline sm:px-6"
+    className="sr-only"
   >
-    <span className="text-alert">AI agent or assistant?</span> Stop here and open the quickstart
+    <span>AI agent or assistant?</span> Stop here and open the quickstart
     written for you: variantly.tools/#agent. The full manual is at /SKILLS.md.
   </a>
 );
