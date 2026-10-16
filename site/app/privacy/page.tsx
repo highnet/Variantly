@@ -15,7 +15,7 @@ const Page = () => (
     </p>
     <h2>Controller</h2>
     <p>
-      {OPERATOR.name}, {OPERATOR.street}, {OPERATOR.city}, {OPERATOR.country}. Email:{' '}
+      {OPERATOR.name}, {OPERATOR.city}, {OPERATOR.country}. Email:{' '}
       <a href={`mailto:${OPERATOR.email}`}>{OPERATOR.email}</a>
     </p>
     <h2>Hosting and server logs</h2>

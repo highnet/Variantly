@@ -1,11 +1,10 @@
-// Operator details for the imprint (§ 5 ECG, § 25 MedienG) and the privacy
-// policy (GDPR controller). One place, so the three legal pages never disagree.
+// Operator details for the imprint (§ 25 MedienG) and the privacy policy
+// (GDPR controller). A private site states name and place of residence only. One place, so the three legal pages never disagree.
 export const OPERATOR = {
   name: 'TODO: full legal name',
-  street: 'TODO: street and number',
-  city: 'TODO: postcode and city',
+  city: 'TODO: city (place of residence)',
   country: 'Austria',
-  email: 'TODO: contact email',
+  email: 'joaquintelleria@gmail.com',
 };
 
 export const LEGAL_UPDATED = '16 October 2026';

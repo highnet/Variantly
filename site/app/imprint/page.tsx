@@ -8,15 +8,10 @@ export const metadata: Metadata = { title: 'Imprint' };
 
 const Page = () => (
   <LegalPage title="Imprint">
-    <p>
-      Information under § 5 E-Commerce-Gesetz (ECG) and disclosure under § 25 Mediengesetz
-      (MedienG).
-    </p>
-    <h2>Media owner and service provider</h2>
+    <p>Disclosure under § 25 Mediengesetz (MedienG) for a private website.</p>
+    <h2>Media owner</h2>
     <p>
       {OPERATOR.name}
-      <br />
-      {OPERATOR.street}
       <br />
       {OPERATOR.city}
       <br />
@@ -34,7 +29,7 @@ const Page = () => (
     <h2>Editorial line (§ 25 (4) MedienG)</h2>
     <p>Information about variantly, a free, open-source command-line tool, and how to use it.</p>
     <h2>Responsible for content</h2>
-    <p>{OPERATOR.name}, address as above.</p>
+    <p>{OPERATOR.name}</p>
     <h2>Links to other websites</h2>
     <p>
       This site links to external websites. Their operators alone are responsible for their content.
