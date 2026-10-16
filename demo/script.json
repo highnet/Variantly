@@ -39,7 +39,7 @@
       "id": "launch",
       "step": "Launch",
       "terminal": "npx variantly",
-      "text": "Run npx variantly in your project. It opens a wizard in your browser, and uses the coding agent you already have. Here, Claude Code.",
+      "text": "All you need is Node and Claude Code. In your project, run npx variantly. It opens a wizard in your browser.",
       "actions": [
         {
           "goto": "{{app}}"
@@ -58,7 +58,7 @@
     {
       "id": "setup",
       "step": "Setup",
-      "text": "Setup finds your app, your agent and the Impeccable design skill.",
+      "text": "Setup finds your app and Claude Code, and installs the Impeccable design skill in one click if it's missing.",
       "actions": [
         {
           "wait": 600
@@ -265,7 +265,7 @@
         "command": "npx variantly",
         "url": "variantly.style"
       },
-      "text": "Variantly. Light or dark, it runs on your machine, with your own agent. Try it with npx variantly.",
+      "text": "Variantly. Light or dark, all it needs is Node and Claude Code. Try it with npx variantly.",
       "actions": [
         {
           "wait": 500
