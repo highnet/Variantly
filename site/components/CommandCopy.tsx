@@ -4,6 +4,7 @@ import { Check, Copy } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
+import { useRunner, withRunner } from '@/lib/runner';
 import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
@@ -25,10 +26,12 @@ const CommandCopy = ({
   className,
 }: CommandCopyProps) => {
   const [copied, setCopied] = useState(false);
+  const runner = useRunner();
+  const shown = withRunner(command, runner);
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(command);
+      await navigator.clipboard.writeText(shown);
       setCopied(true);
       toast('Command copied', { body: 'Paste it into a terminal in your site’s folder.' });
       setTimeout(() => setCopied(false), 1600);
@@ -58,17 +61,17 @@ const CommandCopy = ({
       </span>
       <code
         className={cn(
-          'condensed min-w-0 flex-1 overflow-x-auto font-mono whitespace-nowrap',
+          'condensed min-w-0 flex-1 font-mono [overflow-wrap:anywhere] break-words whitespace-pre-wrap',
           size === 'sm' ? 'text-[12px]' : 'text-sm',
         )}
       >
-        {command}
+        {shown}
       </code>
       <Button
         variant={accent ? 'primary' : tone === 'slate' ? 'outline-slate' : 'icon'}
         size={size === 'sm' ? 'icon-sm' : 'icon'}
         onClick={copy}
-        aria-label={copied ? 'Copied' : `Copy ${command}`}
+        aria-label={copied ? 'Copied' : `Copy ${shown}`}
       >
         {copied ? <Check className="animate-pop" /> : <Copy />}
       </Button>

@@ -14,6 +14,11 @@ before that.
 npx variantly
 ```
 
+Prefer another package manager? `pnpm dlx variantly`, `yarn dlx variantly`
+and `bunx variantly` work the same, and so does every `npx variantly …` command
+below. No `npx` at all? Install Node.js from [nodejs.org](https://nodejs.org/en/download);
+it comes with npx.
+
 That opens a short wizard in your browser: where your app is and how it runs,
 which agent to use, what you want, and how many variants. Then you watch the
 agents work, and compare.
