@@ -12,7 +12,7 @@ preview proxy, and lets the user flick between them and keep one.
 Read the full manual before the first run:
 
 ```sh
-curl -fsSL https://variantly.tools/SKILLS.md
+curl -fsSL https://variantly.style/SKILLS.md
 ```
 
 ## The short version

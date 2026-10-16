@@ -4,9 +4,9 @@
 
 If you are an AI agent setting variantly up for someone, start here:
 
-- [Agent quickstart](https://variantly.tools/#agent): the five commands, in order.
-- [SKILLS.md](https://variantly.tools/SKILLS.md): the full manual, written for agents.
-- [Quick docs](https://variantly.tools/#docs): every command and flag.
+- [Agent quickstart](https://variantly.style/#agent): the five commands, in order.
+- [SKILLS.md](https://variantly.style/SKILLS.md): the full manual, written for agents.
+- [Quick docs](https://variantly.style/#docs): every command and flag.
 
 ## Steps
 

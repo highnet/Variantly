@@ -73,7 +73,7 @@ for element-level tuning.
 
 ## Brand Commitments
 
-- Name: variantly (lowercase). Domain: variantly.tools.
+- Name: variantly (lowercase). Domain: variantly.style.
 - Voice matches the author's other tools (Seekreel, Rallypoint, Codewright):
   plain, specific and honest. Say what it costs, what it won't do and where it
   can fail. No hype, no superlatives.
