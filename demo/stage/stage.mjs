@@ -38,6 +38,115 @@ function focusX(clicks) {
   return clamp(x, 540, 1380);
 }
 
+
+// ------------------------------------------------------------------ cursor
+//
+// The cursor is drawn here from the recorded path, never filmed. Everything
+// is a pure function of t: the spring below is re-simulated from a second
+// before t on every frame, so frame N is the same whether rendered alone or
+// in sequence.
+
+/** The recorded path at time s: linear between samples. */
+function pathAt(path, s) {
+  if (!path.length) return null;
+  if (s <= path[0][0]) return { x: path[0][1], y: path[0][2] };
+  let lo = 0, hi = path.length - 1;
+  if (s >= path[hi][0]) return { x: path[hi][1], y: path[hi][2] };
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (path[mid][0] <= s) lo = mid; else hi = mid;
+  }
+  const [t0, x0, y0] = path[lo], [t1, x1, y1] = path[hi];
+  const k = t1 > t0 ? (s - t0) / (t1 - t0) : 0;
+  return { x: x0 + (x1 - x0) * k, y: y0 + (y1 - y0) * k };
+}
+
+/**
+ * A slightly under-damped spring chasing the path: moves land with a small,
+ * satisfying settle instead of stopping dead. Returns position and velocity.
+ */
+function springAt(path, at, { freq = 7.5, damping = 0.72, lookback = 1.2, hz = 240 } = {}) {
+  const start = pathAt(path, at - lookback);
+  if (!start) return null;
+  let x = start.x, y = start.y, vx = 0, vy = 0;
+  const w = 2 * Math.PI * freq, dt = 1 / hz;
+  for (let s = at - lookback; s < at; s += dt) {
+    const target = pathAt(path, s);
+    const ax = w * w * (target.x - x) - 2 * damping * w * vx;
+    const ay = w * w * (target.y - y) - 2 * damping * w * vy;
+    vx += ax * dt; vy += ay * dt;
+    x += vx * dt; y += vy * dt;
+  }
+  return { x, y, vx, vy };
+}
+
+/** Press squash: down before the click, a springy rebound after it. */
+function pressScale(presses, at) {
+  let scale = 1;
+  for (const p of presses) {
+    const start = p.t - 0.09, end = p.t + Math.max(0, p.hold) ;
+    if (at < start || at > end + 0.6) continue;
+    if (at <= p.t) scale = Math.min(scale, 1 - 0.2 * ease(clamp((at - start) / 0.09)));
+    else if (at <= end) scale = Math.min(scale, 0.8 + 0.06 * ease(clamp((at - p.t) / 0.15)));
+    else {
+      // Damped rebound: 0.8/0.86 → overshoot ~1.08 → 1.
+      const k = (at - end) / 0.6;
+      const from = p.hold > 0 ? 0.86 : 0.8;
+      const rebound = 1 - (1 - from) * Math.exp(-6 * k) * Math.cos(10 * k);
+      scale = Math.min(scale, rebound);
+    }
+  }
+  return scale;
+}
+
+const ARROW =
+  '<svg viewBox="0 0 32 32" width="58" height="58" aria-hidden="true">' +
+  '<path d="M6 3.5 L25.5 18.2 L16.4 19.6 L21.6 28.6 L17.6 30.6 L12.5 21.6 L6 27.6 Z" ' +
+  'fill="#0d0d10" stroke="#ffffff" stroke-width="2.4" stroke-linejoin="round"/></svg>';
+
+/** Draw the cursor, its trail and click ripples into `layer` (recording pixels). */
+function drawCursor(layer, cursor) {
+  if (!cursor?.path?.length || t < cursor.path[0][0]) return;
+  const now = springAt(cursor.path, t);
+  if (!now) return;
+  const speed = Math.hypot(now.vx, now.vy);
+
+  // Ripples: two rings per press, the second a beat later.
+  for (const p of cursor.presses) {
+    for (const [delay, size, width] of [[0, 92, 5], [0.09, 64, 3]]) {
+      const k = (t - p.t - delay) / 0.65;
+      if (k < 0 || k > 1) continue;
+      const ring = el('div', 'ripple');
+      const d = 16 + size * (1 - Math.pow(1 - k, 3));
+      Object.assign(ring.style, {
+        left: `${p.x - d / 2}px`, top: `${p.y - d / 2}px`, width: `${d}px`, height: `${d}px`,
+        borderWidth: `${width * (1 - k * 0.6)}px`, opacity: String(1 - k),
+      });
+      layer.append(ring);
+    }
+  }
+
+  // Motion trail: ghosts a few milliseconds behind, only while moving fast.
+  const trail = clamp((speed - 600) / 1800);
+  if (trail > 0) {
+    for (let i = 4; i >= 1; i--) {
+      const g = springAt(cursor.path, t - i * 0.014);
+      if (!g) continue;
+      const ghost = el('div', 'cursor ghost', ARROW);
+      ghost.style.transform = `translate(${g.x - 11}px, ${g.y - 7}px)`;
+      ghost.style.opacity = String(trail * (0.32 - i * 0.06));
+      layer.append(ghost);
+    }
+  }
+
+  // The cursor: tilts into its motion, squashes on press.
+  const tilt = clamp(now.vx / 160, -1, 1) * 10;
+  const scale = pressScale(cursor.presses, t);
+  const arrow = el('div', 'cursor', ARROW);
+  arrow.style.transform = `translate(${now.x - 11}px, ${now.y - 7}px) rotate(${tilt}deg) scale(${scale})`;
+  layer.append(arrow);
+}
+
 const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
 export async function mount(layout, theme = 'light') {
@@ -51,19 +160,24 @@ export async function mount(layout, theme = 'light') {
   // ---------------------------------------------------------------- screen
   const screen = el('div', 'screen');
   const lens = el('div', 'lens');
+  // The shot carries the zoom; the frame and the cursor move together in it.
+  const shot = el('div', 'shot');
   const img = await film.image(t);
-  lens.append(img);
+  const pointer = el('div', 'pointer-layer');
+  shot.append(img, pointer);
+  lens.append(shot);
   screen.append(lens);
   document.body.append(screen);
+  drawCursor(pointer, tl.cursor);
 
   const zoom = zoomAt(tl.clicks);
   const scale = 1 + 0.2 * zoom.k;
   if (tall) {
     // 1:1 pixels, a 1080-wide window onto the 1920-wide recording.
     const fx = focusX(tl.clicks);
-    img.style.transform = `translate(${540 - fx * scale}px, ${-zoom.y * (scale - 1)}px) scale(${scale})`;
+    shot.style.transform = `translate(${540 - fx * scale}px, ${-zoom.y * (scale - 1)}px) scale(${scale})`;
   } else {
-    img.style.transform = punchIn(tl.clicks.filter((c) => c.zoom), { scale: 1.2, lead: 0.9, hold: 0.8, ease: 0.7, t });
+    shot.style.transform = punchIn(tl.clicks.filter((c) => c.zoom), { scale: 1.2, lead: 0.9, hold: 0.8, ease: 0.7, t });
   }
 
   // ---------------------------------------------------------------- chrome

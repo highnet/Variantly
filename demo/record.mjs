@@ -24,6 +24,7 @@ import { chromium } from 'playwright';
 import { at, HEIGHT, log, PAD_MS, readJson, REPO, run, script, WIDTH, writeJson } from './lib/common.mjs';
 
 const film = script();
+const IN_PAGE_CURSOR = Boolean(process.env.IN_PAGE_CURSOR);
 const agent = process.argv.includes('--dry') ? 'demo' : process.env.DEMO_AGENT || film.agent;
 const single = process.argv.includes('--single');
 const THEMES = single ? ['light'] : ['light', 'dark'];
@@ -197,6 +198,8 @@ class Director {
     this.vars = vars;
     this.pos = { x: WIDTH * 0.62, y: HEIGHT * 0.6 };
     this.clicks = [];
+    this.path = [];
+    this.presses = [];
     this.warnings = [];
   }
 
@@ -213,14 +216,27 @@ class Director {
     return String(text).replace(/\{\{(\w+)\}\}/g, (_, k) => (k === 'app' ? `${this.vars.app}/?theme=${theme}&recording=1` : this.vars[k] ?? ''));
   }
 
+  /*
+   * The cursor is not filmed: its path and presses are logged here and the
+   * SeekReel stage draws it, so it is crisp, large and smooth on every frame
+   * whatever the recording's frame rate did. IN_PAGE_CURSOR=1 also draws the
+   * old overlay in the page, for watching a headed rehearsal.
+   */
+  sample(x, y) {
+    this.path.push([Number(this.now().toFixed(3)), Math.round(x), Math.round(y)]);
+  }
+
   async showCursor() {
+    this.sample(this.pos.x, this.pos.y);
+    if (!IN_PAGE_CURSOR) return;
     await this.all((page) => page.evaluate(([x, y]) => window.__demoCursor?.(x, y), [this.pos.x, this.pos.y]).catch(() => {}));
   }
 
   async pointer(x, y) {
+    this.sample(x, y);
     await this.all(async (page) => {
       await page.mouse.move(x, y);
-      await page.evaluate(([px, py]) => window.__demoCursor?.(px, py), [x, y]).catch(() => {});
+      if (IN_PAGE_CURSOR) await page.evaluate(([px, py]) => window.__demoCursor?.(px, py), [x, y]).catch(() => {});
     });
   }
 
@@ -263,7 +279,8 @@ class Director {
   }
 
   async press(x, y) {
-    await this.all((page) => page.evaluate(([px, py]) => window.__demoRipple?.(px, py), [x, y]).catch(() => {}));
+    if (IN_PAGE_CURSOR) await this.all((page) => page.evaluate(([px, py]) => window.__demoRipple?.(px, py), [x, y]).catch(() => {}));
+    this.presses.push({ t: Number(this.now().toFixed(3)), x: Math.round(x), y: Math.round(y), hold: 0 });
     await this.all((page) => page.mouse.click(x, y));
   }
 
@@ -285,7 +302,7 @@ class Director {
     const target = await this.box(step.fill);
     await this.moveTo(target.x, target.y);
     this.clicks.push({ t: this.now(), x: target.x, y: target.y, zoom: false, sound: 'tick' });
-    await this.all((page) => page.mouse.click(target.x, target.y));
+    await this.press(target.x, target.y);
     await Promise.all(target.locators.map((l) => l.fill('')));
     // Typed at a steady pace by the clock: however many characters are due
     // by now go in together, so slow round trips cannot stretch the line.
@@ -306,6 +323,8 @@ class Director {
     const area = await this.page.locator('.compare').first().boundingBox();
     await this.moveTo(grip.x, grip.y);
     this.clicks.push({ t: this.now(), x: grip.x, y: grip.y, zoom: !!step.zoom, sound: 'tick' });
+    const down = { t: Number(this.now().toFixed(3)), x: Math.round(grip.x), y: Math.round(grip.y), hold: 0 };
+    this.presses.push(down);
     await this.all((page) => page.mouse.down());
     const per = (step.ms ?? 1200) / step.to.length;
     for (const percent of step.to) {
@@ -318,6 +337,7 @@ class Director {
       });
       await this.page.waitForTimeout(250);
     }
+    down.hold = Number((this.now() - down.t).toFixed(3));
     await this.all((page) => page.mouse.up());
   }
 
@@ -529,6 +549,7 @@ writeJson(at('video', 'raw-timeline.json'), {
   colorSchemes: schemes,
   scenes,
   clicks: director.clicks,
+  cursor: { path: director.path, presses: director.presses },
   warnings: director.warnings,
   pageErrors,
 });

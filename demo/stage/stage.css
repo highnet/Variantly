@@ -57,7 +57,12 @@ body.tall { width: 1080px; height: 1920px; }
    punch-in. */
 .screen { position: absolute; overflow: hidden; border-radius: 14px; border: 1px solid var(--rule); background: var(--surface); box-shadow: var(--lift); }
 .lens { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: hidden; }
-.lens img { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+.lens img { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+.shot { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; }
+.pointer-layer { position: absolute; inset: 0; overflow: visible; }
+.cursor { position: absolute; left: 0; top: 0; width: 58px; height: 58px; transform-origin: 11px 7px; filter: drop-shadow(0 3px 4px rgb(0 0 0 / 0.38)) drop-shadow(0 0 1px rgb(0 0 0 / 0.5)); }
+.cursor.ghost { filter: none; }
+.ripple { position: absolute; border-radius: 50%; border-style: solid; border-color: var(--alert); box-shadow: 0 0 0 1px rgb(13 13 16 / 0.35), inset 0 0 0 1px rgb(13 13 16 / 0.25); background: rgb(255 212 0 / 0.12); }
 .wide .screen { left: 192px; top: 60px; width: 1536px; height: 864px; }
 .wide .lens { transform: scale(0.8); }
 .tall .screen { left: 40px; top: 360px; width: 1000px; height: 1000px; }

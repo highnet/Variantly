@@ -151,7 +151,18 @@ const clicks = raw.clicks
   .map((c) => ({ ...c, t: toFilm(c.t) }))
   .filter((c) => c.t !== null && c.t < total);
 
-writeJson(at(`timeline.${THEME}.json`), { fps: FPS, width: WIDTH, height: HEIGHT, duration: total, scenes, clicks, captions });
+// The cursor, in film time. The stage draws it, so it stays crisp and moves
+// on every frame however the recording's frame rate wobbled.
+const path_ = (raw.cursor?.path ?? [])
+  .map(([t, x, y]) => [toFilm(t), x, y])
+  .filter(([t]) => t !== null && t <= total)
+  .map(([t, x, y]) => [Number(t.toFixed(3)), x, y]);
+const presses = (raw.cursor?.presses ?? [])
+  .map((p) => ({ ...p, t: toFilm(p.t), hold: p.hold / (placed[raw.scenes.find((s) => p.t >= s.start && p.t <= s.end)?.id]?.speed ?? 1) }))
+  .filter((p) => p.t !== null && p.t < total);
+const cursor = { path: path_, presses };
+
+writeJson(at(`timeline.${THEME}.json`), { fps: FPS, width: WIDTH, height: HEIGHT, duration: total, scenes, clicks, captions, cursor });
 
 const stamp = (t) => {
   const ms = Math.round(t * 1000);
