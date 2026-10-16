@@ -11,7 +11,7 @@ const STEPS = [
   },
   {
     command: 'npx variantly doctor',
-    what: 'Fix every ✗: a commit, an agent CLI, the Impeccable skill.',
+    what: 'Fix every ✗: a commit, an agent CLI. The Impeccable skill installs itself when missing.',
   },
   {
     command: 'npx variantly --yes --agent claude --count 4 --brief "<their words>"',
@@ -41,8 +41,17 @@ const AgentQuickstart = () => (
       </Typography>
       <Typography variant="lead" color="steel">
         variantly makes N whole-page redesigns of a web project with the person&apos;s own agent and
-        the Impeccable skill, runs each as the real site, and opens a local before/after comparison.
-        Your job is to set it up and hand over the URL.
+        the{' '}
+        <a
+          href="https://impeccable.style"
+          target="_blank"
+          rel="noreferrer"
+          className="text-ink underline"
+        >
+          Impeccable
+        </a>{' '}
+        skill, runs each as the real site, and opens a local before/after comparison. Your job is to
+        set it up and hand over the URL.
       </Typography>
     </div>
     <ol className="m-0 grid list-none gap-5 p-0">
@@ -83,17 +92,26 @@ const AgentQuickstart = () => (
     {/* Pinned to the bottom of a short page, like the human view's fine print. */}
     <footer className="border-rule mt-auto border-t pt-6">
       <Typography variant="small" color="steel">
-        Full manual:{' '}
+        Every command and flag:{' '}
+        <a href="#docs" className="text-ink underline">
+          quick docs
+        </a>
+        . Full manual:{' '}
         <Link href="/SKILLS.md" className="text-ink underline">
           /SKILLS.md
         </Link>{' '}
-        · Claude Code plugin:
+        ·{' '}
+        <a
+          href="https://docs.anthropic.com/en/docs/claude-code/overview"
+          target="_blank"
+          rel="noreferrer"
+          className="text-ink underline"
+        >
+          Claude Code
+        </a>{' '}
+        plugin:
       </Typography>
-      <CommandCopy
-        command="/plugin marketplace add highnet/ProjectHusky"
-        size="sm"
-        className="mt-3"
-      />
+      <CommandCopy command="/plugin marketplace add highnet/variantly" size="sm" className="mt-3" />
     </footer>
   </main>
 );

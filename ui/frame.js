@@ -53,13 +53,14 @@
   addEventListener('DOMContentLoaded', reportNav);
   reportNav();
 
+  // The same keys the comparison view handles (Compare.tsx handleKey).
+  const KEYS = /^([0-9]|o|s|m|i|\[|\]|Escape|ArrowLeft|ArrowRight)$/;
   addEventListener('keydown', (e) => {
     const t = e.target;
-    const typing = t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
-    if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
-    if (e.key === 'Escape') {
-      post({ type: 'key', key: e.key });
-    }
+    const typing = t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.closest('[contenteditable]:not([contenteditable="false"])'));
+    if (typing || e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
+    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (KEYS.test(key)) post({ type: 'key', key });
   });
   addEventListener('pointerdown', () => post({ type: 'focus' }), { passive: true });
 

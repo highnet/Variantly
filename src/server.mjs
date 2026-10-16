@@ -69,7 +69,7 @@ export const serveUi = (req, res) => {
     'cache-control': 'no-store',
     'access-control-allow-origin': '*',
   });
-  createReadStream(file).pipe(res);
+  createReadStream(file).on('error', () => res.destroy()).pipe(res);
   return true;
 };
 

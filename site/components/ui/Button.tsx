@@ -32,6 +32,10 @@ const buttonVariants = cva(
           'border border-slate-line bg-transparent text-surface normal-case tracking-normal font-sans hover:bg-ink active:translate-y-px',
         // A numbered cell on the slate dock; the current one lifts, white.
         cell: 'relative bg-slate-raised text-surface opacity-55 tracking-normal tabular-nums [font-stretch:75%] hover:opacity-90 aria-[current=true]:bg-surface aria-[current=true]:text-ink aria-[current=true]:opacity-100 aria-[current=true]:-translate-y-0.5 aria-[current=true]:shadow-cell',
+        // The show-more pill that sits on a card's bottom edge.
+        pill: 'border border-rule bg-surface text-ink normal-case tracking-normal font-sans hover:border-ink',
+        'pill-slate':
+          'border border-slate-line bg-ink text-surface normal-case tracking-normal font-sans hover:bg-slate-raised',
         // The before/after divider's handle.
         grip: 'bg-ink text-surface shadow-grip hover:scale-105 focus-visible:outline-alert cursor-ew-resize',
       },
@@ -49,6 +53,7 @@ const buttonVariants = cva(
         prompt:
           'min-h-8 rounded-control px-2.5 py-1.5 text-left text-[13px] leading-tight font-semibold whitespace-normal',
         cell: 'h-10 min-w-11 rounded-control px-2 text-[15px] aria-[current=true]:min-w-15 aria-[current=true]:text-2xl',
+        pill: 'h-8 rounded-full px-4 text-[13px] font-semibold',
         grip: 'h-11 rounded-full px-2 text-[10px] gap-1 tracking-[0.08em]',
       },
     },

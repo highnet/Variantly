@@ -88,6 +88,7 @@ type TerminalProps = {
 
 const Terminal = ({ v }: TerminalProps) => {
   const lines = useStore((s) => s.logs[`v${v.n}`]);
+  const total = useStore((s) => s.logTotal[`v${v.n}`] ?? s.logs[`v${v.n}`]?.length ?? 0);
   const scroller = useRef<HTMLDivElement>(null);
   const stick = useRef(true);
   const seenCount = useRef<number | null>(null);
@@ -107,17 +108,20 @@ const Terminal = ({ v }: TerminalProps) => {
   }, []);
 
   const list = lines ?? [];
+  // Only the last 400 lines are kept; `total` counts every line, so numbering,
+  // keys and "new output" keep moving once the cap is reached.
+  const first = total - list.length;
   // Lines present when this terminal first showed don't animate; new ones do.
-  if (seenCount.current === null && lines) seenCount.current = list.length;
+  if (seenCount.current === null && lines) seenCount.current = total;
 
   useLayoutEffect(() => {
     const el = scroller.current;
     if (!el) return;
     if (stick.current) {
-      el.scrollTo({ top: el.scrollHeight, behavior: seenCount.current === list.length ? 'auto' : 'smooth' });
+      el.scrollTo({ top: el.scrollHeight, behavior: seenCount.current === total ? 'auto' : 'smooth' });
       setBehind(0);
     } else setBehind((b) => b + 1);
-  }, [list.length]);
+  }, [total]);
 
   const at = stepAt(v);
   const stepLabel = v.status === 'done' ? 'All steps done' : v.status === 'queued' ? `0/${STEPS.length} · Waiting for a free slot` : LIVE.includes(v.status) ? `${at + 1}/${STEPS.length} · ${STEPS[at]}` : `Stopped at ${STEPS[Math.max(0, at)]}`;
@@ -161,7 +165,7 @@ const Terminal = ({ v }: TerminalProps) => {
       >
         {list.length === 0 && <div className="t-line t-text t-empty">{v.status === 'queued' ? 'Waiting for a free slot…' : 'No output yet.'}</div>}
         {list.map((text, i) => (
-          <Line key={i} n={i + 1} text={text} fresh={i >= (seenCount.current ?? Infinity)} />
+          <Line key={first + i} n={first + i + 1} text={text} fresh={first + i >= (seenCount.current ?? Infinity)} />
         ))}
         {live && (
           <div className="t-line t-cursor-line" aria-hidden="true">

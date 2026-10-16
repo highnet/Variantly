@@ -6,5 +6,16 @@ If you are an AI agent setting variantly up for someone, start here:
 
 - [Agent quickstart](https://variantly.style/#agent): the five commands, in order.
 - [SKILLS.md](https://variantly.style/SKILLS.md): the full manual, written for agents.
+- [Quick docs](https://variantly.style/#docs): every command and flag.
+
+## Steps
+
+1. `npx variantly doctor` in the project. Fix every ✗ (a first commit, a signed-in agent CLI on PATH).
+2. Ask the person what they want, in their words, and how many designs (1–10).
+3. `npx variantly --yes --agent <claude|codex|copilot> --count <n> --brief "<their words>"` in the background. Give the person the URL it prints.
+4. Poll `npx variantly status` (JSON) until "phase" is "ready".
+5. Only after the person names a design: `npx variantly keep <n>`. Then stop the background process.
+
+No AI available? `npx variantly --demo` runs the whole flow with fixed restyles. `npx variantly clean` removes everything variantly made.
 
 Rules: never pick a design for the person; each design is one session on their account, so say so before a large run; nothing touches their files until they keep one.

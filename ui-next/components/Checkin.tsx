@@ -1,7 +1,7 @@
 'use client';
 
 /*
- * The check-in wizard: Setup → Designs → Your site → Review.
+ * The check-in wizard: Setup → Variants → Your site → Review.
  * The form in the store is the one source of truth; steps only read and
  * write it, so Back never loses anything. The step lives in the URL
  * (?step=designs) and the draft in localStorage, so refresh and the
@@ -14,22 +14,22 @@ import clsx from 'clsx';
 import { Icon } from './Icon';
 import { ViewSkeleton } from './Skeleton';
 import { api } from '@/lib/api';
-import { loadDetect } from '@/lib/live';
+import { loadDetect, resetRun } from '@/lib/live';
 import { pad, plural } from '@/lib/format';
 import { getState, setState, toast, updateForm, useStore } from '@/lib/store';
 import type { Agent, Detect, Form } from '@/lib/types';
 
 const WIZ = [
-  { id: 'setup', name: 'Setup', title: 'Your setup', next: 'Continue to designs' },
-  { id: 'designs', name: 'Designs', title: 'What should we make?', next: 'Continue' },
-  { id: 'site', name: 'Your site', title: 'About your site', next: 'Review' },
+  { id: 'setup', name: 'Setup', title: 'Your setup', next: 'Continue to variants' },
+  { id: 'designs', name: 'Variants', title: 'What should we make?', next: 'Continue to your site' },
+  { id: 'site', name: 'Your site', title: 'About your site', next: 'Continue to review' },
   { id: 'review', name: 'Review', title: 'Ready when you are', next: '' },
 ] as const;
 type StepId = (typeof WIZ)[number]['id'];
 
 const CHECKS: [keyof Form, string, string, string][] = [
   ['browser', 'Let the agent see its variant', 'browser', 'Each agent gets a headless browser (Playwright MCP) on its own live variant: it screenshots its work at desktop and phone widths and fixes what it sees.'],
-  ['review', 'Review pass', 'review', 'When the design is built, the agent runs again: Impeccable’s critique and audit, fed with the scores, then fixes the worst problems without changing the direction. A second session per variant.'],
+  ['review', 'Review pass', 'review', 'When the variant is built, the agent runs again: Impeccable’s critique and audit, fed with the scores, then fixes the worst problems without changing the direction. A second session per variant.'],
   ['audit', 'Scores', 'scores', 'axe-core and Lighthouse on the original and every variant: accessibility, performance, best practices, SEO. Runs on your machine, costs nothing.'],
 ];
 
@@ -38,6 +38,15 @@ const agentOf = (d: Detect, f: Form) => d.agents.find((a) => a.id === f.agent);
 const candidateOf = (d: Detect, f: Form) => d.candidates.find((c) => c.rel === f.appRel && c.stackId === f.stackId);
 const stackName = (d: Detect, f: Form) => candidateOf(d, f)?.name ?? d.stacks.find((s) => s.id === f.stackId)?.name ?? 'Custom';
 const draftKey = (d: Detect) => `variantly:draft:${d.repo}`;
+/** ":3000" from a URL (its host if it has no port); the raw text if it does not parse. */
+const where = (raw: string) => {
+  try {
+    const u = new URL(raw);
+    return u.port ? `:${u.port}` : u.host;
+  } catch {
+    return raw;
+  }
+};
 
 type Note = [kind: '' | 'bad' | 'alert', text: string, action?: ReactNode];
 
@@ -69,7 +78,19 @@ type FixButtonProps = {
 const FixButton = ({ label, onClick }: FixButtonProps) => {
   const [busy, setBusy] = useState(false);
   return (
-    <button className="btn small" type="button" disabled={busy} onClick={() => (setBusy(true), onClick())}>
+    <button
+      className="btn small"
+      type="button"
+      disabled={busy}
+      onClick={async () => {
+        setBusy(true);
+        try {
+          await onClick();
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
       {label}
     </button>
   );
@@ -80,7 +101,7 @@ const blockers = (d: Detect, f: Form): Note[] => {
   if (!d.hasCommits) list.push(['bad', 'This repository has no commits yet, so variants have nothing to start from.', <FixButton key="c" label="Commit everything now" onClick={() => runFix('commit', {}, 'First commit made.')} />]);
   const a = agentOf(d, f);
   if (f.agent !== 'demo' && !a?.installed)
-    list.push(['bad', `${a?.name ?? f.agent} isn't installed. Sign in to it once after installing.`, a?.install ? <FixButton key="i" label={`Install ${a.name}`} onClick={() => runFix('install-agent', { agent: a.id }, `Installing ${a.name}…`)} /> : undefined]);
+    list.push(['bad', `${a?.name ?? f.agent} isn't installed. Install it, then sign in once.`, a?.install ? <FixButton key="i" label={`Install ${a.name}`} onClick={() => runFix('install-agent', { agent: a.id }, `Installing ${a.name}…`)} /> : undefined]);
   if (f.agent !== 'demo' && a?.installed && a.signedIn === false)
     list.push([
       'bad',
@@ -97,7 +118,7 @@ const advisories = (d: Detect, f: Form): Note[] => {
   const list: Note[] = [];
   if (d.dirty) list.push(['', 'Your uncommitted edits to tracked files are included in every variant.']);
   if (d.untracked) list.push(['', `${plural(d.untracked, 'untracked file')} won't be in the variants. Commit what the site needs.`]);
-  if (!d.chrome && (checkOn(f, 'browser') || checkOn(f, 'audit'))) list.push(['alert', 'No Chrome found for the browser and scores. Set CHROME_PATH or turn them off under More settings.']);
+  if (!d.chrome && (checkOn(f, 'browser') || checkOn(f, 'audit'))) list.push(['alert', 'No Chrome found for the browser and scores. Set CHROME_PATH, or turn them off in the next step under More settings.']);
   return list;
 };
 
@@ -138,10 +159,11 @@ type SegToggleProps = {
   pairs: [string, string][];
   value: string;
   onPick: (v: string) => void;
+  labelledBy?: string;
 };
 
-const SegToggle = ({ pairs, value, onPick }: SegToggleProps) => (
-  <div className="seg-toggle" role="group">
+const SegToggle = ({ pairs, value, onPick, labelledBy }: SegToggleProps) => (
+  <div className="seg-toggle" role="group" aria-labelledby={labelledBy}>
     {pairs.map(([v, label]) => (
       <button key={v} type="button" aria-pressed={v === value} onClick={() => onPick(v)}>
         {label}
@@ -151,21 +173,22 @@ const SegToggle = ({ pairs, value, onPick }: SegToggleProps) => (
 );
 
 type StepperProps = {
+  label: string;
   value: number;
   min: number;
   max: number;
   onSet: (n: number) => void;
 };
 
-const Stepper = ({ value, min, max, onSet }: StepperProps) => (
-  <div className="stepper">
-    <button type="button" aria-label="Fewer" disabled={value <= min} onClick={() => onSet(Math.max(min, value - 1))}>
+const Stepper = ({ label, value, min, max, onSet }: StepperProps) => (
+  <div className="stepper" role="group" aria-label={label}>
+    <button type="button" aria-label={`Fewer: ${label}`} disabled={value <= min} onClick={() => onSet(Math.max(min, value - 1))}>
       <Icon name="minus" />
     </button>
     <span className="figure" aria-live="polite">
       {pad(value)}
     </span>
-    <button type="button" aria-label="More" disabled={value >= max} onClick={() => onSet(Math.min(max, value + 1))}>
+    <button type="button" aria-label={`More: ${label}`} disabled={value >= max} onClick={() => onSet(Math.min(max, value + 1))}>
       <Icon name="plus" />
     </button>
   </div>
@@ -207,7 +230,7 @@ const AppPicker = ({ d, f }: PartProps) => {
               name="app"
               checked={c.rel === f.appRel && c.stackId === f.stackId}
               title={c.name}
-              detail={`${c.rel || 'repo root'}${c.running ? ` · running at :${new URL(c.defaultUrl).port}` : ''}`}
+              detail={`${c.rel || 'repo root'}${c.running ? ` · running at ${where(c.defaultUrl)}` : ''}`}
               onChange={() => updateForm({ appRel: c.rel, stackId: c.stackId, command: c.command, originalUrl: c.running ? c.defaultUrl : '', deps: c.needsInstall ? 'install' : 'link' })}
             />
           ))}
@@ -223,8 +246,11 @@ const AppPicker = ({ d, f }: PartProps) => {
           </p>
         </label>
         <div className="field">
-          <span className="label">The original</span>
+          <span className="label" id="seg-original">
+            The original
+          </span>
           <SegToggle
+            labelledBy="seg-original"
             pairs={[
               ['start', 'variantly starts it'],
               ['running', 'Already running'],
@@ -241,8 +267,11 @@ const AppPicker = ({ d, f }: PartProps) => {
       </div>
       {cand?.note && <p className="note">{cand.note}</p>}
       <div className="field">
-        <span className="label">Dependencies in each variant</span>
+        <span className="label" id="seg-deps">
+          Dependencies in each variant
+        </span>
         <SegToggle
+          labelledBy="seg-deps"
           pairs={[
             ['link', 'Link yours'],
             ['install', 'Install fresh'],
@@ -292,8 +321,11 @@ const AgentPicker = ({ d, f }: PartProps) => {
             <input className="input" value={f.model} placeholder="the agent's default" onChange={(e) => updateForm({ model: e.target.value })} />
           </label>
           <div className="field">
-            <span className="label">Permissions</span>
+            <span className="label" id="seg-permissions">
+              Permissions
+            </span>
             <SegToggle
+              labelledBy="seg-permissions"
               pairs={[
                 ['safe', 'Edits only'],
                 ['full', 'Full auto'],
@@ -312,8 +344,11 @@ const AgentPicker = ({ d, f }: PartProps) => {
 const MoreSettings = ({ d, f }: PartProps) => (
   <>
     <div className="field">
-      <span className="label">Approach</span>
+      <span className="label" id="seg-approach">
+        Approach
+      </span>
       <SegToggle
+        labelledBy="seg-approach"
         pairs={[
           ['redesign', 'Redesign'],
           ['refine', 'Refine'],
@@ -321,7 +356,15 @@ const MoreSettings = ({ d, f }: PartProps) => (
         value={f.approach}
         onPick={(v) => updateForm({ approach: v as Form['approach'] })}
       />
-      <p className="hint">{f.approach === 'refine' ? 'Keep your look. Impeccable finds what to improve in each design.' : 'Replace your look. Impeccable picks a different visual world for every design.'}</p>
+      <p className="hint">
+        {f.agent === 'demo'
+          ? f.approach === 'refine'
+            ? 'Keep your look. The demo agent applies a fixed restyle to each variant.'
+            : 'Replace your look. The demo agent applies a different fixed restyle to every variant.'
+          : f.approach === 'refine'
+            ? 'Keep your look. Impeccable finds what to improve in each variant.'
+            : 'Replace your look. Impeccable picks a different visual world for every variant.'}
+      </p>
     </div>
     <div className="field">
       <span className="label">Your own directions (optional)</span>
@@ -332,7 +375,7 @@ const MoreSettings = ({ d, f }: PartProps) => (
             <input
               aria-label={`Direction for V${pad(i + 1)}`}
               value={f.directions[i] ?? ''}
-              placeholder="Impeccable picks"
+              placeholder={f.agent === 'demo' ? 'Picked for you' : 'Impeccable picks'}
               onChange={(e) => {
                 const directions = [...f.directions];
                 directions[i] = e.target.value;
@@ -346,18 +389,18 @@ const MoreSettings = ({ d, f }: PartProps) => (
     </div>
     <div className="field-row">
       <div className="field">
-        <span className="label">Designs</span>
-        <Stepper value={f.count} min={1} max={10} onSet={(n) => updateForm({ count: n })} />
+        <span className="label">Variants</span>
+        <Stepper label="Variants" value={f.count} min={1} max={10} onSet={(n) => updateForm({ count: n })} />
       </div>
       <div className="field">
         <span className="label">At a time</span>
-        <Stepper value={f.concurrency} min={1} max={6} onSet={(n) => updateForm({ concurrency: n })} />
+        <Stepper label="At a time" value={f.concurrency} min={1} max={6} onSet={(n) => updateForm({ concurrency: n })} />
         <p className="hint">Agents running in parallel.</p>
       </div>
       <div className="field">
         <span className="label">Servers live</span>
-        <Stepper value={f.maxLive} min={2} max={8} onSet={(n) => updateForm({ maxLive: n })} />
-        <p className="hint">The original plus the designs you looked at last. The rest sleep.</p>
+        <Stepper label="Servers live" value={f.maxLive} min={2} max={8} onSet={(n) => updateForm({ maxLive: n })} />
+        <p className="hint">The original plus the variants you looked at last. The rest sleep.</p>
       </div>
     </div>
     <fieldset className="field checks">
@@ -367,7 +410,7 @@ const MoreSettings = ({ d, f }: PartProps) => (
           <input type="checkbox" checked={checkOn(f, key)} disabled={f.agent === 'demo' && key !== 'audit'} onChange={(e) => updateForm({ [key]: e.target.checked } as Partial<Form>)} />
           <span>
             <span className="name">{title}</span>
-            <span className="hint">{detail}</span>
+            <span className="hint">{f.agent === 'demo' && key !== 'audit' ? `Not used by the demo agent. ${detail}` : detail}</span>
           </span>
         </label>
       ))}
@@ -389,7 +432,7 @@ type CheckRowProps = {
 const CheckRow = ({ ok, text, detail }: CheckRowProps) => (
   <motion.li className={clsx('check', ok ? 'ok' : 'bad')} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}>
     <motion.span className="mark" aria-hidden="true" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 18, delay: 0.1 }}>
-      {ok ? '✓' : '!'}
+      {ok ? <Icon name="check" /> : '!'}
     </motion.span>
     <span>
       <strong>{text}</strong>
@@ -432,14 +475,23 @@ const DesignsStep = ({ d, f }: StepBodyProps) => {
   const a = agentOf(d, f);
   return (
     <>
-      <fieldset className="field picks">
-        <legend className="label">How many designs?</legend>
+      <fieldset
+        className="field picks"
+        onKeyDown={(e) => {
+          // Browsers don't submit a form on Enter in a radio; this step does.
+          if (e.key !== 'Enter' || (e.target as HTMLInputElement).type !== 'radio') return;
+          e.preventDefault();
+          e.currentTarget.form?.requestSubmit();
+        }}
+      >
+        <legend className="label">How many variants?</legend>
         <div className="pick-row">
           {[2, 4, 6].map((n) => (
             <Pick key={n} type="radio" name="count" label={String(n)} on={f.count === n} onToggle={() => updateForm({ count: n })} />
           ))}
+          {![2, 4, 6].includes(f.count) && <Pick type="radio" name="count" label={String(f.count)} on onToggle={() => {}} />}
         </div>
-        <p className="hint">{f.agent === 'demo' ? 'The demo agent costs nothing.' : `Each design is one ${a?.name ?? 'agent'} session on your account, about 10–20 minutes, ${f.concurrency} at a time.`}</p>
+        <p className="hint">{f.agent === 'demo' ? 'The demo agent costs nothing.' : `Each variant is one ${a?.name ?? 'agent'} session on your account, about 10–20 minutes, ${f.concurrency} at a time.`}</p>
       </fieldset>
       <fieldset className="field picks">
         <legend className="label">Which pages?</legend>
@@ -471,7 +523,7 @@ const DesignsStep = ({ d, f }: StepBodyProps) => {
             setAdding('');
           }}
         />
-        <p className="hint">Just the home page is fastest. Each extra page adds time to every design.</p>
+        <p className="hint">Just the home page is fastest. Each extra page adds time to every variant.</p>
       </fieldset>
       <fieldset className="field picks">
         <legend className="label">Extras (optional)</legend>
@@ -501,7 +553,9 @@ type ProductFieldProps = {
 const ProductField = ({ f, k, label, placeholder }: ProductFieldProps) => (
   <label className="field">
     <span className="label">
-      {label} {f.product[k].trim() && <motion.span className="valid" initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}>✓</motion.span>}
+      {label} {f.product[k].trim() && <motion.span className="valid" initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }}>
+          <Icon name="check" />
+        </motion.span>}
     </span>
     <textarea className="input" rows={2} placeholder={placeholder} value={f.product[k]} onChange={(e) => updateForm({ product: { ...f.product, [k]: e.target.value } })} />
   </label>
@@ -512,9 +566,9 @@ const SiteStep = ({ d, f }: StepBodyProps) => (
     <p className="hint">{d.hasProduct ? 'Your PRODUCT.md already tells the designers about your site. Add anything else below, or just continue.' : 'Optional. A few words help the designers aim at your audience instead of guessing. Skip it if you like.'}</p>
     {!d.hasProduct && (
       <>
-        <ProductField f={f} k="users" label="Who is it for?" placeholder="e.g. People who want to see where satellites are right now" />
-        <ProductField f={f} k="purpose" label="What does it offer?" placeholder="e.g. A live 3D globe of every tracked satellite" />
-        <ProductField f={f} k="keep" label="What must stay?" placeholder="e.g. The name, the globe, the data sources" />
+        <ProductField f={f} k="users" label="Who is it for?" placeholder="e.g. Small teams who need to book meeting rooms" />
+        <ProductField f={f} k="purpose" label="What does it offer?" placeholder="e.g. Online booking, opening hours and a menu" />
+        <ProductField f={f} k="keep" label="What must stay?" placeholder="e.g. The name, the logo, the product photos" />
       </>
     )}
     <label className="field">
@@ -531,7 +585,7 @@ const banked = (d: Detect, f: Form): Record<StepId, string> => {
   const extras = (d.extras ?? []).filter((x) => f.extras.includes(x.id)).map((x) => x.label);
   return {
     setup: `${stackName(d, f)} · ${f.agent === 'demo' ? 'Demo' : (a?.name ?? f.agent)}`,
-    designs: `${f.count} · ${f.routes.map((r) => (r === '/' ? 'Home' : r)).join(', ')}${extras.length ? ` · ${extras.join(', ')}` : ''}`,
+    designs: `${plural(f.count, 'variant')} · ${f.routes.map((r) => (r === '/' ? 'Home' : r)).join(', ')}${extras.length ? ` · ${extras.join(', ')}` : ''}`,
     site: d.hasProduct ? 'PRODUCT.md' : answered ? plural(answered, 'answer') : 'Skipped',
     review: '',
   };
@@ -544,7 +598,7 @@ const ReviewStep = ({ d, f, goStep }: StepBodyProps) => {
   const rows: [string, string, number][] = [
     ['App', `${stackName(d, f)} · ${f.appRel || 'repo root'}`, 0],
     ['Agent', f.agent === 'demo' ? 'Demo agent (no AI)' : (a?.name ?? f.agent), 0],
-    ['Designs', `${f.count}, ${f.approach === 'refine' ? 'refining your current look' : 'each a new look Impeccable picks'}`, 1],
+    ['Designs', `${f.count}, ${f.approach === 'refine' ? 'refining your current look' : f.agent === 'demo' ? 'each a new look' : 'each a new look Impeccable picks'}`, 1],
     ['Pages', f.routes.map((r) => (r === '/' ? 'Home' : r)).join(', '), 1],
     ['Extras', extras.length ? extras.join(', ') : 'None', 1],
     ['Your site', b.site === 'PRODUCT.md' ? 'From your PRODUCT.md' : b.site, 2],
@@ -660,6 +714,7 @@ const Checkin = () => {
   const generate = async () => {
     setGoing(true);
     try {
+      resetRun();
       setState({ forceBoard: false, wantCompare: false, sel: null, unseen: [] });
       await api('POST', 'generate', getState().form);
       try {
@@ -743,7 +798,7 @@ const Checkin = () => {
           </div>
           <div className="wiz-nav">
             {at > 0 ? (
-              <button className="btn outline" type="button" onClick={() => window.history.back()}>
+              <button className="btn outline" type="button" onClick={() => (typeof window.history.state?.step === 'number' ? window.history.back() : goStep(at - 1))}>
                 Back
               </button>
             ) : (
@@ -759,7 +814,7 @@ const Checkin = () => {
               whileTap={blocked ? undefined : { scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 500, damping: 24 }}
             >
-              {step.id === 'review' ? (going ? 'Starting…' : `Make ${plural(f.count, 'design')}`) : step.next} <Icon name="arrow" />
+              {step.id === 'review' ? (going ? 'Starting…' : `Make ${plural(f.count, 'variant')}`) : step.next} <Icon name="arrow" />
             </motion.button>
           </div>
         </form>

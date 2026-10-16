@@ -101,7 +101,7 @@ const ProgressCard = ({ v, last }: ProgressCardProps) => {
     }
   }, [at, done]);
 
-  const next = !done && at + 1 < STEPS.length ? STEPS[at + 1] : null;
+  const next = (LIVE.includes(v.status) || v.status === 'queued') && at + 1 < STEPS.length ? STEPS[at + 1] : null;
 
   return (
     <motion.div
@@ -138,7 +138,7 @@ const ProgressCard = ({ v, last }: ProgressCardProps) => {
         <p className="progress-now">
           <AnimatePresence mode="wait" initial={false}>
             <motion.span key={done ? 'd' : at} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
-              {done ? 'Ready to compare.' : LIVE.includes(v.status) ? STEPS[Math.max(0, at)] : 'Step 0 · Waiting for a free slot'}
+              {done ? 'Ready to compare.' : LIVE.includes(v.status) ? STEPS[Math.max(0, at)] : v.status === 'queued' ? `0/${STEPS.length} · Waiting for a free slot` : `Stopped at ${STEPS[Math.max(0, at)]}`}
             </motion.span>
           </AnimatePresence>
           {next && <span className="progress-next">Next: {next}</span>}
@@ -155,7 +155,7 @@ const ProgressCard = ({ v, last }: ProgressCardProps) => {
           })}
         </ol>
         <p className="progress-time">
-          {v.status === 'queued' ? 'It starts as soon as a slot frees up. You can look at other designs meanwhile.' : (<><span className="data">{clock(elapsedMs(v, now))}</span> {done ? 'in total.' : 'so far. You can look at other designs meanwhile.'}</>)}
+          {v.status === 'queued' ? 'It starts as soon as a slot frees up. You can look at other variants meanwhile.' : (<><span className="data">{clock(elapsedMs(v, now))}</span> {done ? 'in total.' : 'so far. You can look at other variants meanwhile.'}</>)}
         </p>
       </div>
       {last && !done && <pre className="progress-last">{last}</pre>}

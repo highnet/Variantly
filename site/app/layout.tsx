@@ -1,10 +1,10 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import type { ReactNode } from 'react';
 
 import { Toaster } from '@/components/Toaster';
 import { PREFS_BOOT } from '@/lib/prefs';
-import { SITE_URL } from '@/lib/site';
+import { REPO_URL, SITE_URL } from '@/lib/site';
 
 import './globals.css';
 
@@ -16,7 +16,7 @@ const martian = localFont({
   declarations: [{ prop: 'font-stretch', value: '75% 112.5%' }],
 });
 
-const title = 'variantly — N redesigns of your site, side by side. Keep one.';
+const title = 'variantly — AI website redesigns, side by side. Keep one.';
 const description =
   'Your own coding agent redesigns your site several times over with Impeccable. Every variant runs as your real site; flick between them with a before/after slider and keep one.';
 
@@ -24,10 +24,57 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: { default: title, template: '%s · variantly' },
   description,
+  applicationName: 'variantly',
+  keywords: [
+    'AI website redesign',
+    'website redesign tool',
+    'design variants',
+    'coding agent',
+    'Claude Code',
+    'Impeccable',
+    'before/after slider',
+    'frontend design',
+    'npx variantly',
+  ],
+  authors: [{ name: 'variantly', url: REPO_URL }],
+  creator: 'variantly',
+  category: 'technology',
   icons: { icon: '/icon.svg' },
-  openGraph: { title, description, url: SITE_URL, siteName: 'variantly', type: 'website' },
+  openGraph: {
+    title,
+    description,
+    url: '/',
+    siteName: 'variantly',
+    type: 'website',
+    locale: 'en_US',
+  },
   twitter: { card: 'summary_large_image', title, description },
-  alternates: { types: { 'text/markdown': '/SKILLS.md' } },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
+  },
+  alternates: { canonical: '/', types: { 'text/markdown': '/SKILLS.md' } },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#e6e8eb' },
+    { media: '(prefers-color-scheme: dark)', color: '#0e1114' },
+  ],
+};
+
+// Structured data so search engines can show variantly as a software result.
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'variantly',
+  description,
+  url: SITE_URL,
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'macOS, Linux, Windows',
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+  sameAs: [REPO_URL],
 };
 
 type RootLayoutProps = {
@@ -39,6 +86,10 @@ const RootLayout = ({ children }: RootLayoutProps) => (
     <head>
       {/* Theme and reading aids before first paint, so nothing flashes. */}
       <script dangerouslySetInnerHTML={{ __html: PREFS_BOOT }} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+      />
     </head>
     <body>
       {children}

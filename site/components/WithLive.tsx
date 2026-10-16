@@ -3,25 +3,23 @@ import { Typography } from '@/components/ui/Typography';
 const ROWS: { label: string; live: string; variantly: string }[] = [
   {
     label: 'What changes',
-    live: 'One element you click on: a hero, a card, a button.',
-    variantly:
-      'The whole site: colours, fonts, layout and components, in every file that needs it.',
+    live: 'One element: a hero, card, button.',
+    variantly: 'The whole site: colours, fonts, layout, components.',
   },
   {
     label: 'How you compare',
-    live: 'Versions swap in place on your running page.',
-    variantly:
-      'Each design runs as its own copy of your site. Flick between them and slide before/after.',
+    live: 'Swaps in place on your running page.',
+    variantly: 'Each variant runs as its own site. Flick and slide before/after.',
   },
   {
     label: 'What you choose',
     live: 'The best version of a detail.',
-    variantly: 'A direction, from several deliberately different ones.',
+    variantly: 'A direction, from several distinct ones.',
   },
   {
     label: 'Cost',
     live: 'Quick and light.',
-    variantly: 'One full AI session per design, so more time and usage. Start with four.',
+    variantly: 'One AI session per variant. Start with four.',
   },
 ];
 
@@ -35,20 +33,29 @@ const WithLive = () => (
       <Typography variant="headline" as="h2" id="live-title">
         Pick a direction, then fine-tune it
       </Typography>
-      <p className="text-steel m-0 text-[16px] leading-relaxed">
-        variantly is built on{' '}
-        <a href="https://impeccable.style" className="text-ink underline underline-offset-2">
-          Impeccable
-        </a>{' '}
-        by{' '}
-        <a href="https://x.com/pbakaus" className="text-ink underline underline-offset-2">
-          Paul Bakaus
-        </a>
-        , the design skill that does the actual redesigning, and needs it installed.
-        Impeccable&apos;s live mode tunes one element at a time. variantly does the same thing for
-        the whole site. Use variantly to choose a direction, then live mode to polish the one you
-        kept.
-      </p>
+      <ul className="text-steel m-0 grid list-disc gap-1.5 pl-5 text-[16px] leading-relaxed">
+        <li>
+          Built on{' '}
+          <a href="https://impeccable.style" className="text-ink underline underline-offset-2">
+            Impeccable
+          </a>{' '}
+          by{' '}
+          <a href="https://x.com/pbakaus" className="text-ink underline underline-offset-2">
+            Paul Bakaus
+          </a>
+          : the design skill doing the work. <strong className="text-ink">Required</strong>, and
+          variantly installs it for you if it&apos;s missing.
+        </li>
+        <li>
+          <strong className="text-ink">Live mode</strong> tunes{' '}
+          <strong className="text-ink">one element</strong>; variantly redesigns the{' '}
+          <strong className="text-ink">whole site</strong>.
+        </li>
+        <li>
+          <strong className="text-ink">variantly</strong> to choose a direction, then{' '}
+          <strong className="text-ink">live mode</strong> to polish it.
+        </li>
+      </ul>
     </div>
     {/* Phones: one card per question, both answers stacked. */}
     <dl className="m-0 grid gap-3 md:hidden">

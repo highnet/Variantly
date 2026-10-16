@@ -23,6 +23,14 @@
   --alert-ink: #0d0d10;
   --fail: #b3261e;
   --fail-on-slate: #ff8a80;
+  --alert-hover: #ffe14d;
+  --alert-wash: #fff6c2;
+  --alert-wash-ink: var(--ink);
+  --fail-wash: #fbe3e1;
+  --fail-wash-ink: #7a1712;
+  --hover-tint: #f5f6f7;
+  --drawer: #f3f4f6;
+  --placeholder: #767c83;
 
   --mono: 'Martian Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
   --sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -123,6 +131,233 @@ kbd {
   font: 500 13px/1.4 var(--mono);
   font-stretch: 87.5%;
   font-variant-numeric: tabular-nums;
+}
+
+/* Night shift at the gate ------------------------------------------------
+   The same two materials after dark, matching variantly.style: a cool
+   blue-black counter (ground), passes lifted one step (surface), the slate
+   board one step above that, so depth reads ground < pass < board. Ink turns
+   light; Gate Yellow is pulled back to a lamp rather than a glare; washes
+   become low, warm or red-tinted darks. Ratios are against the ground they sit
+   on (see DESIGN.md, Dark theme). */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  accent-color: var(--alert);
+  --panel: #0e1114; /* ground */
+  --surface: #171b20; /* pass, +1 */
+  --slate: #1e242b; /* board, +2 */
+  --slate-2: #29313a;
+  --slate-line: #3a434d;
+  --ink: #e8ebee; /* 15.8:1 on ground, 14.5:1 on pass */
+  --steel: #9aa3ad; /* 7.4:1 on ground, 6.8:1 on pass */
+  --steel-on-slate: #aab2bb; /* 7.3:1 on board */
+  --rule: #2c333b;
+  --alert: #f2c94c; /* ink on it 12.2:1 */
+  --alert-hover: #f8d872;
+  --alert-wash: #2e2a14;
+  --alert-wash-ink: #f6e7a6; /* 11.6:1 */
+  --fail: #ff8f85; /* 7.8:1 on pass */
+  --fail-on-slate: #ff9a91; /* 7.7:1 on board */
+  --fail-wash: #36191a;
+  --fail-wash-ink: #ffc9c4; /* 11.0:1 */
+  --hover-tint: #1b2026;
+  --drawer: #1d2228; /* open segment, 13.4:1 under ink */
+  --placeholder: #858e98; /* 5.2:1 on pass */
+  --lift: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 10px 28px -12px rgb(0 0 0 / 0.7);
+}
+
+/* The slate board and every live object built from it were already dark, so
+   inside them the light values stay (the site's .on-slate rule). Ink-on-white
+   cells such as a ready flap or the active dock cell keep their contrast. */
+:root[data-theme='dark'] :is(.on-slate, .board, .logpanel, .wait-card, .modes, .action-dock, .info, .pane-wait, .prefs-menu, .toast, .dock, .progress-card, .terminal, .cmd, .wiz-bank, .tags) {
+  --ink: #0d0d10;
+  --surface: #ffffff;
+  --panel: #e6e8eb;
+  --rule: #c7cbd0;
+  --steel: #5f656c;
+  --alert-wash-ink: #0d0d10;
+}
+
+/* Solid-ink marks would turn into white blots on the night counter. After
+   dark they become raised-slate tokens: the yellow check stays a lamp on
+   slate (8.3:1) and a chosen ticket reads as pressed, not inverted. */
+:root[data-theme='dark'] ul.checks .check .mark {
+  background: var(--slate-2);
+}
+
+:root[data-theme='dark'] .wiz-item.done .wiz-dot circle {
+  fill: var(--slate-2);
+  stroke: var(--slate-line);
+}
+
+:root[data-theme='dark'] .pick:has(input:checked),
+:root[data-theme='dark'] .wiz-chip.now {
+  border-color: var(--ink);
+  background: var(--slate-2);
+  color: var(--ink);
+}
+
+:root[data-theme='dark'] ::selection {
+  background: var(--alert);
+  color: var(--alert-ink);
+}
+
+/* Accessibility menu ------------------------------------------------------ */
+
+:root[data-contrast='true'] {
+  --steel: var(--ink);
+  --steel-on-slate: #eceef1;
+  --rule: var(--ink);
+  --slate-line: #8a929b;
+}
+
+:root[data-large='true'] {
+  zoom: 1.125;
+}
+
+:root[data-readable='true'] body,
+:root[data-readable='true'] body * {
+  font-family: 'Atkinson Hyperlegible', Verdana, Tahoma, sans-serif !important;
+  letter-spacing: 0.02em !important;
+  word-spacing: 0.08em !important;
+}
+
+:root[data-calm='true'] * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+:root[data-calm='true'] main {
+  filter: saturate(0.6);
+}
+
+:root[data-motion='calm'] *,
+:root[data-motion='calm'] *::before,
+:root[data-motion='calm'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Header theme switch and reading-aids toggle: quiet ghost circles in the bar. */
+.prefs {
+  position: relative;
+  display: flex;
+  gap: 4px;
+}
+
+.bar-btn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--steel);
+  cursor: pointer;
+}
+
+.bar-btn:hover,
+.bar-btn[aria-expanded='true'] {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.bar-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.prefs-menu {
+  position: absolute;
+  top: 44px;
+  right: 0;
+  z-index: 40;
+  display: grid;
+  gap: 16px;
+  width: 300px;
+  padding: 16px;
+  border: 1px solid var(--slate-line);
+  border-radius: 12px;
+  background: var(--slate);
+  color: var(--surface);
+  box-shadow: 0 18px 40px -14px rgb(0 0 0 / 0.65);
+  font: 14px/1.4 var(--sans);
+}
+
+.prefs-menu[hidden] {
+  display: none;
+}
+
+.prefs-menu fieldset {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.prefs-menu legend {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.prefs-motion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  background: #0d0d10;
+}
+
+.prefs-motion button {
+  padding: 10px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--steel-on-slate);
+  font: 600 13px var(--sans);
+  cursor: pointer;
+}
+
+.prefs-motion button[aria-pressed='true'] {
+  background: #7ee2a8;
+  color: #0d0d10;
+}
+
+.prefs-aid {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--slate-line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.prefs-aid:has(input:checked) {
+  border-color: #7ee2a8;
+}
+
+.prefs-aid input {
+  width: 16px;
+  height: 16px;
+  margin: 2px 0 0;
+  accent-color: #7ee2a8;
+}
+
+.prefs-aid strong {
+  display: block;
+  font-size: 14px;
+}
+
+.prefs-aid span span {
+  color: var(--steel-on-slate);
+  font-size: 12px;
 }
 
 /* Header ---------------------------------------------------------------- */
@@ -233,7 +468,7 @@ body[data-view='compare'] {
 }
 
 .btn.primary:hover {
-  background: #ffe14d;
+  background: var(--alert-hover);
 }
 
 .btn.outline {
@@ -375,7 +610,7 @@ body[data-view='compare'] {
 }
 
 .segment:hover {
-  background: #f5f6f7;
+  background: var(--hover-tint);
 }
 
 .segment[aria-expanded='true'] {
@@ -560,6 +795,11 @@ body[data-view='compare'] {
   gap: 16px;
 }
 
+/* Fields without a hint stay level with their siblings, not stretched. */
+.field-row > .field {
+  align-content: start;
+}
+
 .input,
 textarea.input,
 select.input {
@@ -591,7 +831,7 @@ textarea.input {
 }
 
 .input::placeholder {
-  color: #767c83;
+  color: var(--placeholder);
 }
 
 .hint {
@@ -690,7 +930,7 @@ textarea.input {
 }
 
 .tag.bad {
-  background: #fbe3e1;
+  background: var(--fail-wash);
   color: var(--fail);
 }
 
@@ -853,12 +1093,13 @@ textarea.input {
 }
 
 .note.alert {
-  background: #fff6c2;
+  background: var(--alert-wash);
+  color: var(--alert-wash-ink);
 }
 
 .note.bad {
-  background: #fbe3e1;
-  color: #7a1712;
+  background: var(--fail-wash);
+  color: var(--fail-wash-ink);
 }
 
 .cost {
@@ -946,6 +1187,16 @@ textarea.input {
   font-size: 22px;
   width: 1%;
   white-space: nowrap;
+}
+
+.board .var .row-btn {
+  all: unset;
+  cursor: pointer;
+}
+
+.board .var .row-btn:focus-visible {
+  outline: 2px solid var(--alert);
+  outline-offset: 2px;
 }
 
 .board .dir {
@@ -1304,6 +1555,7 @@ textarea.input {
 }
 
 .grip span {
+  text-transform: uppercase;
   font: 700 10px/1 var(--mono);
   font-stretch: 87.5%;
   letter-spacing: 0.08em;
@@ -1372,15 +1624,6 @@ textarea.input {
     transform 240ms var(--ease);
 }
 
-.dock.tucked {
-  opacity: 0.12;
-}
-
-.dock.tucked:hover,
-.dock.tucked:focus-within {
-  opacity: 1;
-}
-
 .dock .mark {
   display: grid;
   place-items: center;
@@ -1438,6 +1681,9 @@ textarea.input {
 .cell.orig {
   font-size: 11px;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .cell[disabled] {
@@ -1572,12 +1818,42 @@ textarea.input {
   color: var(--steel-on-slate);
 }
 
-/* Summary flag above the dock */
+/* The board's discard confirm: the Keep confirm bar, in place of the buttons. */
+.board-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 6px 6px 14px;
+  border-radius: 12px;
+  background: var(--slate);
+  color: var(--surface);
+  font-size: 14px;
+}
+
+.board-confirm .muted {
+  color: var(--steel-on-slate);
+}
+
+.board-confirm .btn.outline {
+  color: var(--surface);
+  border-color: var(--steel-on-slate);
+}
+
+.board-confirm .btn.outline:hover {
+  background: var(--slate-2);
+}
+
+/* Summary flag above the dock. Centred without a transform: the entrance
+   animation owns transform, and a translateX here would be overwritten,
+   pushing the flag off the right edge on a phone. */
 .flag {
   position: absolute;
-  left: 50%;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: fit-content;
   bottom: 74px;
-  transform: translateX(-50%);
   z-index: 4;
   max-width: min(680px, calc(100vw - 32px));
   display: flex;
@@ -1596,7 +1872,7 @@ textarea.input {
 
 .flag.gone {
   opacity: 0;
-  transform: translate(-50%, 6px);
+  transform: translateY(6px);
   pointer-events: none;
 }
 
@@ -1610,11 +1886,11 @@ textarea.input {
   position: absolute;
   top: 12px;
   right: 12px;
-  bottom: 78px;
+  max-height: calc(100% - 90px);
   width: min(380px, calc(100vw - 24px));
   z-index: 6;
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto minmax(0, auto) auto;
   background: var(--slate);
   color: var(--surface);
   border-radius: var(--r);
@@ -1640,6 +1916,7 @@ textarea.input {
 }
 
 .info .body {
+  overflow: auto;
   padding: 14px 18px;
   display: grid;
   gap: 12px;
@@ -1660,6 +1937,7 @@ textarea.input {
 }
 
 .info pre {
+  max-height: 32vh;
   margin: 0;
   padding: 12px 18px;
   overflow: auto;
@@ -1697,9 +1975,28 @@ textarea.input {
   margin: 0;
   padding: 0;
   list-style: none;
-  columns: 2 240px;
-  font: 12.5px/1.8 var(--mono);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 6px;
+  font: 12.5px/1.5 var(--mono);
   font-stretch: 87.5%;
+}
+
+.kept ul li {
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--panel);
+  overflow-wrap: anywhere;
+}
+
+/* Branch names break only after a slash, never mid-token. */
+.stub .branch {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.stub .branch span {
+  white-space: nowrap;
 }
 
 .kept ol {
@@ -1823,7 +2120,7 @@ body[data-view='compare'] .help {
     display: none;
   }
   .path {
-    display: none;
+    width: 120px;
   }
   .checkin,
   .boardview {
@@ -1897,6 +2194,11 @@ body[data-view='compare'] .help {
   .dock .cell {
     flex: 1 0 auto;
   }
+  .dock .path {
+    flex: 1 1 80px;
+    min-width: 0;
+    width: auto;
+  }
   .dock .btn.primary {
     margin-left: auto;
   }
@@ -1908,7 +2210,7 @@ body[data-view='compare'] .help {
     bottom: 112px;
   }
   .info {
-    bottom: 112px;
+    max-height: calc(100% - 136px);
   }
   .tags .tag {
     font-size: 9px;
@@ -1968,6 +2270,14 @@ body[data-view='compare'] .help {
     padding-left: 12px;
     padding-right: 12px;
   }
+  /* Narrow: the step label wraps instead of truncating to "All…". */
+  .board .step-cell {
+    min-width: 96px;
+  }
+  .board .steps .now-label {
+    white-space: normal;
+    overflow: visible;
+  }
   .board .var {
     font-size: 18px;
   }
@@ -1993,7 +2303,6 @@ body[data-view='compare'] .help {
 
 /* Tucked chrome: dock and tags recede while you look at the site. */
 .compare.tucked .dock:not(:hover):not(:focus-within) {
-  opacity: 0.14;
   transform: translateX(-50%) translateY(6px);
 }
 
@@ -2136,11 +2445,11 @@ body[data-view='compare'] .help {
 }
 
 .panel .segment[aria-expanded='true'] {
-  background: #f3f4f6;
+  background: var(--drawer);
 }
 
 .panel .drawer {
-  background: #f3f4f6;
+  background: var(--drawer);
 }
 
 .about {
@@ -2277,6 +2586,16 @@ body[data-view='compare'] .help {
 
 .check input {
   margin-top: 3px;
+  accent-color: var(--ink);
+}
+
+/* Off for the demo agent: readable, just not clickable. */
+.check:has(input:disabled) {
+  cursor: default;
+}
+
+.check input:disabled + span .name {
+  color: var(--ink);
 }
 
 .check .name {
@@ -2340,10 +2659,24 @@ body[data-view='compare'] .help {
   border-bottom: 1px dashed var(--slate-line);
 }
 
-/* Check-in wizard: Setup → Designs → Your site → Review */
+/* Check-in wizard: Setup → Variants → Your site → Review */
 .setup.wizard-wrap {
   grid-template-columns: minmax(0, 760px);
   justify-content: center;
+}
+
+.skip-link {
+  position: absolute;
+  left: 8px;
+  top: -48px;
+  z-index: 100;
+  padding: 8px 12px;
+  background: var(--alert);
+  color: var(--alert-ink);
+}
+
+.skip-link:focus {
+  top: 8px;
 }
 
 .sr-only {
@@ -2412,7 +2745,8 @@ button.wiz-chip.done:hover {
   border-top: 1px solid var(--rule);
 }
 
-.checks {
+/* Setup's check rows (a list), not the settings checkboxes. */
+ul.checks {
   display: grid;
   gap: 10px;
   margin: 0;
@@ -2420,14 +2754,14 @@ button.wiz-chip.done:hover {
   list-style: none;
 }
 
-.check {
+ul.checks .check {
   display: flex;
   gap: 12px;
   align-items: baseline;
   font-size: 15px;
 }
 
-.check .mark {
+ul.checks .check .mark {
   display: inline-grid;
   place-items: center;
   flex: none;
@@ -2439,12 +2773,19 @@ button.wiz-chip.done:hover {
   font: 700 12px/1 var(--mono);
 }
 
-.check.bad .mark {
+/* An inline SVG, not a font glyph: no tiny fallback "✓" while fonts load. */
+ul.checks .check .mark svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.4;
+}
+
+ul.checks .check.bad .mark {
   background: var(--alert);
   color: var(--ink);
 }
 
-.check .detail {
+ul.checks .check .detail {
   color: var(--steel);
 }
 
@@ -2981,6 +3322,13 @@ button.wiz-hit:hover .wiz-name {
   display: inline-block;
   margin-left: 6px;
   color: var(--ink);
+  vertical-align: -2px;
+}
+
+.label .valid svg {
+  width: 12px;
+  height: 12px;
+  stroke-width: 2.4;
 }
 
 @media (max-width: 560px) {
@@ -3378,10 +3726,11 @@ button.wiz-hit:hover .wiz-name {
   border-color: var(--surface);
 }
 
-/* Tucked dock: recede, but stay findable. Fade the controls, never Keep. */
+/* Tucked dock: recede, but stay findable and opaque, so the site never shows
+   through. Fade the controls, never Keep. */
 .compare.tucked .dock:not(:hover):not(:focus-within) {
   opacity: 1;
-  background: rgb(13 13 16 / 0.55);
+  background: var(--slate);
   box-shadow: none;
 }
 

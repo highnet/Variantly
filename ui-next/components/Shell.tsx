@@ -7,6 +7,7 @@ import { ViewSkeleton } from './Skeleton';
 import { Checkin } from './Checkin';
 import { Compare } from './Compare';
 import { Kept } from './Kept';
+import { Prefs } from './Prefs';
 import { setState, useStore, type UiState } from '@/lib/store';
 
 type View = 'loading' | 'checkin' | 'board' | 'compare' | 'kept' | 'stopped';
@@ -29,6 +30,7 @@ const KEYS: [string, string][] = [
   ['o', 'show the original'],
   ['s', 'cycle slider · single · side by side'],
   ['m', 'switch desktop · phone'],
+  ['i', 'show or hide details'],
   ['[ ]', 'nudge the slider'],
   ['Esc', 'close panels'],
 ];
@@ -44,8 +46,19 @@ const Shell = () => {
     document.body.dataset.view = view;
   }, [view]);
 
+  // Esc closes the key list on every screen, not just in compare.
+  useEffect(() => {
+    if (!helpOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setState({ helpOpen: false });
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [helpOpen]);
+
   return (
     <>
+      <a className="skip-link" href="#view">
+        Skip to content
+      </a>
       <header className="bar">
         <a className="wordmark" href="/" aria-label="variantly home">
           <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -64,6 +77,7 @@ const Shell = () => {
         <button className="ghost" type="button" aria-expanded={helpOpen} aria-controls="help" onClick={() => setState({ helpOpen: !helpOpen })}>
           Keys
         </button>
+        <Prefs />
       </header>
       <main id="view" tabIndex={-1}>
         {view === 'loading' && <ViewSkeleton label="Connecting to variantly…" />}
@@ -74,7 +88,7 @@ const Shell = () => {
         {view === 'kept' && <Kept />}
       </main>
       <aside id="help" className="help" hidden={!helpOpen}>
-        <h2>Keyboard</h2>
+        <h2>Keys in compare</h2>
         <dl>
           {KEYS.map(([k, d]) => (
             <div key={k} style={{ display: 'contents' }}>

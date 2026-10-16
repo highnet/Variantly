@@ -44,7 +44,7 @@ const until = async (/** @type {() => boolean | Promise<boolean>} */ cond, ms = 
 
 test.after(async () => {
   await app.close();
-  rmSync(tmp, { recursive: true, force: true, maxRetries: 3 });
+  rmSync(tmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 });
 });
 
 test('detect suggests the static adapter and the demo agent is accepted', async () => {
@@ -78,8 +78,10 @@ test('generates two variants, serves them, and finalizes the chosen one', async 
   await until(() => app.session.state.phase === 'ready');
   const variants = app.session.state.variants;
   assert.deepEqual(variants.map((v) => v.status), ['done', 'done']);
-  // The shared PRODUCT.md (from the fixture's own title and README) ships with each variant.
-  assert.deepEqual(variants[0].files, ['PRODUCT.md', 'style.css']);
+  // The shared PRODUCT.md (from the fixture's own title and README) guides the
+  // agent but is not part of the variant.
+  assert.ok(existsSync(path.join(app.session.worktreeFor(1), 'PRODUCT.md')));
+  assert.deepEqual(variants[0].files, ['style.css']);
   assert.match(variants[1].summary, /Swiss precision/);
 
   // Every variant lives in its own worktree; the user's tree is untouched.
@@ -102,7 +104,8 @@ test('generates two variants, serves them, and finalizes the chosen one', async 
 
   const fin = await api('POST', 'finalize/2', {});
   assert.equal(fin.status, 200, JSON.stringify(fin.json));
-  assert.deepEqual(fin.json.files, ['PRODUCT.md', 'style.css']);
+  assert.deepEqual(fin.json.files, ['style.css']);
+  assert.equal(existsSync(path.join(repo, 'PRODUCT.md')), false);
   assert.deepEqual(fin.json.conflicts, []);
   assert.match(readFileSync(path.join(repo, 'style.css'), 'utf8'), /Swiss precision/);
   assert.match(readFileSync(path.join(repo, 'about.html'), 'utf8'), /About us/);

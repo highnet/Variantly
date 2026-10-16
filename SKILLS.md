@@ -7,7 +7,7 @@ homepage's pitch or the README's prose. Fetch the latest copy at any time:
 curl -fsSL https://variantly.style/SKILLS.md
 ```
 
-(or `https://raw.githubusercontent.com/highnet/ProjectHusky/main/SKILLS.md`)
+(or `https://raw.githubusercontent.com/highnet/variantly/main/SKILLS.md`)
 
 If you are a person, the README is friendlier and
 [variantly.style](https://variantly.style) is friendlier still.
@@ -25,6 +25,10 @@ web app shows the original and every variant with a before/after slider and a
 1…N picker. Keeping one applies its diff to the working tree with git; the rest
 stay as branches. variantly brings no model: every variant is one session of
 the person's own agent, on their account.
+
+There are no preset themes: variantly has no theme library or templates. Each
+direction is either the person's own words or one Impeccable rolls fresh for
+that variant, and the agent designs it from scratch for this project.
 
 Use it when someone asks for their site to "look better", "get a redesign",
 or "try a few directions", and they can look at a browser. Do not use it for
@@ -48,7 +52,7 @@ npx variantly install-skill --providers=codex --scope=project # .agents/skills/v
 Project scope writes `.claude/skills/`, `.agents/skills/` or `.github/skills/`
 in the repository, for everyone who clones it. Running it again updates the
 file in place. Claude Code can also use the plugin:
-`/plugin marketplace add highnet/ProjectHusky` then
+`/plugin marketplace add highnet/variantly` then
 `/plugin install variantly@variantly`. Restart the agent after installing.
 
 ## Requirements

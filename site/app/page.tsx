@@ -1,6 +1,7 @@
 import { AgentQuickstart } from '@/components/AgentQuickstart';
 import { AudienceFork } from '@/components/AudienceFork';
 import { FinePrint } from '@/components/FinePrint';
+import { DemoVideo } from '@/components/DemoVideo';
 import { HowItWorks } from '@/components/HowItWorks';
 import { PrefsMenu } from '@/components/PrefsMenu';
 import { Brand } from '@/components/Brand';
@@ -28,15 +29,14 @@ const GitHubLink = () => (
 
 /*
  * Agents read a page top-down, so the first words on the human view send
- * them to the quickstart written for them.
+ * them to the quickstart written for them. Visually hidden (sr-only): it
+ * stays in the HTML and text extraction agents read, but humans never see it.
  */
 const AgentStrip = () => (
-  <a
-    href="#agent"
-    className="bg-ink text-surface hover:bg-slate block px-4 py-2.5 text-center font-mono text-[12px] font-semibold no-underline sm:px-6"
-  >
-    <span className="text-alert">AI agent or assistant?</span> Stop here and open the quickstart
-    written for you: variantly.style/#agent. The full manual is at /SKILLS.md.
+  <a href="#agent" className="sr-only">
+    <span>AI agent or assistant?</span> Stop here and open the quickstart written for you:
+    variantly.style/#agent. Every command and flag: variantly.style/#docs. The full manual is at
+    /SKILLS.md.
   </a>
 );
 
@@ -45,6 +45,7 @@ const Human = () => (
     <AgentStrip />
     <Showcase />
     <div className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)] gap-24 px-4 pt-20 pb-16 sm:px-6">
+      <DemoVideo />
       <HowItWorks />
       <StartChecklist />
       <WithLive />

@@ -80,7 +80,7 @@ const WaitCard = ({ name, srv, target }: WaitCardProps) => {
       <pre>{failed ? `${srv?.error}\n\n${(srv?.log ?? []).slice(-14).join('\n')}` : (srv?.log ?? []).slice(-14).join('\n') || 'Starting the dev server…'}</pre>
       {failed && (
         <div className="actions on-slate">
-          <button className="btn outline small" type="button" onClick={() => api('POST', `ensure/${target}`, {})}>
+          <button className="btn outline small" type="button" onClick={() => api('POST', `ensure/${target}`, {}).catch((err: Error) => toast(err.message, true))}>
             Try again
           </button>
         </div>
@@ -148,6 +148,8 @@ const Info = () => {
   const v = useStore((s) => s.snap?.variants.find((x) => x.n === s.sel) ?? null);
   const runId = useStore((s) => s.snap?.runId);
   const lines = useStore((s) => (typeof s.sel === 'number' ? s.logs[`v${s.sel}`] : undefined));
+  // Server chatter alone ("static server on …") isn't worth a log panel.
+  const log = (lines ?? []).filter((l) => l.trim() && !/^static server on /.test(l));
   useEffect(() => {
     if (open && typeof sel === 'number') fetchLog(sel);
   }, [open, sel]);
@@ -199,7 +201,7 @@ const Info = () => {
                 </div>
                 <div className="label">Branch {runId ? `variantly/${runId}/v${v.n}` : ''}</div>
               </div>
-              <pre>{(lines ?? []).join('\n')}</pre>
+              {log.length > 0 && <pre>{log.join('\n')}</pre>}
             </>
           )}
         </motion.aside>
@@ -220,15 +222,21 @@ const Dock = () => {
   const infoOpen = useStore((s) => s.infoOpen);
   const [draft, setDraft] = useState(path);
   const apply = useRef<HTMLButtonElement>(null);
+  const keepBtn = useRef<HTMLButtonElement>(null);
+  const wasConfirming = useRef(false);
   useEffect(() => setDraft(path), [path]);
   useEffect(() => {
+    // Focus moves into the dialog on open and back to Keep when it closes.
     if (confirming) apply.current?.focus();
+    else if (wasConfirming.current) keepBtn.current?.focus();
+    wasConfirming.current = confirming;
   }, [confirming]);
 
   const keep = async (n: number) => {
     setState({ applying: n });
     try {
       await api('POST', `finalize/${n}`, {});
+      setState({ confirming: false });
     } catch (err) {
       toast((err as Error).message, true);
       setState({ confirming: false });
@@ -241,7 +249,17 @@ const Dock = () => {
   if (confirming && chosen) {
     return (
       <nav className="dock" aria-label="Variants">
-        <div className="confirm" role="alertdialog" aria-label="Keep this variant?">
+        <div
+          className="confirm"
+          role="alertdialog"
+          aria-modal="true"
+          aria-label="Keep this variant?"
+          onKeyDown={(e) => {
+            if (e.key !== 'Escape' || applying) return;
+            e.stopPropagation();
+            setState({ confirming: false });
+          }}
+        >
           <span>
             Apply <strong>{vname(chosen.n)}</strong> ({directionLabel(chosen.direction, chosen.picked)}) to your working tree? <span className="muted">{plural(chosen.files.length, 'file')}. The others stay as branches.</span>
           </span>
@@ -274,7 +292,7 @@ const Dock = () => {
       </span>
       <div className="cells" role="group" aria-label="Show">
         <button className="cell orig" type="button" aria-current={sel === 'original'} title="Original (o)" onClick={() => select('original')}>
-          ORIG
+          Original
         </button>
         {vs.map((v) => {
           const pip = unseen.includes(v.n) ? 'pip' : v.status === 'failed' ? 'pip fail' : ['running', 'reviewing', 'preparing', 'committing', 'queued'].includes(v.status) ? 'pip work' : '';
@@ -328,7 +346,7 @@ const Dock = () => {
         <Icon name="info" />
       </button>
       {chosen?.status === 'done' && (
-        <button className="btn primary" type="button" onClick={() => setState({ confirming: true })}>
+        <button ref={keepBtn} className="btn primary" type="button" onClick={() => setState({ confirming: true })}>
           Keep {vname(chosen.n)}
         </button>
       )}
@@ -376,6 +394,8 @@ const Compare = () => {
   const compareRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const [tucked, setTucked] = useState(false);
+  // `?recording=1` keeps the dock shown, for filming the app.
+  const pinned = useRef(typeof location !== 'undefined' && new URLSearchParams(location.search).get('recording') === '1');
   const [flag, setFlag] = useState<Variant | null>(null);
 
   const vs = snap?.variants ?? [];
@@ -409,13 +429,19 @@ const Compare = () => {
   const settle = (side: Side) => setPending((p) => (p[side] ? { ...p, [side]: false } : p));
 
   // Point each frame at its target, only when the target or path changes.
+  // A sleeping server is woken once; a failed one waits for "Try again".
+  const woken = useRef(new Set<string>());
   useEffect(() => {
     if (applying) return;
     for (const side of ['before', 'after'] as Side[]) {
       const target = want[side];
       if (!target) continue;
       const s = srv[side];
-      if (s && s.state !== 'ready' && s.state !== 'starting') api('POST', `ensure/${target}`, {}).catch(() => {});
+      if (s && s.state !== 'sleeping') woken.current.delete(target);
+      if (s?.state === 'sleeping' && !woken.current.has(target)) {
+        woken.current.add(target);
+        api('POST', `ensure/${target}`, {}).catch(() => {});
+      }
       if (s?.state !== 'ready') continue;
       const el = frames[side].current;
       const cur = shown.current[side];
@@ -432,7 +458,7 @@ const Compare = () => {
     setTucked(false);
   }, []);
   useEffect(() => {
-    if (tucked) return;
+    if (tucked || pinned.current) return;
     const t = setTimeout(() => {
       const s = getState();
       if (!s.confirming && !s.infoOpen && !compareRef.current?.contains(document.activeElement)) setTucked(true);
@@ -448,7 +474,7 @@ const Compare = () => {
       if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
       if (t?.getAttribute('role') === 'slider' && e.key.startsWith('Arrow')) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      handleKey(e.key);
+      handleKey(e.key.length === 1 ? e.key.toLowerCase() : e.key);
     };
     // Preview frames report navigation, scroll and keys through frame.js.
     const onMessage = (e: MessageEvent) => {
@@ -511,6 +537,7 @@ const Compare = () => {
     <div
       ref={compareRef}
       className={clsx('compare', tucked && !confirming && !infoOpen && 'tucked')}
+      data-panes-ready={!pending.before && !pending.after ? 'true' : 'false'}
       style={{ ['--split' as string]: `${split}%` }}
     >
       <div className="stage" data-mode={effMode} data-device={device} data-show={sel === 'original' ? 'original' : 'variant'}>
@@ -559,9 +586,9 @@ const Compare = () => {
           onPointerUp={() => setDragging(false)}
           onPointerCancel={() => setDragging(false)}
         >
-          <span>BEFORE</span>
+          <span>Before</span>
           <i />
-          <span>AFTER</span>
+          <span>After</span>
         </button>
       </div>
       <div className="tags" aria-hidden="true">

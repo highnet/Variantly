@@ -20,8 +20,9 @@ const Stacks = () => (
           Works with your site
         </Typography>
         <Typography variant="body" color="steel">
-          If your site runs on your computer with a start command, variantly can redesign it. These
-          are the setups it recognises on its own; anything else works with one extra answer.
+          <strong className="text-ink">Runs locally with a start command?</strong> It works. These
+          are <strong className="text-ink">auto-detected</strong>; anything else needs{' '}
+          <strong className="text-ink">one extra answer</strong>.
         </Typography>
       </div>
       <ul className="rounded-pass border-rule bg-rule m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-px overflow-hidden border p-0">
@@ -43,8 +44,8 @@ const Stacks = () => (
           Uses your own AI
         </Typography>
         <Typography variant="body" color="steel">
-          There is no variantly account and nothing to pay us. Each design is one session of your
-          own assistant, on your own plan.
+          <strong className="text-ink">No account, nothing to pay us.</strong> Each variant ={' '}
+          <strong className="text-ink">one session</strong> on your own plan.
         </Typography>
       </div>
       <ul className="m-0 grid list-none auto-rows-fr gap-2 p-0">

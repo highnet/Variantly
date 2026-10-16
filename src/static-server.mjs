@@ -57,7 +57,7 @@ export function serveStatic(root, port) {
           "content-length": stat.size,
           "cache-control": "no-store",
         });
-        createReadStream(candidate).pipe(res);
+        createReadStream(candidate).on("error", () => res.destroy()).pipe(res);
         return;
       } catch {}
     }

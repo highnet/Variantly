@@ -103,3 +103,26 @@ test('non-JSON lines pass through; plain text output keeps every line', () => {
   assert.equal(extractSummary(text.text()), 'Demo palette 2');
   assert.equal(text.usage(), undefined);
 });
+
+test('claude: live usage from assistant events, replaced by the result total', () => {
+  const p = createParser('claude-stream');
+  const msg = (id, out) => JSON.stringify({ type: 'assistant', message: { id, usage: { input_tokens: 10, output_tokens: out }, content: [] } });
+  p.push(msg('a', 5));
+  p.push(msg('a', 5));
+  p.push(msg('b', 7));
+  assert.deepEqual(p.usage(), { inputTokens: 20, outputTokens: 12, cachedInputTokens: 0 });
+  p.push(JSON.stringify({ type: 'result', total_cost_usd: 0.5, usage: { input_tokens: 100, output_tokens: 50 } }));
+  assert.deepEqual(p.usage(), { inputTokens: 100, outputTokens: 50, cachedInputTokens: 0 });
+  assert.equal(p.costUsd(), 0.5);
+});
+
+test('a usage or rate limit halts the queue; the agent mentioning one in its text does not', () => {
+  const p = createParser('claude-stream');
+  p.push(JSON.stringify({ type: 'assistant', message: { content: [{ type: 'text', text: 'Added a rate limit banner.' }] } }));
+  assert.equal(p.unavailable(), undefined);
+  p.push(JSON.stringify({ type: 'result', is_error: true, result: 'Claude AI usage limit reached' }));
+  assert.match(p.unavailable() ?? '', /usage or rate limit/);
+  const q = createParser('text');
+  q.note('Error: 429 Too Many Requests');
+  assert.match(q.unavailable() ?? '', /rate limit/);
+});
