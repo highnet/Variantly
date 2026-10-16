@@ -520,6 +520,7 @@ class Director {
       const key = this.fill(step.key);
       this.keys.push({ t: Number(this.now().toFixed(3)), key });
       await this.all((page) => page.keyboard.press(key));
+      await this.page.waitForTimeout(350);
     } else if (step.gitStat) {
       this.diffstat = (await run('git', ['diff', '--stat'], { cwd: SITE, quiet: true }).catch(() => '')).trimEnd();
       this.branches = (await run('git', ['branch', '--list', 'variantly/*', '--format=%(refname:short)'], { cwd: SITE, quiet: true }).catch(() => '')).trim().split('\n').filter(Boolean);
@@ -552,7 +553,6 @@ async function smokeTest() {
     const probe = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM || undefined });
     const context = await probe.newContext({ viewport: { width: 640, height: 360 } });
     await context.addInitScript(REPAINT);
-  await context.addInitScript(MASK, MASKS);
     const page = await context.newPage();
     const capture = await startScreencast(page, dir, { width: 640, height: 360 });
     const start = Date.now() / 1000;
@@ -615,6 +615,7 @@ async function openView(theme, mirror) {
   });
   await context.addInitScript(CURSOR);
   await context.addInitScript(REPAINT);
+  await context.addInitScript(MASK, MASKS);
   // A clean wizard: no draft left over from an earlier take.
   await context.addInitScript(() => {
     try {

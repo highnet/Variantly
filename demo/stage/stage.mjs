@@ -338,7 +338,7 @@ export async function mount(layout, theme = 'light') {
       sub = `<div class="cmd">${esc(typed)}<span class="caret"></span></div>`;
     }
     const veil = el('div', 'veil');
-    veil.style.opacity = String((cold ? 0.88 : 0.94) * k);
+    veil.style.opacity = String(0.95 * k);
     const card = el('div', 'card kinetic', `<div class="big figure">${big}</div>${sub}`);
     card.style.opacity = String(k);
     document.body.append(veil, card);
