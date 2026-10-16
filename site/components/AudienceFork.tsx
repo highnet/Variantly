@@ -35,6 +35,14 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
     return () => window.removeEventListener('hashchange', sync);
   }, []);
 
+  // A hash link from the agent view (e.g. #docs) lands once the human view renders.
+  useEffect(() => {
+    const { hash } = window.location;
+    if (audience === 'human' && hash.length > 1) {
+      document.getElementById(hash.slice(1))?.scrollIntoView();
+    }
+  }, [audience]);
+
   const choose = useCallback((next: Audience) => {
     setAudience(next);
     const url = next === 'agent' ? '#agent' : window.location.pathname;
