@@ -4,7 +4,7 @@
 
 If you are an AI agent setting variantly up for someone, start here:
 
-- [Agent quickstart](https://variantly.tools/#agent): the five commands, in order.
-- [SKILLS.md](https://variantly.tools/SKILLS.md): the full manual, written for agents.
+- [Agent quickstart](https://variantly.style/#agent): the five commands, in order.
+- [SKILLS.md](https://variantly.style/SKILLS.md): the full manual, written for agents.
 
 Rules: never pick a design for the person; each design is one session on their account, so say so before a large run; nothing touches their files until they keep one.

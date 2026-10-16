@@ -36,7 +36,7 @@ const AgentStrip = () => (
     className="bg-ink text-surface hover:bg-slate block px-4 py-2.5 text-center font-mono text-[12px] font-semibold no-underline sm:px-6"
   >
     <span className="text-alert">AI agent or assistant?</span> Stop here and open the quickstart
-    written for you: variantly.tools/#agent. The full manual is at /SKILLS.md.
+    written for you: variantly.style/#agent. The full manual is at /SKILLS.md.
   </a>
 );
 

@@ -19,7 +19,7 @@ which agent to use, what you want, and how many variants. Then you watch the
 agents work, and compare.
 
 [SKILLS.md](SKILLS.md) is the version of these docs written for an agent.
-There is a homepage too: **[variantly.tools](https://variantly.tools)**.
+There is a homepage too: **[variantly.style](https://variantly.style)**.
 
 **Contents**
 

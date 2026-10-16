@@ -3,7 +3,7 @@ import path from 'node:path';
 
 /*
  * SKILLS.md, served from the site so an agent can fetch the manual with one
- * short command:  curl -fsSL https://variantly.tools/SKILLS.md
+ * short command:  curl -fsSL https://variantly.style/SKILLS.md
  * The file lives at the repository root, next to the CLI it documents.
  */
 export const GET = () => {
