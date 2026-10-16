@@ -3,7 +3,7 @@
 //
 //   node edit.mjs --theme light|dark
 //
-// In:  video/<theme>/raw.webm, video/raw-timeline.json (shared), audio/*
+// In:  video/<theme>/raw.mp4, video/raw-timeline.json (shared), audio/*
 // Out: seekreel.<theme>.json           with a footage edit list: one clip per
 //                                      scene, the wait sped up, transitions
 //      build/<theme>/footage/          SeekReel's cut: one JPEG per film frame
@@ -43,7 +43,7 @@ const clips = raw.scenes.map((scene) => {
   const target = scene.timelapse ? Math.max(lineSeconds(scene.id) + PAD_MS / 1000, 5) : length;
   return {
     label: scene.id,
-    src: `video/${THEME}/raw.webm`,
+    src: `video/${THEME}/raw.mp4`,
     // The length is computed once from the shared timeline, so both themes
     // get clips of exactly the same length.
     from: round3(Math.max(0, scene.start - OFFSET)),
@@ -230,6 +230,37 @@ writeJson(at(`seekreel.${THEME}.vertical.json`), {
   ...base,
   variants: [{ name: 'vertical' }],
 });
+
+// ------------------------------------------------------------ smoothness
+
+// Wherever the app itself moves (a scroll, a drag, typing), a frame that
+// repeats the one before is a stutter. Count them in the cut footage.
+{
+  const { createHash } = await import('node:crypto');
+  const { readFileSync, existsSync: has } = await import('node:fs');
+  const frame = (i) => at(BUILD, 'footage', 'frames', `${String(i).padStart(5, '0')}.jpg`);
+  let moving = 0;
+  let repeats = 0;
+  for (const [a, b] of raw.motion ?? []) {
+    const from = toFilm(a), to = toFilm(b);
+    if (from === null || to === null) continue;
+    let last = null;
+    for (let i = Math.ceil(from * FPS); i <= Math.floor(to * FPS); i++) {
+      if (!has(frame(i))) break;
+      const hash = createHash('md5').update(readFileSync(frame(i))).digest('hex');
+      if (last !== null) {
+        moving++;
+        if (hash === last) repeats++;
+      }
+      last = hash;
+    }
+  }
+  if (moving) {
+    const share = repeats / moving;
+    log('edit', `smoothness: ${repeats}/${moving} repeated frames while the app moves (${(share * 100).toFixed(1)}%)`);
+    if (share > 0.1) log('edit', 'warning: more than 10% repeated frames in motion: the capture could not keep up. Close other apps, or record with --single.');
+  }
+}
 
 for (const s of scenes) {
   log('edit', `${s.id.padEnd(9)} ${s.start.toFixed(2).padStart(6)}–${s.end.toFixed(2).padStart(6)}s${s.speed > 1 ? `  ×${s.speed}` : ''}`);

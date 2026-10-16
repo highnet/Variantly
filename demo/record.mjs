@@ -13,15 +13,16 @@
 //    mirror's POSTs are answered locally, and it follows the real run through
 //    the same state and events.
 // 4. Holds each scene until its narration has finished, and writes
-//    video/light/raw.webm, video/dark/raw.webm and one shared
+//    video/light/raw.mp4, video/dark/raw.mp4 (60 fps, by frame timestamp) and one shared
 //    video/raw-timeline.json (scene and click times in seconds from the light
 //    page's start; offsets.<theme> is when that page started, relative to it).
 import { spawn } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, renameSync, rmSync, statSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, rmSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 import { checkVariantly } from './lib/freshness.mjs';
+import { CAPTURE_FPS, REPAINT, encodeCfr, startScreencast } from './lib/screencast.mjs';
 import { at, HEIGHT, log, PAD_MS, readJson, REPO, run, script, WIDTH, writeJson } from './lib/common.mjs';
 
 const film = script();
@@ -200,6 +201,7 @@ class Director {
     this.pos = { x: WIDTH * 0.62, y: HEIGHT * 0.6 };
     this.clicks = [];
     this.path = [];
+    this.motion = [];
     this.presses = [];
     this.warnings = [];
   }
@@ -385,8 +387,11 @@ class Director {
 
   async act(step) {
     const began = Date.now();
+    const from = this.now();
     try {
       await this.actInner(step);
+      // Where the app itself moves on screen: the smoothness check looks here.
+      if (step.scroll !== undefined || step.drag || step.fill) this.motion.push([Number(from.toFixed(3)), Number(this.now().toFixed(3))]);
     } finally {
       const ms = Date.now() - began;
       if (ms > 1500 && !step.wait && !step.waitApi) log('record', `    slow: ${JSON.stringify(step).slice(0, 90)} took ${(ms / 1000).toFixed(1)}s`);
@@ -422,27 +427,32 @@ class Director {
  */
 async function smokeTest() {
   const dir = at('video', 'smoke');
-  rmSync(dir, { recursive: true, force: true });
-  let file = null;
+  let ok = false;
   try {
     const probe = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM || undefined });
-    const context = await probe.newContext({ viewport: { width: 640, height: 360 }, recordVideo: { dir, size: { width: 640, height: 360 } } });
+    const context = await probe.newContext({ viewport: { width: 640, height: 360 } });
+    await context.addInitScript(REPAINT);
     const page = await context.newPage();
-    await page.setContent('<body style="background:#ffd400"></body>');
+    const capture = await startScreencast(page, dir, { width: 640, height: 360 });
+    const start = Date.now() / 1000;
+    await page.goto('data:text/html,<body style="background:%23ffd400"></body>');
     await page.waitForTimeout(1500);
-    await context.close();
-    file = await page.video()?.path();
+    const end = Date.now() / 1000;
+    await capture.stop();
     await probe.close();
+    const out = path.join(dir, 'smoke.mp4');
+    await encodeCfr(capture.frames, dir, out, { start, end, width: 640, height: 360 });
+    ok = capture.frames.length >= 10 && existsSync(out) && statSync(out).size > 0;
+    if (!ok) log('record', `NOT READY: only ${capture.frames.length} frames in a 1.5 s test capture`);
   } catch (error) {
-    log('record', `NOT READY: the browser could not record a test clip: ${String(error.message).split('\n')[0]}`);
+    log('record', `NOT READY: test capture failed: ${String(error.message).split('\n')[0]}`);
   }
-  const ok = file && existsSync(file) && statSync(file).size > 0;
   rmSync(dir, { recursive: true, force: true });
   if (!ok) {
-    log('record', 'NOT READY: Playwright could not record video. Fix: cd demo && npm ci && npx playwright install chromium');
+    log('record', 'NOT READY: screen capture does not work. Fix: cd demo && npm ci && npx playwright install chromium');
     process.exit(1);
   }
-  log('record', 'video recording works');
+  log('record', 'screen capture works');
 }
 
 // ---------------------------------------------------------------- main
@@ -477,11 +487,11 @@ async function openView(theme, mirror) {
   const context = await browser.newContext({
     viewport: { width: WIDTH, height: HEIGHT },
     deviceScaleFactor: 1,
-    recordVideo: { dir: at('video', theme, 'tmp'), size: { width: WIDTH, height: HEIGHT } },
     colorScheme: theme,
     reducedMotion: 'no-preference',
   });
   await context.addInitScript(CURSOR);
+  await context.addInitScript(REPAINT);
   // A clean wizard: no draft left over from an earlier take.
   await context.addInitScript(() => {
     try {
@@ -530,14 +540,14 @@ async function openView(theme, mirror) {
     });
   }
   const page = await context.newPage();
-  const view = { theme, context, page, t0: Date.now(), errors: [] };
+  const capture = await startScreencast(page, at('video', theme, 'frames'), { width: WIDTH, height: HEIGHT });
+  const view = { theme, context, page, capture, t0: Date.now(), errors: [] };
   page.on('pageerror', (e) => view.errors.push(String(e)));
   return view;
 }
 
 const views = [];
 for (const [i, theme] of THEMES.entries()) {
-  rmSync(at('video', theme, 'tmp'), { recursive: true, force: true });
   mkdirSync(at('video', theme), { recursive: true });
   views.push(await openView(theme, i > 0));
 }
@@ -550,6 +560,7 @@ const director = new Director(views, {
 const scenes = [];
 const schemes = {};
 
+let endedAt = Date.now();
 try {
   await director.all((page) => page.goto('about:blank'));
   for (const scene of film.scenes) {
@@ -568,18 +579,22 @@ try {
     scenes.push({ id: scene.id, start, end: director.now(), timelapse: !!scene.timelapse });
   }
 } finally {
+  endedAt = Date.now();
+  for (const view of views) await view.capture.stop();
   for (const view of views) await view.context.close();
   await browser.close();
   await api(app, 'shutdown', 'POST').catch(() => {});
   setTimeout(() => child.kill(), 3000).unref();
 }
 
+// Both themes are cut from the same instant, the light page's start, so they
+// share one timebase and come out the same length.
 for (const view of views) {
-  const recorded = (await view.page.video()?.path()) ?? null;
-  if (!recorded || !existsSync(recorded)) throw new Error(`Playwright did not write the ${view.theme} video`);
-  rmSync(at('video', view.theme, 'raw.webm'), { force: true });
-  renameSync(recorded, at('video', view.theme, 'raw.webm'));
-  rmSync(at('video', view.theme, 'tmp'), { recursive: true, force: true });
+  const dir = at('video', view.theme, 'frames');
+  const out = at('video', view.theme, 'raw.mp4');
+  const { frames, seconds } = await encodeCfr(view.capture.frames, dir, out, { start: views[0].t0 / 1000, end: endedAt / 1000, width: WIDTH, height: HEIGHT });
+  log('record', `${view.theme}: ${frames} painted frames over ${seconds.toFixed(1)}s (${(frames / seconds).toFixed(1)} fps) -> ${CAPTURE_FPS} fps`);
+  if (!process.env.KEEP_FRAMES) rmSync(dir, { recursive: true, force: true });
 }
 
 const pageErrors = views.flatMap((view) => view.errors.map((e) => `${view.theme}: ${e}`));
@@ -589,7 +604,9 @@ writeJson(at('video', 'raw-timeline.json'), {
   themes: THEMES,
   // Seconds from the light page's start to each page's start: subtract to
   // find a timeline moment in that theme's video.
-  offsets: Object.fromEntries(views.map((view) => [view.theme, Number(((view.t0 - views[0].t0) / 1000).toFixed(3))])),
+  offsets: Object.fromEntries(views.map((view) => [view.theme, 0])),
+  fps: CAPTURE_FPS,
+  motion: director.motion,
   colorSchemes: schemes,
   scenes,
   clicks: director.clicks,
@@ -599,4 +616,4 @@ writeJson(at('video', 'raw-timeline.json'), {
 });
 for (const w of director.warnings) log('record', `warning: ${w}`);
 for (const e of pageErrors) log('record', `page error: ${e}`);
-log('record', `video/{${THEMES.join(',')}}/raw.webm, ${scenes.at(-1).end.toFixed(1)}s; color schemes ${JSON.stringify(schemes)}`);
+log('record', `video/{${THEMES.join(',')}}/raw.mp4, ${scenes.at(-1).end.toFixed(1)}s; color schemes ${JSON.stringify(schemes)}`);
