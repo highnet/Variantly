@@ -20,6 +20,8 @@ const Page = () => (
     <h2>Contact</h2>
     <p>
       Email: <a href={`mailto:${OPERATOR.email}`}>{OPERATOR.email}</a>
+      <br />
+      Phone: <a href={`tel:${OPERATOR.phone.replaceAll(' ', '')}`}>{OPERATOR.phone}</a>
     </p>
     <h2>Nature of this website</h2>
     <p>
