@@ -402,6 +402,10 @@ export class Session extends EventEmitter {
       const launch = async (/** @type {string} */ brief) => {
         const inv = agent.invocation({ cwd: wt, briefPath: brief, model: config.model || undefined, permissions: config.permissions, mcp });
         inv.file = await agentFile(agent);
+        for (const [file, body] of Object.entries(inv.files ?? {})) {
+          await mkdir(path.dirname(file), { recursive: true });
+          await writeFile(file, body);
+        }
         say(`$ ${inv.file === agent.bin ? agent.bin : JSON.stringify(inv.file)} ${inv.args.map((a) => (/\s/.test(a) ? JSON.stringify(a) : a)).join(' ')}`);
         return this.#runAgent(run, inv, wt, config.agentTimeoutMin, say);
       };
@@ -486,7 +490,7 @@ export class Session extends EventEmitter {
       await git.placeShared(this.repo, wt, { link: ['node_modules'], copy: [] });
     }
     // Agent skills and Impeccable's project context are often untracked.
-    for (const rel of ['.claude/skills', '.agents/skills', '.codex/skills', '.github/skills', '.impeccable', 'PRODUCT.md', 'DESIGN.md']) {
+    for (const rel of ['.claude/skills', '.agents/skills', '.codex/skills', '.github/skills', '.gemini/skills', '.cursor/skills', '.impeccable', 'PRODUCT.md', 'DESIGN.md']) {
       const src = path.join(this.repo, rel);
       const dst = path.join(wt, rel);
       if (existsSync(src) && !existsSync(dst)) {
@@ -497,10 +501,10 @@ export class Session extends EventEmitter {
     // Impeccable's global installs land in different home folders per agent
     // (and Copilot doesn't read every one of them). Put the skill where this
     // agent reads project skills, inside the worktree, so it is always found.
-    const projectSkillDir = { claude: '.claude/skills', codex: '.agents/skills', copilot: '.github/skills' }[config.agent];
+    const projectSkillDir = { claude: '.claude/skills', codex: '.agents/skills', copilot: '.github/skills', gemini: '.gemini/skills', cursor: '.cursor/skills' }[config.agent];
     if (projectSkillDir && !existsSync(path.join(wt, projectSkillDir, 'impeccable', 'SKILL.md'))) {
       const home = os.homedir();
-      const source = ['.claude/skills', '.agents/skills', '.github/skills', '.copilot/skills', '.codex/skills']
+      const source = ['.claude/skills', '.agents/skills', '.github/skills', '.copilot/skills', '.codex/skills', '.gemini/skills', '.cursor/skills']
         .map((d) => path.join(home, d, 'impeccable'))
         .find((d) => existsSync(path.join(d, 'SKILL.md')));
       if (source) {

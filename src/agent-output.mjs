@@ -11,10 +11,14 @@
  * - Codex CLI 0.162 `codex exec --json`: thread.*, turn.*, item.* (codex-rs/exec/src/exec_events.rs).
  * - Copilot CLI 1.0 `copilot -p --output-format json`: session events, one per
  *   line, `{ type, data, id, timestamp }` (@github/copilot-sdk session-events.d.ts).
+ * - Gemini CLI 0.64 `gemini -p --output-format stream-json`: init, message,
+ *   tool_use, tool_result, error, result (packages/core/src/output/types.ts).
+ * - Cursor CLI 2026.10 `cursor-agent -p --output-format stream-json`: system,
+ *   user, assistant, thinking, tool_call (started/completed), result.
  */
 import path from 'node:path';
 
-/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'text'} OutputKind */
+/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'gemini-stream' | 'cursor-stream' | 'text'} OutputKind */
 
 /**
  * Token counts as the agent reported them, summed over the session.
@@ -46,7 +50,8 @@ import path from 'node:path';
 export const UNAVAILABLE = [
   /Cannot find GitHub Copilot CLI/i,
   /\b(?:not|isn't|is not) (?:logged|signed) in\b/i,
-  /\bplease (?:run )?`?(?:copilot|codex|claude)(?: auth)? login\b/i,
+  /\bplease (?:run )?`?(?:copilot|codex|claude|cursor-agent|agent)(?: auth)? login\b/i,
+  /\bplease set an auth method\b/i,
   /\b401 Unauthorized\b/i,
   /\binvalid api key\b/i,
   /\bauthentication (?:is )?required\b/i,
@@ -97,7 +102,7 @@ export function createParser(kind, opts = {}) {
     u.cachedInputTokens += num(cached);
   };
   /** @type {Record<string, (event: any, state: ParseState, rel: Rel, addUsage: AddUsage) => string[]>} */
-  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot };
+  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot, 'gemini-stream': gemini, 'cursor-stream': cursor };
   const describe = parsers[kind];
 
   return {
@@ -135,7 +140,7 @@ export function createParser(kind, opts = {}) {
 }
 
 /**
- * @typedef {{ text: string[], costUsd?: number, credits?: number, usage?: Usage, error?: string, final?: boolean, lastMessage?: string }} ParseState
+ * @typedef {{ text: string[], costUsd?: number, credits?: number, usage?: Usage, error?: string, final?: boolean, lastMessage?: string, pending?: string }} ParseState
  * @typedef {(p: unknown) => string} Rel
  * @typedef {(input: number, output: number, cached: number) => void} AddUsage
  */
@@ -288,6 +293,97 @@ function copilot(event, state, rel, addUsage) {
     default:
       return [];
   }
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function gemini(event, state, rel, addUsage) {
+  // Assistant text streams in small deltas: keep all of it for the SUMMARY
+  // line, but show it a whole line at a time.
+  if (event.type === 'message') {
+    if (event.role !== 'assistant' || typeof event.content !== 'string') return [];
+    // Deltas join without a separator; the parser joins text entries with one.
+    state.text[0] = (state.text[0] ?? '') + event.content;
+    const lines = ((state.pending ?? '') + event.content).split(/\r?\n/);
+    state.pending = lines.pop();
+    return lines.map((l) => l.trim()).filter(Boolean);
+  }
+  const held = state.pending?.trim() ? [state.pending.trim()] : [];
+  state.pending = '';
+  return [...held, ...geminiEvent(event, state, rel, addUsage)];
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function geminiEvent(event, state, rel, addUsage) {
+  switch (event.type) {
+    case 'init':
+      return [`Gemini CLI session started (${event.model ?? 'default model'})`];
+    case 'tool_use': {
+      const a = event.parameters && typeof event.parameters === 'object' ? event.parameters : {};
+      const file = a.file_path ?? a.absolute_path ?? a.path ?? a.dir_path;
+      const target = file ? rel(file) : (a.command ?? a.pattern ?? a.query ?? a.url ?? a.name ?? '');
+      return [tool(event.tool_name ?? 'tool', target)];
+    }
+    case 'tool_result':
+      return event.status === 'error' ? [`  ✗ ${event.error?.message ?? 'tool failed'}`] : [];
+    case 'error':
+      if (event.severity === 'error') state.error = event.message ?? 'Gemini CLI reported an error.';
+      return [`${event.severity === 'error' ? 'Error' : 'Warning'}: ${event.message ?? ''}`];
+    case 'result': {
+      const s = event.stats ?? {};
+      if (s.input_tokens !== undefined || s.output_tokens !== undefined) {
+        state.usage = undefined;
+        addUsage(s.input_tokens, s.output_tokens, s.cached);
+      }
+      if (event.status === 'error') state.error = event.error?.message ?? 'Gemini CLI reported an error.';
+      return [`Finished in ${Math.round(num(s.duration_ms) / 1000)}s, ${tokens(state.usage)}`];
+    }
+    default:
+      return [];
+  }
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function cursor(event, state, rel, addUsage) {
+  if (event.type === 'system' && event.subtype === 'init') return [`Cursor CLI session started (${event.model ?? 'default model'})`];
+  if (event.type === 'assistant') {
+    /** @type {string[]} */
+    const out = [];
+    for (const block of event.message?.content ?? []) {
+      if (block.type === 'text' && block.text?.trim()) {
+        state.text.push(block.text);
+        out.push(block.text.trim());
+      }
+    }
+    return out;
+  }
+  if (event.type === 'tool_call') {
+    // `tool_call` holds one key per kind: readToolCall, editToolCall,
+    // shellToolCall, mcpToolCall, ... each with its args (and, once
+    // completed, its result).
+    const [key, call] = Object.entries(event.tool_call ?? {})[0] ?? [];
+    if (!key) return [];
+    const name = key === 'function' ? (call?.name ?? 'tool') : key.replace(/ToolCall$/, '');
+    if (event.subtype === 'completed') {
+      const failed = call?.result?.error ?? call?.result?.failure ?? call?.result?.rejected;
+      return failed ? [`  ✗ ${name}: ${clip(failed.message ?? failed.error ?? JSON.stringify(failed), 140)}`] : [];
+    }
+    if (event.subtype !== 'started') return [];
+    const a = call?.args ?? (typeof call?.arguments === 'string' ? parseJson(call.arguments) : call?.arguments) ?? {};
+    const file = a.path ?? a.filePath ?? a.file_path ?? a.targetFile;
+    const target = file ? rel(file) : (a.command ?? a.pattern ?? a.query ?? a.globPattern ?? a.url ?? a.toolName ?? '');
+    return [tool(name.charAt(0).toUpperCase() + name.slice(1), target)];
+  }
+  if (event.type === 'result') {
+    if (typeof event.result === 'string') state.text.push(event.result);
+    const u = event.usage;
+    if (u) {
+      state.usage = undefined;
+      addUsage(u.inputTokens, u.outputTokens, num(u.cacheReadTokens) + num(u.cacheWriteTokens));
+    }
+    if (event.is_error) state.error = typeof event.result === 'string' && event.result ? event.result : 'Cursor CLI reported an error.';
+    return [`Finished in ${Math.round(num(event.duration_ms) / 1000)}s${u ? `, ${tokens(state.usage)}` : ''}`];
+  }
+  return [];
 }
 
 /** @param {string} name @param {unknown} [target] */

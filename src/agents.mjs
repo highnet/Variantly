@@ -22,6 +22,8 @@ import { run } from "./proc.mjs";
  * @property {string} file
  * @property {string[]} args
  * @property {NodeJS.ProcessEnv} [env]
+ * @property {Record<string, string>} [files]  written before the run: config for agents
+ *                                             that take MCP servers only from a file
  * @property {import("./agent-output.mjs").OutputKind} output
  */
 
@@ -71,6 +73,14 @@ const mcpJson = (mcp, extra = {}) =>
 
 /** @param {NodeJS.ProcessEnv} env @param {string} key @param {string} fallback */
 const dirFrom = (env, key, fallback) => (env[key] ? path.resolve(String(env[key])) : fallback);
+
+/** Shell commands Gemini CLI may run unasked in safe mode (its policy engine's TOML). */
+const GEMINI_POLICY = `[[rule]]
+toolName = "run_shell_command"
+commandPrefix = ["npx impeccable", "npx --yes impeccable", "git status", "git diff", "ls"]
+decision = "allow"
+priority = 100
+`;
 
 /** @type {AgentAdapter[]} */
 export const AGENTS = [
@@ -190,6 +200,103 @@ export const AGENTS = [
       output: "copilot-json",
     }),
   },
+  {
+    // `gemini -p`, checked against Gemini CLI 0.64. Headless runs can't
+    // answer approval prompts, so safe mode auto-approves edits and a policy
+    // file allows the shell commands Impeccable needs. MCP servers come only
+    // from settings files: a system settings file beside the brief carries them.
+    // Gemini skips that file when a parent folder is world-writable (/tmp), so
+    // it relies on the brief living under ~/.variantly.
+    id: "gemini",
+    name: "Gemini CLI",
+    bin: "gemini",
+    install: "npm install -g @google/gemini-cli",
+    skills: {
+      global: (home, env) => [
+        path.join(dirFrom(env, "GEMINI_CLI_HOME", home), ".gemini", "skills"),
+        path.join(home, ".agents", "skills"),
+      ],
+      project: [".gemini/skills", ".agents/skills"],
+    },
+    invocation: ({ briefPath, model, permissions, mcp }) => {
+      const settings = path.join(path.dirname(briefPath), "gemini-settings.json");
+      const policy = path.join(path.dirname(briefPath), "gemini-policy.toml");
+      const withMcp = Boolean(mcp && Object.keys(mcp).length);
+      const safe = permissions !== "full";
+      return {
+        file: "gemini",
+        args: [
+          "-p",
+          pointer(briefPath),
+          "--output-format",
+          "stream-json",
+          "--skip-trust",
+          ...(safe ? ["--approval-mode", "auto_edit", "--policy", policy] : ["--approval-mode", "yolo"]),
+          "--include-directories",
+          path.dirname(briefPath),
+          ...(withMcp ? ["--allowed-mcp-server-names", ...Object.keys(mcp ?? {})] : []),
+          ...(model ? ["-m", model] : []),
+        ],
+        ...(withMcp ? { env: { GEMINI_CLI_SYSTEM_SETTINGS_PATH: settings } } : {}),
+        files: {
+          ...(safe ? { [policy]: GEMINI_POLICY } : {}),
+          ...(withMcp ? { [settings]: mcpJson(mcp, { trust: true }) } : {}),
+        },
+        output: "gemini-stream",
+      };
+    },
+  },
+  {
+    // `cursor-agent -p`, checked against Cursor CLI 2026.10.16. In print
+    // mode it may write files; shell commands need --force. MCP servers come
+    // from mcp.json files or a plugin, so a plugin folder beside the brief
+    // carries them.
+    id: "cursor",
+    name: "Cursor CLI",
+    bin: "cursor-agent",
+    install:
+      process.platform === "win32"
+        ? `powershell -NoProfile -Command "irm 'https://cursor.com/install?win32=true' | iex"`
+        : "curl https://cursor.com/install -fsS | bash",
+    skills: {
+      global: (home) => [path.join(home, ".cursor", "skills"), path.join(home, ".agents", "skills"), path.join(home, ".claude", "skills")],
+      project: [".cursor/skills", ".agents/skills", ".claude/skills"],
+    },
+    invocation: ({ cwd, briefPath, model, permissions, mcp }) => {
+      const plugin = path.join(path.dirname(briefPath), "cursor-plugin");
+      const withMcp = Boolean(mcp && Object.keys(mcp).length);
+      return {
+        file: "cursor-agent",
+        args: [
+          "-p",
+          pointer(briefPath),
+          "--output-format",
+          "stream-json",
+          "--trust",
+          "--workspace",
+          cwd,
+          "--add-dir",
+          path.dirname(briefPath),
+          // Impeccable's checks run from the shell, and Cursor has no
+          // per-command allow list on the command line: both modes need
+          // --force. Full mode also leaves Cursor's sandbox off.
+          "--force",
+          ...(permissions === "full" ? ["--sandbox", "disabled"] : []),
+          ...(withMcp ? ["--approve-mcps", "--plugin-dir", plugin] : []),
+          ...(model ? ["--model", model] : []),
+        ],
+        ...(withMcp
+          ? {
+              files: {
+                [path.join(plugin, ".cursor-plugin", "plugin.json")]: JSON.stringify({ name: "variantly" }),
+                [path.join(plugin, ".mcp.json")]: mcpJson(mcp),
+              },
+            }
+          : {}),
+        output: "cursor-stream",
+      };
+    },
+  },
 ];
 
 /**
@@ -268,7 +375,11 @@ export function binCandidates(bin, env = process.env) {
   const win = process.platform === "win32";
   const exts = win ? (env.PATHEXT ?? ".EXE;.CMD;.BAT;.COM").toLowerCase().split(";").filter(Boolean) : [""];
   const npmBin = env.APPDATA && win ? [path.join(env.APPDATA, "npm")] : [];
-  const dirs = [...(env.PATH ?? env.Path ?? "").split(path.delimiter).filter(Boolean), ...npmBin];
+  // Cursor's installer puts cursor-agent in ~/.local/bin, which a fresh
+  // shell may not have on PATH yet.
+  const home = env.HOME ?? env.USERPROFILE;
+  const localBin = home ? [path.join(home, ".local", "bin")] : [];
+  const dirs = [...(env.PATH ?? env.Path ?? "").split(path.delimiter).filter(Boolean), ...npmBin, ...localBin];
   /** @type {string[]} */
   const found = [];
   for (const dir of dirs) {
@@ -331,14 +442,41 @@ export async function agentFile(agent) {
  * installed where each one looks for skills.
  * @param {string} projectRoot
  */
+/**
+ * The model provider Codex is set to use, when it isn't OpenAI's own: the
+ * top-level `model_provider` in config.toml and that provider's `env_key`.
+ * @param {string} codexHome
+ * @returns {{ id: string, envKey?: string } | null}
+ */
+export function codexProvider(codexHome) {
+  let toml = "";
+  try {
+    toml = fs.readFileSync(path.join(codexHome, "config.toml"), "utf8");
+  } catch {
+    return null;
+  }
+  // Keys before the first [table] are top level.
+  const [top, ...tables] = toml.split(/^\s*\[/m);
+  const id = top.match(/^\s*model_provider\s*=\s*["']([^"']+)["']/m)?.[1];
+  if (!id || id === "openai") return null;
+  const table = tables.find((t) => t.replace(/["'\s]/g, "").startsWith(`model_providers.${id}]`)) ?? "";
+  const envKey = table.match(/^\s*env_key\s*=\s*["']([^"']+)["']/m)?.[1];
+  return { id, ...(envKey ? { envKey } : {}) };
+}
+
 /** The command that signs a person in, run in its own window. */
-const LOGIN = /** @type {Record<string, string>} */ ({ copilot: "copilot login", codex: "codex login", claude: "claude" });
+const LOGIN = /** @type {Record<string, string>} */ ({ copilot: "copilot login", codex: "codex login", claude: "claude", gemini: "gemini", cursor: "cursor-agent login" });
 
 /**
  * Free sign-in check (no prompt, no credits). Copilot uses the GitHub CLI's
  * login when there is one; its own login lands in ~/.copilot/config.json.
- * Codex keeps ~/.codex/auth.json. Claude Code is assumed signed in when it
- * has ~/.claude.json (or $CLAUDE_CONFIG_DIR's) or ANTHROPIC_API_KEY (it asks on first run otherwise). null = unknown.
+ * Codex keeps ~/.codex/auth.json, or uses a custom model provider (OpenRouter,
+ * say) whose key is in that provider's env_key variable. Claude Code is
+ * assumed signed in when it has ~/.claude.json (or $CLAUDE_CONFIG_DIR's),
+ * ANTHROPIC_API_KEY, or a gateway such as OpenRouter (ANTHROPIC_BASE_URL with
+ * ANTHROPIC_AUTH_TOKEN); it asks on first run otherwise. Gemini CLI takes an
+ * API key, Vertex AI, or its Google sign-in (~/.gemini/oauth_creds.json).
+ * Cursor CLI takes CURSOR_API_KEY or its own auth.json. null = unknown.
  * @param {string} id
  * @returns {Promise<boolean | null>}
  */
@@ -353,9 +491,31 @@ const isSignedIn = async (id) => {
     const gh = await run("gh", ["auth", "status"], { timeout: 15_000 });
     return gh.code === 0;
   }
-  if (id === "codex") return fs.existsSync(path.join(home, ".codex", "auth.json"));
+  if (id === "codex") {
+    const codexHome = dirFrom(process.env, "CODEX_HOME", path.join(home, ".codex"));
+    if (fs.existsSync(path.join(codexHome, "auth.json")) || process.env.CODEX_API_KEY) return true;
+    const provider = codexProvider(codexHome);
+    if (!provider) return false;
+    return provider.envKey ? Boolean(process.env[provider.envKey]) : null;
+  }
+  if (id === "gemini") {
+    const env = process.env;
+    if (env.GEMINI_API_KEY || env.GOOGLE_API_KEY || env.GOOGLE_GENAI_USE_VERTEXAI || env.GOOGLE_GENAI_USE_GCA) return true;
+    return fs.existsSync(path.join(dirFrom(env, "GEMINI_CLI_HOME", home), ".gemini", "oauth_creds.json")) || null;
+  }
+  if (id === "cursor") {
+    if (process.env.CURSOR_API_KEY) return true;
+    const file =
+      process.platform === "win32"
+        ? path.join(process.env.APPDATA || path.join(home, "AppData", "Roaming"), "Cursor", "auth.json")
+        : process.platform === "darwin"
+          ? path.join(home, ".cursor", "auth.json")
+          : path.join(process.env.XDG_CONFIG_HOME || path.join(home, ".config"), "cursor", "auth.json");
+    return fs.existsSync(file);
+  }
   if (id === "claude") {
     if (process.env.ANTHROPIC_API_KEY) return true;
+    if (process.env.ANTHROPIC_BASE_URL && process.env.ANTHROPIC_AUTH_TOKEN) return true;
     const dir = process.env.CLAUDE_CONFIG_DIR;
     return fs.existsSync(dir ? path.join(dir, ".claude.json") : path.join(home, ".claude.json")) || null;
   }
@@ -371,7 +531,7 @@ export async function detectAgents(projectRoot) {
       // a copy in any of them counts.
       const impeccable =
         hasSkill(agent, "impeccable", { projectRoot }) ||
-        [".claude/skills", ".agents/skills", ".github/skills", ".copilot/skills", ".codex/skills"].some((d) =>
+        [".claude/skills", ".agents/skills", ".github/skills", ".copilot/skills", ".codex/skills", ".gemini/skills", ".cursor/skills"].some((d) =>
           fs.existsSync(path.join(os.homedir(), d, "impeccable", "SKILL.md")),
         );
       const variantlySkill = hasSkill(agent, "variantly", { projectRoot });

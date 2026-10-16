@@ -134,8 +134,8 @@ export const PROMPTS = {
 export const CHECKLIST: { id: string; need: string; how: string; prompt: string }[] = [
   {
     id: 'agent',
-    need: 'An AI coding assistant installed',
-    how: '**[Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)**, **[Codex](https://github.com/openai/codex)** or **[Copilot CLI](https://github.com/github/copilot-cli)**, signed in. [Cursor](https://cursor.com)/[Lovable](https://lovable.dev) only? Install Claude Code.',
+    need: 'An AI coding agent on your computer',
+    how: '**[Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)**, **[Codex](https://github.com/openai/codex)**, **[Copilot CLI](https://github.com/github/copilot-cli)**, **[Gemini CLI](https://github.com/google-gemini/gemini-cli)** or **[Cursor CLI](https://cursor.com/cli)**, signed in or on [OpenRouter](https://openrouter.ai). variantly **finds the one you have**, or installs one and opens its sign-in. [Lovable](https://lovable.dev)/v0 only? Those run in the browser; install Claude Code.',
     prompt:
       'Help me install Claude Code on this computer and sign in. Tell me each command to run and check it works with `claude --version`.',
   },
@@ -156,9 +156,9 @@ export const CHECKLIST: { id: string; need: string; how: string; prompt: string 
   {
     id: 'run',
     need: 'The site runs on your computer',
-    how: 'Starts locally and opens in a browser. **[Node.js](https://nodejs.org/en/download) 20.11+**.',
+    how: 'Starts locally and opens in a browser. Plus **[Node.js](https://nodejs.org/en/download) 20.11+**, whatever your site is built with: variantly itself runs on it (that’s what **npx** runs), and most AI agents install with it.',
     prompt:
-      'Get this website running locally. Check Node.js is 20.11 or newer, install its dependencies and start the dev server, then tell me the address to open.',
+      'Get this website running locally and tell me the address to open. Also check Node.js is 20.11 or newer (`node --version`) and install it if not: variantly runs on Node even if the site doesn’t.',
   },
 ];
 

@@ -75,4 +75,4 @@ export const vsBase = (n: number | undefined, base?: number) =>
 export const scoreText = (a: Audit, base?: Audit) =>
   `A11y ${vsBase(a.lighthouse.accessibility, base?.lighthouse.accessibility)} · Perf ${vsBase(a.lighthouse.performance, base?.lighthouse.performance)} · axe ${a.axe.total}${base ? ` (was ${base.axe.total})` : ''}`;
 
-export const agentShort: Record<string, string> = { claude: 'Claude', codex: 'Codex', copilot: 'Copilot', demo: 'Demo' };
+export const agentShort: Record<string, string> = { claude: 'Claude', codex: 'Codex', copilot: 'Copilot', gemini: 'Gemini', cursor: 'Cursor', demo: 'Demo' };

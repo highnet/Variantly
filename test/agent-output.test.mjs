@@ -126,3 +126,52 @@ test('a usage or rate limit halts the queue; the agent mentioning one in its tex
   q.note('Error: 429 Too Many Requests');
   assert.match(q.unavailable() ?? '', /rate limit/);
 });
+
+test('Gemini CLI stream-json: deltas shown a line at a time, tools, failures, tokens', () => {
+  const { parser, lines } = feed('gemini', 'gemini-stream');
+  assert.equal(lines[0], 'Gemini CLI session started (gemini-3-pro)');
+  assert.ok(lines.includes("I'll load the Impeccable skill and read the site first."), 'deltas join into one line');
+  assert.ok(lines.includes('→ activate_skill impeccable'));
+  assert.ok(lines.includes('→ read_file src/styles/global.css'), 'paths under the worktree are shown relative');
+  assert.ok(lines.includes('→ replace src/styles/global.css'));
+  assert.ok(lines.includes('→ run_shell_command npm run lint'));
+  assert.ok(lines.includes('  ✗ Command exited with code 1'));
+  assert.ok(lines.includes('Warning: Loop detected, retrying'));
+  assert.ok(lines.includes('SUMMARY: Editorial world: Fraunces display over Inter, ink on warm paper.'), 'held text is flushed before the result');
+  assert.equal(lines.at(-1), 'Finished in 31s, 48k in / 3k out tokens');
+  assert.deepEqual(parser.usage(), { inputTokens: 48000, outputTokens: 3000, cachedInputTokens: 30000 });
+  assert.equal(extractSummary(parser.text()), 'Editorial world: Fraunces display over Inter, ink on warm paper.');
+  assert.equal(parser.costUsd(), undefined);
+  assert.equal(parser.error(), undefined, 'a warning is not a failure');
+});
+
+test('Gemini CLI: an error result is the run error', () => {
+  const parser = createParser('gemini-stream');
+  parser.push(JSON.stringify({ type: 'result', status: 'error', error: { type: 'FatalAuthenticationError', message: 'Quota exceeded' }, stats: {} }));
+  assert.equal(parser.error(), 'Quota exceeded');
+});
+
+test('Cursor CLI stream-json: tool calls by kind, failures, tokens, summary', () => {
+  const { parser, lines } = feed('cursor', 'cursor-stream');
+  assert.equal(lines[0], 'Cursor CLI session started (Claude 4.6 Sonnet)');
+  assert.ok(lines.includes('→ Read src/styles/global.css'));
+  assert.ok(lines.includes('→ Edit src/styles/global.css'));
+  assert.ok(lines.includes('→ Shell npm run lint'));
+  assert.ok(lines.some((l) => l.startsWith('  ✗ shell:')), 'a failed command is reported');
+  assert.ok(lines.includes('→ Mcp browser_navigate'));
+  assert.ok(!lines.some((l) => l.includes('hmm')), 'thinking stays off the board');
+  assert.equal(lines.at(-1), 'Finished in 412s, 1k in / 15k out tokens');
+  assert.deepEqual(parser.usage(), { inputTokens: 1200, outputTokens: 15000, cachedInputTokens: 93000 });
+  assert.equal(extractSummary(parser.text()), 'Editorial world: Fraunces display over Inter, ink on warm paper.');
+  assert.equal(parser.error(), undefined);
+});
+
+test('Gemini and Cursor sign-in failures (real captures) mean the agent is unavailable', () => {
+  // Gemini CLI 0.64 and Cursor CLI 2026.10.16, run with variantly's safe-mode flags and an empty home.
+  const gemini = createParser('gemini-stream');
+  gemini.note('Please set an Auth method in your /home/u/.gemini/settings.json or specify one of the following environment variables before running: GEMINI_API_KEY, GOOGLE_GENAI_USE_VERTEXAI, GOOGLE_GENAI_USE_GCA');
+  assert.ok(gemini.unavailable());
+  const cursor = createParser('cursor-stream');
+  cursor.note("Error: Authentication required. Please run 'agent login' first, or set CURSOR_API_KEY environment variable.");
+  assert.ok(cursor.unavailable());
+});
