@@ -1,3 +1,4 @@
+import { Rich } from '@/components/ui/Rich';
 import { Typography } from '@/components/ui/Typography';
 import { EXTRAS, STEPS } from '@/lib/content';
 
@@ -22,7 +23,9 @@ const HowItWorks = () => (
           <Typography variant="title" as="h3">
             {s.title}
           </Typography>
-          <p className="text-steel m-0 max-w-[40ch] text-[16px] leading-relaxed">{s.body}</p>
+          <p className="text-steel m-0 max-w-[40ch] text-[16px] leading-relaxed">
+            <Rich text={s.body} />
+          </p>
         </li>
       ))}
     </ol>
@@ -32,7 +35,7 @@ const HowItWorks = () => (
           Optional add-ons
         </Typography>
         <p className="text-steel m-0 max-w-[60ch] text-sm leading-relaxed">
-          The setup wizard offers each of these as an opt-in step. Skip any you don&apos;t need.
+          <strong className="text-ink">Opt-in</strong> steps in the wizard. Skip any.
         </p>
       </div>
       <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-5">
@@ -42,7 +45,9 @@ const HowItWorks = () => (
             className="border-rule bg-surface grid content-start gap-1 rounded-md border p-4"
           >
             <span className="condensed font-mono text-[13px] font-semibold">{x.label}</span>
-            <span className="text-steel text-sm leading-snug">{x.hint}</span>
+            <span className="text-steel text-sm leading-snug">
+              <Rich text={x.hint} />
+            </span>
           </li>
         ))}
       </ul>

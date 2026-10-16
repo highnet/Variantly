@@ -1,6 +1,7 @@
 import { CommandCopy } from '@/components/CommandCopy';
 import { NodeHint, RunnerPicker } from '@/components/RunnerPicker';
 import { PromptCopy } from '@/components/PromptCopy';
+import { Rich } from '@/components/ui/Rich';
 import { Typography } from '@/components/ui/Typography';
 import { CHECKLIST, PROMPTS } from '@/lib/content';
 
@@ -24,8 +25,8 @@ const StartChecklist = () => (
           Before you start
         </Typography>
         <Typography variant="body" color="steel">
-          You need these four things. Missing one? Copy its prompt into your AI assistant and it
-          sets it up with you.
+          <strong className="text-ink">Four things.</strong> Missing one? Copy its{' '}
+          <strong className="text-ink">prompt</strong> into your AI assistant.
         </Typography>
       </div>
       <ol className="border-rule m-0 grid list-none border-t p-0">
@@ -39,7 +40,9 @@ const StartChecklist = () => (
             </span>
             <div className="grid gap-1">
               <span className="text-[16px] font-semibold">{c.need}</span>
-              <span className="text-steel text-[14px] leading-snug">{c.how}</span>
+              <span className="text-steel text-[14px] leading-snug">
+                <Rich text={c.how} />
+              </span>
             </div>
             <PromptCopy
               prompt={c.prompt}
@@ -57,7 +60,7 @@ const StartChecklist = () => (
           Then run it
         </Typography>
         <Typography variant="small" color="steel-on-slate">
-          Open a terminal in your website&apos;s folder and paste:
+          In your <strong className="text-surface">site&apos;s folder</strong>, paste:
         </Typography>
         <RunnerPicker tone="slate" />
         <CommandCopy command="npx variantly" tone="slate" />
@@ -66,7 +69,7 @@ const StartChecklist = () => (
 
       <div className="grid gap-3">
         <Typography variant="small" color="steel-on-slate">
-          Just looking? This runs the whole thing with ready-made designs and no AI:
+          <strong className="text-surface">Just looking?</strong> Ready-made designs, no AI:
         </Typography>
         <CommandCopy command="npx variantly --demo" tone="slate" />
         <PromptCopy prompt={PROMPTS.demo} tone="slate" label="Copy as a prompt instead" />
@@ -77,13 +80,14 @@ const StartChecklist = () => (
           Rather not use the terminal?
         </Typography>
         <Typography variant="small" color="steel-on-slate">
-          Paste this into your AI assistant. It does the setup for you, then hands you the link.
+          Paste this into your AI assistant. It <strong className="text-surface">sets up</strong>{' '}
+          and <strong className="text-surface">hands you the link</strong>.
         </Typography>
         <PromptCopy prompt={PROMPTS.setup} tone="slate" preview label="Copy setup prompt" />
       </div>
 
       <Typography variant="small" color="steel-on-slate">
-        Stuck? This says what&apos;s missing:
+        <strong className="text-surface">Stuck?</strong> This names what&apos;s missing:
       </Typography>
       <CommandCopy command="npx variantly doctor" tone="slate" />
       <PromptCopy prompt={PROMPTS.doctor} tone="slate" label="Copy as a prompt instead" />
