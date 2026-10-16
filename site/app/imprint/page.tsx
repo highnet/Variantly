@@ -2,7 +2,11 @@ import type { Metadata } from 'next';
 
 import { LegalPage } from '@/components/LegalPage';
 
-export const metadata: Metadata = { title: 'Imprint' };
+export const metadata: Metadata = {
+  title: 'Imprint',
+  description: 'Legal notice and contact details for variantly.',
+  alternates: { canonical: '/imprint' },
+};
 
 // Placeholder text until the real copy is written.
 const Page = () => (

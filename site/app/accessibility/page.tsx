@@ -2,7 +2,11 @@ import type { Metadata } from 'next';
 
 import { LegalPage } from '@/components/LegalPage';
 
-export const metadata: Metadata = { title: 'Accessibility' };
+export const metadata: Metadata = {
+  title: 'Accessibility',
+  description: 'How variantly.style meets accessibility standards, and how to report a barrier.',
+  alternates: { canonical: '/accessibility' },
+};
 
 // Placeholder text until the real copy is written.
 const Page = () => (
