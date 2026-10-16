@@ -505,7 +505,11 @@ const Showcase = () => {
                 </summary>
                 <ol className="m-0 mt-2 grid list-decimal gap-1.5 pl-5">
                   <li>
-                    Open your website&apos;s folder in your code editor (for example VS Code).
+                    Open your website&apos;s folder in your code editor (for example{' '}
+                    <a href="https://code.visualstudio.com" target="_blank" rel="noreferrer" className="text-surface underline underline-offset-2">
+                      VS Code
+                    </a>
+                    ).
                   </li>
                   <li>
                     Open a terminal: in VS Code, use the menu <strong className="text-surface">Terminal → New Terminal</strong>.

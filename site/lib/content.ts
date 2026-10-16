@@ -135,7 +135,7 @@ export const CHECKLIST: { id: string; need: string; how: string; prompt: string 
   {
     id: 'agent',
     need: 'An AI coding assistant installed',
-    how: '**Claude Code**, **Codex** or **Copilot CLI**, signed in. Cursor/Lovable only? Install Claude Code.',
+    how: '**[Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)**, **[Codex](https://github.com/openai/codex)** or **[Copilot CLI](https://github.com/github/copilot-cli)**, signed in. [Cursor](https://cursor.com)/[Lovable](https://lovable.dev) only? Install Claude Code.',
     prompt:
       'Help me install Claude Code on this computer and sign in. Tell me each command to run and check it works with `claude --version`.',
   },
@@ -149,14 +149,14 @@ export const CHECKLIST: { id: string; need: string; how: string; prompt: string 
   {
     id: 'git',
     need: 'The code saved with git',
-    how: '**At least one commit.** Unsure? Use the prompt.',
+    how: 'A [git](https://git-scm.com/downloads) repository. **No commit yet? Variantly makes the first one for you.**',
     prompt:
       'Make sure this folder is a git repository and commit everything in it with the message "before variantly". Initialise git first if needed.',
   },
   {
     id: 'run',
     need: 'The site runs on your computer',
-    how: 'Starts locally and opens in a browser. **Node.js 20.11+**.',
+    how: 'Starts locally and opens in a browser. **[Node.js](https://nodejs.org/en/download) 20.11+**.',
     prompt:
       'Get this website running locally. Check Node.js is 20.11 or newer, install its dependencies and start the dev server, then tell me the address to open.',
   },
