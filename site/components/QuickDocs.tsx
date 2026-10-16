@@ -21,7 +21,7 @@ const FLAGS = [
 
 /* A compact command reference: every command and flag on one screen. */
 const QuickDocs = () => (
-  <section aria-labelledby="docs-title" className="grid gap-6">
+  <section id="docs" aria-labelledby="docs-title" className="grid scroll-mt-28 gap-6">
     <div className="grid gap-2">
       <Typography variant="headline" as="h2" id="docs-title">
         Quick docs

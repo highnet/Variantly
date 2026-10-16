@@ -92,7 +92,11 @@ const AgentQuickstart = () => (
     {/* Pinned to the bottom of a short page, like the human view's fine print. */}
     <footer className="border-rule mt-auto border-t pt-6">
       <Typography variant="small" color="steel">
-        Full manual:{' '}
+        Every command and flag:{' '}
+        <a href="#docs" className="text-ink underline">
+          quick docs
+        </a>
+        . Full manual:{' '}
         <Link href="/SKILLS.md" className="text-ink underline">
           /SKILLS.md
         </Link>{' '}
