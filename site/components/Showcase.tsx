@@ -469,7 +469,8 @@ const Showcase = () => {
             </Typography>
             <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">
               One command asks the AI coding assistant you already use to redesign your site several
-              different ways. Try each one live, like the shop below, and keep your favourite. Your
+              different ways. No preset themes or templates: every design is made from scratch for your
+              site. Try each one live, like the shop below, and keep your favourite. Your
               current site stays untouched until you do.
             </p>
           </div>
