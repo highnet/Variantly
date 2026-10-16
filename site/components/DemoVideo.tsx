@@ -4,16 +4,25 @@ import { useState } from 'react';
 
 import { Typography } from '@/components/ui/Typography';
 import { Button, buttonVariants } from '@/components/ui/Button';
-import { DEMO_BOOKING_URL, DEMO_VIDEO_ID } from '@/lib/site';
+import { DEMO_BOOKING_URL, DEMO_VIDEO_ID_DARK, DEMO_VIDEO_ID_LIGHT } from '@/lib/site';
+
+const HAS_VIDEO = Boolean(DEMO_VIDEO_ID_LIGHT || DEMO_VIDEO_ID_DARK);
+
+// The cut matching the theme the page is showing when play is pressed.
+const videoForTheme = () =>
+  document.documentElement.dataset.theme === 'dark'
+    ? DEMO_VIDEO_ID_DARK || DEMO_VIDEO_ID_LIGHT
+    : DEMO_VIDEO_ID_LIGHT || DEMO_VIDEO_ID_DARK;
 
 /*
  * The narrated live demo, straight after the showcase: people who just saw
  * the result watch it happen before reading the steps. A 16:9 frame holds
  * the space either way, so the page doesn't shift when the video lands.
- * Nothing loads from YouTube until the visitor clicks play (GDPR / TKG).
+ * Nothing loads from YouTube until the visitor clicks play (GDPR / TKG),
+ * and the light or dark cut is chosen to match the site's theme then.
  */
 const DemoVideo = () => {
-  const [play, setPlay] = useState(false);
+  const [videoId, setVideoId] = useState('');
   return (
     <section aria-labelledby="demo-title" className="grid gap-6">
       <div className="grid max-w-[68ch] gap-3">
@@ -26,18 +35,18 @@ const DemoVideo = () => {
         </p>
       </div>
       <div className="border-ink bg-slate relative aspect-video w-full max-w-[1100px] overflow-hidden rounded-md border-2">
-        {DEMO_VIDEO_ID && play ? (
+        {videoId ? (
           <iframe
             className="absolute inset-0 size-full"
-            src={`https://www.youtube-nocookie.com/embed/${DEMO_VIDEO_ID}?rel=0&autoplay=1`}
+            src={`https://www.youtube-nocookie.com/embed/${videoId}?rel=0&autoplay=1`}
             title="variantly live demo"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />
-        ) : DEMO_VIDEO_ID ? (
+        ) : HAS_VIDEO ? (
           <div className="absolute inset-0 grid place-items-center content-center gap-4 p-6 text-center">
-            <Button variant="primary" size="big" onClick={() => setPlay(true)}>
+            <Button variant="primary" size="big" onClick={() => setVideoId(videoForTheme())}>
               <svg viewBox="0 0 24 24" className="fill-current" aria-hidden="true">
                 <path d="M8 5v14l11-7z" />
               </svg>
