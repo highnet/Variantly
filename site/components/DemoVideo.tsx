@@ -94,9 +94,6 @@ const DemoVideo = () => {
             </svg>
             Book a live demo
           </a>
-          <span className="text-steel text-[15px]">
-            Thirty minutes, on your own site, with someone who builds variantly.
-          </span>
         </div>
       )}
     </section>
