@@ -257,8 +257,10 @@ class Director {
     await Promise.all(target.locators.map((l) => l.fill('')));
     const text = this.fill(step.text);
     for (const ch of text) {
+      const t = Date.now();
       await this.all((page) => page.keyboard.type(ch));
-      await this.page.waitForTimeout(step.delay ?? 22);
+      const rest = (step.delay ?? 22) - (Date.now() - t);
+      if (rest > 0) await this.page.waitForTimeout(rest);
     }
   }
 
@@ -385,14 +387,19 @@ async function openView(theme, mirror) {
     // The mirror must not change the run: answer its POSTs here (the UI
     // ignores their bodies and follows /api/state and /api/events). Only
     // ensure/<target>, which just starts a preview server, goes through.
-    await context.route(
-      (url) => url.origin === app && url.pathname.startsWith('/api/') && url.pathname !== '/api/events',
-      (route) => {
-        const req = route.request();
-        if (req.method() === 'GET' || new URL(req.url()).pathname.startsWith('/api/ensure/')) return route.continue();
-        return route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
-      },
-    );
+    // (In the page, not with context.route: request interception held back
+    // the mirror's event stream for half a minute.)
+    await context.addInitScript(() => {
+      const real = window.fetch.bind(window);
+      window.fetch = (input, init = {}) => {
+        const url = new URL(typeof input === 'string' ? input : input.url, location.href);
+        const method = (init.method ?? (typeof input === 'string' ? 'GET' : input.method) ?? 'GET').toUpperCase();
+        if (url.origin === location.origin && url.pathname.startsWith('/api/') && method !== 'GET' && !url.pathname.startsWith('/api/ensure/')) {
+          return Promise.resolve(new Response('{"ok":true}', { status: 200, headers: { 'content-type': 'application/json' } }));
+        }
+        return real(input, init);
+      };
+    });
   }
   const page = await context.newPage();
   const view = { theme, context, page, t0: Date.now(), errors: [] };

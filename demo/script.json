@@ -23,7 +23,7 @@
         { "goto": "{{app}}" },
         { "waitFor": "#wiz-title" },
         { "wait": 800 },
-        { "hover": "text=Claude" }
+        { "hover": "text=/Claude Code|Demo agent/" }
       ]
     },
     {
@@ -78,7 +78,6 @@
       "id": "compare",
       "text": "Then compare, on your real site. Drag the divider for a before and after.",
       "actions": [
-        { "click": "role=button[name=/^Compare$/]", "optional": true },
         { "waitFor": "body[data-view=\"compare\"]" },
         { "click": "role=button[name=/^V01/]" },
         { "waitPanes": true },
