@@ -207,6 +207,8 @@ const CURSOR = () => {
 const MASKS = [
   [HOME, '~/.variantly'],
   [SITE, '~/tallyboard'],
+  [process.execPath, 'node'],
+  [REPO, 'variantly'],
   [os.homedir(), '~'],
 ].flatMap(([from, to]) => [[from, to], [from.replace(/\\/g, '/'), to]]);
 
@@ -693,7 +695,7 @@ try {
     const start = director.now();
     log('record', `${scene.id} @ ${start.toFixed(1)}s`);
     for (const step of scene.actions) await director.act(step);
-    if (scene.id === 'launch') {
+    if (scene.id === 'need') {
       for (const view of views) schemes[view.theme] = await view.page.evaluate(() => ({ media: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light', ui: document.documentElement.dataset.theme ?? null }));
     }
     // Hold until the line has been spoken, plus a breath.

@@ -391,10 +391,6 @@
       "text": "Then compare, on your real site. Drag the divider for a before and after.",
       "actions": [
         {
-          "click": "role=button[name=/^Compare/]",
-          "optional": true
-        },
-        {
           "waitFor": "body[data-view=\"compare\"]"
         },
         {
@@ -428,7 +424,7 @@
           "waitPanes": true
         },
         {
-          "wait": 900
+          "wait": 500
         },
         {
           "key": "3"
@@ -437,7 +433,7 @@
           "waitPanes": true
         },
         {
-          "wait": 900
+          "wait": 500
         },
         {
           "key": "4"
@@ -446,7 +442,7 @@
           "waitPanes": true
         },
         {
-          "wait": 900
+          "wait": 500
         },
         {
           "key": "s"
@@ -461,7 +457,7 @@
           "waitPanes": true
         },
         {
-          "wait": 1100
+          "wait": 500
         },
         {
           "key": "m"
@@ -470,7 +466,7 @@
           "waitPanes": true
         },
         {
-          "wait": 1100
+          "wait": 500
         },
         {
           "key": "m"
@@ -502,12 +498,12 @@
         },
         {
           "spotlight": "text=/Scores · axe-core/",
-          "ms": 4500,
+          "ms": 3600,
           "pad": 120
         },
         {
           "spotlight": "text=/files changed/",
-          "ms": 2500,
+          "ms": 1800,
           "pad": 60,
           "optional": true
         },
