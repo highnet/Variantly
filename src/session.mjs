@@ -769,6 +769,8 @@ export class Session extends EventEmitter {
     }
     await killAudits();
     await this.pool.closeAll();
+    // Let queued state writes land, so nothing recreates the state dir after.
+    await this.saveQueue;
   }
 }
 
