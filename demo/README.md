@@ -62,8 +62,8 @@ Check with `node -v` (22.18 or later), `git --version` and `python --version`
 ```sh
 git clone https://github.com/highnet/Variantly
 git clone https://github.com/highnet/seekreel
-cd Variantly && git checkout claude/variantly-demo-video-48r2g7 && npm install && npm run build:ui
-cd ../seekreel && git checkout claude/variantly-demo-video-48r2g7 && npm install
+cd Variantly && npm install && npm run build:ui
+cd ../seekreel && npm install
 ```
 
 The demo finds SeekReel at `../seekreel`. If you keep it elsewhere, set
