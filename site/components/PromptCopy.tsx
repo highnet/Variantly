@@ -13,6 +13,8 @@ type PromptCopyProps = {
   tone?: 'light' | 'slate';
   /** Show the prompt text above the button. */
   preview?: boolean;
+  /** Fill with the primary accent colour. */
+  accent?: boolean;
   className?: string;
 };
 
@@ -25,6 +27,7 @@ const PromptCopy = ({
   label = 'Copy prompt',
   tone = 'light',
   preview = false,
+  accent = false,
   className,
 }: PromptCopyProps) => {
   const [copied, setCopied] = useState(false);
@@ -56,7 +59,7 @@ const PromptCopy = ({
         </blockquote>
       )}
       <Button
-        variant={slate ? 'prompt-slate' : 'prompt'}
+        variant={accent ? 'primary' : slate ? 'prompt-slate' : 'prompt'}
         size="prompt"
         onClick={copy}
         title={preview ? undefined : prompt}

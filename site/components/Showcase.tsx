@@ -491,6 +491,12 @@ const Showcase = () => {
 
           <div className="grid content-start gap-4">
             <div data-keep-cycle className="grid gap-2">
+              <PromptCopy
+                prompt={PROMPTS.setup}
+                tone="slate"
+                accent
+                label="Copy a ready-made prompt for your AI assistant"
+              />
               <RunnerPicker tone="slate" />
               <CommandCopy command={INSTALL} tone="slate" accent />
               <p className="text-steel-on-slate m-0 text-[14px] leading-snug">
@@ -499,11 +505,6 @@ const Showcase = () => {
                   Check what you need first
                 </a>
               </p>
-              <PromptCopy
-                prompt={PROMPTS.setup}
-                tone="slate"
-                label="Or copy a ready-made prompt for your AI assistant"
-              />
             </div>
             <div className="border-slate-line grid gap-2.5 border-t pt-4">
               <p
