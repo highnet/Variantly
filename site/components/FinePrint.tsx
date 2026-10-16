@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { QuickDocs } from '@/components/QuickDocs';
 import { Rich } from '@/components/ui/Rich';
 import { Typography } from '@/components/ui/Typography';
 import { FAQ } from '@/lib/content';
@@ -26,6 +27,8 @@ const FinePrint = () => (
         ))}
       </dl>
     </div>
+
+    <QuickDocs />
 
     <footer className="border-rule text-steel flex flex-wrap items-center justify-between gap-4 border-t pt-6 text-sm">
       <span className="max-w-[90ch] leading-relaxed">
