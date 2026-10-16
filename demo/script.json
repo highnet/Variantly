@@ -259,7 +259,7 @@
         "command": "npx variantly",
         "url": "variantly.style"
       },
-      "text": "Variantly. Light or dark, all it needs is Node and Claude Code. Try it with npx variantly.",
+      "text": "Variantly. It runs on your machine, and all it needs is Node and Claude Code. Try it with npx variantly.",
       "actions": [
         {
           "wait": 500
