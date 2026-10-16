@@ -16,7 +16,7 @@ import { STEPS } from '../src/steps.mjs';
 
 const win = process.platform === 'win32';
 const tmp = mkdtempSync(path.join(os.tmpdir(), 'variantly-copilot-steps-'));
-test.after(() => rmSync(tmp, { recursive: true, force: true, maxRetries: 3 }));
+test.after(() => rmSync(tmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 }));
 
 const ev = (/** @type {string} */ type, /** @type {object} */ data) => JSON.stringify({ type, id: type, timestamp: new Date(0).toISOString(), data });
 
