@@ -485,7 +485,7 @@ const Showcase = () => {
               your site <strong className="text-surface">several ways</strong>,{' '}
               <strong className="text-surface">from scratch</strong>: no preset themes. Try each{' '}
               <strong className="text-surface">live</strong>,{' '}
-              <strong className="text-surface">keep one</strong>. Nothing changes until you do.
+              <strong className="text-surface">keep one</strong>.
             </p>
           </div>
 
