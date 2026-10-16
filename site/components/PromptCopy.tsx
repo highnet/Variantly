@@ -1,6 +1,6 @@
 'use client';
 
-import { Check, ClipboardCopy } from 'lucide-react';
+import { Check, ClipboardCopy, Copy, FileText } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/Button';
@@ -11,23 +11,31 @@ type PromptCopyProps = {
   prompt: string;
   label?: string;
   tone?: 'light' | 'slate';
-  /** Show the prompt text above the button. */
+  /** Start with the whole prompt shown. */
   preview?: boolean;
+  /** A single primary button instead of the prompt card. */
+  accent?: boolean;
   className?: string;
 };
 
+// Prompts longer than this start clamped behind a show-more pill.
+const CLAMP_AT = 90;
+
 /*
- * A prompt for the person's own AI assistant, one click from the clipboard.
- * Both labels sit in the same grid cell, so the button keeps one width.
+ * A prompt for the person's own AI assistant, one click from the clipboard:
+ * a card with the prompt text, or, with `accent`, one primary button whose
+ * two labels share a grid cell so it keeps one width.
  */
 const PromptCopy = ({
   prompt,
   label = 'Copy prompt',
   tone = 'light',
   preview = false,
+  accent = false,
   className,
 }: PromptCopyProps) => {
   const [copied, setCopied] = useState(false);
+  const [open, setOpen] = useState(preview);
 
   const copy = async () => {
     try {
@@ -41,26 +49,15 @@ const PromptCopy = ({
   };
 
   const slate = tone === 'slate';
-  return (
-    <div className={cn('grid gap-2', className)}>
-      {preview && (
-        <blockquote
-          className={cn(
-            'm-0 rounded-[4px] border-l-2 px-3 py-2 text-[13px] leading-relaxed',
-            slate
-              ? 'border-slate-line bg-ink text-steel-on-slate'
-              : 'border-rule bg-panel text-steel',
-          )}
-        >
-          {prompt}
-        </blockquote>
-      )}
+
+  if (accent) {
+    return (
       <Button
-        variant={slate ? 'prompt-slate' : 'prompt'}
+        variant="primary"
         size="prompt"
         onClick={copy}
-        title={preview ? undefined : prompt}
-        className="w-fit"
+        title={prompt}
+        className={cn('w-fit', className)}
       >
         <span className="grid [grid-template-areas:'x'] *:[grid-area:x]">
           <span className={cn('inline-flex items-center gap-1.5', copied && 'invisible')}>
@@ -79,6 +76,63 @@ const PromptCopy = ({
           </span>
         </span>
       </Button>
+    );
+  }
+
+  const long = prompt.length > CLAMP_AT;
+  return (
+    <div className={cn('grid', long && 'pb-4', className)}>
+      <div
+        data-slot="prompt-copy"
+        className={cn(
+          'rounded-pass relative border',
+          slate ? 'on-slate border-slate-line bg-ink text-surface' : 'border-rule bg-surface',
+        )}
+      >
+        <div
+          className={cn(
+            'rounded-t-pass flex items-center justify-between gap-3 border-b py-1 pr-1 pl-4',
+            slate ? 'border-slate-line text-steel-on-slate' : 'border-rule bg-panel text-steel',
+          )}
+        >
+          <span className="inline-flex items-center gap-2 text-[13px]">
+            <FileText aria-hidden="true" className="size-4" />
+            Agent prompt
+          </span>
+          <Button
+            variant={slate ? 'icon-slate' : 'icon'}
+            size="icon"
+            onClick={copy}
+            aria-label={copied ? 'Copied' : label}
+            title={label}
+          >
+            {copied ? <Check className="animate-pop" /> : <Copy />}
+          </Button>
+        </div>
+        <p
+          className={cn(
+            'm-0 px-4 pt-3 text-[14px] leading-relaxed',
+            long ? 'pb-6' : 'pb-3.5',
+            slate ? 'text-steel-on-slate' : 'text-steel',
+          )}
+        >
+          <span className={cn(long && !open && 'line-clamp-2')}>{prompt}</span>
+        </p>
+        {long && (
+          <Button
+            variant={slate ? 'pill-slate' : 'pill'}
+            size="pill"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2"
+          >
+            {open ? 'Show less' : 'Show more'}
+          </Button>
+        )}
+        <span className="sr-only" role="status">
+          {copied ? 'Copied to clipboard' : ''}
+        </span>
+      </div>
     </div>
   );
 };

@@ -485,12 +485,18 @@ const Showcase = () => {
               your site <strong className="text-surface">several ways</strong>,{' '}
               <strong className="text-surface">from scratch</strong>: no preset themes. Try each{' '}
               <strong className="text-surface">live</strong>,{' '}
-              <strong className="text-surface">keep one</strong>. Nothing changes until you do.
+              <strong className="text-surface">keep one</strong>.
             </p>
           </div>
 
           <div className="grid content-start gap-4">
             <div data-keep-cycle className="grid gap-2">
+              <PromptCopy
+                prompt={PROMPTS.setup}
+                tone="slate"
+                accent
+                label="Copy prompt for your AI"
+              />
               <RunnerPicker tone="slate" />
               <CommandCopy command={INSTALL} tone="slate" accent />
               <p className="text-steel-on-slate m-0 text-[14px] leading-snug">
@@ -499,11 +505,6 @@ const Showcase = () => {
                   Check what you need first
                 </a>
               </p>
-              <PromptCopy
-                prompt={PROMPTS.setup}
-                tone="slate"
-                label="Or copy a ready-made prompt for your AI assistant"
-              />
             </div>
             <div className="border-slate-line grid gap-2.5 border-t pt-4">
               <p

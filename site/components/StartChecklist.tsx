@@ -46,7 +46,7 @@ const StartChecklist = () => (
             </div>
             <PromptCopy
               prompt={c.prompt}
-              className="col-start-2 sm:col-start-3 sm:justify-self-end"
+              className="col-start-2 sm:col-start-3 sm:w-72 sm:justify-self-end"
             />
           </li>
         ))}
