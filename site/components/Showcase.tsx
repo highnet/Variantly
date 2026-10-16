@@ -485,7 +485,7 @@ const Showcase = () => {
               <PromptCopy
                 prompt={PROMPTS.setup}
                 tone="slate"
-                label="No terminal? Copy a prompt for your AI instead"
+                label="Or copy a ready-made prompt for your AI assistant"
               />
             </div>
             <div className="border-slate-line grid gap-2.5 border-t pt-4">
