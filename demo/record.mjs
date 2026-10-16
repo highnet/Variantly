@@ -21,6 +21,7 @@ import { cpSync, existsSync, mkdirSync, renameSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
+import { checkVariantly } from './lib/freshness.mjs';
 import { at, HEIGHT, log, PAD_MS, readJson, REPO, run, script, WIDTH, writeJson } from './lib/common.mjs';
 
 const film = script();
@@ -416,6 +417,17 @@ class Director {
 
 // ---------------------------------------------------------------- main
 
+// Film the variantly people will install, never a stale or edited clone.
+const filmed = await checkVariantly();
+log('record', `variantly ${filmed.version} @ ${filmed.commit} (${filmed.branch})`);
+if (filmed.problems.length) {
+  for (const problem of filmed.problems) log('record', `NOT READY: ${problem}`);
+  if (!process.env.ALLOW_STALE) {
+    log('record', 'Fix the above and run again (ALLOW_STALE=1 records anyway, for testing only).');
+    process.exit(1);
+  }
+  log('record', 'ALLOW_STALE is set: recording anyway. Do not publish this take.');
+}
 log('record', `agent: ${agent}${agent === 'demo' ? ' (dry run, no AI)' : ''}; themes: ${THEMES.join(', ')}`);
 await prepareSite();
 await preflight();
@@ -542,6 +554,7 @@ for (const view of views) {
 const pageErrors = views.flatMap((view) => view.errors.map((e) => `${view.theme}: ${e}`));
 writeJson(at('video', 'raw-timeline.json'), {
   agent,
+  variantly: { version: filmed.version, commit: filmed.commit, branch: filmed.branch, stale: filmed.problems.length > 0 },
   themes: THEMES,
   // Seconds from the light page's start to each page's start: subtract to
   // find a timeline moment in that theme's video.

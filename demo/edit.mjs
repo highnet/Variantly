@@ -162,7 +162,7 @@ const presses = (raw.cursor?.presses ?? [])
   .filter((p) => p.t !== null && p.t < total);
 const cursor = { path: path_, presses };
 
-writeJson(at(`timeline.${THEME}.json`), { fps: FPS, width: WIDTH, height: HEIGHT, duration: total, scenes, clicks, captions, cursor });
+writeJson(at(`timeline.${THEME}.json`), { variantly: raw.variantly ?? null, fps: FPS, width: WIDTH, height: HEIGHT, duration: total, scenes, clicks, captions, cursor });
 
 const stamp = (t) => {
   const ms = Math.round(t * 1000);
