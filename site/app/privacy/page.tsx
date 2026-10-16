@@ -3,7 +3,12 @@ import type { Metadata } from 'next';
 import { LegalPage } from '@/components/LegalPage';
 import { LEGAL_UPDATED, OPERATOR } from '@/lib/legal';
 
-export const metadata: Metadata = { title: 'Privacy policy' };
+export const metadata: Metadata = {
+  title: 'Privacy policy',
+  description:
+    'How variantly.style handles your data: hosting, third-party services and your rights.',
+  alternates: { canonical: '/privacy' },
+};
 
 const Page = () => (
   <LegalPage title="Privacy policy">
