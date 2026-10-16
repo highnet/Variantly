@@ -44,10 +44,10 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/highnet/ProjectHusky.git"
+    "url": "git+https://github.com/highnet/variantly.git"
   },
-  "homepage": "https://github.com/highnet/ProjectHusky#readme",
-  "bugs": "https://github.com/highnet/ProjectHusky/issues",
+  "homepage": "https://github.com/highnet/variantly#readme",
+  "bugs": "https://github.com/highnet/variantly/issues",
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",

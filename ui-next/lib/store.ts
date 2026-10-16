@@ -14,6 +14,8 @@ export type UiState = {
   detect: Detect | null;
   form: Form | null;
   logs: Record<string, string[]>;
+  /** Lines ever seen per log key; `logs` keeps only the last 400. */
+  logTotal: Record<string, number>;
   unseen: number[];
   sel: 'original' | number | null;
   mode: 'slider' | 'single' | 'side';
@@ -37,6 +39,7 @@ let state: UiState = {
   detect: null,
   form: null,
   logs: {},
+  logTotal: {},
   unseen: [],
   sel: null,
   mode: 'slider',

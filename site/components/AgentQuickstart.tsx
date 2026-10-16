@@ -111,11 +111,7 @@ const AgentQuickstart = () => (
         </a>{' '}
         plugin:
       </Typography>
-      <CommandCopy
-        command="/plugin marketplace add highnet/ProjectHusky"
-        size="sm"
-        className="mt-3"
-      />
+      <CommandCopy command="/plugin marketplace add highnet/variantly" size="sm" className="mt-3" />
     </footer>
   </main>
 );

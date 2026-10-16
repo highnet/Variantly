@@ -81,7 +81,7 @@ npx variantly install-skill --scope=project              # into this repo, for e
 **Claude Code plugin** alternative:
 
 ```
-/plugin marketplace add highnet/ProjectHusky
+/plugin marketplace add highnet/variantly
 /plugin install variantly@variantly
 ```
 
@@ -152,7 +152,7 @@ Then, under the hood:
 | Rails 8 (Hotwire) | `bin/rails server -p {port}` |
 | Django | `manage.py runserver` |
 | FastAPI | `uvicorn <module>:app --port {port}` |
-| Reflex | `reflex run --frontend-port {port}` |
+| Reflex | `reflex run --frontend-port {port} --backend-port {port2}` |
 | Go (Templ, HTMX) | `go run .` (reads `PORT`) |
 | Rust (Axum) | `cargo run` (reads `PORT`) |
 | Wasp | `wasp start` (fixed ports: one variant at a time) |

@@ -3,7 +3,12 @@
 // The server-sent event stream: snapshot, dev-server and log updates.
 import { api } from './api';
 import { getState, setState, toast } from './store';
+import { LIVE } from './format';
 import type { Detect, Form, ServerState, Snapshot } from './types';
+
+const CAP = 400;
+/** Which agent logs were loaded from the server this run (`${runId}:v3`). */
+const fetched = new Set<string>();
 
 const lastStatus = new Map<number, string>();
 
@@ -17,6 +22,56 @@ const noteStatusChanges = (snap: Snapshot) => {
   }
   return fresh;
 };
+
+/** Forget everything tied to the previous run: its logs, dialogs and selection. */
+export const resetRun = () => {
+  lastStatus.clear();
+  fetched.clear();
+  setState({ logs: {}, logTotal: {}, confirming: false, applying: null, infoOpen: false, path: '/', openRow: null });
+  // A new run starts the wizard at its first step, not where the last one left off.
+  const url = new URL(window.location.href);
+  if (url.searchParams.has('step')) {
+    url.searchParams.delete('step');
+    window.history.replaceState(null, '', url);
+  }
+};
+
+/** Drop one design's logs (a retry starts it over). */
+export const clearLog = (n: number) => {
+  fetched.delete(`${getState().snap?.runId ?? ''}:v${n}`);
+  setState((s) => {
+    const logs = { ...s.logs };
+    const logTotal = { ...s.logTotal };
+    for (const k of [`v${n}`, `pool:v${n}`]) {
+      delete logs[k];
+      delete logTotal[k];
+    }
+    return { logs, logTotal };
+  });
+};
+
+/**
+ * The server keys agent output, dev-server output and audit output all by
+ * target id ("v3"), with the same payload shape. While the agent works, its
+ * lines are what matter; once it has stopped, anything more for that target
+ * is the dev server or the audit, kept apart under "pool:v3". The original
+ * only ever has dev-server and audit output.
+ */
+const logKey = (target: string) => {
+  const m = /^v(\d+)$/.exec(target);
+  if (!m) return target === 'original' ? 'pool:original' : target;
+  const v = getState().snap?.variants.find((x) => x.n === Number(m[1]));
+  return !v || v.status === 'queued' || LIVE.includes(v.status) ? target : `pool:${target}`;
+};
+
+const appendLog = (key: string, lines: string[]) =>
+  setState((s) => {
+    const all = [...(s.logs[key] ?? []), ...lines];
+    return {
+      logs: { ...s.logs, [key]: all.slice(-CAP) },
+      logTotal: { ...s.logTotal, [key]: (s.logTotal[key] ?? s.logs[key]?.length ?? 0) + lines.length },
+    };
+  });
 
 export const loadDetect = async () => {
   try {
@@ -33,12 +88,26 @@ export const loadDetect = async () => {
   }
 };
 
+/** Load a design's agent log history once, merged with lines that already streamed in. */
 export const fetchLog = async (n: number) => {
-  if (getState().logs[`v${n}`]) return;
+  const key = `v${n}`;
+  const run = getState().snap?.runId ?? '';
+  if (fetched.has(`${run}:${key}`)) return;
+  fetched.add(`${run}:${key}`);
   try {
     const { lines } = await api<{ lines: string[] }>('GET', `log/${n}`);
-    setState((s) => ({ logs: { ...s.logs, [`v${n}`]: lines } }));
-  } catch {}
+    setState((s) => {
+      const have = s.logs[key] ?? [];
+      // The streamed lines usually repeat the end of the history: skip the overlap.
+      let k = Math.min(have.length, lines.length);
+      while (k > 0 && !have.slice(0, k).every((l, i) => l === lines[lines.length - k + i])) k--;
+      const merged = [...lines, ...have.slice(k)];
+      const total = Math.max(merged.length, (s.logTotal[key] ?? 0) + lines.length - k);
+      return { logs: { ...s.logs, [key]: merged.slice(-CAP) }, logTotal: { ...s.logTotal, [key]: total } };
+    });
+  } catch {
+    fetched.delete(`${run}:${key}`);
+  }
 };
 
 export const connect = () => {
@@ -54,6 +123,7 @@ export const connect = () => {
       unseen: [...new Set([...s.unseen, ...fresh])],
       ...(backToSetup ? { detect: null, form: null, wantCompare: false, forceBoard: false } : {}),
     }));
+    if (backToSetup) resetRun();
   });
   es.addEventListener('server', (e) => {
     const srv = JSON.parse((e as MessageEvent).data) as ServerState;
@@ -68,10 +138,7 @@ export const connect = () => {
   });
   es.addEventListener('log', (e) => {
     const { target, lines } = JSON.parse((e as MessageEvent).data) as { target: string; lines: string[] };
-    setState((s) => {
-      const list = [...(s.logs[target] ?? []), ...lines].slice(-400);
-      return { logs: { ...s.logs, [target]: list } };
-    });
+    appendLog(logKey(target), lines);
   });
   es.addEventListener('installed', (e) => {
     const { agent, code, what = '', tail = [] } = JSON.parse((e as MessageEvent).data) as { agent: string; code: number; what?: string; tail?: string[] };

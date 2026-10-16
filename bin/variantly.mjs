@@ -112,32 +112,12 @@ const main = async () => {
   if (values['no-audit']) defaults.audit = false;
 
   const wanted = Number(values.port ?? 4477);
+  if (!Number.isInteger(wanted) || wanted < 1 || wanted > 65535) return fail(`--port must be a whole number from 1 to 65535, got "${values.port}".`);
   const port = await freePort(wanted);
   const app = await startApp({ repo, port, defaults });
   const rel = path.relative(process.cwd(), repo) || '.';
   console.log(`\n  variantly ${pkg.version}  ·  ${rel}\n\n  ➜  ${app.url}\n`);
   if (port !== wanted) console.log(`  (port ${wanted} was busy)\n`);
-
-  if (values.yes && app.session.state.phase === 'setup') {
-    const detected = await detectProject(repo, defaults);
-    const chosen = detected.agents.find((/** @type {any} */ a) => a.id === detected.suggested.agent);
-    if (chosen && chosen.installed && !chosen.impeccable) {
-      const { impeccableInstallCommand } = await import('../src/agents.mjs');
-      const { spawnShell } = await import('../src/proc.mjs');
-      const cmd = impeccableInstallCommand(chosen.id);
-      console.log(`  Installing Impeccable for ${chosen.name}: ${cmd}
-`);
-      await new Promise((resolve) => spawnShell(cmd, { cwd: repo }).on('exit', resolve));
-    }
-    await app.session.generate(normalizeConfig(detected.suggested));
-    console.log(`  Generating ${detected.suggested.count} variants with ${detected.suggested.agent}…\n`);
-  }
-  if (values.open && !values['no-open']) openBrowser(app.url);
-  console.log('  Press Ctrl+C to stop. Your variants are kept until you pick one or run `variantly clean`.\n');
-
-  app.session.on('log', ({ target, lines }) => {
-    if (process.env.VARIANTLY_VERBOSE) for (const line of lines) console.log(`  [${target}] ${line}`);
-  });
 
   let closing = false;
   const shutdown = async () => {
@@ -149,12 +129,44 @@ const main = async () => {
   };
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
+
+  if (values.yes && app.session.state.phase === 'setup') {
+    try {
+      const detected = await detectProject(repo, defaults);
+      const chosen = detected.agents.find((/** @type {any} */ a) => a.id === detected.suggested.agent);
+      if (chosen && chosen.installed && !chosen.impeccable) {
+        const { impeccableInstallCommand } = await import('../src/agents.mjs');
+        const { spawnShell } = await import('../src/proc.mjs');
+        const cmd = impeccableInstallCommand(chosen.id);
+        console.log(`  Installing Impeccable for ${chosen.name}: ${cmd}\n`);
+        await new Promise((resolve) => {
+          const child = spawnShell(cmd, { cwd: repo });
+          // Piped and unread, a chatty installer fills the pipe and hangs.
+          child.stdout?.pipe(process.stdout);
+          child.stderr?.pipe(process.stderr);
+          child.on('error', resolve).on('close', resolve);
+        });
+      }
+      const config = normalizeConfig(detected.suggested);
+      await app.session.generate(config);
+      console.log(`  Generating ${config.count} variants with ${config.agent}…\n`);
+    } catch (err) {
+      fail(err instanceof Error ? err.message : String(err));
+    }
+  }
+  if (values.open && !values['no-open']) openBrowser(app.url);
+  console.log('  Press Ctrl+C to stop. Your variants are kept until you pick one or run `variantly clean`.\n');
+
+  app.session.on('log', ({ target, lines }) => {
+    if (process.env.VARIANTLY_VERBOSE) for (const line of lines) console.log(`  [${target}] ${line}`);
+  });
 };
 
 /** @param {string} repo */
 const doctor = async (repo) => {
   const { detectProject } = await import('../src/server.mjs');
   const { which, run } = await import('../src/proc.mjs');
+  const { impeccableInstallCommand } = await import('../src/agents.mjs');
   const info = await detectProject(repo);
   const ok = (/** @type {boolean} */ b) => (b ? '✓' : '✗');
   const nodeOk = Number(process.versions.node.split('.')[0]) >= 20;
@@ -171,7 +183,7 @@ const doctor = async (repo) => {
     if (a.note) console.log('  · ' + a.note);
     if (a.installed && a.path) console.log('  · ' + a.path);
     if (!a.installed) continue;
-    console.log(`  ${ok(a.impeccable)} Impeccable skill ${a.impeccable ? 'found' : `missing: npx impeccable install --providers=${a.id} --scope=global`}`);
+    console.log(`  ${ok(a.impeccable)} Impeccable skill ${a.impeccable ? 'found' : `missing: ${impeccableInstallCommand(a.id)}`}`);
     console.log(`  ${a.variantlySkill ? '✓' : '·'} variantly skill ${a.variantlySkill ? 'found' : `not installed (optional): npx variantly install-skill --providers=${a.id}`}`);
   }
   console.log('\nApp');

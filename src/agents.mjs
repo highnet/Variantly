@@ -338,7 +338,7 @@ const LOGIN = /** @type {Record<string, string>} */ ({ copilot: "copilot login",
  * Free sign-in check (no prompt, no credits). Copilot uses the GitHub CLI's
  * login when there is one; its own login lands in ~/.copilot/config.json.
  * Codex keeps ~/.codex/auth.json. Claude Code is assumed signed in when it
- * has ~/.claude.json (it asks on first run otherwise). null = unknown.
+ * has ~/.claude.json (or $CLAUDE_CONFIG_DIR's) or ANTHROPIC_API_KEY (it asks on first run otherwise). null = unknown.
  * @param {string} id
  * @returns {Promise<boolean | null>}
  */
@@ -354,7 +354,11 @@ const isSignedIn = async (id) => {
     return gh.code === 0;
   }
   if (id === "codex") return fs.existsSync(path.join(home, ".codex", "auth.json"));
-  if (id === "claude") return fs.existsSync(path.join(home, ".claude.json")) || null;
+  if (id === "claude") {
+    if (process.env.ANTHROPIC_API_KEY) return true;
+    const dir = process.env.CLAUDE_CONFIG_DIR;
+    return fs.existsSync(dir ? path.join(dir, ".claude.json") : path.join(home, ".claude.json")) || null;
+  }
   return null;
 };
 

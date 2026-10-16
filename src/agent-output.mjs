@@ -53,6 +53,16 @@ export const UNAVAILABLE = [
   /\bno authentication information found\b/i,
 ];
 
+/**
+ * Usage or rate limits: every other variant would hit the same wall, so the
+ * queue stops too.
+ */
+export const LIMITED = /usage limit|rate limit|\b429\b|overloaded/i;
+
+/** @param {string} line */
+export const limitReason = (line) =>
+  LIMITED.test(line) ? `the agent hit a usage or rate limit; wait for it to reset, then retry. (${clip(line, 200)})` : undefined;
+
 /** @param {string} line */
 export const unavailableReason = (line) => (UNAVAILABLE.some((re) => re.test(line)) ? clip(line, 300) : undefined);
 
@@ -69,6 +79,7 @@ export function createParser(kind, opts = {}) {
     /** @type {number | undefined} */ credits: undefined,
     /** @type {string | undefined} */ error: undefined,
     /** @type {string | undefined} */ unavailable: undefined,
+    /** @type {string | undefined} */ limited: undefined,
     /** @type {string[]} */ tail: [],
   };
   const remember = (/** @type {string[]} */ lines) => {
@@ -109,9 +120,11 @@ export function createParser(kind, opts = {}) {
     note(line) {
       if (!line.trim()) return;
       check(line);
+      // stderr and reported errors only: the agent's own words (and code) may mention rate limits.
+      state.limited ??= limitReason(line);
       remember([line]);
     },
-    unavailable: () => state.unavailable,
+    unavailable: () => state.unavailable ?? state.limited ?? (state.error ? limitReason(state.error) : undefined),
     tail: () => [...state.tail],
     text: () => state.text.join('\n'),
     costUsd: () => state.costUsd,
@@ -122,7 +135,7 @@ export function createParser(kind, opts = {}) {
 }
 
 /**
- * @typedef {{ text: string[], costUsd?: number, credits?: number, usage?: Usage, error?: string }} ParseState
+ * @typedef {{ text: string[], costUsd?: number, credits?: number, usage?: Usage, error?: string, final?: boolean, lastMessage?: string }} ParseState
  * @typedef {(p: unknown) => string} Rel
  * @typedef {(input: number, output: number, cached: number) => void} AddUsage
  */
@@ -131,6 +144,14 @@ export function createParser(kind, opts = {}) {
 function claude(event, state, rel, addUsage) {
   if (event.type === 'system' && event.subtype === 'init') return [`Claude Code session started (${event.model ?? 'default model'})`];
   if (event.type === 'assistant') {
+    // Live usage, per message (one message spans several events with the
+    // same id and usage); the result event replaces it with the total.
+    const u = event.message?.usage;
+    const id = event.message?.id;
+    if (u && !state.final && id !== state.lastMessage) {
+      state.lastMessage = id;
+      addUsage(u.input_tokens, u.output_tokens, num(u.cache_read_input_tokens) + num(u.cache_creation_input_tokens));
+    }
     /** @type {string[]} */
     const out = [];
     for (const block of event.message?.content ?? []) {
@@ -150,6 +171,10 @@ function claude(event, state, rel, addUsage) {
     if (typeof event.result === 'string') state.text.push(event.result);
     if (typeof event.total_cost_usd === 'number') state.costUsd = event.total_cost_usd;
     const u = event.usage;
+    if (u) {
+      state.final = true;
+      state.usage = undefined;
+    }
     if (u) addUsage(u.input_tokens, u.output_tokens, num(u.cache_read_input_tokens) + num(u.cache_creation_input_tokens));
     if (event.is_error) state.error = typeof event.result === 'string' ? event.result : 'Claude Code reported an error.';
     const cost = typeof event.total_cost_usd === 'number' ? `, $${event.total_cost_usd.toFixed(2)}` : '';

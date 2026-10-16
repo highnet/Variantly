@@ -12,6 +12,12 @@ const Page = () => (
     <p>[Placeholder: what data this site collects, why, and for how long.]</p>
     <h2>Hosting</h2>
     <p>[Placeholder: the hosting provider and the server logs it keeps.]</p>
+    <h2>Third-party services</h2>
+    <p>
+      The demo video is embedded from YouTube in privacy-enhanced mode (youtube-nocookie.com), which
+      loads once you scroll near it. &ldquo;Book a live demo&rdquo; links to Calendly; anything you
+      enter there is handled under Calendly&rsquo;s own privacy policy.
+    </p>
     <h2>Your rights</h2>
     <p>[Placeholder: access, correction, deletion and how to ask for them.]</p>
   </LegalPage>
