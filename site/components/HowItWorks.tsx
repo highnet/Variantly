@@ -27,9 +27,14 @@ const HowItWorks = () => (
       ))}
     </ol>
     <div className="border-rule grid gap-4 border-t pt-6">
-      <Typography variant="tag" as="h3">
-        Add-ons, if you want them
-      </Typography>
+      <div className="grid gap-1">
+        <Typography variant="tag" as="h3">
+          Optional add-ons
+        </Typography>
+        <p className="text-steel m-0 max-w-[60ch] text-sm leading-relaxed">
+          The setup wizard offers each of these as an opt-in step. Skip any you don&apos;t need.
+        </p>
+      </div>
       <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-5">
         {EXTRAS.map((x) => (
           <li
