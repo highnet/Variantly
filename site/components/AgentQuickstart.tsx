@@ -42,11 +42,16 @@ const AgentQuickstart = () => (
       <Typography variant="lead" color="steel">
         variantly makes N whole-page redesigns of a web project with the person&apos;s own agent and
         the{' '}
-        <a href="https://impeccable.style" target="_blank" rel="noreferrer" className="text-ink underline">
+        <a
+          href="https://impeccable.style"
+          target="_blank"
+          rel="noreferrer"
+          className="text-ink underline"
+        >
           Impeccable
         </a>{' '}
-        skill, runs each as the real site, and opens a local before/after comparison.
-        Your job is to set it up and hand over the URL.
+        skill, runs each as the real site, and opens a local before/after comparison. Your job is to
+        set it up and hand over the URL.
       </Typography>
     </div>
     <ol className="m-0 grid list-none gap-5 p-0">
@@ -92,7 +97,12 @@ const AgentQuickstart = () => (
           /SKILLS.md
         </Link>{' '}
         ·{' '}
-        <a href="https://docs.anthropic.com/en/docs/claude-code/overview" target="_blank" rel="noreferrer" className="text-ink underline">
+        <a
+          href="https://docs.anthropic.com/en/docs/claude-code/overview"
+          target="_blank"
+          rel="noreferrer"
+          className="text-ink underline"
+        >
           Claude Code
         </a>{' '}
         plugin:
