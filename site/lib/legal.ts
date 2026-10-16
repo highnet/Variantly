@@ -3,7 +3,7 @@
 // street. One place, so the three legal pages never disagree.
 export const OPERATOR = {
   name: 'Joaquin Telleria',
-  city: 'TODO: city (place of residence)',
+  city: 'Vienna',
   country: 'Austria',
   email: 'joaquintelleria@gmail.com',
   phone: '+43 676 4204412',
