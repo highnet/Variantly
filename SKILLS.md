@@ -26,6 +26,10 @@ web app shows the original and every variant with a before/after slider and a
 stay as branches. variantly brings no model: every variant is one session of
 the person's own agent, on their account.
 
+There are no preset themes: variantly has no theme library or templates. Each
+direction is either the person's own words or one Impeccable rolls fresh for
+that variant, and the agent designs it from scratch for this project.
+
 Use it when someone asks for their site to "look better", "get a redesign",
 or "try a few directions", and they can look at a browser. Do not use it for
 behaviour changes, for a single element (that is `/impeccable live`), or on a

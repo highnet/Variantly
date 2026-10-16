@@ -46,6 +46,11 @@ layout, components, across every file that needs it), so they can't be swapped
 inside one running page. Each lives in its own git worktree with its own dev
 server, and a local proxy puts them next to each other.
 
+There are no preset themes. variantly ships no theme library, template or
+colour palette to pick from: each variant is designed from scratch for your
+site by your agent, either in a direction you describe in your own words or in
+one Impeccable rolls for it. Run it twice and you get different designs.
+
 Use variantly to choose a direction. Use `/impeccable live` afterwards to tune
 the details of the one you kept.
 
