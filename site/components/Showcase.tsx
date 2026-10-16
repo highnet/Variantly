@@ -471,8 +471,8 @@ const Showcase = () => {
       }}
     >
       <div className="text-surface">
-        <div className="bg-slate border-slate-line mx-auto grid max-w-[1440px] gap-x-10 gap-y-5 px-4 py-7 sm:px-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:py-9">
-          <div className="grid content-start gap-4">
+        <div className="bg-slate border-slate-line mx-auto grid max-w-[1440px] gap-x-16 gap-y-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:py-16">
+          <div className="grid content-start gap-6">
             <Typography
               variant="display"
               id="hero-title"
@@ -489,8 +489,8 @@ const Showcase = () => {
             </p>
           </div>
 
-          <div className="grid content-start gap-4">
-            <div data-keep-cycle className="grid gap-2">
+          <div className="grid content-start gap-6">
+            <div data-keep-cycle className="grid gap-3">
               <PromptCopy
                 prompt={PROMPTS.setup}
                 tone="slate"
