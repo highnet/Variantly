@@ -1,0 +1,26 @@
+/* Phone edition: risograph zine. */
+@import url('https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Courier+Prime:wght@400;700&display=swap');
+:root{color-scheme:light;--paper:#f4efe4;--ink:#1d1a1f;--pink:#ff48b0;--pink-ink:#c4006e;--teal:#00a29a;--teal-ink:#005f5a;--on-accent:#fff;--field:#fff;--blend:multiply}
+html[data-theme="dark"]{color-scheme:dark;--paper:#1f1b22;--ink:#efe8da;--pink:#e8429f;--pink-ink:#ff7cc4;--teal:#00a89f;--teal-ink:#4fd8cf;--on-accent:#1d1a1f;--field:#2a252e;--blend:screen}
+body{background:var(--paper) radial-gradient(rgba(0,0,0,.05) 1px,transparent 1px) 0 0/4px 4px;color:var(--ink);font:16px/1.5 "Courier Prime",monospace}
+h1,h2,h3,.logo{font-family:"Rubik Mono One",sans-serif;font-weight:400;text-transform:uppercase}
+.b-head{border-bottom:3px dashed var(--teal)}
+.logo{font-size:22px;color:var(--teal-ink)}
+.amp{color:var(--pink-ink)}
+.kicker{color:var(--teal-ink);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+h1{font-size:38px;line-height:1.05;color:var(--pink-ink);text-shadow:3px 2px 0 var(--teal);transform:rotate(-2deg)}
+.b-hero::after{content:"";position:absolute;right:-40px;bottom:40px;width:180px;height:180px;border-radius:50%;background:radial-gradient(var(--teal) 30%,transparent 32%) 0 0/10px 10px;mix-blend-mode:var(--blend);opacity:.7}
+.btn,button{background:var(--pink);color:var(--on-accent);border:0;padding:12px 18px;font:700 15px "Courier Prime",monospace;text-transform:uppercase;text-decoration:none;box-shadow:4px 4px 0 var(--teal)}
+.link{color:var(--teal-ink);font-weight:700;text-decoration:underline wavy}
+.b-sec{font-size:24px;color:var(--teal-ink);text-shadow:2px 2px 0 var(--pink)}
+.b-feat{border-left:8px solid var(--pink);margin:0 20px 0 0}
+.i2 .art,.b-feat:nth-of-type(even){border-color:var(--teal)}
+.b-feat h3{font-size:16px;color:var(--pink-ink)}
+.b-item .art{background:radial-gradient(var(--pink) 25%,transparent 27%) 0 0/8px 8px;color:var(--teal-ink);transform:rotate(1deg);margin:0 0 12px}
+.i2 .art{background:radial-gradient(var(--teal) 25%,transparent 27%) 0 0/8px 8px;color:var(--pink-ink);transform:rotate(-1deg)}
+.no{color:var(--pink-ink);font-weight:700}
+.b-item h3{font-size:18px}
+.price{font-weight:700;font-size:20px;color:var(--teal-ink)}
+.b-news input{background:var(--field);color:var(--ink);border:2px solid var(--ink);padding:0 12px}
+.b-foot{border-top:3px dashed var(--pink);font-size:14px}
+.small{font-size:12px}
