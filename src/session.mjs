@@ -7,7 +7,7 @@
  */
 import { EventEmitter } from 'node:events';
 import { createHash } from 'node:crypto';
-import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -16,7 +16,7 @@ import { createParser } from './agent-output.mjs';
 import { agentById, agentFile } from './agents.mjs';
 import { productFromCode } from './product.mjs';
 import { defaultDirections, extractReview, extractSummary, hasAnswers, productMarkdown, writeBrief, writeReviewBrief } from './brief.mjs';
-import { auditMarkdown, playwrightMcp, runAudit } from './checks.mjs';
+import { auditMarkdown, killAudits, playwrightMcp, runAudit, warmPlaywrightMcp } from './checks.mjs';
 import { stepFrom } from './steps.mjs';
 import * as git from './git.mjs';
 import { LineBuffer, killTree, run, spawnArgs } from './proc.mjs';
@@ -112,6 +112,10 @@ export class Session extends EventEmitter {
     this.codeProduct = undefined;
     /** @type {Promise<void> | undefined} */
     this.auditQueue = undefined;
+    /** Saves, one at a time. @type {Promise<void>} */
+    this.saveQueue = Promise.resolve();
+    /** Aborts in-flight dependency installs on close(). */
+    this.installs = new AbortController();
     this.pool = new ServerPool({
       inject: (id) => frameScriptTag(id),
       local: opts.local,
@@ -149,10 +153,17 @@ export class Session extends EventEmitter {
     return this.state;
   }
 
-  async save() {
-    await mkdir(this.dir, { recursive: true });
-    await writeFile(path.join(this.dir, 'state.json'), JSON.stringify(this.state, null, 2));
-    this.emit('state', this.snapshot());
+  save() {
+    // One at a time, written aside and renamed: concurrent writes interleave.
+    const next = this.saveQueue.then(async () => {
+      await mkdir(this.dir, { recursive: true });
+      const file = path.join(this.dir, 'state.json');
+      await writeFile(file + '.tmp', JSON.stringify(this.state, null, 2));
+      await rename(file + '.tmp', file);
+      this.emit('state', this.snapshot());
+    });
+    this.saveQueue = next.catch(() => {});
+    return next;
   }
 
   snapshot() {
@@ -245,6 +256,9 @@ export class Session extends EventEmitter {
     // of the queue would fail the same way, so it isn't started.
     /** @type {{ reason?: string }} */
     const halt = {};
+    // Parallel agents each start `npx --yes @playwright/mcp`; a cold cache
+    // makes them race on one install. Fetch it once first.
+    if (config.browser && config.agent !== 'demo' && config.concurrency > 1) await warmPlaywrightMcp().catch(() => {});
     const workers = Array.from({ length: Math.max(1, config.concurrency) }, async () => {
       for (let v = next(); v; v = next()) {
         if (halt.reason) {
@@ -269,6 +283,7 @@ export class Session extends EventEmitter {
     // A variant that is still queued or running must not be started twice:
     // the second run would delete the first one's worktree under it.
     if (!['failed', 'cancelled'].includes(v.status)) return;
+    await this.pool.stop(`v${n}`);
     v.status = 'queued';
     v.error = undefined;
     v.step = undefined;
@@ -299,6 +314,7 @@ export class Session extends EventEmitter {
       if (run.child) await killTree(run.child);
     }
     v.status = 'cancelled';
+    await this.pool.stop(`v${n}`);
     await this.save();
   }
 
@@ -333,8 +349,15 @@ export class Session extends EventEmitter {
       const wt = this.worktreeFor(v.n);
       say(`Creating worktree ${wt}`);
       await this.gitLock(() => git.addWorktree(this.repo, wt, this.branchFor(v.n), this.state.base));
-      const { placed, lockfiles } = await this.#prepareWorktree(wt, config, adapter, say);
+      // Cancelled or discarded while the worktree was being made: don't fill
+      // a folder discard() already removed (or is about to).
       if (run.cancelled) return;
+      const { placed, lockfiles } = await this.#prepareWorktree(wt, config, adapter, say);
+      if (run.cancelled) {
+        // Discarded mid-prepare: the copies just recreated a folder discard() removed.
+        if (!this.runs.has(v.n)) await this.gitLock(() => git.removeWorktree(this.repo, wt)).catch(() => {});
+        return;
+      }
 
       // With a browser, the agent can look at its own variant while it works.
       const browser = config.browser && agent.id !== 'demo';
@@ -432,6 +455,7 @@ export class Session extends EventEmitter {
       if (config.audit) this.audit(`v${v.n}`).catch(() => {});
     } catch (err) {
       if (run.cancelled) return;
+      await this.pool.stop(`v${v.n}`).catch(() => {});
       const message = err instanceof Error ? err.message : String(err);
       if (err instanceof AgentUnavailable) halt.reason ??= message;
       say(`Failed: ${message}`);
@@ -505,7 +529,7 @@ export class Session extends EventEmitter {
       const command = adapter.install ?? packageRunner(appSrc, this.repo).install;
       say(`$ ${command}`);
       const [file, ...args] = command.split(' ');
-      const res = await run(file, args, { cwd: appDst, timeout: 600_000 });
+      const res = await run(file, args, { cwd: appDst, timeout: 600_000, signal: this.installs.signal });
       if (installFailed(res.code, res.stderr + res.stdout)) {
         const detail = (res.stderr || res.stdout).trim().split('\n').slice(-6).join('\n');
         throw new Error(`${command} failed (exit ${res.code})\n${detail}`);
@@ -557,7 +581,9 @@ export class Session extends EventEmitter {
         parser.note(l);
         say(l);
       }));
+      let timedOut = false;
       const timer = setTimeout(() => {
+        timedOut = true;
         say(`Timed out after ${timeoutMin} minutes.`);
         killTree(child);
       }, timeoutMin * 60_000);
@@ -572,6 +598,7 @@ export class Session extends EventEmitter {
         tally(run, parser);
         const result = { text: parser.text(), tail: parser.tail(), unavailable: parser.unavailable() };
         if (run.cancelled || code === 0) return resolve(result);
+        if (timedOut) return reject(new Error([`Timed out after ${timeoutMin} min.`, ...tailLines(result.tail)].join('\n')));
         if (result.unavailable) return reject(new AgentUnavailable(`The agent exited with code ${code}: ${result.unavailable}`));
         const error = parser.error();
         reject(new Error(error ? `The agent exited with code ${code}: ${error}` : [`The agent exited with code ${code}.`, ...tailLines(result.tail)].join('\n')));
@@ -684,6 +711,7 @@ export class Session extends EventEmitter {
    * @param {number} n
    */
   async finalize(n) {
+    if (this.state.phase === 'finalized') throw new Error(`A variant was already kept (v${this.state.chosen}). Run \`variantly clean\` to start over.`);
     const v = this.state.variants.find((x) => x.n === n);
     if (!v || v.status !== 'done') throw new Error(`Variant ${n} isn't finished.`);
     if (this.state.phase === 'generating') {
@@ -731,7 +759,12 @@ export class Session extends EventEmitter {
   }
 
   async close() {
-    for (const [, run] of this.runs) if (run.child) await killTree(run.child);
+    this.installs.abort();
+    for (const [, run] of this.runs) {
+      run.cancelled = true;
+      if (run.child) await killTree(run.child);
+    }
+    await killAudits();
     await this.pool.closeAll();
   }
 }

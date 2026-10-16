@@ -35,7 +35,7 @@ export function which(name) {
  * Run a command to completion and collect its output.
  * @param {string} file
  * @param {string[]} args
- * @param {{ cwd?: string, env?: NodeJS.ProcessEnv, timeout?: number, input?: string }} [opts]
+ * @param {{ cwd?: string, env?: NodeJS.ProcessEnv, timeout?: number, input?: string, signal?: AbortSignal }} [opts]
  * @returns {Promise<{ code: number, stdout: string, stderr: string }>}
  */
 export function run(file, args, opts = {}) {
@@ -52,6 +52,7 @@ export function run(file, args, opts = {}) {
         maxBuffer: 32 * 1024 * 1024,
         windowsHide: true,
         shell,
+        signal: opts.signal,
       },
       (error, stdout, stderr) => {
         const code = error ? (typeof error.code === "number" ? error.code : 1) : 0;

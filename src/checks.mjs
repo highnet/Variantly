@@ -72,6 +72,30 @@ export const playwrightMcp = (chrome = findChrome()) => ({
   args: ['--yes', PLAYWRIGHT_MCP, '--headless', '--isolated', ...(chrome ? ['--executable-path', chrome] : [])],
 });
 
+/**
+ * Fetch Playwright MCP into npx's cache once, so parallel agents starting it
+ * don't race on the same install. Never throws: the agents can still try.
+ * @param {number} [timeoutMs]
+ */
+export const warmPlaywrightMcp = (timeoutMs = 180_000) =>
+  new Promise((resolve) => {
+    const child = spawnArgs('npx', ['--yes', PLAYWRIGHT_MCP, '--help'], { cwd: os.tmpdir(), env: process.env });
+    child.stdout?.resume();
+    child.stderr?.resume();
+    const timer = setTimeout(() => killTree(child), timeoutMs);
+    const done = () => {
+      clearTimeout(timer);
+      resolve(undefined);
+    };
+    child.on('error', done).on('close', done);
+  });
+
+/** Audit children in flight, for killAudits(). @type {Set<import('node:child_process').ChildProcess>} */
+const auditChildren = new Set();
+
+/** Stop every audit that is running (variantly is closing). */
+export const killAudits = () => Promise.all([...auditChildren].map((c) => killTree(c)));
+
 /** What a package missing from a half-finished npx install looks like. */
 export const NPX_HALF_INSTALLED = /Cannot find (package|module) '[^']*[\\/]_npx[\\/]|ERR_MODULE_NOT_FOUND[\s\S]*_npx/;
 
@@ -104,6 +128,7 @@ const auditOnce = (url, opts) =>
     const chrome = findChrome();
     const cmd = ['node', JSON.stringify(RUNNER), JSON.stringify(url), ...(chrome ? [JSON.stringify(chrome)] : [])].join(' ');
     const child = spawnArgs('npx', ['--yes', ...AUDIT_PACKAGES.flatMap((p) => ['-p', p]), '-c', cmd], { cwd: process.cwd(), env: process.env });
+    auditChildren.add(child);
     let out = '';
     let err = '';
     child.stdout?.on('data', (d) => (out += d));
@@ -111,11 +136,13 @@ const auditOnce = (url, opts) =>
     const timer = setTimeout(() => killTree(child), opts.timeoutMs ?? 180_000);
     child.on('error', (e) => {
       clearTimeout(timer);
+      auditChildren.delete(child);
       reject(new Error(`Could not start the audit: ${e.message}`));
     });
     // 'close', not 'exit': exit can fire before stdout has drained.
     child.on('close', () => {
       clearTimeout(timer);
+      auditChildren.delete(child);
       const last = out.trim().split('\n').at(-1) ?? '';
       try {
         const r = JSON.parse(last);
