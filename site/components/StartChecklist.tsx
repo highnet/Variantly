@@ -3,6 +3,11 @@ import { PromptCopy } from '@/components/PromptCopy';
 import { Typography } from '@/components/ui/Typography';
 import { CHECKLIST, PROMPTS } from '@/lib/content';
 
+const ALL_PROMPTS = [
+  'Help me get set up for Variantly. Go through these steps in order, skipping any that are already done:',
+  ...CHECKLIST.map((c, i) => `${i + 1}. ${c.prompt}`),
+].join('\n\n');
+
 /*
  * What you need, with a prompt beside each thing in case it is missing, and
  * the commands to run once it is all there.
@@ -42,6 +47,7 @@ const StartChecklist = () => (
           </li>
         ))}
       </ol>
+      <PromptCopy prompt={ALL_PROMPTS} label="Copy all four prompts" />
     </div>
 
     <div className="bg-slate on-slate text-surface grid content-start gap-6 p-6 sm:p-8">
