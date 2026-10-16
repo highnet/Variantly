@@ -394,6 +394,8 @@ const Compare = () => {
   const compareRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const [tucked, setTucked] = useState(false);
+  // `?recording=1` keeps the dock shown, for filming the app.
+  const pinned = useRef(typeof location !== 'undefined' && new URLSearchParams(location.search).get('recording') === '1');
   const [flag, setFlag] = useState<Variant | null>(null);
 
   const vs = snap?.variants ?? [];
@@ -456,7 +458,7 @@ const Compare = () => {
     setTucked(false);
   }, []);
   useEffect(() => {
-    if (tucked) return;
+    if (tucked || pinned.current) return;
     const t = setTimeout(() => {
       const s = getState();
       if (!s.confirming && !s.infoOpen && !compareRef.current?.contains(document.activeElement)) setTucked(true);
@@ -535,6 +537,7 @@ const Compare = () => {
     <div
       ref={compareRef}
       className={clsx('compare', tucked && !confirming && !infoOpen && 'tucked')}
+      data-panes-ready={!pending.before && !pending.after ? 'true' : 'false'}
       style={{ ['--split' as string]: `${split}%` }}
     >
       <div className="stage" data-mode={effMode} data-device={device} data-show={sel === 'original' ? 'original' : 'variant'}>
