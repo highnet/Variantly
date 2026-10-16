@@ -126,6 +126,8 @@ export const FAQ: { q: string; a: string }[] = [
 /** Ready-made prompts to paste into the person's own AI assistant. */
 export const PROMPTS = {
   setup: `Redesign this website with variantly. Read ${SKILLS_URL} first. In this folder, run \`npx variantly doctor\` and fix anything it marks ✗ (ask me before installing anything). Then ask me in one line what I want to change about the look, and start a run of 4 designs with my answer as the brief. Each design is one session on my AI account. Give me the link it prints, and don't keep a design until I pick one.`,
+  doctor:
+    "Run `npx variantly doctor` in this folder. For each line it marks ✗, tell me in plain words what's missing and fix it, asking me before installing anything. Run it again until nothing is marked ✗.",
   demo: 'Run `npx variantly --demo` in this folder and give me the link it prints. It shows ready-made designs without using any AI credits.',
 };
 
