@@ -5,9 +5,11 @@ export const SKILLS_URL = `${SITE_URL}/SKILLS.md`;
 export const INSTALL = 'npx variantly';
 export const DEMO = 'npx variantly --demo';
 
-// YouTube id of the narrated demo. Empty until it is uploaded: the page shows
-// a "coming soon" frame in its place. Set it and the embed appears.
-export const DEMO_VIDEO_ID = '';
+// YouTube ids of the narrated demo, one cut per site theme. Empty until
+// uploaded: the page shows a "coming soon" frame in its place. If only one is
+// set it is used for both themes.
+export const DEMO_VIDEO_ID_LIGHT = '';
+export const DEMO_VIDEO_ID_DARK = '';
 
 // Booking page (Cal.com, Calendly, Google Calendar appointment schedule…) for
 // "Book a live demo", shown with the demo video. Empty hides the button.

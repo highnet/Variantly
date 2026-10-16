@@ -3,7 +3,11 @@ import type { Metadata } from 'next';
 import { LegalPage } from '@/components/LegalPage';
 import { LEGAL_UPDATED, OPERATOR } from '@/lib/legal';
 
-export const metadata: Metadata = { title: 'Accessibility' };
+export const metadata: Metadata = {
+  title: 'Accessibility',
+  description: 'How variantly.style meets accessibility standards, and how to report a barrier.',
+  alternates: { canonical: '/accessibility' },
+};
 
 const Page = () => (
   <LegalPage title="Accessibility">

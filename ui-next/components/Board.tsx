@@ -182,7 +182,7 @@ const Board = () => {
               <span>
                 {finalized ? (
                   <>
-                    Start over? <span className="muted">The design you kept stays in your working tree.</span>
+                    Start over? <span className="muted">The variant you kept stays in your working tree.</span>
                   </>
                 ) : (
                   <>

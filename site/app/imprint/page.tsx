@@ -4,7 +4,11 @@ import { LegalPage } from '@/components/LegalPage';
 import { LEGAL_UPDATED, OPERATOR } from '@/lib/legal';
 import { REPO_URL } from '@/lib/site';
 
-export const metadata: Metadata = { title: 'Imprint' };
+export const metadata: Metadata = {
+  title: 'Imprint',
+  description: 'Legal notice and contact details for variantly.',
+  alternates: { canonical: '/imprint' },
+};
 
 const Page = () => (
   <LegalPage title="Imprint">
