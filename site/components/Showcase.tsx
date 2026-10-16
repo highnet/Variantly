@@ -495,7 +495,7 @@ const Showcase = () => {
                 prompt={PROMPTS.setup}
                 tone="slate"
                 accent
-                label="Copy a ready-made prompt for your AI assistant"
+                label="Copy prompt for your AI"
               />
               <RunnerPicker tone="slate" />
               <CommandCopy command={INSTALL} tone="slate" accent />
