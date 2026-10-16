@@ -44,7 +44,7 @@ const until = async (/** @type {() => boolean | Promise<boolean>} */ cond, ms = 
 
 test.after(async () => {
   await app.close();
-  rmSync(tmp, { recursive: true, force: true, maxRetries: 3 });
+  rmSync(tmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 });
 });
 
 test('detect suggests the static adapter and the demo agent is accepted', async () => {

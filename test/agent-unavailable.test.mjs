@@ -38,7 +38,7 @@ const story = async (/** @type {Session} */ session, /** @type {{ n: number, sta
 };
 const env = (/** @type {string[]} */ dirs) => ({ ...process.env, PATH: dirs.join(path.delimiter), APPDATA: path.join(tmp, 'appdata') });
 
-test.after(() => rmSync(tmp, { recursive: true, force: true, maxRetries: 3 }));
+test.after(() => rmSync(tmp, { recursive: true, force: true, maxRetries: 10, retryDelay: 300 }));
 
 test('the recorded shim line is recognised; real version lines are not', () => {
   assert.equal(versionFrom(SHIM_LINE), null);
