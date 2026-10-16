@@ -148,6 +148,8 @@ const Info = () => {
   const v = useStore((s) => s.snap?.variants.find((x) => x.n === s.sel) ?? null);
   const runId = useStore((s) => s.snap?.runId);
   const lines = useStore((s) => (typeof s.sel === 'number' ? s.logs[`v${s.sel}`] : undefined));
+  // Server chatter alone ("static server on …") isn't worth a log panel.
+  const log = (lines ?? []).filter((l) => l.trim() && !/^static server on /.test(l));
   useEffect(() => {
     if (open && typeof sel === 'number') fetchLog(sel);
   }, [open, sel]);
@@ -199,7 +201,7 @@ const Info = () => {
                 </div>
                 <div className="label">Branch {runId ? `variantly/${runId}/v${v.n}` : ''}</div>
               </div>
-              <pre>{(lines ?? []).join('\n')}</pre>
+              {log.length > 0 && <pre>{log.join('\n')}</pre>}
             </>
           )}
         </motion.aside>

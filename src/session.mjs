@@ -511,7 +511,9 @@ export class Session extends EventEmitter {
     }
     if (placed.length) say(`Linked or copied: ${placed.join(', ')}`);
     // The owner's answers become PRODUCT.md in the variant itself (committed
-    // with it), so the kept variant brings its design files home.
+    // with it), so the kept variant brings its design files home. One read
+    // from the code is only scaffolding for the agent: it stays out of the
+    // commit, so keeping a variant never leaves it untracked in their tree.
     const productPath = path.join(appDst, 'PRODUCT.md');
     if (hasAnswers(config.product) && !existsSync(productPath) && !existsSync(path.join(wt, 'PRODUCT.md'))) {
       await writeFile(productPath, productMarkdown(path.basename(this.repo), /** @type {import('./brief.mjs').ProductAnswers} */ (config.product)));
@@ -522,6 +524,7 @@ export class Session extends EventEmitter {
       this.codeProduct ??= productFromCode(this.repo, config.appRel);
       if (this.codeProduct.purpose) {
         await writeFile(productPath, productMarkdown(path.basename(this.repo), this.codeProduct).replace("from the owner's answers", 'from what the code says about itself'));
+        placed.push('PRODUCT.md');
         say('Wrote a shared PRODUCT.md from your code.');
       }
     }

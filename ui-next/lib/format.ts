@@ -1,12 +1,16 @@
+import { getState } from './store';
 import type { Audit, Variant, VariantStatus } from './types';
 
 export const pad = (n: number) => String(n).padStart(2, '0');
 export const vname = (n: number) => `V${pad(n)}`;
 export const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
-/** A pinned direction in the owner's words, else the world Impeccable picked (once the agent names it). */
+/** Who chose the look: Impeccable, unless the run uses the demo agent. */
+const picker = () => (getState().snap?.config?.agent === 'demo' ? 'Demo pick' : 'Impeccable’s pick');
+
+/** A pinned direction in the owner's words, else the world the agent picked (once it names it). */
 export const directionLabel = (dir: string | undefined, picked?: string) =>
-  dir && dir.trim() ? dir.trim() : picked ? `${picked} (Impeccable’s pick)` : 'Impeccable’s pick';
+  dir && dir.trim() ? dir.trim() : picked ? `${picked} (${picker()})` : picker();
 
 export const STATUS: Record<VariantStatus, string> = {
   queued: 'Scheduled',

@@ -105,7 +105,11 @@ const main = async () => {
   const defaults = {};
   if (values.demo) defaults.agent = 'demo';
   if (typeof values.agent === 'string') defaults.agent = values.agent;
-  if (typeof values.count === 'string') defaults.count = Number(values.count);
+  if (typeof values.count === 'string') {
+    const count = Number(values.count);
+    if (!Number.isInteger(count) || count < 1 || count > 10) return fail(`--count must be a whole number from 1 to 10, got "${values.count}".`);
+    defaults.count = count;
+  }
   if (typeof values.brief === 'string') defaults.brief = values.brief;
   if (values['no-browser']) defaults.browser = false;
   if (values['no-review']) defaults.review = false;
