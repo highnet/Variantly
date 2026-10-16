@@ -31,17 +31,17 @@
       "text": "Setup checks the app, the agent, and the Impeccable design skill.",
       "actions": [
         { "wait": 600 },
-        { "click": "role=button[name=/^Continue to designs$/]", "zoom": true }
+        { "click": "role=button[name=/^Continue to (variants|designs)$/]", "zoom": true }
       ]
     },
     {
       "id": "designs",
-      "text": "Choose how many designs to make: two, four or six. We'll take four.",
+      "text": "Choose how many variants to make: two, four or six. We'll take four.",
       "actions": [
         { "wait": 500 },
         { "click": "role=radio[name=\"4\"]", "zoom": true },
         { "wait": 700 },
-        { "click": "role=button[name=/^Continue( to your site)?$/]" }
+        { "click": "role=button[name=\"Continue to your site\"]" }
       ]
     },
     {
@@ -51,25 +51,25 @@
         { "fill": "role=textbox[name=/Who is it for/]", "text": "Small agencies and studios who bill clients by the hour." },
         { "fill": "role=textbox[name=/What does it offer/]", "text": "Timers, weekly timesheets, approvals and invoices from tracked hours." },
         { "fill": "role=textbox[name=/What must stay/]", "text": "The name, the three plans and their prices, the sign-up button, the FAQ." },
-        { "click": "role=button[name=/^(Review|Continue to review)$/]" }
+        { "click": "role=button[name=\"Continue to review\"]" }
       ]
     },
     {
       "id": "review",
-      "text": "Review the brief, and make the designs. Nothing in your project changes yet.",
+      "text": "Review the brief, and make the variants. Nothing in your project changes yet.",
       "actions": [
         { "wait": 1200 },
-        { "click": "#wiz-go", "zoom": true, "sound": "whoosh" }
+        { "click": "role=button[name=/^Make \\d+ variants?$/]", "zoom": true, "sound": "whoosh" }
       ]
     },
     {
       "id": "generate",
       "timelapse": true,
-      "text": "Each design gets its own git worktree and its own dev server. Your agent works headless, two at a time, checks its work in a real browser, and every result is scored with axe-core and Lighthouse.",
+      "text": "Each variant gets its own git worktree and its own dev server. Your agent works headless, two at a time, checks its work in a real browser, and every result is scored with axe-core and Lighthouse.",
       "actions": [
         { "waitFor": "body[data-view=\"board\"]" },
         { "wait": 1500 },
-        { "click": "tr[data-n=\"1\"]" },
+        { "click": "role=button[name=\"Show V01 output\"]" },
         { "waitApi": "allDone", "timeoutMin": 90 },
         { "wait": 1500 }
       ]
@@ -78,7 +78,7 @@
       "id": "compare",
       "text": "Then compare, on your real site. Drag the divider for a before and after.",
       "actions": [
-        { "click": "#to-compare", "optional": true },
+        { "click": "role=button[name=/^Compare$/]", "optional": true },
         { "waitFor": "body[data-view=\"compare\"]" },
         { "click": "role=button[name=/^V01/]" },
         { "waitPanes": true },
@@ -116,7 +116,7 @@
       "text": "Keep the one you like. It's applied to your working tree with a three-way merge. The others stay as branches.",
       "actions": [
         { "click": "role=button[name=/^Keep V0/]", "zoom": true },
-        { "click": "#apply", "sound": "stamp" },
+        { "click": "role=button[name=/^Apply V0/]", "sound": "stamp" },
         { "waitFor": "body[data-view=\"kept\"]" }
       ]
     },

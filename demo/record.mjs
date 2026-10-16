@@ -2,13 +2,20 @@
 //
 //   node record.mjs                 real run with the agent named in script.json
 //   node record.mjs --dry           dry run with variantly's built-in demo agent
+//   node record.mjs --single        record the light theme only (rehearsals)
 //
 // 1. Copies the example site into .work/tallyboard as a fresh git repo.
 // 2. Starts variantly on it (its own VARIANTLY_HOME in .work/home, so your
 //    real runs are untouched) and drives the wizard with Playwright.
-// 3. Holds each scene until its narration has finished, and writes
-//    video/raw.webm plus video/raw-timeline.json (scene and click times, in
-//    seconds from the start of the recording).
+// 3. Films one take in two themes at once: a light page (primary) and a dark
+//    page (mirror) in the same browser, driven in lockstep with the same
+//    cursor path and timing. Only the light page talks to variantly; the
+//    mirror's POSTs are answered locally, and it follows the real run through
+//    the same state and events.
+// 4. Holds each scene until its narration has finished, and writes
+//    video/light/raw.webm, video/dark/raw.webm and one shared
+//    video/raw-timeline.json (scene and click times in seconds from the light
+//    page's start; offsets.<theme> is when that page started, relative to it).
 import { spawn } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, renameSync, rmSync } from 'node:fs';
 import path from 'node:path';
@@ -18,6 +25,8 @@ import { at, HEIGHT, log, PAD_MS, readJson, REPO, run, script, WIDTH, writeJson 
 
 const film = script();
 const agent = process.argv.includes('--dry') ? 'demo' : process.env.DEMO_AGENT || film.agent;
+const single = process.argv.includes('--single');
+const THEMES = single ? ['light'] : ['light', 'dark'];
 const port = Number(process.env.DEMO_PORT || 4499);
 const durations = readJson(at('audio', 'durations.json'), {});
 const WORK = at('.work');
@@ -66,7 +75,7 @@ function startVariantly() {
   const args = [path.join(REPO, 'bin', 'variantly.mjs'), SITE, '--agent', agent, '--no-open', '-p', String(port)];
   const child = spawn(process.execPath, args, {
     cwd: SITE,
-    env: { ...process.env, VARIANTLY_HOME: HOME, VARIANTLY_LEGACY_UI: '1' },
+    env: { ...process.env, VARIANTLY_HOME: HOME },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   child.stderr.on('data', (d) => process.stderr.write(`  [variantly] ${d}`));
@@ -161,9 +170,11 @@ const CURSOR = () => {
 // ---------------------------------------------------------------- driver
 
 class Director {
-  constructor(page, t0, vars) {
-    this.page = page;
-    this.t0 = t0;
+  /** @param {{ theme: string, page: import('playwright').Page, t0: number }[]} views  the first is the primary */
+  constructor(views, vars) {
+    this.views = views;
+    this.page = views[0].page;
+    this.t0 = views[0].t0;
     this.vars = vars;
     this.pos = { x: WIDTH * 0.62, y: HEIGHT * 0.6 };
     this.clicks = [];
@@ -174,12 +185,24 @@ class Director {
     return (Date.now() - this.t0) / 1000;
   }
 
-  fill(text) {
-    return String(text).replace(/\{\{(\w+)\}\}/g, (_, k) => this.vars[k] ?? '');
+  /** The same thing on every page at once. */
+  all(fn) {
+    return Promise.all(this.views.map((view) => fn(view.page, view)));
+  }
+
+  fill(text, theme = 'light') {
+    return String(text).replace(/\{\{(\w+)\}\}/g, (_, k) => (k === 'app' ? `${this.vars.app}/?theme=${theme}` : this.vars[k] ?? ''));
   }
 
   async showCursor() {
-    await this.page.evaluate(([x, y]) => window.__demoCursor?.(x, y), [this.pos.x, this.pos.y]).catch(() => {});
+    await this.all((page) => page.evaluate(([x, y]) => window.__demoCursor?.(x, y), [this.pos.x, this.pos.y]).catch(() => {}));
+  }
+
+  async pointer(x, y) {
+    await this.all(async (page) => {
+      await page.mouse.move(x, y);
+      await page.evaluate(([px, py]) => window.__demoCursor?.(px, py), [x, y]).catch(() => {});
+    });
   }
 
   /** Ease the cursor to (x, y), drawing it on every step. */
@@ -190,18 +213,26 @@ class Director {
       const k = i / steps;
       const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
       this.pos = { x: from.x + (x - from.x) * e, y: from.y + (y - from.y) * e };
-      await this.page.mouse.move(this.pos.x, this.pos.y);
-      await this.page.evaluate(([px, py]) => window.__demoCursor?.(px, py), [this.pos.x, this.pos.y]).catch(() => {});
+      await this.pointer(this.pos.x, this.pos.y);
       await this.page.waitForTimeout(ms / steps);
     }
   }
 
+  /** Where a target is, measured on the primary page; the mirror must show it too. */
   async box(selector) {
-    const locator = this.page.locator(this.fill(selector)).first();
-    await locator.waitFor({ state: 'visible', timeout: 30_000 });
-    await locator.scrollIntoViewIfNeeded();
-    const box = await locator.boundingBox();
-    return { locator, x: box.x + box.width / 2, y: box.y + box.height / 2, box };
+    const locators = await this.all(async (page) => {
+      const locator = page.locator(this.fill(selector)).first();
+      await locator.waitFor({ state: 'visible', timeout: 30_000 });
+      await locator.scrollIntoViewIfNeeded();
+      return locator;
+    });
+    const box = await locators[0].boundingBox();
+    return { locators, x: box.x + box.width / 2, y: box.y + box.height / 2, box };
+  }
+
+  async press(x, y) {
+    await this.all((page) => page.evaluate(([px, py]) => window.__demoRipple?.(px, py), [x, y]).catch(() => {}));
+    await this.all((page) => page.mouse.click(x, y));
   }
 
   async click(step) {
@@ -215,17 +246,20 @@ class Director {
     await this.moveTo(target.x, target.y);
     await this.page.waitForTimeout(120);
     this.clicks.push({ t: this.now(), x: target.x, y: target.y, zoom: !!step.zoom, sound: step.sound ?? 'tick' });
-    await this.page.evaluate(([x, y]) => window.__demoRipple?.(x, y), [target.x, target.y]);
-    await this.page.mouse.click(target.x, target.y);
+    await this.press(target.x, target.y);
   }
 
   async type(step) {
     const target = await this.box(step.fill);
     await this.moveTo(target.x, target.y);
     this.clicks.push({ t: this.now(), x: target.x, y: target.y, zoom: false, sound: 'tick' });
-    await this.page.mouse.click(target.x, target.y);
-    await target.locator.fill('');
-    await this.page.keyboard.type(this.fill(step.text), { delay: step.delay ?? 22 });
+    await this.all((page) => page.mouse.click(target.x, target.y));
+    await Promise.all(target.locators.map((l) => l.fill('')));
+    const text = this.fill(step.text);
+    for (const ch of text) {
+      await this.all((page) => page.keyboard.type(ch));
+      await this.page.waitForTimeout(step.delay ?? 22);
+    }
   }
 
   async drag(step) {
@@ -233,7 +267,7 @@ class Director {
     const area = await this.page.locator('.compare').first().boundingBox();
     await this.moveTo(grip.x, grip.y);
     this.clicks.push({ t: this.now(), x: grip.x, y: grip.y, zoom: !!step.zoom, sound: 'tick' });
-    await this.page.mouse.down();
+    await this.all((page) => page.mouse.down());
     const per = (step.ms ?? 1200) / step.to.length;
     for (const percent of step.to) {
       const x = area.x + (area.width * percent) / 100;
@@ -243,56 +277,60 @@ class Director {
         const k = i / steps;
         const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
         this.pos = { x: from.x + (x - from.x) * e, y: from.y };
-        await this.page.mouse.move(this.pos.x, this.pos.y);
-        await this.page.evaluate(([px, py]) => window.__demoCursor?.(px, py), [this.pos.x, this.pos.y]);
+        await this.pointer(this.pos.x, this.pos.y);
         await this.page.waitForTimeout(per / steps);
       }
       await this.page.waitForTimeout(250);
     }
-    await this.page.mouse.up();
+    await this.all((page) => page.mouse.up());
   }
 
   async scroll(y, ms = 1200) {
-    await this.page.evaluate(
-      ([to, duration]) =>
-        new Promise((resolve) => {
-          const from = window.scrollY;
-          const start = performance.now();
-          const tick = (now) => {
-            const k = Math.min(1, (now - start) / duration);
-            const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-            window.scrollTo(0, from + (to - from) * e);
-            k < 1 ? requestAnimationFrame(tick) : resolve();
-          };
-          requestAnimationFrame(tick);
-        }),
-      [y, ms],
+    await this.all((page) =>
+      page.evaluate(
+        ([to, duration]) =>
+          new Promise((resolve) => {
+            const from = window.scrollY;
+            const start = performance.now();
+            const tick = (now) => {
+              const k = Math.min(1, (now - start) / duration);
+              const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+              window.scrollTo(0, from + (to - from) * e);
+              k < 1 ? requestAnimationFrame(tick) : resolve();
+            };
+            requestAnimationFrame(tick);
+          }),
+        [y, ms],
+      ),
     );
   }
 
-  /** Both compare panes have a live server and a loaded page. */
+  /** Both compare panes, on every page, have a live server and a loaded page. */
   async waitPanes() {
-    await this.page.waitForFunction(
-      () =>
-        [...document.querySelectorAll('.pane')].every((pane) => {
-          const wait = pane.querySelector('.pane-wait');
-          return !wait || wait.hidden || getComputedStyle(wait).display === 'none';
-        }),
-      null,
-      { timeout: 120_000 },
-    );
-    for (const frame of this.page.frames().slice(1)) {
-      await frame.waitForLoadState('load', { timeout: 30_000 }).catch(() => {});
-    }
+    await this.all(async (page) => {
+      await page.waitForFunction(
+        () =>
+          document.querySelectorAll('.compare .pane').length > 0 &&
+          [...document.querySelectorAll('.compare .pane')].every((pane) => {
+            const wait = pane.querySelector('.pane-wait');
+            return !wait || wait.hidden || getComputedStyle(wait).display === 'none';
+          }),
+        null,
+        { timeout: 120_000 },
+      );
+      for (const frame of page.frames().slice(1)) {
+        await frame.waitForLoadState('load', { timeout: 30_000 }).catch(() => {});
+      }
+    });
     await this.page.waitForTimeout(900);
   }
 
   async act(step) {
     if (step.goto) {
-      await this.page.goto(this.fill(step.goto));
+      await this.all((page, view) => page.goto(this.fill(step.goto, view.theme)));
       await this.showCursor();
     } else if (step.wait) await this.page.waitForTimeout(step.wait);
-    else if (step.waitFor) await this.page.locator(this.fill(step.waitFor)).first().waitFor({ state: 'attached', timeout: 120_000 });
+    else if (step.waitFor) await this.all((page) => page.locator(this.fill(step.waitFor)).first().waitFor({ state: 'attached', timeout: 120_000 }));
     else if (step.click) await this.click(step);
     else if (step.fill) await this.type(step);
     else if (step.hover) {
@@ -300,7 +338,7 @@ class Director {
       if (target) await this.moveTo(target.x, target.y, 800);
     } else if (step.drag) await this.drag(step);
     else if (step.scroll !== undefined) await this.scroll(step.scroll, step.ms);
-    else if (step.press) await this.page.keyboard.press(step.press);
+    else if (step.press) await this.all((page) => page.keyboard.press(step.press));
     else if (step.waitPanes) await this.waitPanes();
     else if (step.waitApi === 'allDone') await waitAllDone(this.vars.app, step.timeoutMin ?? 60);
     else throw new Error(`Unknown action ${JSON.stringify(step)}`);
@@ -311,82 +349,117 @@ class Director {
 
 // ---------------------------------------------------------------- main
 
-log('record', `agent: ${agent}${agent === 'demo' ? ' (dry run, no AI)' : ''}`);
+log('record', `agent: ${agent}${agent === 'demo' ? ' (dry run, no AI)' : ''}; themes: ${THEMES.join(', ')}`);
 await prepareSite();
 await preflight();
 const { child, url: app } = await startVariantly();
 log('record', `variantly at ${app}`);
 
-mkdirSync(at('video'), { recursive: true });
 process.on('exit', () => child.kill());
 const browser = await chromium.launch({
   headless: !process.env.HEADED,
   // $CHROMIUM points at a browser Playwright did not download itself.
   executablePath: process.env.CHROMIUM || undefined,
 });
-const context = await browser.newContext({
-  viewport: { width: WIDTH, height: HEIGHT },
-  deviceScaleFactor: 1,
-  recordVideo: { dir: at('video', 'tmp'), size: { width: WIDTH, height: HEIGHT } },
-  colorScheme: 'light',
-  reducedMotion: 'no-preference',
-});
-await context.addInitScript(CURSOR);
-// A clean wizard: no draft left over from an earlier take.
-await context.addInitScript(() => {
-  try {
-    if (window.top === window && !sessionStorage.__demoClean) {
-      for (const key of Object.keys(localStorage)) if (key.startsWith('variantly:')) localStorage.removeItem(key);
-      sessionStorage.__demoClean = '1';
-    }
-  } catch {} // about:blank and file:// pages have no storage
-});
-const page = await context.newPage();
-const t0 = Date.now();
-const errors = [];
-page.on('pageerror', (e) => errors.push(String(e)));
 
-const director = new Director(page, t0, {
+/** One recording context per theme. The first drives variantly; the rest only watch. */
+async function openView(theme, mirror) {
+  const context = await browser.newContext({
+    viewport: { width: WIDTH, height: HEIGHT },
+    deviceScaleFactor: 1,
+    recordVideo: { dir: at('video', theme, 'tmp'), size: { width: WIDTH, height: HEIGHT } },
+    colorScheme: theme,
+    reducedMotion: 'no-preference',
+  });
+  await context.addInitScript(CURSOR);
+  // A clean wizard: no draft left over from an earlier take.
+  await context.addInitScript(() => {
+    try {
+      if (window.top === window && !sessionStorage.__demoClean) {
+        for (const key of Object.keys(localStorage)) if (key.startsWith('variantly:')) localStorage.removeItem(key);
+        sessionStorage.__demoClean = '1';
+      }
+    } catch {} // about:blank and file:// pages have no storage
+  });
+  if (mirror) {
+    // The mirror must not change the run: answer its POSTs here (the UI
+    // ignores their bodies and follows /api/state and /api/events). Only
+    // ensure/<target>, which just starts a preview server, goes through.
+    await context.route(
+      (url) => url.origin === app && url.pathname.startsWith('/api/') && url.pathname !== '/api/events',
+      (route) => {
+        const req = route.request();
+        if (req.method() === 'GET' || new URL(req.url()).pathname.startsWith('/api/ensure/')) return route.continue();
+        return route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
+      },
+    );
+  }
+  const page = await context.newPage();
+  const view = { theme, context, page, t0: Date.now(), errors: [] };
+  page.on('pageerror', (e) => view.errors.push(String(e)));
+  return view;
+}
+
+const views = [];
+for (const [i, theme] of THEMES.entries()) {
+  rmSync(at('video', theme, 'tmp'), { recursive: true, force: true });
+  mkdirSync(at('video', theme), { recursive: true });
+  views.push(await openView(theme, i > 0));
+}
+
+const director = new Director(views, {
   app,
   site: pathToFileURL(path.join(SITE, 'index.html')).href,
   keep: String(film.keep ?? 1),
 });
 const scenes = [];
+const schemes = {};
 
 try {
-  await page.goto('about:blank');
+  await director.all((page) => page.goto('about:blank'));
   for (const scene of film.scenes) {
     const start = director.now();
     log('record', `${scene.id} @ ${start.toFixed(1)}s`);
     for (const step of scene.actions) await director.act(step);
+    if (scene.id === 'launch') {
+      for (const view of views) schemes[view.theme] = await view.page.evaluate(() => matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    }
     // Hold until the line has been spoken, plus a breath.
     const hold = start + lineSeconds(scene) + PAD_MS / 1000 - director.now();
-    if (hold > 0) await page.waitForTimeout(hold * 1000);
+    if (hold > 0) await director.page.waitForTimeout(hold * 1000);
     else if (!scene.timelapse && hold < -1) {
       director.warnings.push(`${scene.id}: actions ran ${(-hold).toFixed(1)}s past the narration (dead air)`);
     }
     scenes.push({ id: scene.id, start, end: director.now(), timelapse: !!scene.timelapse });
   }
 } finally {
-  await context.close();
+  for (const view of views) await view.context.close();
   await browser.close();
   await api(app, 'shutdown', 'POST').catch(() => {});
   setTimeout(() => child.kill(), 3000).unref();
 }
 
-const recorded = (await page.video()?.path()) ?? null;
-if (!recorded || !existsSync(recorded)) throw new Error('Playwright did not write a video');
-rmSync(at('video', 'raw.webm'), { force: true });
-renameSync(recorded, at('video', 'raw.webm'));
-rmSync(at('video', 'tmp'), { recursive: true, force: true });
+for (const view of views) {
+  const recorded = (await view.page.video()?.path()) ?? null;
+  if (!recorded || !existsSync(recorded)) throw new Error(`Playwright did not write the ${view.theme} video`);
+  rmSync(at('video', view.theme, 'raw.webm'), { force: true });
+  renameSync(recorded, at('video', view.theme, 'raw.webm'));
+  rmSync(at('video', view.theme, 'tmp'), { recursive: true, force: true });
+}
 
+const pageErrors = views.flatMap((view) => view.errors.map((e) => `${view.theme}: ${e}`));
 writeJson(at('video', 'raw-timeline.json'), {
   agent,
+  themes: THEMES,
+  // Seconds from the light page's start to each page's start: subtract to
+  // find a timeline moment in that theme's video.
+  offsets: Object.fromEntries(views.map((view) => [view.theme, Number(((view.t0 - views[0].t0) / 1000).toFixed(3))])),
+  colorSchemes: schemes,
   scenes,
   clicks: director.clicks,
   warnings: director.warnings,
-  pageErrors: errors,
+  pageErrors,
 });
 for (const w of director.warnings) log('record', `warning: ${w}`);
-for (const e of errors) log('record', `page error: ${e}`);
-log('record', `video/raw.webm, ${scenes.at(-1).end.toFixed(1)}s`);
+for (const e of pageErrors) log('record', `page error: ${e}`);
+log('record', `video/{${THEMES.join(',')}}/raw.webm, ${scenes.at(-1).end.toFixed(1)}s; color schemes ${JSON.stringify(schemes)}`);
