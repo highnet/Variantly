@@ -78,6 +78,15 @@ point at another browser with `CHROMIUM`, it must match that version. `record`
 films a two-second test clip first and stops with the fix if recording does
 not work, instead of failing after an hour-long take.
 
+**Smooth capture.** The app is captured frame by frame through Chromium's
+screencast, each frame with the time it was painted, and rebuilt at a constant
+60 fps by those times. The film is 60 fps too, so nothing is resampled. `edit`
+reports how many frames repeat while the app moves (a scroll, a drag, typing);
+over 10% means the machine could not paint both themes fast enough. Close
+other apps, or use `record --single` for a light-only take. A take needs a few
+GB of free disk for the captured frames, which are deleted after encoding
+(`KEEP_FRAMES=1` keeps them).
+
 **Rehearse without keys.** `npm run voice:local` (or `voice` with no keys in
 `.env`) uses the system's own speech: Windows' built-in voices, macOS `say`,
 or `espeak-ng` on Linux. It writes the same files as ElevenLabs, with approximate word
@@ -140,9 +149,9 @@ Or step by step:
 | Record | `npm run record` | 20–60 min | A real run with Claude Code: **4 variants, real tokens**. |
 | Edit | `npm run edit` | ~5 min | Cuts both themes' recordings, writes captions, cues and configs. |
 | Check | `npm run probe` | ~10 s | Renders 5 frames into `probe/`. Look at them before building. |
-| Build | `npm run build` | ~30 min per theme | 16:9 MP4, silent MP4 and poster. About half a second per frame. |
-| Vertical | `npm run build:vertical` | ~30 min per theme | 9:16 for Reels, Shorts and TikTok. |
-| Everything | `npm run build:all` | ~2 h | Both themes, both shapes, GIFs. Leave it running. |
+| Build | `npm run build` | ~1 h per theme | 16:9 MP4, silent MP4 and poster, at 60 fps. About half a second per frame. |
+| Vertical | `npm run build:vertical` | ~1 h per theme | 9:16 for Reels, Shorts and TikTok. |
+| Everything | `npm run build:all` | ~4 h | Both themes, both shapes, GIFs. Leave it running overnight. |
 | GIF | `npm run gif` | ~10 s | Six seconds of the before/after slider. Needs the 16:9 film. |
 
 `npm run probe -- 12.5,40,61` probes particular seconds.

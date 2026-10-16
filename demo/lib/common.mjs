@@ -12,7 +12,8 @@ export const DEMO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 export const REPO = path.resolve(DEMO, '..');
 export const at = (...parts) => path.join(DEMO, ...parts);
 
-export const FPS = 30;
+/** The film's rate: the capture's, so app motion is never resampled. */
+export const FPS = 60;
 export const WIDTH = 1920;
 export const HEIGHT = 1080;
 /** Silence after each line before the next scene starts. */
