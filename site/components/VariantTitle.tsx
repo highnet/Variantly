@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import { canWebGL } from '@/lib/glTier';
 import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime, useSeekTime } from '@/lib/seek';
@@ -11,7 +12,7 @@ import { useVariant } from '@/lib/variant';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 
-// The 3D title (three.js and its typefaces) loads only for the Candy 3D concept.
+// The 3D title (three.js and its typefaces) loads after first paint, once idle.
 const Letters3D = dynamic(() => import('@/components/Letters3D').then((m) => m.Letters3D), {
   ssr: false,
 });
@@ -105,20 +106,54 @@ const Letter = ({ char, index, run, solid }: LetterProps) => {
  */
 export const VariantTitle = () => {
   const [run, setRun] = useState(0);
-  // The 3D concept draws the word as extruded letters; the HTML word stays for
-  // screen readers and as the replay target.
-  const solid = useVariant() === 'g';
+  // performance.now() when the current reveal started, shared with the 3D word.
+  const clock = useRef(0);
+  // The 2D word shows first; three.js loads when the browser is idle, and the
+  // 3D word crossfades in over it. The HTML word stays for screen readers, as
+  // the replay target, and as the fallback when WebGL is unavailable.
+  const [want3d, setWant3d] = useState(false);
+  const [solid, setSolid] = useState(false);
+  const onReady = useCallback(() => setSolid(true), []);
+  const onFail = useCallback(() => {
+    setSolid(false);
+    setWant3d(false);
+    if (seekTime() !== null) releaseFrame('title');
+  }, []);
+  const variant = useVariant();
   useEffect(() => {
-    if (seekTime() !== null && !solid) releaseFrame('title');
+    clock.current = performance.now();
+  }, [run]);
+  useEffect(() => {
+    if (!variant) return;
+    if (!canWebGL()) {
+      if (seekTime() !== null) releaseFrame('title');
+      return;
+    }
+    const go = () => setWant3d(true);
+    if (seekTime() !== null) {
+      queueMicrotask(go);
+      return;
+    }
+    if (typeof requestIdleCallback === 'function') {
+      const id = requestIdleCallback(go, { timeout: 2500 });
+      return () => cancelIdleCallback(id);
+    }
+    const id = setTimeout(go, 1200);
+    return () => clearTimeout(id);
+  }, [variant]);
+  useEffect(() => {
     // A new concept gets its own title reveal.
     return useSiteStore.subscribe((s, prev) => {
       if (prev.hydrated && s.variant !== prev.variant) setRun((r) => r + 1);
     });
-  }, [solid]);
+  }, []);
   return (
     <div
       data-hero-title
-      className="vy-card border-slate-line relative grid place-items-center overflow-hidden border-b px-4 py-14 sm:py-20"
+      className={cn(
+        'vy-card border-slate-line relative grid place-items-center overflow-hidden border-b px-4 py-14 sm:py-20',
+        want3d && 'min-h-[clamp(180px,34vw,460px)]',
+      )}
     >
       <button
         type="button"
@@ -135,7 +170,7 @@ export const VariantTitle = () => {
           <Letter key={i} char={c} index={i} run={run} solid={solid} />
         ))}
       </button>
-      {solid && <Letters3D run={run} />}
+      {want3d && <Letters3D run={run} clock={clock} onReady={onReady} onFail={onFail} />}
     </div>
   );
 };
