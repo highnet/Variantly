@@ -1462,9 +1462,50 @@ main > div p { line-height: 1.65; }
 .vy-more > summary::-webkit-details-marker { display: none; }
 .vy-more > summary::before { content: '+'; font-weight: 700; color: var(--alert); transition: transform 300ms cubic-bezier(0.34, 1.6, 0.5, 1); display: inline-block; }
 .vy-more[open] > summary::before { transform: rotate(45deg); }
+.vy-more.vy-closing > summary::before { transform: none; }
 
 /* ---- Performance ---------------------------------------------------------- */
 @media (max-width: 639px) {
   /* One shape fewer on small screens: less filter work, same feel. */
   .vy-blobs > svg:nth-child(3) { display: none; }
 }
+
+/* ---- Agent view ------------------------------------------------------------
+ * A plain document for agents (see AgentDoc): system text, browser-default
+ * structure, no backdrop or concept styling. Only layout and legibility here.
+ * ------------------------------------------------------------------------- */
+.agent-doc {
+  max-width: 80ch;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1rem 16px 3rem;
+  font: 15px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+.agent-doc a { color: LinkText; text-decoration: underline; }
+.agent-doc h1 { font-size: 1.5em; margin: 1.5em 0 0.5em; }
+.agent-doc h2 { font-size: 1.2em; margin: 2em 0 0.5em; }
+.agent-doc p, .agent-doc ul, .agent-doc ol, .agent-doc dl { margin: 0.75em 0; }
+.agent-doc ul, .agent-doc ol { padding-left: 2.5ch; }
+.agent-doc ul { list-style: disc; }
+.agent-doc ol { list-style: decimal; }
+.agent-doc li { margin: 0.5em 0; }
+.agent-doc dd { margin: 0 0 0.5em 2ch; }
+.agent-doc pre {
+  margin: 0.5em 0;
+  padding: 0.5em 0.75em;
+  border: 1px solid GrayText;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+}
+.agent-doc header, .agent-doc footer { border-color: GrayText; border-style: solid; border-width: 0 0 1px; }
+.agent-doc footer { border-width: 1px 0 0; margin-top: 3rem; }
+
+/* Show-more pill: the labels crossfade with a little lift, the chevron flips
+   with a spring (motion in lib/disclose.ts). */
+.vy-label { transition: opacity 220ms ease, translate 320ms cubic-bezier(0.34, 1.6, 0.5, 1), filter 220ms ease; }
+.vy-label-off { opacity: 0; translate: 0 40%; filter: blur(2px); }
+.vy-chevron { transition: rotate 420ms cubic-bezier(0.34, 1.6, 0.5, 1); }
+/* Before hydration the server-rendered human panel is in the DOM; an agent
+   landing on #agent never sees it flash. */
+:root[data-audience='agent'] #audience-panel > :not(.agent-doc) { display: none; }
