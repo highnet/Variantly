@@ -40,9 +40,21 @@ const DRUM = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ&-0123456789';
 const page = (base: string, n: number, phone: boolean) =>
   `${n === 0 ? DEMO_RUNS[0].base : base}/v${n}/${phone ? 'phone' : 'index'}.html`;
 const PHONE_QUERY = '(max-width: 639px)';
-// A still of each page's top, per site theme (scripts/demo-posters.mjs).
-const poster = (base: string, n: number, phone: boolean, theme: Theme) =>
-  `${n === 0 ? DEMO_RUNS[0].base : base}/v${n}/poster-${phone ? 'phone' : 'desktop'}-${theme}.webp`;
+// A still of each page's top, per site theme (scripts/demo-posters.mjs),
+// shot at the stage's own shape (1440 x 702 on a desktop, 390 x 523 on a
+// phone) so it lands on the live frame's pixels, at 1x/2x and 2x/3x.
+const poster = (base: string, n: number, phone: boolean, theme: Theme, x?: number) =>
+  `${n === 0 ? DEMO_RUNS[0].base : base}/v${n}/poster-${phone ? 'phone' : 'desktop'}-${theme}${x ? `@${x}x` : ''}.webp`;
+const posterSet = (base: string, n: number, phone: boolean, theme: Theme) =>
+  phone
+    ? `${poster(base, n, phone, theme)} 2x, ${poster(base, n, phone, theme, 3)} 3x`
+    : `${poster(base, n, phone, theme)} 1x, ${poster(base, n, phone, theme, 2)} 2x`;
+// The density a poster loads at here, so the next one can be warmed in it.
+const posterFor = (base: string, n: number, phone: boolean, theme: Theme) => {
+  const dpr = window.devicePixelRatio || 1;
+  const x = phone ? (dpr > 2 ? 3 : undefined) : dpr > 1 ? 2 : undefined;
+  return poster(base, n, phone, theme, x);
+};
 // The live pages wait for the demo to sit fully in view this long, with the
 // page not scrolling for SCROLL_QUIET_MS, unless the visitor uses it first.
 const IDLE_IN_VIEW_MS = 1500;
@@ -55,6 +67,13 @@ const FRAME_SETTLE_MS = 1400;
 const SWAP_FROM = 'polygon(125% 0, 125% 0, 125% 100%, 115% 100%)';
 const SWAP_TO = 'polygon(-15% 0, 125% 0, 125% 100%, -25% 100%)';
 type Theme = Prefs['theme'];
+// A pane is one design of one run; the original is the same for every run.
+type Pane = { run: number; n: number };
+const paneKey = ({ run, n }: Pane) => (n === 0 ? 'before' : `${DEMO_RUNS[run].id}-${n}`);
+// A live page counts once it has replaced its poster; a pane that unmounts
+// takes its frame with it, so a remount starts over.
+const shownLive = (frames: Map<string, HTMLIFrameElement>, key: string) =>
+  frames.get(key)?.style.opacity === '1';
 const vname = (n: number) => `V${String(n).padStart(2, '0')}`;
 const LONGEST = Math.max(...DEMO_RUNS.flatMap((r) => r.variants.map((v) => v.direction.length)));
 // Sized so the longest direction's cells fill the row at most.
@@ -210,7 +229,7 @@ const Showcase = () => {
         retry = window.setTimeout(() => (id = idle(warm) as number), SCROLL_QUIET_MS);
         return;
       }
-      if (theme) new Image().src = poster(run.base, next, phone, theme);
+      if (theme) new Image().src = posterFor(run.base, next, phone, theme);
       // A touch device warms only the next poster, never a whole page.
       const coarse = window.matchMedia('(pointer: coarse)').matches;
       setMounted((m) => {
@@ -225,41 +244,55 @@ const Showcase = () => {
     };
   }, [selected, count, live, phone, theme, run.base]);
   const [auto, setAuto] = useState(true);
+  // Calm mode (the site's setting, which follows reduced motion by default)
+  // never starts the tour by itself; Play still starts it on request.
+  const [calm, setCalm] = useState(false);
+  // What a screen reader hears after the visitor picks a design or a run;
+  // the tour's own changes stay quiet.
+  const [said, setSaid] = useState('');
   const [ready, setReady] = useState(false);
   const [hover, setHover] = useState(false);
   const hoverRef = useRef(false);
   const pos = useRef(50);
   const anim = useRef(0);
   const grip = useRef<HTMLButtonElement>(null);
-  const loaded = useRef(new Set<number>());
   const wired = useRef(new WeakSet<Document>());
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
-  const frames = useRef<(HTMLIFrameElement | null)[]>([]);
+  // Live panes and their wrappers, by paneKey: a run switch keeps the old
+  // run's pane drawn under the new one, so numbers alone would collide.
+  const frames = useRef(new Map<string, HTMLIFrameElement>());
   // Each redesign sits in a wrapper the swap wipe clips, apart from the
   // divider's own clip on the frame.
-  const swaps = useRef<(HTMLDivElement | null)[]>([]);
+  const swaps = useRef(new Map<string, HTMLDivElement>());
   // Swaps waiting on a page that hasn't loaded yet, run from onFrameLoad.
-  const waiting = useRef(new Map<number, () => void>());
+  const waiting = useRef(new Map<string, () => void>());
   // Posters that have arrived, by URL (a run or theme change is a new URL).
   const posterLoaded = useRef(new Set<string>());
-  // The redesign kept fully drawn under the one wiping in. Set while
-  // rendering the new selection, so the old pane never unmounts mid-swap.
-  const [under, setUnder] = useState<number | null>(null);
+  // The redesign kept fully drawn under the one coming in, until the new
+  // one has something to show. Set while rendering the new selection, so
+  // the old pane never unmounts first: a switch never shows a blank pane.
+  const [under, setUnder] = useState<Pane | null>(null);
   const [was, setWas] = useState(selected);
   const [wasRun, setWasRun] = useState(runIdx);
   if (wasRun !== runIdx) {
-    // A new run starts at its first design, with nothing left from the old.
+    // A new run starts at its first design; the old run's pane stays drawn
+    // underneath until the new one arrives.
     setWasRun(runIdx);
     setSelected(1);
     setWas(1);
-    setUnder(null);
+    setUnder({ run: wasRun, n: was });
     setMounted(new Set([1]));
   } else if (was !== selected) {
     setWas(selected);
-    setUnder(calmMotion() ? null : was);
+    setUnder({ run: runIdx, n: was });
     setMounted((m) => (m.has(selected) ? m : new Set(m).add(selected)));
   }
+  const selKey = paneKey({ run: runIdx, n: selected });
+  const selKeyRef = useRef(selKey);
+  useEffect(() => {
+    selKeyRef.current = selKey;
+  }, [selKey]);
   const raf = useRef(0);
   const want = useRef(50);
   const quiet = useRef(0);
@@ -272,14 +305,34 @@ const Showcase = () => {
       takeOver();
       goLive();
       setSelected(n);
+      const v = variants[n - 1];
+      if (v) setSaid(`Showing ${vname(n)}, ${v.direction}`);
     },
-    [takeOver, goLive],
+    [takeOver, goLive, variants],
   );
+  const chooseRun = (i: number) => {
+    takeOver();
+    goLive();
+    setRunIdx(i);
+    const r = DEMO_RUNS[i];
+    setSaid(`${r.label}: ${r.variants.length} redesigns. Showing V01, ${r.variants[0].direction}`);
+  };
 
-  // Cycle while untouched, on screen and in a visible tab.
+  // Calm mode, now and whenever the visitor changes it, pauses the tour.
+  useEffect(() => {
+    const sync = (c: boolean) => {
+      setCalm(c);
+      if (c) setAuto(false);
+    };
+    sync(calmMotion());
+    const onPrefs = (e: Event) => sync((e as CustomEvent<Prefs>).detail.motion === 'calm');
+    window.addEventListener(PREFS_EVENT, onPrefs);
+    return () => window.removeEventListener(PREFS_EVENT, onPrefs);
+  }, []);
+
+  // Cycle while untouched (or after Play), on screen and in a visible tab.
   useEffect(() => {
     if (!auto) return;
-    if (calmMotion()) return;
     const io = new IntersectionObserver(([e]) => (visible.current = e.isIntersecting), {
       threshold: 0.3,
     });
@@ -311,8 +364,8 @@ const Showcase = () => {
     if (!fe || Date.now() < quiet.current) return;
     scrollPos.current = { x: fe.scrollLeft, y: fe.scrollTop };
     quiet.current = Date.now() + 80;
-    for (const f of frames.current) {
-      if (f && f !== from) applyScroll(f);
+    for (const f of frames.current.values()) {
+      if (f !== from) applyScroll(f);
     }
   }, []);
 
@@ -321,7 +374,7 @@ const Showcase = () => {
   const thumbDrag = useRef<{ y: number; top: number } | null>(null);
 
   const metrics = () => {
-    const doc = frames.current[selected]?.contentWindow?.document.scrollingElement;
+    const doc = frames.current.get(selKey)?.contentWindow?.document.scrollingElement;
     if (!doc || !track.current) return null;
     const view = doc.clientHeight;
     const full = Math.max(doc.scrollHeight, view);
@@ -348,7 +401,7 @@ const Showcase = () => {
     if (!m) return;
     scrollPos.current = { ...scrollPos.current, y: Math.max(0, Math.min(m.max, y)) };
     quiet.current = Date.now() + 80;
-    for (const f of frames.current) applyScroll(f);
+    for (const f of frames.current.values()) applyScroll(f);
     paintThumb();
   };
 
@@ -380,25 +433,33 @@ const Showcase = () => {
   const repaint = useEffectEvent(() => paintThumb());
   useEffect(() => {
     quiet.current = Date.now() + 80;
-    applyScroll(frames.current[selected]);
+    applyScroll(frames.current.get(selKey) ?? null);
     repaint();
-  }, [selected]);
+  }, [selKey]);
 
-  const onFrameLoad = (i: number) => {
-    const f = frames.current[i];
+  const onFrameLoad = (key: string) => {
+    const f = frames.current.get(key);
     const win = f?.contentWindow;
     // Each document is wired once, whichever of load or mount sees it first.
     if (!f || !win || wired.current.has(win.document)) return;
     wired.current.add(win.document);
-    loaded.current.add(i);
     // The poster underneath stays in view while the page plays its own
-    // entrance, then the settled live page fades in over the same pixels.
-    window.setTimeout(() => (f.style.opacity = '1'), calmMotion() ? 0 : FRAME_SETTLE_MS);
-    waiting.current.get(i)?.();
-    if (loaded.current.has(0) && loaded.current.has(1)) {
-      setReady(true);
-      markLoaded('demo');
-    }
+    // entrance, then the settled live page takes its place in one cut: the
+    // poster is hidden as the frame shows, so the two never overlap (a fade
+    // showed both pages' text at once, doubled).
+    window.setTimeout(
+      () => {
+        if (!f.isConnected) return;
+        f.style.opacity = '1';
+        if (f.parentElement) f.parentElement.dataset.live = 'true';
+        waiting.current.get(key)?.();
+        if (shownLive(frames.current, 'before') && shownLive(frames.current, selKeyRef.current)) {
+          setReady(true);
+          markLoaded('demo');
+        }
+      },
+      calmMotion() ? 0 : FRAME_SETTLE_MS,
+    );
     // The panes are objects on the counter, not embedded documents.
     win.document.documentElement.style.setProperty('scrollbar-width', 'none');
     // The wheel scrolls the page around the demo, not the panes inside it;
@@ -458,7 +519,10 @@ const Showcase = () => {
     el.style.setProperty('--before-o', String(Math.max(0, Math.min(1, (p - 12) / 10))));
     el.style.setProperty('--after-o', String(Math.max(0, Math.min(1, (88 - p) / 10))));
     grip.current?.setAttribute('aria-valuenow', String(Math.round(p)));
-    grip.current?.setAttribute('aria-valuetext', `${Math.round(p)}% original`);
+    grip.current?.setAttribute(
+      'aria-valuetext',
+      `${Math.round(p)}% before, ${100 - Math.round(p)}% after`,
+    );
   };
 
   /* Pointer events can outpace the screen; paint the latest once a frame. */
@@ -540,27 +604,32 @@ const Showcase = () => {
   }, []);
 
   /*
-   * Changing redesign: the new one wipes in over the old behind a leaning
-   * edge, like the concept swap, while the old one stays fully drawn
+   * Changing redesign or run: the new one wipes in over the old behind a
+   * leaning edge, like the concept swap, while the old one stays fully drawn
    * underneath. (A crossfade let the original show through mid-way and
-   * faded in pages that were still blank.) A page still loading is held
-   * back until it arrives, for a second at most.
+   * faded in pages that were still blank.) A pane with nothing to show yet
+   * is held back until its poster or page arrives, for a second at most;
+   * in calm mode it then simply replaces the old one, with no wipe.
    */
   useEffect(() => {
     if (under === null) return;
     const from = under;
-    const el = swaps.current[selected];
+    const el = swaps.current.get(selKey);
     if (!el) return;
     const queue = waiting.current;
-    el.style.clipPath = SWAP_FROM;
+    const animate = !calm;
+    // Hidden until it has something to show, so the old pane stays in view.
+    el.style.clipPath = animate ? SWAP_FROM : 'inset(0 0 0 100%)';
     let wipe: Animation | undefined;
     let timer = 0;
+    let gone = false;
     const done = () => setUnder((u) => (u === from ? null : u));
     const run = () => {
-      queue.delete(selected);
+      queue.delete(selKey);
       clearTimeout(timer);
-      if (wipe) return;
+      if (wipe || gone) return;
       el.style.clipPath = '';
+      if (!animate) return done();
       wipe = el.animate([{ clipPath: SWAP_FROM }, { clipPath: SWAP_TO }], {
         duration: 680,
         easing: EASE.wipe,
@@ -568,21 +637,20 @@ const Showcase = () => {
       wipe.onfinish = done;
     };
     // Wipe in only once there is something to show: the poster or the page.
-    const still = theme && poster(DEMO_RUNS[runIdx].base, selected, phone, theme);
-    if (loaded.current.has(selected) || (still && posterLoaded.current.has(still))) run();
+    const still = theme && posterFor(DEMO_RUNS[runIdx].base, selected, phone, theme);
+    if (shownLive(frames.current, selKey) || (still && posterLoaded.current.has(still))) run();
     else {
-      queue.set(selected, run);
+      queue.set(selKey, run);
       timer = window.setTimeout(run, 1000);
     }
     return () => {
-      queue.delete(selected);
+      gone = true;
+      queue.delete(selKey);
       clearTimeout(timer);
       wipe?.cancel();
       el.style.clipPath = '';
     };
-    // Runs per swap: a new selection sets a new pane underneath.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected]);
+  }, [under, selKey, calm, theme, runIdx, selected, phone]);
 
   useEffect(() => {
     hoverRef.current = hover;
@@ -625,9 +693,9 @@ const Showcase = () => {
 
   // A pane that finished loading before hydration never fired onLoad here.
   const wireEarly = useEffectEvent(() => {
-    frames.current.forEach((f, i) => {
-      const doc = f?.contentWindow?.document;
-      if (doc?.readyState === 'complete' && doc.URL !== 'about:blank') onFrameLoad(i);
+    frames.current.forEach((f, key) => {
+      const doc = f.contentWindow?.document;
+      if (doc?.readyState === 'complete' && doc.URL !== 'about:blank') onFrameLoad(key);
     });
   });
   useEffect(() => wireEarly(), []);
@@ -637,8 +705,8 @@ const Showcase = () => {
     const onPrefs = (e: Event) => {
       const p = (e as CustomEvent<Prefs>).detail;
       setTheme(p.theme);
-      for (const f of frames.current) {
-        const doc = f?.contentWindow?.document;
+      for (const f of frames.current.values()) {
+        const doc = f.contentWindow?.document;
         if (doc?.body) applyPrefsToFrame(doc, p);
       }
     };
@@ -673,10 +741,11 @@ const Showcase = () => {
 
   // The stage shows once both posters (or both live pages) have arrived.
   const shown = useRef(new Set<string>());
-  const onVariantPoster = (n: number, src: string) => {
-    posterLoaded.current.add(src);
-    waiting.current.get(n)?.();
-    if (n === selected) onPosterLoad('after');
+  const onVariantPoster = (key: string, src: string) => {
+    // currentSrc is absolute; posterFor gives the path.
+    posterLoaded.current.add(new URL(src, window.location.href).pathname);
+    waiting.current.get(key)?.();
+    if (key === selKey) onPosterLoad('after');
   };
   const onPosterLoad = (key: string) => {
     shown.current.add(key);
@@ -823,10 +892,9 @@ const Showcase = () => {
               </details>
             </div>
             <div className="border-slate-line grid gap-2.5 border-t pt-4">
-              <p
-                className="figure [container-type:inline-size] m-0 flex flex-wrap items-center gap-x-[0.3em] gap-y-1 text-[clamp(1.1rem,1.6vw,1.5rem)] leading-none"
-                aria-live="polite"
-              >
+              {/* Not a live region: the tour changes this every few seconds.
+                  The visitor's own picks are announced by the status below. */}
+              <p className="figure [container-type:inline-size] m-0 flex flex-wrap items-center gap-x-[0.3em] gap-y-1 text-[clamp(1.1rem,1.6vw,1.5rem)] leading-none">
                 <span className="text-steel-on-slate">Now showing</span>
                 <span className="sr-only">{current.direction}</span>
                 <FlapWord word={current.direction} />
@@ -840,14 +908,38 @@ const Showcase = () => {
                   What the AI was asked
                 </a>
               </div>
-              <p className="text-steel-on-slate m-0 text-[13px] leading-snug">{run.brief}</p>
-              <p className="text-steel-on-slate m-0 text-[13px] leading-snug">
-                A made-up shop, redesigned{' '}
-                <strong className="text-surface">
-                  {count === 20 ? 'twenty' : count === 10 ? 'ten' : count} ways
-                </strong>{' '}
-                by Claude Code. <strong className="text-surface">Drag the line</strong> or pick a
-                number.
+              {/* Every run's copy shares one grid cell, the others invisible,
+                  so switching runs never changes the height above the demo
+                  (that moved the page under the visitor's thumb). */}
+              <div className="grid">
+                {DEMO_RUNS.map((r, i) => (
+                  <div
+                    key={r.id}
+                    aria-hidden={i !== runIdx}
+                    className={cn(
+                      'col-start-1 row-start-1 grid content-start gap-2.5',
+                      i !== runIdx && 'invisible',
+                    )}
+                  >
+                    <p className="text-steel-on-slate m-0 text-[13px] leading-snug">{r.brief}</p>
+                    <p className="text-steel-on-slate m-0 text-[13px] leading-snug">
+                      A made-up shop, redesigned{' '}
+                      <strong className="text-surface">
+                        {r.variants.length === 20
+                          ? 'twenty'
+                          : r.variants.length === 10
+                            ? 'ten'
+                            : r.variants.length}{' '}
+                        ways
+                      </strong>{' '}
+                      by Claude Code. <strong className="text-surface">Drag the line</strong> or
+                      pick a number.
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <p id="demo-status" role="status" className="sr-only">
+                {said}
               </p>
             </div>
           </div>
@@ -859,6 +951,9 @@ const Showcase = () => {
         <div
           ref={stage}
           id="demo-stage"
+          role="group"
+          aria-roledescription="before and after comparison"
+          aria-label={`Before: the original Oak & Iron page. After: ${vname(selected)}, ${current.direction}`}
           onClick={goLive}
           className={cn(
             'group/stage relative isolate h-[62svh] min-h-[380px] overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]',
@@ -870,7 +965,7 @@ const Showcase = () => {
               ready && 'pointer-events-none opacity-0 [&_.skeleton]:animate-none!',
             )}
           />
-          {auto && ready && (
+          {auto && ready && !calm && (
             <div
               key={selected}
               aria-hidden="true"
@@ -878,72 +973,93 @@ const Showcase = () => {
             />
           )}
           {/* Each pane is a poster first; its live page mounts over it and
-              lands on the same pixels, so the handoff never shows a blank. */}
-          {theme && (
-            // eslint-disable-next-line @next/next/no-img-element -- pre-sized static WebP
-            <img
-              src={poster(run.base, 0, phone, theme)}
-              alt=""
-              decoding="async"
-              onLoad={() => onPosterLoad('before')}
-              className="absolute inset-0 size-full bg-white object-cover object-top"
-            />
-          )}
-          {live && (
-            <iframe
-              ref={(el) => {
-                frames.current[0] = el;
-              }}
-              onLoad={() => onFrameLoad(0)}
-              src={page(run.base, 0, phone)}
-              title="Oak & Iron as it was: the original"
-              className="absolute inset-0 size-full border-0 opacity-0 transition-opacity duration-300"
-            />
-          )}
-          {variants
-            .filter((v) => v.n === selected || v.n === under || mounted.has(v.n))
-            .map((v) => (
-              <div
-                key={`${run.id}-${v.n}`}
+              lands on the same pixels, so the handoff never shows a blank.
+              The posters are pictures of what the frames will hold, so
+              assistive tech skips them; the stage's label says what is
+              shown. Pane wrappers let clicks through to the frames: the
+              after pane's wrapper spans the whole stage, and used to swallow
+              every click on the before side. */}
+          <div className="group/pane pointer-events-none absolute inset-0">
+            {theme && (
+              // eslint-disable-next-line @next/next/no-img-element -- pre-sized static WebP
+              <img
+                src={poster(run.base, 0, phone, theme)}
+                srcSet={posterSet(run.base, 0, phone, theme)}
+                alt=""
+                aria-hidden="true"
+                decoding="async"
+                onLoad={() => onPosterLoad('before')}
+                className="absolute inset-0 size-full bg-white object-cover object-top group-data-[live=true]/pane:invisible"
+              />
+            )}
+            {live && (
+              <iframe
                 ref={(el) => {
-                  swaps.current[v.n] = el;
+                  if (el) frames.current.set('before', el);
+                  else frames.current.delete('before');
+                }}
+                onLoad={() => onFrameLoad('before')}
+                src={page(run.base, 0, phone)}
+                title="Before: Oak & Iron as it was, the original"
+                className="pointer-events-auto absolute inset-0 size-full border-0 bg-white opacity-0"
+              />
+            )}
+          </div>
+          {[
+            ...(under && under.run !== runIdx ? [under] : []),
+            ...variants
+              .filter((v) => v.n === selected || under?.n === v.n || mounted.has(v.n))
+              .map((v) => ({ run: runIdx, n: v.n })),
+          ].map((pane) => {
+            const key = paneKey(pane);
+            const r = DEMO_RUNS[pane.run];
+            const v = r.variants[pane.n - 1];
+            const isUnder = under !== null && paneKey(under) === key;
+            const isSel = key === selKey;
+            return (
+              <div
+                key={key}
+                ref={(el) => {
+                  if (el) swaps.current.set(key, el);
+                  else swaps.current.delete(key);
                 }}
                 className={cn(
-                  'absolute inset-0',
-                  v.n === selected
-                    ? 'z-[2]'
-                    : v.n === under
-                      ? 'pointer-events-none z-[1]'
-                      : 'pointer-events-none invisible',
+                  'group/pane pointer-events-none absolute inset-0',
+                  isSel ? 'z-[2]' : isUnder ? 'z-[1]' : 'invisible',
                 )}
               >
                 {theme && (
                   // eslint-disable-next-line @next/next/no-img-element -- pre-sized static WebP
                   <img
-                    src={poster(run.base, v.n, phone, theme)}
-                    alt={v.n === selected && !live ? `${v.direction}: the redesign` : ''}
+                    src={poster(r.base, pane.n, phone, theme)}
+                    srcSet={posterSet(r.base, pane.n, phone, theme)}
+                    alt=""
+                    aria-hidden="true"
                     decoding="async"
-                    onLoad={(e) => onVariantPoster(v.n, e.currentTarget.getAttribute('src') ?? '')}
-                    className="vy-split-clip absolute inset-0 size-full object-cover object-top"
+                    onLoad={(e) => onVariantPoster(key, e.currentTarget.currentSrc)}
+                    className="vy-split-clip absolute inset-0 size-full object-cover object-top group-data-[live=true]/pane:invisible"
                   />
                 )}
                 {live && (
                   <iframe
                     ref={(el) => {
-                      frames.current[v.n] = el;
-                      // An unmounted pane loads afresh next time it is shown.
-                      if (!el) loaded.current.delete(v.n);
+                      if (el) frames.current.set(key, el);
+                      else frames.current.delete(key);
                     }}
-                    onLoad={() => onFrameLoad(v.n)}
-                    src={page(run.base, v.n, phone)}
-                    title={`${vname(v.n)}: ${v.direction}`}
-                    aria-hidden={v.n !== selected}
-                    tabIndex={v.n === selected ? 0 : -1}
-                    className="vy-split-clip absolute inset-0 size-full border-0 opacity-0 transition-opacity duration-300"
+                    onLoad={() => onFrameLoad(key)}
+                    src={page(r.base, pane.n, phone)}
+                    title={`After: ${vname(pane.n)}, ${v.direction}`}
+                    aria-hidden={!isSel}
+                    tabIndex={isSel ? 0 : -1}
+                    className={cn(
+                      'vy-split-clip absolute inset-0 size-full border-0 bg-white opacity-0',
+                      isSel && 'pointer-events-auto',
+                    )}
                   />
                 )}
               </div>
-            ))}
+            );
+          })}
           {/* The panes stay scrollable; this band either side of the line is
             the drag surface, so nobody has to hit the grip exactly. */}
           <div
@@ -956,7 +1072,11 @@ const Showcase = () => {
             onDoubleClick={() => tween(50, 300)}
           />
 
-          <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex justify-between gap-3">
+          {/* Visual tags; the stage's own label names both sides. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-x-3 top-3 z-20 flex justify-between gap-3"
+          >
             <Typography
               variant="tag"
               className="bg-ink text-surface rounded-flap px-1.5 py-1 text-[10px] opacity-[var(--before-o,1)] sm:px-2 sm:py-1.5 sm:text-[length:inherit]"
@@ -1021,10 +1141,12 @@ const Showcase = () => {
               size="grip"
               role="slider"
               aria-label="Before and after divider"
+              aria-controls="demo-stage"
+              aria-orientation="horizontal"
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={50}
-              aria-valuetext="50% original"
+              aria-valuetext="50% before, 50% after"
               onKeyDown={onGripKey}
               onPointerDown={onDown}
               onPointerMove={onMove}
@@ -1050,7 +1172,7 @@ const Showcase = () => {
             // like the dock's mode switch, the pressed run glowing green.
             <div
               role="group"
-              aria-label="Redesign runs"
+              aria-label="Redesign run"
               className="bg-ink rounded-control flex gap-0.5 p-0.5 max-sm:basis-full max-sm:justify-center lg:flex-col"
             >
               {DEMO_RUNS.map((r, i) => (
@@ -1059,18 +1181,14 @@ const Showcase = () => {
                   variant="segment"
                   size="segment"
                   aria-pressed={i === runIdx}
-                  aria-label={`${r.label}: ${r.variants.length} redesigns`}
                   title={r.brief}
-                  onClick={() => {
-                    takeOver();
-                    goLive();
-                    setRunIdx(i);
-                  }}
+                  onClick={() => i !== runIdx && chooseRun(i)}
                   className="gap-1.5 rounded-[6px] px-2.5 py-1.5 max-sm:flex-1"
                 >
                   {r.label}
                   <span className="font-mono text-[11px] tabular-nums opacity-70">
                     {r.variants.length}
+                    <span className="sr-only"> redesigns</span>
                   </span>
                 </Button>
               ))}
@@ -1090,8 +1208,9 @@ const Showcase = () => {
             {/* Ten to a row, so twenty fit a phone in two rows and every
                 number stays in view. */}
             <div
-              role="group"
-              aria-label="Redesigns"
+              id="demo-picker"
+              role="radiogroup"
+              aria-label={`${run.label} redesigns, 1 to ${count}`}
               onKeyDown={onCellsKey}
               className="grid grid-cols-[repeat(10,minmax(0,2.125rem))] gap-0.5 sm:grid-cols-[repeat(10,2.5rem)] sm:gap-1"
             >
@@ -1105,18 +1224,19 @@ const Showcase = () => {
                     }}
                     variant="cell"
                     size="cell-grid"
-                    aria-current={active}
-                    aria-label={`${vname(v.n)} ${v.direction}`}
+                    role="radio"
+                    aria-checked={active}
+                    aria-label={`${String(v.n).padStart(2, '0')} ${v.direction}`}
                     title={`${v.direction} (${v.n})`}
                     tabIndex={active ? 0 : -1}
                     onClick={() => choose(v.n)}
                   >
                     {String(v.n).padStart(2, '0')}
-                    {active && auto && (
+                    {active && auto && !calm && (
                       <span
                         key={selected}
                         aria-hidden="true"
-                        className="bg-ink/50 absolute inset-x-1.5 bottom-1 h-0.5 origin-left animate-[cycle_12s_linear_forwards] in-data-[motion=calm]:hidden"
+                        className="bg-ink/50 absolute inset-x-1.5 bottom-1 h-0.5 origin-left animate-[cycle_12s_linear_forwards] motion-reduce:hidden"
                       />
                     )}
                   </Button>
@@ -1146,9 +1266,9 @@ const Showcase = () => {
                 onClick={() => {
                   goLive();
                   setAuto((a) => !a);
+                  setSaid(auto ? 'Tour paused' : 'Tour playing');
                 }}
                 title={auto ? 'Stop cycling through the redesigns' : 'Cycle through the redesigns'}
-                className="in-data-[motion=calm]:hidden"
               >
                 {auto ? (
                   <Pause className="size-3.5" aria-hidden="true" />

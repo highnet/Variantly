@@ -6,8 +6,11 @@
  *
  *   npm run demo-posters
  *
- * Writes public/demo/<run>/vN/poster-<desktop|phone>-<light|dark>.webp, one
- * per site theme, since the site sets data-theme on the live pages too.
+ * Writes public/demo/<run>/vN/poster-<desktop|phone>-<light|dark>[@Nx].webp,
+ * one per site theme (the site sets data-theme on the live pages too) and
+ * per pixel density. Each is shot at the stage's own shape, so the poster
+ * lands on the live frame's pixels at the standard viewports (desktop
+ * 1440 x 900, iPhone 390 x 844) and stays crisp at 2x and 3x.
  * Needs Playwright (the `playwright` or `playwright-core` package, or the
  * one npx installs) and a Chromium; set CHROME_PATH to pick the browser.
  */
@@ -58,10 +61,12 @@ const server = http.createServer((req, res) => {
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const port = /** @type {import('node:net').AddressInfo} */ (server.address()).port;
 
-// The stage's shape on each: a desktop at 1280 wide, a phone's 62svh split.
+// The stage's shape on each: a desktop's 78svh of 900 at 1440 wide, a
+// phone's 62svh of 844 at 390 wide. Shot once at the top density, then
+// scaled down for the others; the plain file is the lowest density.
 const SHAPES = [
-  { name: 'desktop', file: 'index.html', width: 1280, height: 760, scale: 1, quality: 0.62 },
-  { name: 'phone', file: 'phone.html', width: 390, height: 520, scale: 2, quality: 0.55 },
+  { name: 'desktop', file: 'index.html', width: 1440, height: 702, scales: [1, 2], quality: 0.6 },
+  { name: 'phone', file: 'phone.html', width: 390, height: 523, scales: [2, 3], quality: 0.55 },
 ];
 
 const chromium = await loadPlaywright();
@@ -79,7 +84,7 @@ try {
       for (const theme of ['light', 'dark']) {
         const ctx = await browser.newContext({
           viewport: { width: shape.width, height: shape.height },
-          deviceScaleFactor: shape.scale,
+          deviceScaleFactor: Math.max(...shape.scales),
           reducedMotion: 'no-preference',
           colorScheme: theme,
         });
@@ -100,23 +105,36 @@ try {
           // Entrance animations finish first: a poster shows the settled page.
           await page.waitForTimeout(2200);
           const png = await page.screenshot({ type: 'png' });
-          // Chromium encodes WebP itself, so no image library is needed.
-          const webp = await page.evaluate(
-            async ({ b64, q }) => {
-              const img = new Image();
-              img.src = `data:image/png;base64,${b64}`;
-              await img.decode();
-              const c = document.createElement('canvas');
-              c.width = img.naturalWidth;
-              c.height = img.naturalHeight;
-              c.getContext('2d')?.drawImage(img, 0, 0);
-              return c.toDataURL('image/webp', q).split(',')[1];
-            },
-            { b64: png.toString('base64'), q: shape.quality },
-          );
-          const out = path.join(dir, `poster-${shape.name}-${theme}.webp`);
-          writeFileSync(out, Buffer.from(webp, 'base64'));
-          console.log(`${path.relative(root, out)}  ${Math.round(statSync(out).size / 1024)} KB`);
+          for (const [i, scale] of shape.scales.entries()) {
+            // Chromium scales and encodes WebP itself, so no image library
+            // is needed.
+            const webp = await page.evaluate(
+              async ({ b64, q, w, h }) => {
+                const img = new Image();
+                img.src = `data:image/png;base64,${b64}`;
+                await img.decode();
+                const c = document.createElement('canvas');
+                c.width = w;
+                c.height = h;
+                const g = c.getContext('2d');
+                if (g) {
+                  g.imageSmoothingQuality = 'high';
+                  g.drawImage(img, 0, 0, w, h);
+                }
+                return c.toDataURL('image/webp', q).split(',')[1];
+              },
+              {
+                b64: png.toString('base64'),
+                q: shape.quality,
+                w: shape.width * scale,
+                h: shape.height * scale,
+              },
+            );
+            const suffix = i === 0 ? '' : `@${scale}x`;
+            const out = path.join(dir, `poster-${shape.name}-${theme}${suffix}.webp`);
+            writeFileSync(out, Buffer.from(webp, 'base64'));
+            console.log(`${path.relative(root, out)}  ${Math.round(statSync(out).size / 1024)} KB`);
+          }
         }
         await ctx.close();
       }
