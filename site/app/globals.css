@@ -1073,7 +1073,7 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   -webkit-tap-highlight-color: transparent;
 }
 .vy-fresh:hover { filter: brightness(1.08); transform: translateY(-0.04em) rotate(-1.2deg); }
-.vy-fresh:active { transform: scale(0.94, 0.88); transition-duration: 80ms; }
+.vy-fresh:active { transform: scale(0.88, 0.8); transition-duration: 70ms; }
 .vy-fresh:focus-visible { outline: 3px solid var(--alert); outline-offset: 4px; border-radius: 4px; }
 /* The little arrow keeps nudging until the first press, then spins on each one. */
 .vy-fresh .vy-fresh-icon {
@@ -1085,27 +1085,10 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   stroke-width: 3;
   animation: vy-nudge 2.6s ease-in-out infinite;
 }
-.vy-fresh-pop-a,
-.vy-fresh-pop-b { animation: vy-pop 520ms cubic-bezier(0.34, 1.7, 0.5, 1); }
-.vy-fresh-pop-a .vy-fresh-icon,
-.vy-fresh-pop-b .vy-fresh-icon { animation: vy-spin 520ms cubic-bezier(0.34, 1.4, 0.5, 1); }
-/* Two names, so a second press restarts the pop. */
-.vy-fresh-pop-b { animation-name: vy-pop-b; }
 @keyframes vy-nudge {
   0%, 70%, 100% { transform: rotate(0); }
   78% { transform: rotate(-40deg); }
   88% { transform: rotate(20deg); }
-}
-@keyframes vy-spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
-@keyframes vy-pop {
-  0% { transform: scale(0.9, 0.84); }
-  55% { transform: scale(1.06, 1.1) rotate(-2deg); }
-  100% { transform: none; }
-}
-@keyframes vy-pop-b {
-  0% { transform: scale(0.9, 0.84); }
-  55% { transform: scale(1.06, 1.1) rotate(2deg); }
-  100% { transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .vy-fresh, .vy-fresh .vy-fresh-icon { animation: none !important; transition: none; }
@@ -1327,3 +1310,27 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 :root[data-variant='e'] { --blob-o: 0.55; }
 :root[data-variant='f'] { --blob-o: 0.5; }
 :root[data-scrolled] .vy-blobs { opacity: 0.16; }
+
+/* The press burst sits above everything; it finishes before the concept wipe. */
+.vy-burst {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  pointer-events: none;
+}
+.vy-spark {
+  position: absolute;
+  line-height: 1;
+  font-family: system-ui, sans-serif;
+  font-weight: 900;
+  text-shadow: 0 2px 0 rgb(0 0 0 / 0.18);
+  will-change: transform, opacity;
+}
+.vy-burst-ring {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border: 5px solid;
+  border-radius: 50%;
+  will-change: transform, opacity;
+}
