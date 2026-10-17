@@ -7,7 +7,7 @@ import { EXTRAS, STEPS } from '@/lib/content';
  * the sequence, a short sentence does the explaining.
  */
 const HowItWorks = () => (
-  <section aria-labelledby="how-title" className="grid gap-8">
+  <section aria-labelledby="how-title" className="grid gap-9">
     <Typography variant="headline" as="h2" id="how-title">
       How it works
     </Typography>
