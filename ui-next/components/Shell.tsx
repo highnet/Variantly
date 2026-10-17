@@ -22,7 +22,7 @@ const pickView = (s: UiState): View => {
   return 'compare';
 };
 
-const PHASE: Record<string, string> = { setup: '', generating: 'Generating', ready: 'Ready to compare', finalized: 'Kept' };
+const PHASE: Record<string, string> = { setup: '', generating: 'Generating', ready: 'Ready to compare', 'rolling-out': 'Rolling out site-wide', finalized: 'Kept' };
 
 const KEYS: [string, string][] = [
   ['1–9, 0', 'show variant 1–10'],

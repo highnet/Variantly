@@ -14,7 +14,9 @@ Usage
   variantly [dir]            open the wizard for the project in dir (default: .)
   variantly doctor [dir]     check git, agents, Impeccable and the detected stack
   variantly status [dir]     print the current run as JSON (for agents and scripts)
-  variantly keep <n> [dir]   apply variant n to your working tree, discard the rest
+  variantly keep <n> [dir]   apply variant n to your working tree, discard the rest;
+                             restyles the rest of the site in its style first
+                             (--no-rollout: only the pages the variants redesigned)
   variantly clean [dir]      remove variantly's worktrees, branches and state
   variantly install-skill [dir]
                              teach your agent to drive variantly: writes the
@@ -57,6 +59,7 @@ const main = async () => {
         open: { type: 'boolean', default: true },
         'no-open': { type: 'boolean' },
         'no-browser': { type: 'boolean' },
+        'no-rollout': { type: 'boolean' },
         'no-review': { type: 'boolean' },
         'no-audit': { type: 'boolean' },
         providers: { type: 'string' },
@@ -94,7 +97,7 @@ const main = async () => {
   if (command === 'doctor') return doctor(repo);
   if (command === 'clean') return clean(repo);
   if (command === 'status') return status(repo);
-  if (command === 'keep') return keep(repo, Number(second));
+  if (command === 'keep') return keep(repo, Number(second), !values['no-rollout']);
 
   const [{ startApp, detectProject, normalizeConfig }, { openBrowser, freePort }] = await Promise.all([
     import('../src/server.mjs'),
@@ -276,14 +279,17 @@ const status = async (repo) => {
   await session.close();
 };
 
-/** @param {string} repo @param {number} n */
-const keep = async (repo, n) => {
+/** @param {string} repo @param {number} n @param {boolean} sitewide */
+const keep = async (repo, n, sitewide) => {
   if (!Number.isInteger(n) || n < 1) return fail('Usage: variantly keep <n>   (n is the variant number)');
   const { Session } = await import('../src/session.mjs');
   const session = new Session({ repo });
   await session.load();
   try {
-    const result = await session.finalize(n);
+    if (sitewide) console.log(`Rolling variant ${n} out to the rest of the site first. This is one more agent run.`);
+    const result = await session.finalize(n, { sitewide });
+    if (result.rollout) console.log(`Rollout: ${result.rollout}`);
+    if (result.rolloutError) console.log(`Rollout failed, applying the variant as built: ${result.rolloutError}`);
     console.log(`Applied variant ${n}: ${result.files.length} file(s) changed in your working tree.`);
     if (result.conflicts.length) console.log(`Resolve conflict markers in: ${result.conflicts.join(', ')}`);
     if (result.depsChanged) console.log('Dependencies changed: run your install command.');
