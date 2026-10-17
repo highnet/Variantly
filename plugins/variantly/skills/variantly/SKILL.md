@@ -26,6 +26,8 @@ or `cursor` (Cursor CLI).
 2. With the user present, run `npx variantly` in the background and give them
    the URL it prints (default http://localhost:4477). The wizard does the rest.
    To skip the wizard: `npx variantly --yes --agent <agent> --count 4 --brief "<their words>"`.
+   If they want several agents, split the variants: `--agents claude:2,gemini:2`
+   (agent[:model]:count). `npx variantly status` shows each variant's `agent` and `model`.
 3. Poll `npx variantly status` until `"phase": "ready"`. Each variant gets a
    review (Impeccable critique and audit) and axe-core/Lighthouse scores in
    `audit`, against the original's `baseline`; quote them if asked.

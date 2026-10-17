@@ -17,7 +17,7 @@ import { ProgressCard } from './Progress';
 import { PageSkeleton } from './Skeleton';
 import { api } from '@/lib/api';
 import { fetchLog } from '@/lib/live';
-import { LIVE, STATUS, directionLabel, isPickable, pad, plural, scoreText, vname, vsBase, axeVsBase } from '@/lib/format';
+import { LIVE, STATUS, directionLabel, isPickable, madeBy, pad, plural, scoreText, vname, vsBase, axeVsBase } from '@/lib/format';
 import { getState, seen, serverOf, setState, toast, useStore, type UiState } from '@/lib/store';
 import type { Audit, ServerState, Variant } from '@/lib/types';
 
@@ -148,6 +148,7 @@ const Info = () => {
   const open = useStore((s) => s.infoOpen);
   const sel = useStore((s) => s.sel);
   const v = useStore((s) => s.snap?.variants.find((x) => x.n === s.sel) ?? null);
+  const snap = useStore((s) => s.snap);
   const runId = useStore((s) => s.snap?.runId);
   const lines = useStore((s) => (typeof s.sel === 'number' ? s.logs[`v${s.sel}`] : undefined));
   // Server chatter alone ("static server on …") isn't worth a log panel.
@@ -181,6 +182,7 @@ const Info = () => {
                 <div>
                   <div className="figure">{vname(v.n)}</div>
                   <div className="label">{directionLabel(v.direction, v.picked)}</div>
+                  {madeBy(snap, v) && <div className="tag made-by">{madeBy(snap, v)}</div>}
                 </div>
                 {close}
               </header>
@@ -214,6 +216,7 @@ const Info = () => {
 
 const Dock = () => {
   const vs = useStore((s) => s.snap?.variants ?? []);
+  const snap = useStore((s) => s.snap);
   const sel = useStore((s) => s.sel);
   const unseen = useStore((s) => s.unseen);
   const mode = useStore((s) => s.mode);
@@ -312,7 +315,7 @@ const Dock = () => {
               disabled={!isPickable(v)}
               aria-current={sel === v.n}
               aria-label={`${vname(v.n)} ${directionLabel(v.direction, v.picked)}, ${STATUS[v.status]}`}
-              title={`${vname(v.n)} · ${directionLabel(v.direction, v.picked)} · ${STATUS[v.status]}${v.n <= 10 ? ` (${v.n % 10})` : ''}`}
+              title={`${vname(v.n)} · ${directionLabel(v.direction, v.picked)}${madeBy(snap, v) ? ` · ${madeBy(snap, v)}` : ''} · ${STATUS[v.status]}${v.n <= 10 ? ` (${v.n % 10})` : ''}`}
               onClick={() => select(v.n)}
             >
               {pad(v.n)}
@@ -604,7 +607,7 @@ const Compare = () => {
       </div>
       <div className="tags" aria-hidden="true">
         <span className="tag">Original</span>
-        <span className="tag">{current ? `${vname(current.n)} · ${directionLabel(current.direction, current.picked)}` : ''}</span>
+        <span className="tag">{current ? `${vname(current.n)} · ${directionLabel(current.direction, current.picked)}${madeBy(snap, current) ? ` · ${madeBy(snap, current)}` : ''}` : ''}</span>
       </div>
       <AnimatePresence>
         {flag && (

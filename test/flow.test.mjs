@@ -145,6 +145,31 @@ test('generates two variants, serves them, and finalizes the chosen one', async 
   assert.match(await git('branch', '--list', `variantly/${runId}/*`), /v2/);
 });
 
+test('a mix gives each variant its own agent and model', async () => {
+  const info = await detectProject(repo);
+  const config = normalizeConfig({
+    ...info.suggested,
+    mix: [
+      { agent: 'demo', model: 'first', count: 1 },
+      { agent: 'demo', model: 'second', count: 1 },
+    ],
+    concurrency: 2,
+    audit: false,
+    review: false,
+  });
+  const gen = await api('POST', 'generate', config);
+  assert.equal(gen.status, 200, JSON.stringify(gen.json));
+  await until(() => app.session.state.phase === 'ready');
+  assert.deepEqual(
+    app.session.state.variants.map((v) => [v.status, v.agent, v.model]),
+    [
+      ['done', 'demo', 'first'],
+      ['done', 'demo', 'second'],
+    ],
+  );
+  await api('POST', 'discard', {});
+});
+
 test('discard wins against the UI asking for servers at the same time', async () => {
   const info = await detectProject(repo);
   await api('POST', 'generate', normalizeConfig({ ...info.suggested, agent: 'demo', count: 1, audit: false }));

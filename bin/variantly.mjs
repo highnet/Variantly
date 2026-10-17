@@ -25,6 +25,9 @@ Usage
 Options
   -p, --port <n>             port for the variantly app (default 4477)
       --agent <id>           claude | codex | copilot | gemini | cursor | demo
+      --agents <mix>         split the variants across agents and models, as
+                             agent[:model]:count, e.g. claude:opus:2,gemini:2
+      --blind                hide which agent made each variant until you keep one
       --count <n>            how many variants, 1–10
       --brief <text>         what you want, in your words
       --yes                  skip the wizard: generate with detected defaults
@@ -52,6 +55,8 @@ const main = async () => {
       options: {
         port: { type: 'string', short: 'p' },
         agent: { type: 'string' },
+        agents: { type: 'string' },
+        blind: { type: 'boolean' },
         count: { type: 'string' },
         brief: { type: 'string' },
         yes: { type: 'boolean' },
@@ -99,7 +104,7 @@ const main = async () => {
   if (command === 'status') return status(repo);
   if (command === 'keep') return keep(repo, Number(second), !values['no-rollout']);
 
-  const [{ startApp, detectProject, normalizeConfig }, { openBrowser, freePort }] = await Promise.all([
+  const [{ startApp, detectProject, normalizeConfig, parseMix, assertAgentsReady }, { openBrowser, freePort }] = await Promise.all([
     import('../src/server.mjs'),
     import('../src/proc.mjs'),
   ]);
@@ -113,6 +118,18 @@ const main = async () => {
     if (!Number.isInteger(count) || count < 1 || count > 10) return fail(`--count must be a whole number from 1 to 10, got "${values.count}".`);
     defaults.count = count;
   }
+  if (typeof values.agents === 'string') {
+    try {
+      const mix = parseMix(values.agents);
+      const total = mix.reduce((t, r) => t + r.count, 0);
+      if (total > 10) return fail(`--agents asks for ${total} variants; the most is 10.`);
+      if (typeof values.count === 'string' && Number(values.count) !== total) return fail(`--count ${values.count} doesn't match --agents, which adds up to ${total}.`);
+      Object.assign(defaults, { agent: mix[0].agent, model: mix[0].model, count: total, ...(mix.length > 1 ? { mix } : {}) });
+    } catch (err) {
+      return fail(err instanceof Error ? err.message : String(err));
+    }
+  }
+  if (values.blind) defaults.blind = true;
   if (typeof values.brief === 'string') defaults.brief = values.brief;
   if (values['no-browser']) defaults.browser = false;
   if (values['no-review']) defaults.review = false;
@@ -140,8 +157,8 @@ const main = async () => {
   if (values.yes && app.session.state.phase === 'setup') {
     try {
       const detected = await detectProject(repo, defaults);
-      const chosen = detected.agents.find((/** @type {any} */ a) => a.id === detected.suggested.agent);
-      if (chosen && chosen.installed && !chosen.impeccable) {
+      const ids = [...new Set([detected.suggested.agent, ...(detected.suggested.mix ?? []).map((r) => r.agent)])];
+      for (const chosen of detected.agents.filter((/** @type {any} */ a) => ids.includes(a.id) && a.installed && !a.impeccable)) {
         const { impeccableInstallCommand } = await import('../src/agents.mjs');
         const { spawnShell } = await import('../src/proc.mjs');
         const cmd = impeccableInstallCommand(chosen.id);
@@ -155,8 +172,10 @@ const main = async () => {
         });
       }
       const config = normalizeConfig(detected.suggested);
+      await assertAgentsReady(config, repo);
       await app.session.generate(config);
-      console.log(`  Generating ${config.count} variants with ${config.agent}…\n`);
+      const who = config.mix ? config.mix.map((r) => `${r.count}× ${r.agent}${r.model ? ` (${r.model})` : ''}`).join(', ') : config.agent;
+      console.log(`  Generating ${config.count} variants with ${who}…\n`);
     } catch (err) {
       fail(err instanceof Error ? err.message : String(err));
     }
@@ -269,6 +288,7 @@ const status = async (repo) => {
       {
         ...rest,
         agent: config?.agent ?? null,
+        mix: config?.mix ?? null,
         approach: config?.approach ?? null,
         variants: state.variants.map((v) => ({ ...v, branch: state.runId ? session.branchFor(v.n) : null })),
       },

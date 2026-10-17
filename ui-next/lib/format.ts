@@ -1,5 +1,5 @@
 import { getState } from './store';
-import type { Audit, Variant, VariantStatus } from './types';
+import type { Audit, Snapshot, Variant, VariantStatus } from './types';
 
 export const pad = (n: number) => String(n).padStart(2, '0');
 export const vname = (n: number) => `V${pad(n)}`;
@@ -82,3 +82,16 @@ export const scoreText = (a: Audit, base?: Audit) =>
     : `A11y ${a.lighthouse.accessibility} · Perf ${a.lighthouse.performance} · axe ${a.axe.total}`;
 
 export const agentShort: Record<string, string> = { claude: 'Claude', codex: 'Codex', copilot: 'Copilot', gemini: 'Gemini', cursor: 'Cursor', demo: 'Demo' };
+
+/** "Claude · opus": an agent and, when set, its model. */
+export const agentLabel = (agent: string, model?: string) => `${agentShort[agent] ?? agent}${model ? ` · ${model}` : ''}`;
+
+/**
+ * Who made a variant, for runs that mix agents. Empty for one-agent runs,
+ * and while a blind run is still choosing.
+ */
+export const madeBy = (snap: Pick<Snapshot, 'config' | 'phase'> | null | undefined, v: Pick<Variant, 'agent' | 'model'>) => {
+  const c = snap?.config;
+  if (!c?.mix?.length || (c.blind && snap?.phase !== 'finalized')) return '';
+  return agentLabel(v.agent ?? c.agent, v.model ?? c.model);
+};

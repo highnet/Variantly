@@ -164,8 +164,11 @@ export const startApp = async (opts) => {
         return { ok: true };
       case 'GET server':
         return session.pool.status(arg);
-      case 'POST generate':
-        return session.generate(normalizeConfig(body));
+      case 'POST generate': {
+        const config = normalizeConfig(body);
+        await assertAgentsReady(config, opts.repo);
+        return session.generate(config);
+      }
       case 'POST retry':
         return session.retry(n);
       case 'POST cancel':
@@ -356,6 +359,48 @@ export const detectProject = async (repo, defaults = {}) => {
 };
 
 
+/**
+ * A mix of agents starts only when every one of them can run: installed and
+ * not known to be signed out. One agent alone keeps today's behaviour, where
+ * its variants fail with the agent's own message.
+ * @param {import('./session.mjs').Config} config @param {string} repo
+ */
+export const assertAgentsReady = async (config, repo) => {
+  if (!config.mix) return;
+  const ids = [...new Set(config.mix.map((r) => r.agent))].filter((id) => id !== 'demo');
+  if (!ids.length) return;
+  const found = await detectAgents(repo);
+  const problems = ids.flatMap((id) => {
+    const a = found.find((x) => x.id === id);
+    if (!a) return [`"${id}" is not an agent variantly knows.`];
+    if (!a.installed) return [`${a.name} isn't installed (${a.install}).`];
+    if (a.signedIn === false) return [`${a.name} isn't signed in (run \`${a.login}\`).`];
+    return [];
+  });
+  if (problems.length) throw new Error(`Not started: every agent in the mix must be ready.\n${problems.join('\n')}`);
+};
+
+/**
+ * `--agents claude:opus:2,gemini:2`: agent, optional model, count. Models
+ * may hold colons (OpenRouter ids), so the first and last parts are fixed.
+ * @param {string} spec
+ * @returns {import('./session.mjs').AgentRow[]}
+ */
+export const parseMix = (spec) =>
+  spec
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((part) => {
+      const bits = part.split(':');
+      const last = bits.at(-1) ?? '';
+      const count = bits.length > 1 && /^\d+$/.test(last) ? Number(bits.pop()) : 1;
+      const [agent, ...model] = bits;
+      if (!agent) throw new Error(`--agents: "${part}" names no agent.`);
+      if (count < 1) throw new Error(`--agents: "${part}" asks for no variants.`);
+      return { agent, model: model.join(':'), count };
+    });
+
 /** @param {any} body @returns {import('./session.mjs').Config} */
 export const normalizeConfig = (body) => {
   const str = (/** @type {unknown} */ v, d = '') => (typeof v === 'string' ? v : d);
@@ -368,16 +413,28 @@ export const normalizeConfig = (body) => {
   if (command && !command.includes('{port}') && !/\b(next|vite|astro|nuxi|wasp|cargo run|go run|bun run)\b/.test(command)) {
     // Not fatal: some servers read PORT from the environment instead.
   }
+  // A mix of agents: rows of agent, model and count, at most 10 variants in all.
+  /** @type {import('./session.mjs').AgentRow[]} */
+  const mix = [];
+  for (const r of Array.isArray(body.mix) ? body.mix.slice(0, 10) : []) {
+    const room = 10 - mix.reduce((t, x) => t + x.count, 0);
+    const count = Math.min(room, num(r?.count, 1, 0, 10));
+    if (count > 0 && str(r?.agent)) mix.push({ agent: str(r.agent), model: str(r.model).trim().slice(0, 200), count });
+  }
+  const mixed = mix.length > 1;
   return {
     appRel: str(body.appRel).replace(/\\/g, '/').replace(/^\/+|\/+$/g, ''),
     stackId: str(body.stackId, 'custom'),
     command,
     originalUrl: str(body.originalUrl).trim(),
-    agent: str(body.agent, 'claude'),
-    model: str(body.model).trim(),
+    agent: mix[0]?.agent ?? str(body.agent, 'claude'),
+    model: mix[0]?.model ?? str(body.model).trim(),
+    ...(mixed ? { mix } : {}),
+    blind: body.blind === true,
     permissions: body.permissions === 'full' ? 'full' : 'safe',
     approach: body.approach === 'refine' ? 'refine' : 'redesign',
     count: num(body.count, 4, 1, 10),
+    ...(mixed ? { count: mix.reduce((t, r) => t + r.count, 0) } : mix.length ? { count: mix[0].count } : {}),
     directions: Array.isArray(body.directions) ? body.directions.map((/** @type {unknown} */ d) => String(d).slice(0, 200)).slice(0, 10) : [],
     product: {
       users: str(body.product?.users).slice(0, 2000),
