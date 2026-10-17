@@ -647,8 +647,10 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   color: var(--title, var(--alert));
 }
 .vy-grain {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  mix-blend-mode: overlay;
+  /* A pre-rendered 128px noise tile (public/grain.png): no live feTurbulence,
+     no blend mode, so the fixed layer rasterises once and never again. */
+  background: url('/grain.png') repeat;
+  background-size: 128px;
 }
 
 /* ---- A · Soft Clay: puffy, rounded, centred, glossy blobs ---------------- */
@@ -710,8 +712,6 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   transform: rotate(1.5deg);
   background: var(--hero-box);
 }
-:root[data-variant='b'] .vy-blobs { mix-blend-mode: multiply; }
-:root[data-variant='b'][data-theme='dark'] .vy-blobs { mix-blend-mode: screen; }
 
 /* ---- C · TVA Terminal: amber CRT, console frames, typewriter ------------- */
 :root[data-variant='c'] {
@@ -1293,13 +1293,13 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 
 /* ---- Grainy-gradient shapes: strength per concept ------------------------- */
 .vy-blobs { opacity: var(--blob-o, 0.7); }
-:root[data-theme='dark'] .vy-blobs { mix-blend-mode: screen; }
 :root[data-variant='a'] { --blob-o: 0.8; }
 :root[data-variant='b'] { --blob-o: 0.6; }
 :root[data-variant='c'] { --blob-o: 0.45; }
 :root[data-variant='d'] { --blob-o: 0.65; }
 :root[data-variant='e'] { --blob-o: 0.55; }
 :root[data-variant='f'] { --blob-o: 0.5; }
+:root[data-variant='g'] { --blob-o: 0.75; }
 :root[data-scrolled] .vy-blobs { opacity: 0.16; }
 
 /* The press burst sits above everything; it finishes before the concept wipe. */
@@ -1474,9 +1474,14 @@ main > div p { line-height: 1.65; }
 .vy-more.vy-closing > summary::before { transform: none; }
 
 /* ---- Performance ---------------------------------------------------------- */
-@media (max-width: 639px) {
-  /* One shape fewer on small screens: less filter work, same feel. */
-  .vy-blobs > svg:nth-child(3) { display: none; }
+/* The backdrop is fixed and static: isolate it so nothing outside makes it
+   repaint, and give the art its own layer so parallax only composites. */
+.vy-backdrop { contain: strict; }
+.vy-art { will-change: transform; }
+@media (max-width: 639px), (pointer: coarse) {
+  /* Phones: no frosted header (a blur of everything under it, every frame). */
+  header.vy-header-glass { backdrop-filter: none; background: color-mix(in srgb, var(--panel) 94%, transparent) !important; }
+  :root[data-variant='a'] .vy-title { text-shadow: 0 4px 0 #d9502f, 0 8px 0 #b8391b; }
 }
 
 /* ---- Agent view ------------------------------------------------------------
@@ -1518,3 +1523,128 @@ main > div p { line-height: 1.65; }
 /* Before hydration the server-rendered human panel is in the DOM; an agent
    landing on #agent never sees it flash. */
 :root[data-audience='agent'] #audience-panel > :not(.agent-doc) { display: none; }
+
+/* ---- Backdrop art (BackdropArt.tsx): one look per concept ---------------- */
+:root[data-variant='a'] { --art-1: #ffb59a; --art-2: #ffd98a; --art-3: #c9b8ff; --art-hi: #fff6ef; --art-shadow: #7a3a2a; }
+:root[data-variant='a'][data-theme='dark'] { --art-1: #c86a55; --art-2: #c99a4e; --art-3: #7d68c9; --art-hi: #f2c2ae; --art-shadow: #000; }
+:root[data-variant='b'] { --art-1: #ff4f9a; --art-2: #2f5bff; --art-ink: #2a2440; }
+:root[data-variant='b'][data-theme='dark'] { --art-1: #ff5fa8; --art-2: #5b7dff; --art-ink: #f5efe0; }
+:root[data-variant='c'] { --art-1: #1f6f6a; --art-ink: #1d2a28; }
+:root[data-variant='c'][data-theme='dark'] { --art-1: #ffb000; --art-ink: #000; }
+:root[data-variant='d'] { --art-1: #ff3d00; --art-ink: #0a0a0a; }
+:root[data-variant='d'][data-theme='dark'] { --art-1: #ff3d00; --art-ink: #c6ff00; }
+:root[data-variant='e'] { --art-1: #e63946; --art-2: #1d4ed8; --art-3: #ffc300; --art-ink: #111; }
+:root[data-variant='e'][data-theme='dark'] { --art-2: #3b6cff; --art-ink: #f0ece2; }
+:root[data-variant='f'] { --art-1: #f2c94c; --art-2: #e5322d; --art-3: #2346c8; --art-tape: #fff7d6; --art-shadow: #2a1a10; }
+:root[data-variant='f'][data-theme='dark'] { --art-1: #c9a43a; --art-2: #ff5a4f; --art-3: #4a6cf0; --art-tape: #e8dcb5; --art-shadow: #000; }
+:root[data-variant='g'] { --art-1: #ff5fa2; --art-2: #22c3ee; --art-3: #a78bfa; --art-deep: #9d2a74; }
+:root[data-variant='g'][data-theme='dark'] { --art-1: #ff4f9a; --art-2: #22d3ee; --art-3: #8b5cf6; --art-deep: #2e0a40; }
+/* Bauhaus is flat: no grain. */
+:root[data-variant='e'] .vy-grain { display: none; }
+
+/* Riso paper fibre. */
+.vy-art-fibre {
+  opacity: 0.5;
+  background:
+    repeating-linear-gradient(17deg, transparent 0 11px, color-mix(in srgb, var(--art-ink) 7%, transparent) 11px 12px),
+    repeating-linear-gradient(-71deg, transparent 0 23px, color-mix(in srgb, var(--art-ink) 5%, transparent) 23px 24px);
+}
+/* Terminal: phosphor bloom, grid and vignette; scanlines over the top. */
+.vy-art-crt {
+  background:
+    radial-gradient(ellipse at 30% 40%, color-mix(in srgb, var(--art-1) 26%, transparent), transparent 60%),
+    radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 0.32)),
+    linear-gradient(color-mix(in srgb, var(--art-1) 14%, transparent) 1px, transparent 1px) 0 0 / 44px 44px,
+    linear-gradient(90deg, color-mix(in srgb, var(--art-1) 14%, transparent) 1px, transparent 1px) 0 0 / 44px 44px;
+}
+.vy-art-scan { background: repeating-linear-gradient(0deg, rgb(0 0 0 / 0.14) 0 1px, transparent 1px 3px); }
+.vy-art-radar {
+  background:
+    repeating-radial-gradient(circle, transparent 0 calc(12.5% - 1px), color-mix(in srgb, var(--art-1) 40%, transparent) calc(12.5% - 1px) 12.5%),
+    linear-gradient(color-mix(in srgb, var(--art-1) 30%, transparent), color-mix(in srgb, var(--art-1) 30%, transparent)) center / 1px 100% no-repeat,
+    linear-gradient(color-mix(in srgb, var(--art-1) 30%, transparent), color-mix(in srgb, var(--art-1) 30%, transparent)) center / 100% 1px no-repeat;
+}
+.vy-art-sweep { background: conic-gradient(from 0deg, color-mix(in srgb, var(--art-1) 45%, transparent), transparent 70deg); }
+/* Zine: xerox streaks and an uneven toner band. */
+.vy-art-xerox {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--art-ink) 10%, transparent), transparent 18%, transparent 80%, color-mix(in srgb, var(--art-ink) 14%, transparent)),
+    repeating-linear-gradient(90deg, transparent 0 37px, color-mix(in srgb, var(--art-ink) 9%, transparent) 37px 39px, transparent 39px 83px, color-mix(in srgb, var(--art-ink) 5%, transparent) 83px 84px);
+}
+/* Bauhaus construction grid. */
+.vy-art-grid {
+  background:
+    linear-gradient(color-mix(in srgb, var(--art-ink) 8%, transparent) 2px, transparent 2px) 0 0 / 12vmin 12vmin,
+    linear-gradient(90deg, color-mix(in srgb, var(--art-ink) 8%, transparent) 2px, transparent 2px) 0 0 / 12vmin 12vmin;
+}
+/* A seamless 24s loop for every concept: each layer's keyframes start and end
+   on the same transform, and every period divides 24s (24, 12, 8), so the
+   whole scene returns to its exact start state. Transform only: the layers
+   are composited, never repainted. Paused past the hero; static for reduced
+   motion and seek renders (see :root[data-seek] above). */
+.vy-art-float { will-change: transform; animation: vy-art-orbit 24s ease-in-out infinite; }
+.vy-art-float-1 { animation-name: vy-art-orbit-b; animation-duration: 12s; }
+.vy-art-float-2 { animation-name: vy-art-bob; animation-duration: 8s; }
+.vy-art-sweep { will-change: transform; animation: vy-art-spin 8s linear infinite; }
+:root[data-scrolled] .vy-art-float, :root[data-scrolled] .vy-art-sweep { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .vy-art-float, .vy-art-sweep { animation: none; } }
+@keyframes vy-art-orbit {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(1.2vmax, 0.8vmax) rotate(3deg); }
+  50% { transform: translate(0, 1.6vmax) rotate(0deg); }
+  75% { transform: translate(-1.2vmax, 0.8vmax) rotate(-3deg); }
+}
+@keyframes vy-art-orbit-b {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-1vmax, 1.2vmax) rotate(-4deg); }
+}
+@keyframes vy-art-bob {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-1.2vmax) scale(1.03); }
+}
+@keyframes vy-art-spin { from { transform: rotate(0turn); } to { transform: rotate(1turn); } }
+
+/* ---- Load bar (LoadBar.tsx): heavy visuals streaming in, per concept ------ */
+.vy-loadbar {
+  position: fixed; inset: 0 0 auto; z-index: 60; height: 3px; pointer-events: none;
+  transition: opacity 400ms ease 300ms;
+}
+.vy-loadbar-done { opacity: 0; }
+.vy-loadbar-fill {
+  position: absolute; inset: 0; background: var(--alert);
+  transform-origin: left; transform: scaleX(max(0.06, var(--p)));
+  transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.vy-loadbar-text { display: none; }
+/* TVA: a printed terminal bar. */
+:root[data-variant='c'] .vy-loadbar { height: auto; inset: auto auto 12px 12px; }
+:root[data-variant='c'] .vy-loadbar-fill { display: none; }
+:root[data-variant='c'] .vy-loadbar-text {
+  display: block; font: 600 12px/1 var(--font-martian), monospace; color: var(--art-1);
+  background: var(--panel); padding: 6px 8px; border: 1px solid var(--rule);
+}
+/* Candy: a fat, rounded gummy bar with a shine. */
+:root[data-variant='g'] .vy-loadbar { height: 8px; inset: 6px 12px auto; }
+:root[data-variant='g'] .vy-loadbar-fill {
+  border-radius: 99px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.7), transparent 45%), linear-gradient(90deg, var(--art-1), var(--art-3), var(--art-2));
+}
+/* Bauhaus: three primary segments. */
+:root[data-variant='e'] .vy-loadbar { height: 6px; }
+:root[data-variant='e'] .vy-loadbar-fill {
+  background: linear-gradient(90deg, var(--art-1) 0 33.3%, var(--art-3) 33.3% 66.6%, var(--art-2) 66.6%);
+}
+/* Clay: soft and pillowy. */
+:root[data-variant='a'] .vy-loadbar { height: 6px; inset: 6px 12px auto; }
+:root[data-variant='a'] .vy-loadbar-fill { border-radius: 99px; background: linear-gradient(90deg, var(--art-1), var(--art-2), var(--art-3)); }
+/* Riso: halftone-dotted ink. */
+:root[data-variant='b'] .vy-loadbar { height: 5px; }
+:root[data-variant='b'] .vy-loadbar-fill { background: radial-gradient(circle, var(--art-1) 45%, transparent 50%) 0 0 / 5px 5px; }
+/* Zine: a stark black-and-acid bar. */
+:root[data-variant='d'] .vy-loadbar { height: 6px; }
+:root[data-variant='d'] .vy-loadbar-fill { background: repeating-linear-gradient(-45deg, var(--art-ink) 0 6px, var(--art-1) 6px 12px); }
+/* Cut & Paste: a strip of tape. */
+:root[data-variant='f'] .vy-loadbar { height: 10px; inset: 4px 10px auto; rotate: -0.6deg; }
+:root[data-variant='f'] .vy-loadbar-fill { background: color-mix(in srgb, var(--art-tape) 80%, var(--art-1)); opacity: 0.85; }
+@media (prefers-reduced-motion: reduce) { .vy-loadbar, .vy-loadbar-fill { transition: none; } }
+:root[data-audience='agent'] .vy-loadbar { display: none; }

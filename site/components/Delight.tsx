@@ -38,7 +38,6 @@ export const Delight = () => {
     const unsub = useSiteStore.subscribe((s, prev) => {
       if (s.variant !== prev.variant) requestAnimationFrame(favicon);
     });
-    const root = document.documentElement;
     const header = document.querySelector('header');
     const calm = calmMotion() || seekTime() !== null;
     const stops: (() => void)[] = [unsub];
@@ -57,7 +56,12 @@ export const Delight = () => {
         );
       }
       if (!calm && scrollY < innerHeight * 1.5) {
-        root.style.setProperty('--px-y', `${scrollY}px`);
+        // Set on the three drifting layers only: a custom property on <html>
+        // would restyle the whole document on every scroll frame.
+        const y = `${scrollY}px`;
+        document
+          .querySelectorAll<HTMLElement>('.vy-scene, .vy-blobs, .vy-title')
+          .forEach((el) => el.style.setProperty('--px-y', y));
       }
     };
     onScroll();

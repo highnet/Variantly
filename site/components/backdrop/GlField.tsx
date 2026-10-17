@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
 import { glTier, markFallback } from '@/lib/glTier';
+import { markLoaded } from '@/lib/loadProgress';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
 
@@ -37,6 +38,7 @@ export const GlField = ({ scene: kind, colors }: GlFieldProps) => {
     } catch {
       // No WebGL: the CSS blobs carry the backdrop alone.
       markFallback();
+      markLoaded('scene');
       if (seek !== null) releaseFrame('gl');
       return;
     }
@@ -89,8 +91,14 @@ export const GlField = ({ scene: kind, colors }: GlFieldProps) => {
     // (past it the scene is a faint wash). Otherwise cancel the loop outright.
     let raf = 0;
     const html = document.documentElement;
-    const tick = () => {
-      draw();
+    // The drift is slow ambient motion: ~24fps is indistinguishable from 60
+    // under the blur and leaves the main thread and GPU idle most frames.
+    let last = 0;
+    const tick = (now: number) => {
+      if (now - last >= 1000 / 24) {
+        last = now;
+        draw();
+      }
       raf = requestAnimationFrame(tick);
     };
     const sync = () => {
@@ -102,6 +110,7 @@ export const GlField = ({ scene: kind, colors }: GlFieldProps) => {
       }
     };
     draw();
+    markLoaded('scene');
     const mo = new MutationObserver(sync);
     if (!still) {
       sync();

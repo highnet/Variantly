@@ -19,6 +19,7 @@ import { RunnerPicker } from '@/components/RunnerPicker';
 import { VariantTitle } from '@/components/VariantTitle';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
+import { markLoaded } from '@/lib/loadProgress';
 import { applyPrefsToFrame, calmMotion, PREFS_EVENT, readPrefs, type Prefs } from '@/lib/prefs';
 import { DEMO_ORIGINAL_SCORES, DEMO_VARIANTS, PROMPTS } from '@/lib/content';
 import { INSTALL } from '@/lib/site';
@@ -324,7 +325,10 @@ const Showcase = () => {
     wired.current.add(win.document);
     loaded.current.add(i);
     waiting.current.get(i)?.();
-    if (loaded.current.has(0) && loaded.current.has(1)) setReady(true);
+    if (loaded.current.has(0) && loaded.current.has(1)) {
+      setReady(true);
+      markLoaded('demo');
+    }
     // The panes are objects on the counter, not embedded documents.
     win.document.documentElement.style.setProperty('scrollbar-width', 'none');
     // The wheel scrolls the page around the demo, not the panes inside it;
