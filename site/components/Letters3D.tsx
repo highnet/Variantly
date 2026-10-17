@@ -96,11 +96,11 @@ export const Letters3D = ({ run, clock, onReady, onFail }: Letters3DProps) => {
       onFail();
       return;
     }
-    // A small canvas: animate at up to 2x, then repaint the resting word once at
-    // the screen's full density so it never looks pixelated.
+    // A small canvas: always draw at the screen's full density (capped at 3x),
+    // so the word is sharp while it animates as well as at rest.
     const dpr = devicePixelRatio || 1;
-    const movingRatio = Math.min(dpr, 2);
-    const restingRatio = Math.min(dpr, 3);
+    const movingRatio = Math.min(dpr, 3);
+    const restingRatio = movingRatio;
     renderer.setPixelRatio(movingRatio);
     // Neutral tone mapping keeps the candy colours saturated under the studio light.
     renderer.toneMapping = THREE.NeutralToneMapping;
