@@ -132,6 +132,11 @@
   --color-fail: var(--fail);
   --color-fail-on-slate: var(--fail-on-slate);
   --color-ok-on-slate: var(--ok-on-slate);
+  /* The branch log's own ground and amber, the same in every theme. */
+  --color-log-ground: #15120c;
+  --color-log-line: #3a3020;
+  --color-log-amber: #ffb547;
+  --color-log-dim: #b98a3e;
 
   --font-mono: var(--font-martian), ui-monospace, 'Cascadia Mono', Consolas, monospace;
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -1832,4 +1837,16 @@ main > div p { line-height: 1.65; }
   border: 0;
   background: transparent;
   overflow: visible;
+}
+
+
+/* Branch log: at noon and midnight each branch slides home into main. */
+@keyframes log-merge {
+  to {
+    translate: -2ch 0;
+    opacity: 0.55;
+  }
+}
+.vy-log-merge {
+  animation: log-merge 700ms var(--ease-spring) both;
 }

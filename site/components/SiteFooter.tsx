@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { RecordStamp } from '@/components/RecordStamp';
 import { REPO_URL, SITE_URL } from '@/lib/site';
 
 const LEGAL = [
@@ -17,10 +18,7 @@ const items = [
   { label: '© variantly' },
   { label: `Release notes v${VERSION}`, href: `${REPO_URL}/releases` },
   // The build as a small case-number stamp: this exact version of the site, and when.
-  {
-    label: `Variant record VY-${BUILD}${BUILD_DATE && ` · logged ${BUILD_DATE}`}`,
-    href: `${REPO_URL}/commit/${BUILD}`,
-  },
+  { label: `Variant record VY-${BUILD}${BUILD_DATE && ` · logged ${BUILD_DATE}`}`, stamp: true },
   { label: 'Designed by highnet', href: 'https://highnet.at/', strong: true },
   { label: HOST, href: SITE_URL, strong: true },
 ];
@@ -32,7 +30,9 @@ const SiteFooter = () => (
       {items.map((it, i) => (
         <li key={it.label} className="flex items-center gap-3">
           {i > 0 && <span aria-hidden="true">·</span>}
-          {it.href ? (
+          {'stamp' in it ? (
+            <RecordStamp label={it.label} build={BUILD} />
+          ) : it.href ? (
             <a
               href={it.href}
               className={

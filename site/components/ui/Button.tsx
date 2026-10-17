@@ -37,6 +37,8 @@ const buttonVariants = cva(
           'inline normal-case tracking-[inherit] font-[inherit] [font-stretch:inherit] text-[length:inherit] leading-[inherit] text-inherit whitespace-normal',
         // A word in running text that opens a tip: dotted underline, the text's own type.
         tip: 'inline normal-case tracking-[inherit] font-[family-name:inherit] font-[weight:inherit] [font-stretch:inherit] text-[length:inherit] leading-[inherit] text-inherit whitespace-normal text-left underline decoration-dotted decoration-current/55 decoration-[1.5px] underline-offset-[0.22em] cursor-help rounded-[2px] hover:decoration-current aria-expanded:decoration-solid aria-expanded:decoration-current',
+        // Words in running text that act as a button, styled as the text around them.
+        text: 'inline normal-case tracking-[inherit] font-[family-name:inherit] font-[weight:inherit] [font-stretch:inherit] text-[length:inherit] leading-[inherit] text-inherit whitespace-normal text-left hover:underline',
         // A concept chip in the homepage switcher dock.
         concept:
           'normal-case tracking-normal font-sans text-steel hover:text-ink aria-pressed:bg-ink aria-pressed:text-surface',
