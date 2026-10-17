@@ -11,10 +11,15 @@ import {
   shownIds,
   type ConceptId,
 } from '@/concepts';
+import { heroOrigin, mountSwapFrame, openDoor, swapDuration, type SwapOrigin } from '@/lib/lensSwap';
 import { DUR, EASE } from '@/lib/motion';
 import { perfTier } from '@/lib/perfTier';
 import { calmMotion } from '@/lib/prefs';
+import { seekTime } from '@/lib/seek';
 import { useSiteStore } from '@/lib/store';
+
+export type { SwapOrigin } from '@/lib/lensSwap';
+export { pressOrigin } from '@/lib/lensSwap';
 
 export const VARIANT_KEYS = CONCEPT_IDS;
 
@@ -24,9 +29,14 @@ const apply = (v: ConceptId) => {
   flushSync(() => useSiteStore.getState().setVariant(v));
 };
 
-// Touch devices and the low tier skip the full-page snapshot (Safari
-// rasterises the whole page for it): the hero just cross-fades in.
-const cheapSwap = () => perfTier() === 'low' || matchMedia('(pointer: coarse)').matches;
+// The low tier skips the full-page snapshot: the hero just cross-fades in.
+const cheapSwap = () => perfTier() === 'low';
+
+export type SwapOptions = {
+  // Where the doorway opens from: the click point, the focused control's
+  // centre for keyboard presses; the hero title's centre when left out.
+  origin?: SwapOrigin;
+};
 
 let swapId = 0;
 
@@ -36,7 +46,7 @@ export const currentVariant = (): ConceptId => {
   return isConceptId(v) ? v : 'a';
 };
 
-export const setVariant = (v: ConceptId) => {
+export const setVariant = (v: ConceptId, opts: SwapOptions = {}) => {
   // Drafts are picked only while they are shown (?drafts=1); a ?v=<draft>
   // link opens one directly in the boot script.
   if (!shownIds().includes(v)) return;
@@ -47,7 +57,7 @@ export const setVariant = (v: ConceptId) => {
     // Backdrop loops and the 3D scene pause while the swap runs.
     html.setAttribute('data-swapping', '');
     const done = () => html.removeAttribute('data-swapping');
-    if (calmMotion()) {
+    if (calmMotion() || seekTime() !== null) {
       apply(v);
       done();
     } else if (cheapSwap() || !document.startViewTransition) {
@@ -60,9 +70,20 @@ export const setVariant = (v: ConceptId) => {
       if (a) a.onfinish = a.oncancel = done;
       else done();
     } else {
-      // The new concept wipes in behind a leaning edge, like the before/after
-      // divider dragged across (see globals.css).
-      document.startViewTransition(() => apply(v)).finished.finally(done);
+      // The new concept opens through a doorway from the trigger point
+      // (lib/lensSwap, globals.css "Concept swap").
+      const origin = opts.origin ?? heroOrigin();
+      const duration = swapDuration();
+      let unmount = () => {};
+      const vt = document.startViewTransition(() => {
+        apply(v);
+        unmount = mountSwapFrame();
+      });
+      void vt.ready.then(() => openDoor(origin, duration)).catch(() => {});
+      void vt.finished.finally(() => {
+        unmount();
+        done();
+      });
     }
   };
   // Wait (briefly) for the concept's backdrop, look and (when it will run)
@@ -77,11 +98,12 @@ export const setVariant = (v: ConceptId) => {
   history.replaceState(history.state, '', url);
 };
 
-export const stepVariant = (from: ConceptId, by: number) => setVariant(conceptAt(from, by));
+export const stepVariant = (from: ConceptId, by: number, opts?: SwapOptions) =>
+  setVariant(conceptAt(from, by), opts);
 
-export const shuffleVariant = (from: ConceptId) => {
+export const shuffleVariant = (from: ConceptId, opts?: SwapOptions) => {
   const others = shownIds().filter((k) => k !== from);
-  setVariant(others[Math.floor(Math.random() * others.length)]);
+  setVariant(others[Math.floor(Math.random() * others.length)], opts);
 };
 
 // The active concept on the client; null until persisted state is read.

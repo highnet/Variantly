@@ -19,6 +19,11 @@
   --fail: #b3261e;
   --fail-on-slate: #ff8a80;
   --ok-on-slate: #7ee2a8;
+  /* The Lens's doorway: a frosted-amber slab (its frame, its side edge, its
+     light). The only light on the site; see components/Lens.tsx. */
+  --lens-frame: #ffb648;
+  --lens-edge: #a8611a;
+  --lens-light: #ffc56b;
 }
 
 /* Dark theme: the light grounds go dark and ink goes light. The slate board
@@ -894,30 +899,40 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   .vy-split-line { --lean: 14px; }
 }
 
-/* ---- Concept swap: the new page wipes in behind a leaning edge ---------- */
-::view-transition-old(root) {
+/* ---- Concept swap: the new page opens through a doorway ----------------- */
+/* lib/lensSwap drives it: the new page's clip-path grows from a door-sized
+   rounded rect at the trigger point to past the screen's edges, on a spring,
+   with the Lens's amber frame (.vy-swap-frame, three thin rings) riding the
+   edge. The old page stays put underneath. The 3D title is its own group,
+   shown live (old hidden), so its letters morph in place while the door
+   passes over it. */
+::view-transition-old(root),
+::view-transition-new(root) {
   animation: none;
 }
-::view-transition-new(root) {
-  animation: vy-swap-wipe 760ms var(--ease-wipe) both;
-}
-/* The trailing shadow of the edge, drawn on the old page as it is covered. */
 ::view-transition-image-pair(root) {
   isolation: auto;
 }
-@keyframes vy-swap-wipe {
-  from {
-    clip-path: polygon(-20% 0, -10% 0, -20% 100%, -30% 100%);
-    filter: brightness(1.15);
-  }
-  70% {
-    filter: brightness(1.03);
-  }
-  to {
-    clip-path: polygon(-20% 0, 130% 0, 120% 100%, -30% 100%);
-    filter: none;
-  }
+:root[data-swapping] .vy-letters3d { view-transition-name: vy-title; }
+::view-transition-group(vy-title),
+::view-transition-new(vy-title) { animation: none; }
+::view-transition-old(vy-title) { display: none; }
+.vy-swap-frame {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  clip-path: inset(50%);
 }
+.vy-swap-frame[data-ring='0'] { view-transition-name: vy-swap-frame-0; background: var(--lens-frame); }
+/* The doorway's light, only while it opens: two faint stepped bands. */
+.vy-swap-frame[data-ring='1'] { view-transition-name: vy-swap-frame-1; background: color-mix(in srgb, var(--lens-light) 34%, transparent); }
+.vy-swap-frame[data-ring='2'] { view-transition-name: vy-swap-frame-2; background: color-mix(in srgb, var(--lens-light) 13%, transparent); }
+::view-transition-group(vy-swap-frame-0),
+::view-transition-group(vy-swap-frame-1),
+::view-transition-group(vy-swap-frame-2),
+::view-transition-new(vy-swap-frame-0),
+::view-transition-new(vy-swap-frame-1),
+::view-transition-new(vy-swap-frame-2) { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-new(root) { animation: none; }
 }
