@@ -453,7 +453,10 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
       const pose = (t: number, budget: number) => {
         letters.forEach((l, i) => {
           const step = stepAt(t * 1000, i);
-          const live = step === null ? null : Math.max(step, 0);
+          // Before its start delay a letter rests on its final face, like the
+          // still 2D word it fades in over.
+          const waiting = step === -1;
+          const live = step === null || waiting ? null : step;
           let face = live === null ? FINAL[i] : faceAt(live, i, FACE_COUNT);
           if (face !== l.face) {
             const fresh = !cache.has(keyOf(l.ch, face));
@@ -471,7 +474,9 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
           // centre; a locked one sits on its own baseline and pops once.
           let k = 1;
           let base = s.base;
-          if (live === null) {
+          if (waiting) {
+            k = 1;
+          } else if (live === null) {
             // Already locked when the 3D word appears (or in a seeked frame):
             // at rest, like the 2D letter it replaces.
             if (l.lockedAt < 0) l.lockedAt = posed ? t : t - 1;
@@ -532,6 +537,12 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
           glyph(ch, f);
         }
         if (todo.length && seek === null) return void idle(takeOver);
+        // The 2D word held still on its final faces: the reveal starts now,
+        // in 3D, from that same word.
+        if (seek === null) {
+          clock.current = performance.now();
+          letters.forEach((l) => (l.lockedAt = -1));
+        }
         frame();
         el.style.opacity = '1';
         onReady();
@@ -556,7 +567,7 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
     <div
       ref={host}
       aria-hidden="true"
-      className="vy-letters3d absolute inset-0 z-2 opacity-0 [transition:opacity_0.2s_ease-out,transform_0.7s_ease-out]"
+      className="vy-letters3d absolute inset-0 z-2 opacity-0 [transition:opacity_0.6s_ease-out,transform_0.7s_ease-out]"
     />
   );
 };

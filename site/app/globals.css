@@ -731,6 +731,8 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 /* E · Bauhaus: primary-coded cards, red-square heads, flat geometry */
 
 /* ---- Concept switcher dock ---------------------------------------------- */
+/* The dock is fixed to the bottom; the footer leaves room so it never sits under it. */
+:root[data-variant] .site-footer { padding-bottom: 6.5rem; }
 .vy-switcher {
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   border: 1px solid var(--rule);
@@ -1097,7 +1099,7 @@ header.vy-header-glass {
 .vy-title-solid .vy-letter > * {
   color: transparent !important;
   text-shadow: none !important;
-  transition: color 0.2s ease-in, text-shadow 0.2s ease-in;
+  transition: color 0.6s ease-in, text-shadow 0.6s ease-in;
 }
 
 /* ---- More breathing room: sections spread out vertically ----------------- */

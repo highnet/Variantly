@@ -85,7 +85,10 @@ const PrefsMenu = () => {
         title={dark ? 'Light theme' : 'Dark theme'}
         onClick={() => set({ theme: dark ? 'light' : 'dark' })}
       >
-        {dark ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
+        {/* Both icons render; html[data-theme] (set before paint by the boot script)
+            picks one, so the icon is right on first paint instead of swapping on hydration. */}
+        <Sun aria-hidden="true" className="hidden in-data-[theme=dark]:block" />
+        <Moon aria-hidden="true" className="in-data-[theme=dark]:hidden" />
       </Button>
       <Button
         variant="header-icon"
