@@ -19,6 +19,8 @@
     "all": "npm run voice && npm run record && npm run edit && npm run build:all",
     "build:all": "node --env-file-if-exists=.env build.mjs all",
     "voice:local": "node voice.mjs --voice local",
+    "voice:lint": "node voice.mjs --lint",
+    "voice:dict": "node --env-file-if-exists=.env voice.mjs --dict",
     "thumbnail": "node --env-file-if-exists=.env build.mjs thumbnail"
   },
   "devDependencies": {

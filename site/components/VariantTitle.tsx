@@ -35,9 +35,10 @@ const Letter = ({ char, index, run, solid }: LetterProps) => {
 
   useEffect(() => {
     if (seekTime() !== null || calmMotion()) return;
-    // The 3D word does its own reveal: the hidden HTML letters stay still
-    // instead of re-rendering and re-measuring every step.
-    if (solid) {
+    // Where the 3D word can load, it plays the reveal: the HTML word holds
+    // still on its final faces as the poster it fades in over, so the
+    // flicker never changes material halfway through.
+    if (solid || canWebGL()) {
       document.documentElement.removeAttribute('data-intro');
       return;
     }

@@ -976,6 +976,8 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 :root[data-variant='e'] main > div li:nth-child(3n) .figure:not(h3) { color: #ffc300; }
 
 /* ---- Concept switcher dock ---------------------------------------------- */
+/* The dock is fixed to the bottom; the footer leaves room so it never sits under it. */
+:root[data-variant] .site-footer { padding-bottom: 6.5rem; }
 .vy-switcher {
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   border: 1px solid var(--rule);
@@ -1483,7 +1485,7 @@ header.vy-header-glass {
 .vy-title-solid .vy-letter > * {
   color: transparent !important;
   text-shadow: none !important;
-  transition: color 0.2s ease-in, text-shadow 0.2s ease-in;
+  transition: color 0.6s ease-in, text-shadow 0.6s ease-in;
 }
 :root[data-variant='g'] main > div h2 { text-transform: none; text-shadow: 0 2px 0 color-mix(in srgb, currentColor 55%, #1a1033); }
 :root[data-variant='g'] main > div .bg-surface { border: 0; border-radius: 22px; box-shadow: 0 1px 0 rgb(255 255 255 / 0.8) inset, 0 18px 40px -20px rgb(124 92 255 / 0.55); }

@@ -11,14 +11,11 @@ import { AGENT_LOGOS, STACK_LOGOS } from '@/lib/logos';
  * glance, with the one fact under each that matters.
  */
 const Stacks = () => (
-  <section
-    aria-labelledby="stacks-title"
-    className="grid gap-x-12 gap-y-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[auto_1fr]"
-  >
+  <section aria-labelledby="stacks-title" className="grid gap-24">
     {/* Both columns share the section's rows, so the two headings and the two
         panels line up whatever the copy length. */}
-    <div className="grid gap-5 lg:row-span-2 lg:grid-rows-subgrid">
-      <div className="grid content-start gap-2">
+    <div className="grid gap-10">
+      <div className="grid max-w-[52ch] content-start gap-3">
         <Typography variant="headline" as="h2" id="stacks-title">
           Works with your site
         </Typography>
@@ -28,9 +25,9 @@ const Stacks = () => (
           <strong className="text-ink">one extra answer</strong>.
         </Typography>
       </div>
-      <ul className="rounded-pass border-rule bg-rule m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-px overflow-hidden border p-0">
+      <ul className="m-0 grid list-none grid-cols-[repeat(auto-fill,minmax(140px,1fr))] content-start gap-x-6 gap-y-10 p-0">
         {STACK_LOGOS.map((s) => (
-          <li key={s.title} className="bg-surface grid content-start gap-3 px-4 py-4">
+          <li key={s.title} className="grid content-start gap-3">
             <LogoMark title={s.title} path={s.path} className="text-ink size-7" />
             <div className="grid gap-0.5">
               <span className="condensed font-mono text-[13px] font-bold uppercase">{s.title}</span>
@@ -38,7 +35,7 @@ const Stacks = () => (
             </div>
           </li>
         ))}
-        <li className="bg-surface grid content-start gap-3 px-4 py-4">
+        <li className="grid content-start gap-3">
           <Plus aria-hidden="true" className="text-steel size-7" />
           <div className="grid gap-0.5">
             <span className="condensed font-mono text-[13px] font-bold uppercase">
@@ -50,8 +47,8 @@ const Stacks = () => (
       </ul>
     </div>
 
-    <div className="mt-7 grid gap-5 lg:row-span-2 lg:mt-0 lg:grid-rows-subgrid">
-      <div className="grid content-start gap-2">
+    <div className="mt-16 grid gap-10">
+      <div className="grid max-w-[60ch] content-start gap-3">
         <Typography variant="headline" as="h2">
           Uses your own AI
         </Typography>
@@ -61,19 +58,16 @@ const Stacks = () => (
           variantly finds the one you have. Each variant ={' '}
           <strong className="text-ink">one session</strong>.
         </Typography>
-        <RunnerPicker className="mt-1" />
+        <RunnerPicker className="mt-2" />
       </div>
-      <ul className="m-0 grid list-none auto-rows-fr gap-2 p-0">
+      <ul className="m-0 grid list-none content-start gap-7 p-0">
         {AGENT_LOGOS.map((a) => (
-          <li
-            key={a.name}
-            className="rounded-pass border-rule bg-surface grid content-center gap-2 border px-3 py-2.5"
-          >
+          <li key={a.name} className="grid gap-2.5">
             <div className="flex items-center gap-2.5">
               <LogoMark title={a.title} path={a.path} className="text-ink size-5 shrink-0" />
               <span className="text-[14px] font-semibold">{a.name}</span>
             </div>
-            <CommandCopy command={a.install} size="sm" />
+            <CommandCopy command={a.install} size="sm" className="w-fit max-w-full min-w-64" />
           </li>
         ))}
       </ul>

@@ -1,4 +1,6 @@
+import { CommandCopy } from '@/components/CommandCopy';
 import { Typography } from '@/components/ui/Typography';
+import { cn } from '@/lib/utils';
 
 export const COMMANDS = [
   ['npx variantly', 'Open the wizard in the current folder.'],
@@ -21,10 +23,18 @@ export const FLAGS = [
   ['--no-open', 'don’t open a browser'],
 ] as const;
 
+type QuickDocsProps = {
+  className?: string;
+};
+
 /* A compact command reference: every command and flag on one screen. */
-const QuickDocs = () => (
-  <section id="docs" aria-labelledby="docs-title" className="grid scroll-mt-28 gap-6">
-    <div className="grid gap-2">
+const QuickDocs = ({ className }: QuickDocsProps) => (
+  <section
+    id="docs"
+    aria-labelledby="docs-title"
+    className={cn('grid scroll-mt-28 gap-10', className)}
+  >
+    <div className="grid gap-3">
       <Typography variant="headline" as="h2" id="docs-title">
         Quick docs
       </Typography>
@@ -32,17 +42,15 @@ const QuickDocs = () => (
         Every command runs in your site&apos;s folder. Add a path to run it somewhere else.
       </Typography>
     </div>
-    <div className="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-      <dl className="m-0 grid gap-1">
+    <div className="grid max-w-[920px] gap-10">
+      <dl className="m-0 grid gap-7">
         {COMMANDS.map(([cmd, what]) => (
-          <div
-            key={cmd}
-            className="grid gap-1 py-2 sm:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] sm:gap-4"
-          >
-            <dt>
-              <code className="condensed font-mono text-sm font-semibold">{cmd}</code>
+          <div key={cmd} className="grid gap-2.5">
+            {/* The command is the term; its description reads first. */}
+            <dt className="order-2">
+              <CommandCopy command={cmd} size="sm" className="w-fit max-w-full min-w-64" />
             </dt>
-            <dd className="text-steel m-0 text-[15px] leading-snug">{what}</dd>
+            <dd className="text-steel order-1 m-0 text-[15px] leading-snug">{what}</dd>
           </div>
         ))}
       </dl>
@@ -50,9 +58,12 @@ const QuickDocs = () => (
         <summary className="text-steel hover:text-ink w-fit cursor-pointer text-sm font-semibold">
           Flags
         </summary>
-        <dl className="m-0 grid gap-2.5">
+        <dl className="m-0 grid gap-3.5 pt-2">
           {FLAGS.map(([flag, what]) => (
-            <div key={flag} className="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)] gap-3">
+            <div
+              key={flag}
+              className="grid gap-1 sm:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] sm:gap-8"
+            >
               <dt>
                 <code className="condensed font-mono text-sm">{flag}</code>
               </dt>
