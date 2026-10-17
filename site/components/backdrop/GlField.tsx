@@ -75,7 +75,7 @@ export const GlField = ({ concept, theme, grain }: GlFieldProps) => {
         if (!prev) return;
         // Retire the old scene after the new one's fade (FADE_MS).
         if (seek !== null || calmMotion()) prev();
-        else setTimeout(prev, FADE_MS * 0.6 + 50);
+        else setTimeout(prev, SWAP_FADE_MS + 100);
       })
       .catch(() => {
         markLoaded('scene');
@@ -97,8 +97,10 @@ export const GlField = ({ concept, theme, grain }: GlFieldProps) => {
   return <div ref={host} className="absolute inset-0" aria-hidden="true" />;
 };
 
-// The canvas fades in instead of popping, on load and on every swap.
-const FADE_MS = 450;
+// The canvas fades in over the server-painted art instead of popping in, on
+// load and (faster, the wipe already moves) on every concept or theme swap.
+const FADE_MS = 800;
+const SWAP_FADE_MS = 400;
 
 const run = (
   el: HTMLDivElement,
@@ -133,6 +135,7 @@ const run = (
   // Stacked, so an outgoing scene can stay under the incoming one.
   canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
   const fade = seek === null && !calmMotion();
+  if (fade) canvas.style.opacity = '0';
   el.appendChild(canvas);
   const scene = new THREE.Scene();
   const { camera, update } = def.build(scene, colors);
@@ -237,12 +240,19 @@ const run = (
     }
   };
   draw();
+  // Fade only once the first frame is on screen: the draw reaches the
+  // compositor a frame after it is issued (later still while shaders compile).
+  // Opacity is composited, so the fade costs no repaint.
+  let shown = 0;
   if (fade) {
-    // First draw lands, then the canvas fades up (the opacity is composited,
-    // so it costs no repaint). A swap fades faster: the wipe already moves.
-    canvas.animate([{ opacity: 0 }, { opacity: 1 }], {
-      duration: swap ? FADE_MS * 0.6 : FADE_MS,
-      easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)',
+    shown = requestAnimationFrame(() => {
+      shown = requestAnimationFrame(() => {
+        canvas.style.opacity = '';
+        canvas.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: swap ? SWAP_FADE_MS : FADE_MS,
+          easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)',
+        });
+      });
     });
   }
   markLoaded('scene');
@@ -258,6 +268,7 @@ const run = (
   return () => {
     cancelAnimationFrame(raf);
     cancelAnimationFrame(pending);
+    cancelAnimationFrame(shown);
     ro.disconnect();
     mo.disconnect();
     document.removeEventListener('visibilitychange', sync);

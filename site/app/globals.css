@@ -782,11 +782,6 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   /* Line-based scenes cross the stacked copy on phones; keep them faint. */
 }
 
-/* Until the reveal starts, keep the title hidden rather than flash the final word. */
-:root[data-intro] .vy-title {
-  visibility: hidden;
-}
-
 /* ---- "Now showing" split-flap tiles, styled per concept ------------------ */
 /* Solid tiles in the concept's ink with the hero ground as the letter colour,
    so the word reads on light and dark heroes alike. */
@@ -1153,6 +1148,8 @@ main > div p { line-height: 1.65; }
 /* The backdrop is fixed and static: isolate it so nothing outside makes it
    repaint, and give the art its own layer so parallax only composites. */
 .vy-backdrop { contain: strict; }
+/* The server-rendered art (BackdropPoster) shows only the current concept's
+   piece: its own inline <style>, generated from the live concept list. */
 .vy-art { will-change: transform; }
 @media (max-width: 639px), (pointer: coarse) {
   /* Phones: no frosted header (a blur of everything under it, every frame). */
