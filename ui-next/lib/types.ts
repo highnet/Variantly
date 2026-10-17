@@ -13,6 +13,8 @@ export type Audit = {
 export type Variant = {
   n: number;
   direction: string;
+  agent?: string;
+  model?: string;
   status: VariantStatus;
   summary: string;
   files: string[];
@@ -69,6 +71,9 @@ export type Agent = {
 
 export type Candidate = { rel: string; stackId: string; name: string; command: string; defaultUrl: string; running?: boolean; needsInstall?: boolean; note?: string };
 
+/** One row of an agent mix: this agent, with this model, makes this many variants. */
+export type AgentRow = { agent: string; model: string; count: number };
+
 export type Form = {
   appRel: string;
   stackId: string;
@@ -76,6 +81,10 @@ export type Form = {
   originalUrl: string;
   agent: string;
   model: string;
+  /** Two or more rows split the variants across agents; absent = one agent. */
+  mix?: AgentRow[];
+  /** Hide which agent made each variant until one is kept. */
+  blind?: boolean;
   permissions: 'safe' | 'full';
   approach: 'redesign' | 'refine';
   count: number;

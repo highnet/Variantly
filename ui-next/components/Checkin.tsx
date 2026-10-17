@@ -17,7 +17,7 @@ import { api } from '@/lib/api';
 import { loadDetect, resetRun } from '@/lib/live';
 import { pad, plural } from '@/lib/format';
 import { getState, setState, toast, updateForm, useStore } from '@/lib/store';
-import type { Agent, Detect, Form } from '@/lib/types';
+import type { Agent, AgentRow, Detect, Form } from '@/lib/types';
 
 const WIZ = [
   { id: 'setup', name: 'Setup', title: 'Your setup', next: 'Continue to variants' },
@@ -33,11 +33,52 @@ const CHECKS: [keyof Form, string, string, string][] = [
   ['audit', 'Scores', 'scores', 'axe-core and Lighthouse on the original and every variant: accessibility, performance, best practices, SEO. Runs on your machine, costs nothing.'],
 ];
 
-const checkOn = (f: Form, key: keyof Form) => f[key] !== false && !(f.agent === 'demo' && key !== 'audit');
+const checkOn = (f: Form, key: keyof Form) => f[key] !== false && !(allDemo(f) && key !== 'audit');
 const agentOf = (d: Detect, f: Form) => d.agents.find((a) => a.id === f.agent);
 const candidateOf = (d: Detect, f: Form) => d.candidates.find((c) => c.rel === f.appRel && c.stackId === f.stackId);
 const stackName = (d: Detect, f: Form) => candidateOf(d, f)?.name ?? d.stacks.find((s) => s.id === f.stackId)?.name ?? 'Custom';
 const draftKey = (d: Detect) => `variantly:draft:${d.repo}`;
+/** The last mix of agents that started a run, offered to every new draft. */
+const MIX_KEY = 'variantly:mix';
+/** Models typed before, per agent, offered as suggestions. */
+const MODELS_KEY = 'variantly:models';
+/** Claude Code's own aliases; other agents' model names change too often to list. */
+const KNOWN_MODELS: Record<string, string[]> = { claude: ['opus', 'sonnet', 'haiku'] };
+
+/** The agent rows of a form: its mix, or its one agent making every variant. */
+const rowsOf = (f: Form): AgentRow[] => (f.mix?.length ? f.mix : [{ agent: f.agent, model: f.model, count: f.count }]);
+const total = (rows: AgentRow[]) => rows.reduce((t, r) => t + r.count, 0);
+/** Write rows back: one row is a plain one-agent run, two or more a mix. */
+const setRows = (rows: AgentRow[]) =>
+  updateForm(rows.length > 1 ? { mix: rows, agent: rows[0].agent, model: rows[0].model, count: total(rows) } : { mix: undefined, blind: false, agent: rows[0].agent, model: rows[0].model, count: rows[0].count });
+const isMixed = (f: Form) => (f.mix?.length ?? 0) > 1;
+/** Only the demo agent: nothing is spent, and the browser and review don't apply. */
+const allDemo = (f: Form) => rowsOf(f).every((r) => r.agent === 'demo');
+/** Every distinct agent the run will use. */
+const agentIds = (f: Form) => [...new Set(rowsOf(f).map((r) => r.agent))];
+const readJson = <T,>(key: string, fallback: T): T => {
+  try {
+    return (JSON.parse(localStorage.getItem(key) ?? 'null') as T) ?? fallback;
+  } catch {
+    return fallback;
+  }
+};
+const modelsFor = (agent: string) => [...new Set([...(KNOWN_MODELS[agent] ?? []), ...(readJson<Record<string, string[]>>(MODELS_KEY, {})[agent] ?? [])])];
+/** Remember the run's mix and its models for next time. */
+const rememberMix = (f: Form) => {
+  try {
+    if (isMixed(f)) localStorage.setItem(MIX_KEY, JSON.stringify({ mix: f.mix, blind: Boolean(f.blind) }));
+    else localStorage.removeItem(MIX_KEY);
+    const seen = readJson<Record<string, string[]>>(MODELS_KEY, {});
+    for (const r of rowsOf(f)) if (r.model) seen[r.agent] = [r.model, ...(seen[r.agent] ?? []).filter((m) => m !== r.model)].slice(0, 6);
+    localStorage.setItem(MODELS_KEY, JSON.stringify(seen));
+  } catch {}
+};
+/** "2 Claude · opus, 2 Gemini" */
+const mixText = (d: Detect, f: Form) =>
+  rowsOf(f)
+    .map((r) => `${r.count} ${r.agent === 'demo' ? 'Demo' : (d.agents.find((a) => a.id === r.agent)?.name ?? r.agent)}${r.model ? ` · ${r.model}` : ''}`)
+    .join(', ');
 /** ":3000" from a URL (its host if it has no port); the raw text if it does not parse. */
 const where = (raw: string) => {
   try {
@@ -99,17 +140,20 @@ const FixButton = ({ label, onClick }: FixButtonProps) => {
 const blockers = (d: Detect, f: Form): Note[] => {
   const list: Note[] = [];
   if (!d.hasCommits) list.push(['bad', 'This repository has no commits yet, so variants have nothing to start from.', <FixButton key="c" label="Commit everything now" onClick={() => runFix('commit', {}, 'First commit made.')} />]);
-  const a = agentOf(d, f);
-  if (f.agent !== 'demo' && !a?.installed)
-    list.push(['bad', `${a?.name ?? f.agent} isn't installed. Install it, then sign in once.`, a?.install ? <FixButton key="i" label={`Install ${a.name}`} onClick={() => runFix('install-agent', { agent: a.id }, `Installing ${a.name}…`)} /> : undefined]);
-  if (f.agent !== 'demo' && a?.installed && a.signedIn === false)
-    list.push([
-      'bad',
-      `${a.name} is installed but not signed in. A window opens; follow it, then come back here.`,
-      <FixButton key="l" label={`Sign in to ${a.name}`} onClick={() => runFix('login', { agent: a.id }, 'Sign-in window opened. Come back when it says you are signed in.').then(() => setTimeout(loadDetect, 15000))} />,
-    ]);
-  if (f.agent !== 'demo' && a?.installed && !a.impeccable)
-    list.push(['bad', `${a.name} doesn't have the Impeccable design skill yet. variantly needs it; installing takes a minute.`, <FixButton key="m" label="Install Impeccable" onClick={() => installImpeccable(a.id)} />]);
+  // Every agent in the run must be ready: a mix doesn't start with one missing.
+  for (const id of agentIds(f).filter((x) => x !== 'demo')) {
+    const a = d.agents.find((x) => x.id === id);
+    if (!a?.installed)
+      list.push(['bad', `${a?.name ?? id} isn't installed. Install it, then sign in once.`, a?.install ? <FixButton key={`i${id}`} label={`Install ${a.name}`} onClick={() => runFix('install-agent', { agent: a.id }, `Installing ${a.name}…`)} /> : undefined]);
+    if (a?.installed && a.signedIn === false)
+      list.push([
+        'bad',
+        `${a.name} is installed but not signed in. A window opens; follow it, then come back here.`,
+        <FixButton key={`l${id}`} label={`Sign in to ${a.name}`} onClick={() => runFix('login', { agent: a.id }, 'Sign-in window opened. Come back when it says you are signed in.').then(() => setTimeout(loadDetect, 15000))} />,
+      ]);
+    if (a?.installed && !a.impeccable)
+      list.push(['bad', `${a.name} doesn't have the Impeccable design skill yet. variantly needs it; installing takes a minute.`, <FixButton key={`m${id}`} label={`Install Impeccable for ${a.name}`} onClick={() => installImpeccable(a.id)} />]);
+  }
   if (!f.command && !f.originalUrl) list.push(['bad', 'Set a dev command under “Use a different app or agent”.']);
   return list;
 };
@@ -285,41 +329,130 @@ const AppPicker = ({ d, f }: PartProps) => {
   );
 };
 
-const AgentPicker = ({ d, f }: PartProps) => {
-  const agents: Agent[] = [...d.agents, { id: 'demo', name: 'Demo agent', installed: true, impeccable: true, version: 'built in, no AI', install: '' }];
+const DEMO_AGENT: Agent = { id: 'demo', name: 'Demo agent', installed: true, impeccable: true, version: 'built in, no AI', install: '' };
+
+/** A model field that suggests Claude's aliases and the models typed before. */
+const ModelInput = ({ agent, value, onChange, label }: { agent: string; value: string; onChange: (v: string) => void; label?: string }) => {
+  const list = `models-${agent}`;
   return (
     <>
-      <div className="field">
-        <span className="label">Agent</span>
-        <div className="options" role="radiogroup" aria-label="Agent">
-          {agents.map((a) => (
-            <OptionCard
-              key={a.id}
-              name="agent"
-              checked={f.agent === a.id}
-              title={a.name}
-              detail={a.installed ? a.version || 'installed' : a.install}
-              tags={
-                a.id === 'demo' ? null : (
-                  <>
-                    <span className={clsx('tag', a.installed ? 'ok' : 'bad')}>{a.installed ? 'Installed' : 'Not installed'}</span>
-                    {a.installed && <span className={clsx('tag', a.impeccable ? 'ok' : 'bad')}>{a.impeccable ? 'Impeccable' : 'No Impeccable'}</span>}
-                  </>
-                )
-              }
-              onChange={() => updateForm({ agent: a.id })}
-            />
-          ))}
-        </div>
+      <input className="input" value={value} aria-label={label} list={list} placeholder="the agent's default" spellCheck={false} onChange={(e) => onChange(e.target.value)} />
+      <datalist id={list}>
+        {modelsFor(agent).map((m) => (
+          <option key={m} value={m} />
+        ))}
+      </datalist>
+    </>
+  );
+};
+
+/** Rows of agent, model and count: the variants split across them. */
+const MixEditor = ({ agents, f }: { agents: Agent[]; f: Form }) => {
+  const rows = rowsOf(f);
+  const sum = total(rows);
+  const set = (i: number, patch: Partial<AgentRow>) => setRows(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  return (
+    <div className="field">
+      <span className="label">Agents</span>
+      <ul className="mix">
+        {rows.map((r, i) => (
+          <li key={i} className="mix-row">
+            <select className="input" aria-label={`Agent for row ${i + 1}`} value={r.agent} onChange={(e) => set(i, { agent: e.target.value, model: '' })}>
+              {agents.map((a) => (
+                <option key={a.id} value={a.id}>
+                  {a.name}
+                  {a.id !== 'demo' && !a.installed ? ' (not installed)' : ''}
+                </option>
+              ))}
+            </select>
+            {r.agent === 'demo' ? <span className="hint">no model</span> : <ModelInput agent={r.agent} value={r.model} label={`Model for row ${i + 1}`} onChange={(model) => set(i, { model })} />}
+            <Stepper label={`Variants for row ${i + 1}`} value={r.count} min={1} max={10 - (sum - r.count)} onSet={(count) => set(i, { count })} />
+            <button type="button" className="btn small" aria-label={`Remove row ${i + 1}`} onClick={() => setRows(rows.filter((_, j) => j !== i))}>
+              <Icon name="close" />
+            </button>
+          </li>
+        ))}
+      </ul>
+      <div className="mix-foot">
+        <button type="button" className="link" disabled={sum >= 10} onClick={() => setRows([...rows, { agent: agents.find((a) => a.installed && !rows.some((r) => r.agent === a.id))?.id ?? rows[0].agent, model: '', count: 1 }])}>
+          Add another agent
+        </button>
+        <span className="hint">
+          {plural(sum, 'variant')} in all{sum >= 10 ? ', the most there can be' : ''}.
+        </span>
       </div>
-      {f.agent === 'demo' ? (
+      <label className="check">
+        <input type="checkbox" checked={Boolean(f.blind)} onChange={(e) => updateForm({ blind: e.target.checked })} />
+        <span>
+          <span className="name">Hide who made each variant</span>
+          <span className="hint">Judge the designs blind: the agent and model show once you keep one.</span>
+        </span>
+      </label>
+    </div>
+  );
+};
+
+const AgentPicker = ({ d, f }: PartProps) => {
+  const agents: Agent[] = [...d.agents, DEMO_AGENT];
+  const mixed = isMixed(f);
+  return (
+    <>
+      {mixed ? (
+        <MixEditor agents={agents} f={f} />
+      ) : (
+        <div className="field">
+          <span className="label">Agent</span>
+          <div className="options" role="radiogroup" aria-label="Agent">
+            {agents.map((a) => (
+              <OptionCard
+                key={a.id}
+                name="agent"
+                checked={f.agent === a.id}
+                title={a.name}
+                detail={a.installed ? a.version || 'installed' : a.install}
+                tags={
+                  a.id === 'demo' ? null : (
+                    <>
+                      <span className={clsx('tag', a.installed ? 'ok' : 'bad')}>{a.installed ? 'Installed' : 'Not installed'}</span>
+                      {a.installed && <span className={clsx('tag', a.impeccable ? 'ok' : 'bad')}>{a.impeccable ? 'Impeccable' : 'No Impeccable'}</span>}
+                    </>
+                  )
+                }
+                onChange={() => updateForm({ agent: a.id })}
+              />
+            ))}
+          </div>
+          <p className="hint">
+            <button
+              type="button"
+              className="link"
+              disabled={f.count < 2}
+              onClick={() => {
+                // Split the variants in two: the current agent keeps the first half.
+                const other = agents.find((a) => a.installed && a.id !== f.agent && a.id !== 'demo')?.id ?? f.agent;
+                const first = Math.ceil(f.count / 2);
+                setRows([
+                  { agent: f.agent, model: f.model, count: first },
+                  { agent: other, model: '', count: f.count - first },
+                ]);
+              }}
+            >
+              Add another agent
+            </button>{' '}
+            to split the variants, say two with Claude and two with Gemini.
+          </p>
+        </div>
+      )}
+      {allDemo(f) ? (
         <p className="note">The demo agent appends a fixed restyle to your main stylesheet. It shows how variantly works without spending anything; the results are deliberately crude.</p>
       ) : (
         <div className="field-row">
-          <label className="field">
-            <span className="label">Model (optional)</span>
-            <input className="input" value={f.model} placeholder="the agent's default" onChange={(e) => updateForm({ model: e.target.value })} />
-          </label>
+          {!mixed && (
+            <label className="field">
+              <span className="label">Model (optional)</span>
+              <ModelInput agent={f.agent} value={f.model} onChange={(model) => updateForm({ model })} />
+            </label>
+          )}
           <div className="field">
             <span className="label" id="seg-permissions">
               Permissions
@@ -357,7 +490,7 @@ const MoreSettings = ({ d, f }: PartProps) => (
         onPick={(v) => updateForm({ approach: v as Form['approach'] })}
       />
       <p className="hint">
-        {f.agent === 'demo'
+        {allDemo(f)
           ? f.approach === 'refine'
             ? 'Keep your look. The demo agent applies a fixed restyle to each variant.'
             : 'Replace your look. The demo agent applies a different fixed restyle to every variant.'
@@ -375,7 +508,7 @@ const MoreSettings = ({ d, f }: PartProps) => (
             <input
               aria-label={`Direction for V${pad(i + 1)}`}
               value={f.directions[i] ?? ''}
-              placeholder={f.agent === 'demo' ? 'Picked for you' : 'Impeccable picks'}
+              placeholder={allDemo(f) ? 'Picked for you' : 'Impeccable picks'}
               onChange={(e) => {
                 const directions = [...f.directions];
                 directions[i] = e.target.value;
@@ -390,7 +523,7 @@ const MoreSettings = ({ d, f }: PartProps) => (
     <div className="field-row">
       <div className="field">
         <span className="label">Variants</span>
-        <Stepper label="Variants" value={f.count} min={1} max={10} onSet={(n) => updateForm({ count: n })} />
+        {isMixed(f) ? <p className="hint">{f.count}, set by the agent mix.</p> : <Stepper label="Variants" value={f.count} min={1} max={10} onSet={(n) => updateForm({ count: n })} />}
       </div>
       <div className="field">
         <span className="label">At a time</span>
@@ -407,10 +540,10 @@ const MoreSettings = ({ d, f }: PartProps) => (
       <legend className="label">Around Impeccable</legend>
       {CHECKS.map(([key, title, , detail]) => (
         <label key={key} className="check">
-          <input type="checkbox" checked={checkOn(f, key)} disabled={f.agent === 'demo' && key !== 'audit'} onChange={(e) => updateForm({ [key]: e.target.checked } as Partial<Form>)} />
+          <input type="checkbox" checked={checkOn(f, key)} disabled={allDemo(f) && key !== 'audit'} onChange={(e) => updateForm({ [key]: e.target.checked } as Partial<Form>)} />
           <span>
             <span className="name">{title}</span>
-            <span className="hint">{f.agent === 'demo' && key !== 'audit' ? `Not used by the demo agent. ${detail}` : detail}</span>
+            <span className="hint">{allDemo(f) && key !== 'audit' ? `Not used by the demo agent. ${detail}` : detail}</span>
           </span>
         </label>
       ))}
@@ -447,15 +580,20 @@ type StepBodyProps = PartProps & {
 
 const SetupStep = ({ d, f }: StepBodyProps) => {
   const a = agentOf(d, f);
-  const agentOk = f.agent === 'demo' || Boolean(a?.installed && a.signedIn !== false && a.impeccable);
+  const ready = (id: string) => id === 'demo' || Boolean(d.agents.find((x) => x.id === id && x.installed && x.signedIn !== false && x.impeccable));
+  const agentOk = agentIds(f).every(ready);
   const cand = candidateOf(d, f);
   const appDetail = `${f.appRel || 'repo root'} · ${f.originalUrl ? `running at ${f.originalUrl.replace(/^https?:\/\//, '')}` : 'variantly starts it'}`;
-  const agentDetail = f.agent === 'demo' ? 'no AI, fixed restyles' : !a?.installed ? 'not installed' : !a.impeccable ? 'Impeccable missing' : a.version || 'installed';
+  const agentDetail = allDemo(f) ? 'no AI, fixed restyles' : !a?.installed ? 'not installed' : !a.impeccable ? 'Impeccable missing' : a.version || 'installed';
   return (
     <>
       <ul className="checks">
         {d.hasCommits ? <CheckRow ok text={`${stackName(d, f)} app found`} detail={appDetail} /> : <CheckRow ok={false} text="No commits yet" />}
-        <CheckRow ok={agentOk} text={agentOk ? `${a?.name ?? 'Demo agent'} ready` : `${a?.name ?? f.agent} needs a hand`} detail={agentDetail} />
+        {isMixed(f) ? (
+          <CheckRow ok={agentOk} text={agentOk ? 'Every agent in the mix is ready' : 'An agent in the mix needs a hand'} detail={mixText(d, f)} />
+        ) : (
+          <CheckRow ok={agentOk} text={agentOk ? `${a?.name ?? 'Demo agent'} ready` : `${a?.name ?? f.agent} needs a hand`} detail={agentDetail} />
+        )}
       </ul>
       <Notes notes={[...blockers(d, f), ...advisories(d, f)]} />
       <details className="more" open={!cand && !f.command}>
@@ -469,7 +607,7 @@ const SetupStep = ({ d, f }: StepBodyProps) => {
   );
 };
 
-const DesignsStep = ({ d, f }: StepBodyProps) => {
+const DesignsStep = ({ d, f, goStep }: StepBodyProps) => {
   const [adding, setAdding] = useState('');
   const routes = [...new Set([...(d.routes ?? ['/']), ...f.routes])];
   const a = agentOf(d, f);
@@ -485,13 +623,22 @@ const DesignsStep = ({ d, f }: StepBodyProps) => {
         }}
       >
         <legend className="label">How many variants?</legend>
-        <div className="pick-row">
-          {[2, 4, 6].map((n) => (
-            <Pick key={n} type="radio" name="count" label={String(n)} on={f.count === n} onToggle={() => updateForm({ count: n })} />
-          ))}
-          {![2, 4, 6].includes(f.count) && <Pick type="radio" name="count" label={String(f.count)} on onToggle={() => {}} />}
-        </div>
-        <p className="hint">{f.agent === 'demo' ? 'The demo agent costs nothing.' : `Each variant is one ${a?.name ?? 'agent'} session on your account, about 10–20 minutes, ${f.concurrency} at a time.`}</p>
+        {isMixed(f) ? (
+          <p className="hint">
+            {f.count}: {mixText(d, f)}.{' '}
+            <button type="button" className="link" onClick={() => goStep(0)}>
+              Change the mix
+            </button>
+          </p>
+        ) : (
+          <div className="pick-row">
+            {[2, 4, 6].map((n) => (
+              <Pick key={n} type="radio" name="count" label={String(n)} on={f.count === n} onToggle={() => updateForm({ count: n })} />
+            ))}
+            {![2, 4, 6].includes(f.count) && <Pick type="radio" name="count" label={String(f.count)} on onToggle={() => {}} />}
+          </div>
+        )}
+        <p className="hint">{allDemo(f) ? 'The demo agent costs nothing.' : `Each variant is one ${isMixed(f) ? 'agent' : (a?.name ?? 'agent')} session on your account, about 10–20 minutes, ${f.concurrency} at a time.`}</p>
       </fieldset>
       <fieldset className="field picks">
         <legend className="label">Which pages?</legend>
@@ -593,7 +740,7 @@ const banked = (d: Detect, f: Form): Record<StepId, string> => {
   const answered = (['users', 'purpose', 'keep'] as const).filter((k) => f.product[k].trim()).length + (f.brief.trim() ? 1 : 0);
   const extras = (d.extras ?? []).filter((x) => f.extras.includes(x.id)).map((x) => x.label);
   return {
-    setup: `${stackName(d, f)} · ${f.agent === 'demo' ? 'Demo' : (a?.name ?? f.agent)}`,
+    setup: `${stackName(d, f)} · ${isMixed(f) ? plural(agentIds(f).length, 'agent') : allDemo(f) ? 'Demo' : (a?.name ?? f.agent)}`,
     designs: `${plural(f.count, 'variant')} · ${f.routes.map((r) => (r === '/' ? 'Home' : r)).join(', ')}${extras.length ? ` · ${extras.join(', ')}` : ''}`,
     site: d.hasProduct ? 'PRODUCT.md' : answered ? plural(answered, 'answer') : 'Skipped',
     review: '',
@@ -606,8 +753,8 @@ const ReviewStep = ({ d, f, goStep }: StepBodyProps) => {
   const extras = (d.extras ?? []).filter((x) => f.extras.includes(x.id)).map((x) => x.label);
   const rows: [string, string, number][] = [
     ['App', `${stackName(d, f)} · ${f.appRel || 'repo root'}`, 0],
-    ['Agent', f.agent === 'demo' ? 'Demo agent (no AI)' : (a?.name ?? f.agent), 0],
-    ['Designs', `${f.count}, ${f.approach === 'refine' ? 'refining your current look' : f.agent === 'demo' ? 'each a new look' : 'each a new look Impeccable picks'}`, 1],
+    isMixed(f) ? ['Agents', `${mixText(d, f)}${f.blind ? ' · hidden until you keep one' : ''}`, 0] : ['Agent', allDemo(f) ? 'Demo agent (no AI)' : `${a?.name ?? f.agent}${f.model ? ` · ${f.model}` : ''}`, 0],
+    ['Designs', `${f.count}, ${f.approach === 'refine' ? 'refining your current look' : allDemo(f) ? 'each a new look' : 'each a new look Impeccable picks'}`, 1],
     ['Pages', f.routes.map((r) => (r === '/' ? 'Home' : r)).join(', '), 1],
     ['Extras', extras.length ? extras.join(', ') : 'None', 1],
     ['Your site', b.site === 'PRODUCT.md' ? 'From your PRODUCT.md' : b.site, 2],
@@ -629,7 +776,7 @@ const ReviewStep = ({ d, f, goStep }: StepBodyProps) => {
         ))}
       </dl>
       <Notes notes={blockers(d, f)} />
-      <p className="hint">{f.agent === 'demo' ? 'Nothing is spent.' : `Uses ${plural(sessions, 'session')} on your ${a?.name ?? 'agent'} account. Your files aren't touched until you keep one.`}</p>
+      <p className="hint">{allDemo(f) ? 'Nothing is spent.' : `Uses ${plural(sessions, 'session')} on your ${isMixed(f) ? 'agent accounts' : `${a?.name ?? 'agent'} account`}. Your files aren't touched until you keep one.`}</p>
     </>
   );
 };
@@ -673,6 +820,14 @@ const Checkin = () => {
       try {
         const draft = JSON.parse(localStorage.getItem(draftKey(d)) ?? 'null') as Partial<Form> | null;
         if (draft) updateForm(draft);
+        // A new draft starts from the last mix, unless the command line set the agents.
+        else if (!d.suggested.mix?.length) {
+          const last = readJson<{ mix?: AgentRow[]; blind?: boolean } | null>(MIX_KEY, null);
+          if (last?.mix && last.mix.length > 1) {
+            setRows(last.mix);
+            updateForm({ blind: Boolean(last.blind) });
+          }
+        }
       } catch {}
     }
   }, [d, f, snapConfig]);
@@ -725,7 +880,9 @@ const Checkin = () => {
     try {
       resetRun();
       setState({ forceBoard: false, wantCompare: false, sel: null, unseen: [] });
-      await api('POST', 'generate', getState().form);
+      const form = getState().form;
+      await api('POST', 'generate', form);
+      if (form) rememberMix(form);
       try {
         localStorage.removeItem(draftKey(d));
       } catch {}
