@@ -605,7 +605,14 @@ const Showcase = () => {
             <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">
               <strong className="text-surface">One command.</strong> Your own AI assistant redesigns
               your site <strong className="text-surface">several ways</strong>,{' '}
-              <strong className="text-surface">from scratch</strong>: no preset themes. Try each{' '}
+              <strong className="text-surface">from scratch</strong> using{' '}
+              <a
+                href="https://impeccable.style"
+                className="text-surface font-semibold underline decoration-1 underline-offset-2"
+              >
+                Impeccable
+              </a>
+              : the missing design vocabulary for agents. No preset themes. Try each{' '}
               <strong className="text-surface">live</strong>,{' '}
               <strong className="text-surface">keep one</strong>.
             </p>

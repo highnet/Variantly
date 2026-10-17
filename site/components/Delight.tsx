@@ -4,6 +4,7 @@ import { animate, inView } from 'motion';
 import { useEffect } from 'react';
 
 import { burst } from '@/components/FreshLook';
+import { animateHeight, revealText, stillMotion } from '@/lib/disclose';
 import { calmMotion } from '@/lib/prefs';
 import { seekTime } from '@/lib/seek';
 import { useSiteStore } from '@/lib/store';
@@ -27,7 +28,7 @@ const favicon = () => {
  * Small homepage delights, wired once:
  * copy buttons pop and burst (4), "How it works" fills a progress line as you
  * scroll it (5), scores count up (7), the hero parallaxes (10), commands type
- * themselves out (11), <details> open with a spring (12), the demo divider
+ * themselves out (11), <details> spring open and shut (12), the demo divider
  * peeks to show it drags (13), the favicon follows the concept (16) and the
  * header frosts once scrolled (17). Motion-heavy parts skip reduced motion.
  */
@@ -83,19 +84,34 @@ export const Delight = () => {
     document.addEventListener('click', onClick);
     stops.push(() => document.removeEventListener('click', onClick));
 
-    // 12 · springy <details>
-    const onToggle = (e: Event) => {
-      const d = e.target as HTMLDetailsElement;
-      if (calm || !(d instanceof HTMLDetailsElement) || !d.open) return;
-      const body = [...d.children].filter((c) => c.tagName !== 'SUMMARY') as HTMLElement[];
-      animate(
-        body,
-        { opacity: [0, 1], transform: ['translateY(-8px) scaleY(0.92)', 'none'] },
-        { type: 'spring', stiffness: 300, damping: 20 },
-      );
+    // 12 · springy <details>: the same height spring as the show-more pill
+    const onSummary = (e: MouseEvent) => {
+      const summary = (e.target as HTMLElement).closest('summary');
+      const d = summary?.parentElement;
+      if (
+        !summary ||
+        !(d instanceof HTMLDetailsElement) ||
+        !d.classList.contains('vy-more') ||
+        stillMotion()
+      )
+        return;
+      e.preventDefault();
+      const from = d.offsetHeight;
+      const body = [...d.children].filter((c) => c.tagName !== 'SUMMARY');
+      if (d.open) {
+        d.classList.add('vy-closing');
+        animateHeight(d, from, summary.offsetHeight, () => {
+          d.open = false;
+          d.classList.remove('vy-closing');
+        });
+      } else {
+        d.open = true;
+        animateHeight(d, from, d.offsetHeight);
+        revealText(body);
+      }
     };
-    document.addEventListener('toggle', onToggle, true);
-    stops.push(() => document.removeEventListener('toggle', onToggle, true));
+    document.addEventListener('click', onSummary);
+    stops.push(() => document.removeEventListener('click', onSummary));
 
     if (calm) return () => stops.forEach((s) => s());
 

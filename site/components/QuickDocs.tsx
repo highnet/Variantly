@@ -1,6 +1,6 @@
 import { Typography } from '@/components/ui/Typography';
 
-const COMMANDS = [
+export const COMMANDS = [
   ['npx variantly', 'Open the wizard in the current folder.'],
   ['npx variantly --demo', 'The full flow with ready-made variants. No AI, no account.'],
   ['npx variantly doctor', 'Check Node, git, your AI assistants and the detected stack.'],
@@ -10,7 +10,7 @@ const COMMANDS = [
   ['npx variantly install-skill', 'Put the variantly skill where your assistants read skills.'],
 ] as const;
 
-const FLAGS = [
+export const FLAGS = [
   ['--agent <id>', 'claude, codex, copilot, gemini, cursor or demo'],
   ['--count <n>', 'how many variants, 1–10'],
   ['--brief <txt>', 'what you want, in your words'],
