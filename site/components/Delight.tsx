@@ -7,6 +7,7 @@ import { burst } from '@/components/FreshLook';
 import { animateHeight, revealText, stillMotion } from '@/lib/disclose';
 import { EASE } from '@/lib/motion';
 import { calmMotion } from '@/lib/prefs';
+import { lowPerf, onScrollStart, scrolling, touchUI, whenIdle } from '@/lib/scrollIdle';
 import { seekTime } from '@/lib/seek';
 import { useSiteStore } from '@/lib/store';
 
@@ -47,31 +48,47 @@ export const Delight = () => {
     // 17 · glass header, 5 · steps progress, 10 · hero parallax
     const steps = document.querySelector<HTMLElement>('main > div ol');
     steps?.classList.add('vy-steps');
+    const items = steps ? ([...steps.children] as HTMLElement[]) : [];
+    // Touch and low-power: no per-frame scrubbing and no parallax. The steps
+    // light up (and their numerals fill in one CSS transition) from an
+    // observer, applied once the scroll settles.
+    const light = touchUI() || lowPerf();
+    const drifting = light
+      ? []
+      : [...document.querySelectorAll<HTMLElement>('.vy-scene, .vy-blobs, .vy-title')];
+    let glass = false;
+    let lastY = '';
     let frame = 0;
     const paint = () => {
       frame = 0;
-      header?.classList.toggle('vy-header-glass', scrollY > 24);
+      const y = scrollY;
+      if (y > 24 !== glass) {
+        glass = y > 24;
+        header?.classList.toggle('vy-header-glass', glass);
+      }
+      if (light) return;
       if (steps) {
+        // The one layout read of the frame; writes follow.
         const r = steps.getBoundingClientRect();
         const p = Math.min(1, Math.max(0, (innerHeight * 0.75 - r.top) / r.height));
         steps.style.setProperty('--steps-p', p.toFixed(3));
-        [...steps.children].forEach((li, i, all) => {
-          const el = li as HTMLElement;
+        items.forEach((el, i, all) => {
           // Each numeral fills over its own stretch of the progress line.
           const fill = calm ? 1 : Math.min(1, Math.max(0, (p * all.length - i) / 0.7));
-          el.style.setProperty('--fill', fill.toFixed(3));
+          el.style.setProperty('--fill', fill.toFixed(2));
           el.classList.toggle('vy-step-on', p >= (i + 0.4) / all.length);
           // The pop plays once, the first time a numeral is full.
           if (fill >= 1) el.classList.add('vy-step-done');
         });
       }
-      if (!calm && scrollY < innerHeight * 1.5) {
+      if (!calm && y < innerHeight * 1.5) {
         // Set on the three drifting layers only: a custom property on <html>
         // would restyle the whole document on every scroll frame.
-        const y = `${scrollY}px`;
-        document
-          .querySelectorAll<HTMLElement>('.vy-scene, .vy-blobs, .vy-title')
-          .forEach((el) => el.style.setProperty('--px-y', y));
+        const v = `${y}px`;
+        if (v !== lastY) {
+          lastY = v;
+          drifting.forEach((el) => el.style.setProperty('--px-y', v));
+        }
       }
     };
     // One read-and-write pass per frame, however fast the scroll events come.
@@ -84,6 +101,35 @@ export const Delight = () => {
       removeEventListener('scroll', onScroll);
       cancelAnimationFrame(frame);
     });
+    if (light && steps) {
+      const root = document.documentElement;
+      root.classList.add('vy-steps-touch');
+      const on = new Set<Element>();
+      let pending: () => void = () => {};
+      const apply = () => {
+        items.forEach((el) => {
+          if (on.has(el)) el.classList.add('vy-step-on', 'vy-step-done');
+        });
+        const p = items.filter((el) => el.classList.contains('vy-step-on')).length / items.length;
+        steps.style.setProperty('--steps-p', p.toFixed(3));
+      };
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => e.isIntersecting && on.add(e.target));
+          pending();
+          if (calm) apply();
+          else pending = whenIdle(apply);
+        },
+        // A step lights once it is in the upper three quarters of the screen.
+        { rootMargin: '0px 0px -25% 0px' },
+      );
+      items.forEach((el) => io.observe(el));
+      stops.push(() => {
+        io.disconnect();
+        pending();
+        root.classList.remove('vy-steps-touch');
+      });
+    }
 
     // 4 · copy pop + burst
     const onClick = (e: MouseEvent) => {
@@ -141,7 +187,11 @@ export const Delight = () => {
     // 11 · commands below the fold type themselves out once. The text stays
     // React's: the untyped tail is hidden with a CSS highlight (no DOM
     // mutation), so a runner switch mid-typing simply shows the new command.
-    const typing = typeof Highlight === 'function' && 'highlights' in CSS;
+    // Touch and low-power show commands fully typed. On desktop typing starts
+    // only while the page is still, and a scroll finishes it at once.
+    const typing = !light && typeof Highlight === 'function' && 'highlights' in CSS;
+    const typingNow = new Set<() => void>();
+    stops.push(onScrollStart(() => [...typingNow].forEach((f) => f())));
     const untyped = typing ? new Highlight() : null;
     if (untyped) CSS.highlights.set('vy-untyped', untyped);
     document
@@ -159,11 +209,15 @@ export const Delight = () => {
         let timer = 0;
         const finish = () => {
           clearTimeout(timer);
+          typingNow.delete(finish);
           untyped.delete(range);
         };
         stops.push(finish);
         stops.push(
           inView(el, () => {
+            // Scrolled into view mid-gesture: just show it, never blank.
+            if (scrolling()) return finish();
+            typingNow.add(finish);
             let i = 0;
             const tick = () => {
               // React re-rendered the text (runner switch): show it all.
