@@ -962,7 +962,7 @@
 :root[data-variant] .text-on-alert { color: var(--on-alert, #0d0d10); }
 
 /* A · Soft Clay: pillowy cards, centred section heads, clay numerals */
-:root[data-variant='a'] main > div h2 { text-transform: none; text-align: center; letter-spacing: -0.01em; }
+:root[data-variant='a'] main > div h2 { text-transform: none; letter-spacing: -0.01em; }
 :root[data-variant='a'] main > div .bg-surface {
   border: 0;
   border-radius: 28px;
@@ -1126,3 +1126,28 @@
 }
 :root[data-variant] .flap-cell.is-blank { background: transparent; box-shadow: none; }
 :root[data-variant] .flap-cell.is-blank::after { opacity: 0; }
+
+/* ---- Audit fixes --------------------------------------------------------- */
+/* Concept card treatments (dashed riso tickets, zine hard shadows, Bauhaus
+   bars, synth glow, terminal strips) belong to top-level cards only. Cards,
+   terminals and pills nested inside them go back to a plain hairline. */
+:root[data-variant] main > div .bg-surface .bg-surface,
+:root[data-variant] main > div .on-slate .bg-surface {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-control, 6px);
+  box-shadow: none;
+  transform: none;
+  backdrop-filter: none;
+}
+:root[data-variant='d'] main > div .bg-surface .bg-surface { border-color: var(--ink); }
+:root[data-variant='e'] main > div .bg-surface .bg-surface { border-radius: 0; }
+
+/* Synth on phones: the sun sits lower and softer so the chrome title reads. */
+@media (max-width: 639px) {
+  :root[data-variant='f'] [data-hero-title]::before {
+    width: 70vw;
+    translate: -50% -18%;
+    opacity: 0.55;
+  }
+  :root[data-variant='f'] .vy-title { -webkit-text-stroke: 2px #2a0b3d; }
+}
