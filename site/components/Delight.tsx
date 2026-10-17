@@ -103,11 +103,13 @@ export const Delight = () => {
     document.querySelectorAll<HTMLElement>('[data-score]').forEach((el) => {
       stops.push(
         inView(el, () => {
-          const to = Number(el.textContent) || 0;
-          animate(0, to, {
+          // Scores read as a change ("+10", "20 fixed"): count the number, keep the rest.
+          const [, pre = '', num, post = ''] = /^(\D*)(\d+)(.*)$/.exec(el.textContent ?? '') ?? [];
+          if (!num) return;
+          animate(0, Number(num), {
             duration: 1.1,
             ease: [0.16, 1, 0.3, 1],
-            onUpdate: (v) => (el.textContent = String(Math.round(v))),
+            onUpdate: (v) => (el.textContent = `${pre}${Math.round(v)}${post}`),
           });
         }),
       );
