@@ -1462,3 +1462,9 @@ main > div p { line-height: 1.65; }
 .vy-more > summary::-webkit-details-marker { display: none; }
 .vy-more > summary::before { content: '+'; font-weight: 700; color: var(--alert); transition: transform 300ms cubic-bezier(0.34, 1.6, 0.5, 1); display: inline-block; }
 .vy-more[open] > summary::before { transform: rotate(45deg); }
+
+/* ---- Performance ---------------------------------------------------------- */
+@media (max-width: 639px) {
+  /* One shape fewer on small screens: less filter work, same feel. */
+  .vy-blobs > svg:nth-child(3) { display: none; }
+}

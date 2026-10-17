@@ -49,13 +49,18 @@ export const Letters3D = ({ run }: Letters3DProps) => {
     const el = host.current;
     if (!el) return;
     let disposed = false;
+    let stopObserving = () => {};
     let raf = 0;
+    const phone = innerWidth < 640;
     const renderer = new THREE.WebGLRenderer({
-      antialias: true,
+      // Phones: no MSAA and 1x pixels; the grain hides the difference.
+      antialias: !phone,
       alpha: true,
-      preserveDrawingBuffer: true,
+      // Only seekreel captures need the frame kept after compositing.
+      preserveDrawingBuffer: seekTime() !== null,
+      powerPreference: phone ? 'low-power' : 'default',
     });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setPixelRatio(phone ? 1 : Math.min(devicePixelRatio, 2));
     // Neutral tone mapping keeps the candy colours saturated under the studio light.
     renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.toneMappingExposure = 0.9;
@@ -83,7 +88,14 @@ export const Letters3D = ({ run }: Letters3DProps) => {
       camera.updateProjectionMatrix();
     };
     size();
-    addEventListener('resize', size);
+    // A settled word has stopped its loop; a resize (a phone's URL bar
+    // sliding) clears the canvas, so it paints one more frame.
+    let repaint = () => {};
+    const resize = () => {
+      size();
+      repaint();
+    };
+    addEventListener('resize', resize);
     let px = 0;
     let py = 0;
     const move = (e: PointerEvent) => {
@@ -106,11 +118,11 @@ export const Letters3D = ({ run }: Letters3DProps) => {
               font: fonts[f],
               size: 2,
               depth: 0.45,
-              curveSegments: 8,
+              curveSegments: innerWidth < 640 ? 5 : 8,
               bevelEnabled: true,
               bevelThickness: 0.12,
               bevelSize: 0.07,
-              bevelSegments: 4,
+              bevelSegments: innerWidth < 640 ? 2 : 4,
             });
             geo.computeBoundingBox();
             const b = geo.boundingBox!;
@@ -129,13 +141,20 @@ export const Letters3D = ({ run }: Letters3DProps) => {
         const letters = [...WORD].map((ch, i) => {
           const mesh = new THREE.Mesh(
             glyph(ch, FINAL[i]).geo,
-            new THREE.MeshPhysicalMaterial({
-              color: COLOURS[i % COLOURS.length],
-              roughness: 0.22,
-              metalness: 0.05,
-              clearcoat: 1,
-              clearcoatRoughness: 0.08,
-            }),
+            // Clearcoat is a second lighting pass per pixel; phones skip it.
+            phone
+              ? new THREE.MeshStandardMaterial({
+                  color: COLOURS[i % COLOURS.length],
+                  roughness: 0.18,
+                  metalness: 0.05,
+                })
+              : new THREE.MeshPhysicalMaterial({
+                  color: COLOURS[i % COLOURS.length],
+                  roughness: 0.22,
+                  metalness: 0.05,
+                  clearcoat: 1,
+                  clearcoatRoughness: 0.08,
+                }),
           );
           mesh.position.x = x + widths[i] / 2;
           x += widths[i] + GAP;
@@ -148,14 +167,32 @@ export const Letters3D = ({ run }: Letters3DProps) => {
         const t0 = performance.now();
         let tx = 0;
         let ty = 0;
+        const card = el.parentElement;
+        let onScreen = true;
+        const io = new IntersectionObserver(([e]) => (onScreen = e.isIntersecting));
+        if (card) io.observe(card);
+        stopObserving = () => io.disconnect();
         const frame = () => {
+          // Off screen or in a hidden tab: skip the render, keep the clock.
+          if (seek === null && !still && (!onScreen || document.hidden)) {
+            raf = requestAnimationFrame(frame);
+            return;
+          }
           const t = seek ?? (still ? 30 : (performance.now() - t0) / 1000);
+          // Building an extruded glyph is the expensive part: at most two new
+          // ones per frame (seeked frames build all), others swap a frame later.
+          let budget = seek === null ? 2 : Infinity;
           letters.forEach((l, i) => {
             const step = stepAt(t * 1000, i);
-            const face = step === null ? FINAL[i] : faceAt(Math.max(step, 0), i, FACES.length);
+            let face = step === null ? FINAL[i] : faceAt(Math.max(step, 0), i, FACES.length);
             if (face !== l.face) {
-              l.mesh.geometry = glyph(l.ch, face).geo;
-              l.face = face;
+              const fresh = !cache.has(`${l.ch}${face}`);
+              if (fresh && budget <= 0) face = l.face;
+              else {
+                if (fresh) budget--;
+                l.mesh.geometry = glyph(l.ch, face).geo;
+                l.face = face;
+              }
             }
             // Shifting glyphs jump in size and shrink to their slot; locked ones pop once.
             const fit = Math.min(1, widths[i] / Math.max(0.1, glyph(l.ch, face).w));
@@ -174,7 +211,11 @@ export const Letters3D = ({ run }: Letters3DProps) => {
           ty += (px * 0.35 - ty) * 0.06;
           group.rotation.set(tx, ty, 0);
           renderer.render(scene, camera);
-          if (seek === null && !still) raf = requestAnimationFrame(frame);
+          // Phones have no cursor to follow: once every letter has landed
+          // (and popped), the word rests and the loop stops.
+          const settled = phone && letters.every((l) => l.lockedAt >= 0 && t - l.lockedAt > 0.5);
+          if (seek === null && !still && !settled) raf = requestAnimationFrame(frame);
+          else repaint = () => renderer.render(scene, camera);
         };
         frame();
         if (seek !== null) releaseFrame('title');
@@ -183,8 +224,9 @@ export const Letters3D = ({ run }: Letters3DProps) => {
 
     return () => {
       disposed = true;
+      stopObserving();
       cancelAnimationFrame(raf);
-      removeEventListener('resize', size);
+      removeEventListener('resize', resize);
       removeEventListener('pointermove', move);
       pmrem.dispose();
       renderer.dispose();

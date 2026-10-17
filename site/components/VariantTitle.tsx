@@ -5,11 +5,16 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime, useSeekTime } from '@/lib/seek';
-import { Letters3D } from '@/components/Letters3D';
-import { faceAt, startDelay, stepAt } from '@/lib/titleTiming';
+import { faceAt, msToNextStep, startDelay, stepAt } from '@/lib/titleTiming';
 import { useSiteStore } from '@/lib/store';
 import { useVariant } from '@/lib/variant';
 import { cn } from '@/lib/utils';
+import dynamic from 'next/dynamic';
+
+// The 3D title (three.js and its typefaces) loads only for the Candy 3D concept.
+const Letters3D = dynamic(() => import('@/components/Letters3D').then((m) => m.Letters3D), {
+  ssr: false,
+});
 
 const WORD = 'variantly';
 const fontAt = (step: number, index: number) =>
@@ -22,15 +27,22 @@ type LetterProps = {
   char: string;
   index: number;
   run: number;
+  solid: boolean;
 };
 
 /* One letter that shape-shifts through the font wardrobe, then locks in. */
-const Letter = ({ char, index, run }: LetterProps) => {
+const Letter = ({ char, index, run, solid }: LetterProps) => {
   // 'idle' = resting on the final face, a number = flickering, null = just locked.
   const [live, setLive] = useState<number | null | 'idle'>('idle');
 
   useEffect(() => {
     if (seekTime() !== null || calmMotion()) return;
+    // The 3D word does its own reveal: the hidden HTML letters stay still
+    // instead of re-rendering and re-measuring every step.
+    if (solid) {
+      document.documentElement.removeAttribute('data-intro');
+      return;
+    }
     const t0 = performance.now();
     let timer = 0;
     const tick = () => {
@@ -38,16 +50,18 @@ const Letter = ({ char, index, run }: LetterProps) => {
       setLive(step === null ? null : Math.max(step, 0));
       // The first glyph to move reveals the title (hidden by VARIANT_BOOT).
       document.documentElement.removeAttribute('data-intro');
-      if (step !== null) timer = window.setTimeout(tick, 30);
+      // Wake exactly when the face next changes, not on a fixed poll.
+      if (step !== null)
+        timer = window.setTimeout(tick, msToNextStep(performance.now() - t0, index) + 4);
     };
     timer = window.setTimeout(tick, startDelay(index));
     return () => clearTimeout(timer);
-  }, [index, run]);
+  }, [index, run, solid]);
 
   // seekreel frames derive the step from ?t instead of the clock.
   const seek = useSeekTime();
   const raw = seek === null ? live : stepAt(seek * 1000, index);
-  const step = raw === null || raw === 'idle' ? null : Math.max(raw, 0);
+  const step = solid || raw === null || raw === 'idle' ? null : Math.max(raw, 0);
 
   // The slot is sized by the final face (invisible), so the word keeps the same
   // width, and stays centred, while the shifting glyph swaps faces on top.
@@ -61,7 +75,7 @@ const Letter = ({ char, index, run }: LetterProps) => {
     g.style.transform = 'none';
     const fit = Math.min(1, box.offsetWidth / Math.max(1, g.scrollWidth));
     g.style.transform = `scale(${fit * scaleAt(step, index)})`;
-  });
+  }, [step, index]);
 
   return (
     <span
@@ -118,7 +132,7 @@ export const VariantTitle = () => {
         )}
       >
         {[...WORD].map((c, i) => (
-          <Letter key={i} char={c} index={i} run={run} />
+          <Letter key={i} char={c} index={i} run={run} solid={solid} />
         ))}
       </button>
       {solid && <Letters3D run={run} />}
