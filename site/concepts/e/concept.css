@@ -9,14 +9,9 @@
   --hero-bg: #14161c; --hero-ink: #f4efe6; --hero-mute: #b9bdc9; --hero-line: #f4efe6; --hero-box: #0c0d11;
   --title: #f4efe6;
 }
-:root[data-variant='e'] .vy-title { justify-self: start; }
-@media (min-width: 640px) {
-:root[data-variant='e'] .vy-title { margin-left: 4vw; }
-}
 :root[data-variant='e'] .vy-letter:nth-child(3n + 1) { color: #e63946; }
 :root[data-variant='e'] .vy-letter:nth-child(3n + 2) { color: #1d4ed8; }
 :root[data-variant='e'] .vy-letter:nth-child(3n) { color: #ffc300; }
-:root[data-variant='e'] [data-hero-title] { justify-items: start; }
 :root[data-variant='e'] #hero-title {
   text-transform: uppercase;
   letter-spacing: 0.02em;
@@ -62,7 +57,6 @@
 :root[data-variant='e'] { --blob-o: 0.55; }
 :root[data-variant='e'] { --art-1: #e63946; --art-2: #1d4ed8; --art-3: #ffc300; --art-ink: #111; }
 :root[data-variant='e'][data-theme='dark'] { --art-2: #3b6cff; --art-ink: #f0ece2; }
-:root[data-variant='e'] .vy-grain { display: none; }
 :root[data-variant='e'] .vy-loadbar { height: 6px; }
 :root[data-variant='e'] .vy-loadbar-fill {
   background: linear-gradient(90deg, var(--art-1) 0 33.3%, var(--art-3) 33.3% 66.6%, var(--art-2) 66.6%);

@@ -68,6 +68,7 @@
 .vy-swatch-c { background: radial-gradient(#ffb000 40%, #1f6f6a 42%); }
 @media (max-width: 639px) {
 :root[data-variant='c'] [data-hero-grid] { margin: 0 12px 24px; }
+:root[data-variant='c']:not([data-scrolled]) .vy-scene { opacity: 0.35; }
 }
 :root[data-variant='c'] { --flap-bg: #1d2a28; --flap-ink: #e9e2c8; }
 :root[data-variant='c'][data-theme='dark'] { --flap-bg: #2a1d08; --flap-ink: #ffb000; }

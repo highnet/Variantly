@@ -54,7 +54,8 @@ const useConceptArt = (key: ConceptId | null) => {
 
 /*
  * Page-wide decorative layer: the concept's three.js scene, its own background
- * art (concepts/<id>/Backdrop.tsx), and a film-grain tile. Fixed behind content.
+ * art (concepts/<id>/Backdrop.tsx). Grain lives on the scene's shapes (GlField).
+ * Fixed behind content.
  */
 export const Backdrop = () => {
   const key = useVariant();
@@ -93,10 +94,9 @@ export const Backdrop = () => {
       <div className="vy-scene absolute inset-0">
         {/* Reduced motion: the CSS layers only; the three.js chunk never loads. */}
         {(!calmMotion() || seekTime() !== null) && (
-          <GlField key={key + theme} concept={key} theme={theme} />
+          <GlField key={key + theme} concept={key} theme={theme} grain={CONCEPT_BY_ID[key].grain} />
         )}
       </div>
-      <div className="vy-grain absolute inset-0" style={{ opacity: CONCEPT_BY_ID[key].grain }} />
     </div>
   );
 };

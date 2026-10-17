@@ -22,7 +22,7 @@ export type ConceptMeta = {
   swatch: Record<Theme, [string, string, string]>;
   // CSS font-family for the tile name (a --font-* var loaded by the layout).
   font: string;
-  // Opacity of the shared film-grain overlay over the backdrop.
+  // Strength of the film grain GlField adds to the scene's shapes (0 = none).
   grain: number;
 };
 

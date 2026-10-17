@@ -4164,3 +4164,67 @@ body::before {
   .type-cover { transform: translateX(100%); }
   .reel-strip { transform: translateY(calc(var(--n) * var(--h) * -1)); }
 }
+
+/* Agent mix: rows of agent, model and count in the wizard. */
+.mix {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mix-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.mix-row > .hint {
+  margin: 0;
+}
+
+.mix-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  align-items: baseline;
+}
+
+.mix-foot .hint {
+  margin: 0;
+}
+
+.link:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+@media (max-width: 560px) {
+  .mix-row {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+  .mix-row > select {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Who made a variant, in runs that mix agents. */
+.tag.made-by {
+  justify-self: start;
+  width: fit-content;
+  margin-top: 4px;
+}
+
+.board .dir .tag.made-by {
+  display: block;
+}
+
+.mix-row .stepper {
+  gap: 8px;
+}
+
+.mix-row .stepper .figure {
+  font-size: 24px;
+}
