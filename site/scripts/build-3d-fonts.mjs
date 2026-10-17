@@ -3,7 +3,8 @@
 // and written as three.js typeface JSON (the facetype.js format) to
 // public/fonts/3d/<index>.json. All of these faces are SIL OFL 1.1 (see
 // public/fonts/3d/LICENSES.txt) except Special Elite (Apache 2.0).
-// The wild display faces (marked with a slug) are not served by next/font:
+// Faces marked with a slug are not served by next/font (the wild display faces,
+// and the five Google faces of the title's first paint, so its preload is tiny):
 // their 2D woff2 is subset here from the very same file to the letters of
 // "variantly" (app/fonts/wild/<slug>.woff2, a few KB each), so the 2D and 3D
 // letters share one outline. Subsetting needs fontTools (pip install fonttools
@@ -19,15 +20,15 @@ import opentype from 'opentype.js';
 const CHARS = [...new Set('variantly')];
 // Order must match INTRO_FONTS in lib/introFonts.ts.
 const FACES = [
-  ['UnifrakturMaguntia', '400'],
+  ['UnifrakturMaguntia', '400', 'fraktur'],
   ['Abril Fatface', '400'],
-  ['Cinzel', '900'],
-  ['Great Vibes', '400'],
-  ['Pacifico', '400'],
+  ['Cinzel', '900', 'cinzel'],
+  ['Great Vibes', '400', 'great-vibes'],
+  ['Pacifico', '400', 'pacifico'],
   ['Special Elite', '400'], // Apache 2.0
   ['Orbitron', '900'],
   ['Monoton', '400'],
-  ['Bungee', '400'],
+  ['Bungee', '400', 'bungee'],
   ['Rubik Mono One', '400'],
   ['Press Start 2P', '400'],
   ['Righteous', '400'],
