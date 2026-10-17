@@ -88,5 +88,7 @@ for (const [i, [family, weight]] of FACES.entries()) {
   };
   const file = join(out, `${i}.json`);
   writeFileSync(file, JSON.stringify(json));
-  console.log(`${file}  ${family} ${weight}  ${(JSON.stringify(json).length / 1024).toFixed(1)} KB`);
+  console.log(
+    `${file}  ${family} ${weight}  ${(JSON.stringify(json).length / 1024).toFixed(1)} KB`,
+  );
 }

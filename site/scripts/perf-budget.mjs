@@ -9,7 +9,9 @@ import { gzipSync } from 'node:zlib';
 const root = process.cwd();
 const budget = Number(process.argv[2] ?? process.env.FIRST_LOAD_KB ?? 280) * 1024;
 const html = readFileSync(join(root, '.next/server/app/index.html'), 'utf8');
-const srcs = [...new Set([...html.matchAll(/src="(\/_next\/static\/[^"]+\.js)"/g)].map((m) => m[1]))];
+const srcs = [
+  ...new Set([...html.matchAll(/src="(\/_next\/static\/[^"]+\.js)"/g)].map((m) => m[1])),
+];
 let total = 0;
 let leak = '';
 for (const src of srcs) {
