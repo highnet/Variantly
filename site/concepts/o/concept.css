@@ -1,20 +1,87 @@
-/* o · Swiss Punk: placeholder tokens from the roll's palette. */
+/* o · Swiss Punk: one enormous grotesk, a visible 12-column grid, oxblood rules. */
 :root[data-variant='o'] {
-  --panel: color-mix(in srgb, #f1eee8 94%, #151412); --surface: #f1eee8; --rule: color-mix(in srgb, #151412 18%, #f1eee8); --steel: color-mix(in srgb, #151412 66%, #f1eee8); --ink: #151412;
-  --alert: #8c1c13; --alert-hover: color-mix(in srgb, #8c1c13 85%, #f1eee8); --on-alert: #ffffff;
-  --hero-bg: #f1eee8; --hero-ink: #151412; --hero-mute: color-mix(in srgb, #151412 66%, #f1eee8); --hero-line: color-mix(in srgb, #151412 22%, #f1eee8); --hero-box: color-mix(in srgb, #f1eee8 96%, #151412);
-  --title: #8c1c13;
-  --flap-bg: #8c1c13; --flap-ink: #ffffff;
-  --art-1: #8c1c13; --art-2: #bdb8ae; --art-3: #bdb8ae; --art-ink: #151412; --art-shadow: #151412;
-  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
-  --board-bg: #0d0d0c; --board-raised: color-mix(in srgb, #0d0d0c 88%, #f1eee8); --board-line: color-mix(in srgb, #0d0d0c 70%, #f1eee8);
-  --board-mute: color-mix(in srgb, #f1eee8 72%, #0d0d0c); --board-text: #f1eee8; --board-deep: color-mix(in srgb, #0d0d0c 80%, #000); --board-ok: #c0392b;
+  --panel: #f1eee8; --surface: #f8f6f2; --rule: #bdb8ae; --steel: #4a4741; --ink: #151412; --alert: #8c1c13; --alert-hover: #a3241a;
+  --on-alert: #ffffff; --hero-bg: #f1eee8; --hero-ink: #151412; --hero-mute: #4a4741; --hero-line: #151412; --hero-box: #f8f6f2;
+  --hero-face: var(--font-archivo); --title: #8c1c13; --hero-alpha: 18%; --blob-o: 1; --flap-bg: #151412; --flap-ink: #f1eee8; --board-bg: #151412;
+  --board-raised: #22201e; --board-line: #3a3835; --board-mute: #bdb8ae; --board-text: #f1eee8; --board-deep: #0d0d0c; --board-ok: #d4483a;
+  --art-1: #8c1c13; --art-2: #dcd8d0; --art-3: #8c1c13; --art-ink: #151412; --side: #151412; --font-mono: var(--font-plex), ui-monospace, monospace;
 }
 :root[data-variant='o'][data-theme='dark'] {
-  --panel: color-mix(in srgb, #0d0d0c 94%, #f1eee8); --surface: #0d0d0c; --rule: color-mix(in srgb, #f1eee8 18%, #0d0d0c); --steel: color-mix(in srgb, #f1eee8 66%, #0d0d0c); --ink: #f1eee8;
-  --alert: #c0392b; --alert-hover: color-mix(in srgb, #c0392b 85%, #0d0d0c); --on-alert: #ffffff;
-  --hero-bg: #0d0d0c; --hero-ink: #f1eee8; --hero-mute: color-mix(in srgb, #f1eee8 66%, #0d0d0c); --hero-line: color-mix(in srgb, #f1eee8 22%, #0d0d0c); --hero-box: color-mix(in srgb, #0d0d0c 96%, #f1eee8);
-  --title: #c0392b;
-  --flap-bg: #c0392b; --flap-ink: #ffffff;
-  --art-1: #c0392b; --art-2: #3a3835; --art-3: #3a3835; --art-ink: #f1eee8; --art-shadow: #f1eee8;
+  --panel: #0d0d0c; --surface: #151513; --rule: #3a3835; --steel: #b3aea4; --ink: #f1eee8; --alert: #c0392b; --alert-hover: #d4483a;
+  --hero-bg: #0d0d0c; --hero-ink: #f1eee8; --hero-mute: #b3aea4; --hero-line: #f1eee8; --hero-box: #151513; --title: #d4483a; --flap-bg: #f1eee8;
+  --flap-ink: #0d0d0c; --art-1: #c0392b; --art-2: #1f1e1c; --art-3: #c0392b; --art-ink: #f1eee8; --side: #f1eee8;
 }
+:root[data-variant='o'] .vy-o-grid {
+  --l: color-mix(in srgb, var(--art-ink) 16%, #0000);
+  background: linear-gradient(90deg, var(--l) 1px, #0000 1px) 0 0 / calc(100% / 12) 100%, linear-gradient(var(--l) 1px, #0000 1px) 0 0 / 100% 12.5%;
+}
+:root[data-variant='o'] .vy-o-num {
+  top: -0.16em; right: -0.1em; font: 900 86vh/0.8 var(--font-archivo); font-stretch: 62%; letter-spacing: -0.05em; color: var(--art-2);
+  will-change: transform; animation: vy-o-cut 24s step-end infinite;
+}
+:root[data-variant='o'] .vy-o-bar {
+  position: absolute; left: 0; background: var(--art-1); will-change: transform; animation: vy-o-slide-a 24s cubic-bezier(0.8, 0, 0.2, 1) infinite;
+}
+:root[data-variant='o'] .vy-o-bar-a { top: 31vh; width: 25vw; height: 18px; }
+:root[data-variant='o'] .vy-o-bar-b { top: 70vh; left: 8.333vw; width: 41.667vw; height: 6px; animation-name: vy-o-slide-b; animation-duration: 12s; }
+:root[data-variant='o'] .vy-o-bar-c { top: 0; left: 75vw; width: 12px; height: 44vh; animation-name: vy-o-slide-c; animation-duration: 8s; }
+/* Holds, then a hard slide by whole columns; the numeral cuts without easing. 0% is the poster. */
+@keyframes vy-o-slide-a {
+  0%, 22%, 100% { transform: translateX(0); }
+  25%, 47% { transform: translateX(41.667vw); }
+  50%, 72% { transform: translateX(16.667vw); }
+  75%, 97% { transform: translateX(58.333vw); }
+}
+@keyframes vy-o-slide-b {
+  0%, 42%, 100% { transform: translateX(0); }
+  50%, 92% { transform: translateX(33.333vw); }
+}
+@keyframes vy-o-slide-c {
+  0%, 42%, 100% { transform: translateX(0); }
+  50%, 92% { transform: translateX(-25vw); }
+}
+@keyframes vy-o-cut {
+  0%, 100% { transform: translate(0, 0); }
+  33.3% { transform: translate(-8.333vw, 0); }
+  66.6% { transform: translate(-16.667vw, 12.5vh); }
+}
+:root[data-scrolled][data-variant='o'] :is(.vy-o-num, .vy-o-bar) { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce), (pointer: coarse) {
+  :root[data-variant='o'] :is(.vy-o-num, .vy-o-bar) { animation: none; }
+}
+@media (max-width: 639px) {
+  :root[data-variant='o'] .vy-o-num { font-size: 52vh; top: 6vh; }
+  :root[data-variant='o'] :is(.vy-o-bar-b, .vy-o-bar-c) { display: none; }
+}
+
+/* The page as a poster: condensed caps, hard top rules, numbered sections in Plex Mono. */
+:root[data-variant='o'] .vy-title { text-shadow: 0 5px 0 var(--side); }
+:root[data-variant='o'] #hero-title {
+  font-weight: 900; font-stretch: 62%; text-transform: uppercase; font-size: clamp(2.9rem, 5.4vw, 5.6rem); line-height: 0.86;
+  letter-spacing: -0.015em;
+}
+:root[data-variant='o'] #hero-title::before {
+  content: '(01) One command, several designs'; display: block; margin-bottom: 0.9rem; padding-top: 0.6rem; border-top: 14px solid var(--alert);
+  font: 400 13px/1.4 var(--font-plex); letter-spacing: 0.02em; text-transform: none; white-space: pre; color: var(--hero-mute);
+}
+:root[data-variant='o'] #hero-title .vy-fresh { color: var(--title); text-decoration: none; }
+:root[data-variant='o'] [data-hero-side] { position: relative; padding: 18px 20px 22px; border-top: 3px solid var(--hero-line); background: var(--hero-box); }
+:root[data-variant='o'] [data-hero-side]::before {
+  content: '(02) Install'; position: absolute; top: -26px; left: 0; white-space: pre; font: 400 13px/1 var(--font-plex); color: var(--hero-mute);
+}
+:root[data-variant='o'] .rounded-md, :root[data-variant='o'] .rounded-lg { border-radius: 0; }
+:root[data-variant='o'] main { counter-reset: o-sec 2; }
+:root[data-variant='o'] main > div h2.figure {
+  counter-increment: o-sec; font-weight: 900; font-stretch: 62%; text-transform: uppercase; line-height: 0.88; letter-spacing: -0.01em;
+  border-top: 2px solid var(--ink); padding-top: 0.2em; color: var(--ink);
+}
+:root[data-variant='o'] main > div h2::before {
+  content: '(' counter(o-sec, decimal-leading-zero) ')'; display: block; margin-bottom: 0.7em; font: 400 13px/1 var(--font-plex);
+  letter-spacing: 0.02em; color: var(--steel);
+}
+:root[data-variant='o'] main > div .bg-surface { border: 0; border-top: 4px solid var(--ink); border-radius: 0; box-shadow: none; }
+:root[data-variant='o'] main > div .figure:not(h3) { font-family: var(--font-archivo); font-weight: 900; font-stretch: 62%; color: var(--title); }
+:root[data-variant='o'] .flap-cell { border-radius: 0; box-shadow: none; }
+:root[data-variant='o'] .flap-cell:nth-child(3n + 2) { --flap-bg: var(--alert); --flap-ink: #ffffff; }
+:root[data-variant='o'] .vy-loadbar { height: 6px; }
+:root[data-variant='o'] .vy-loadbar-fill { background: var(--art-1); }

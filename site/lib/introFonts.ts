@@ -1,17 +1,22 @@
 import {
   Abril_Fatface,
+  Archivo,
   Archivo_Black,
   Fredoka,
   Jost,
   Bungee,
   Cinzel,
+  Doto,
   Great_Vibes,
+  IBM_Plex_Mono,
   Monoton,
   Orbitron,
   Pacifico,
   Press_Start_2P,
   Righteous,
   Rubik_Mono_One,
+  Silkscreen,
+  Space_Grotesk,
   Special_Elite,
   UnifrakturMaguntia,
 } from 'next/font/google';
@@ -77,8 +82,30 @@ const archivo = Archivo_Black({
   preload: false,
   variable: '--font-brutal',
 });
+// Concepts h, j, o: Dither Machine, Instrument OS, Swiss Punk.
+const silk = Silkscreen({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-silk',
+});
+const doto = Doto({ subsets: ['latin'], preload: false, variable: '--font-doto' });
+const archivoVar = Archivo({
+  subsets: ['latin'],
+  axes: ['wdth'],
+  preload: false,
+  variable: '--font-archivo',
+});
+const grotesk = Space_Grotesk({ subsets: ['latin'], preload: false, variable: '--font-grotesk' });
+const plex = IBM_Plex_Mono({
+  weight: ['400', '600'],
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-plex',
+});
+const hjo = [silk, doto, archivoVar, grotesk, plex];
 
-export const HERO_FONT_VARS = [abril, elite, orbitron, fredoka, jost, archivo, rubik]
+export const HERO_FONT_VARS = [abril, elite, orbitron, fredoka, jost, archivo, rubik, ...hjo]
   .map((f) => f.variable)
   .join(' ');
 
