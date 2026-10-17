@@ -146,6 +146,10 @@
     <alias>skills dot M D</alias>
   </lexeme>
   <lexeme>
+    <grapheme>iPhone</grapheme>
+    <alias>eye-phone</alias>
+  </lexeme>
+  <lexeme>
     <grapheme>FAQ</grapheme>
     <alias>F A Q</alias>
   </lexeme>

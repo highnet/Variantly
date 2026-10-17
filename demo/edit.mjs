@@ -143,7 +143,15 @@ function synced(spec, id, voiceAt, start) {
       last = at;
       return { ...item, at: round3(at) };
     });
-  return { ...spec, items: place(spec.items), nodes: place(spec.nodes), rows: place(spec.rows) };
+  // A card's window can open on a word, and a countdown can start when one ends.
+  const find = (word, end) => {
+    const w = words.find((x) => norm(x.word) === norm(word));
+    if (!w) log('edit', `${id}: no word "${word}" in the line`);
+    return w ? round3(end ? w.end : w.start) : undefined;
+  };
+  const fromAt = spec.fromOn ? find(spec.fromOn) : undefined;
+  const countAt = spec.countOn ? find(spec.countOn, true) : undefined;
+  return { ...spec, fromAt, countAt, nodes: place(spec.nodes), rows: place(spec.rows), items: place(spec.items) };
 }
 
 /** Words → caption cues: at most ~42 characters, broken at sentence ends. */

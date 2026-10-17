@@ -40,7 +40,7 @@
         "name": "Joaquin",
         "role": "Variantly"
       },
-      "text": "Hi, I'm Joaquin. I design and build Variantly. Redesigning a site usually means betting on one direction. If it's wrong, you start over. Variantly is for developers who already use a coding agent, and for designers exploring directions. Your agent builds several complete redesigns at once, each one running as your real site, and you keep the one you like.",
+      "text": "Hi, I'm Joaquin, the designer behind Variantly. Redesigning a site usually means betting on one direction. If it's wrong, you start over. Variantly is for developers who already use a coding agent, and for designers exploring directions. Your agent builds several complete redesigns at once, each one running as your real site, and you keep the one you like.",
       "actions": [
         {
           "goto": "{{site}}"
@@ -108,7 +108,7 @@
         "title": "How it works",
         "nodes": [
           {
-            "label": "Your project",
+            "label": "Your repo",
             "sub": "untouched",
             "on": "project"
           },
@@ -119,7 +119,7 @@
           },
           {
             "label": "Previews",
-            "sub": "one dev server each",
+            "sub": "own dev server",
             "on": "preview"
           },
           {
@@ -129,7 +129,7 @@
           },
           {
             "label": "Keep",
-            "sub": "applied to your tree",
+            "sub": "into your tree",
             "on": "keep"
           },
           {
@@ -237,38 +237,6 @@
     {
       "id": "combine",
       "step": "Setup",
-      "diagram": {
-        "kind": "flow",
-        "connect": false,
-        "title": "Combining agents in one run",
-        "nodes": [
-          {
-            "label": "V01",
-            "sub": "Claude Code",
-            "on": "combine"
-          },
-          {
-            "label": "V02",
-            "sub": "Gemini"
-          },
-          {
-            "label": "V03",
-            "sub": "Codex"
-          },
-          {
-            "label": "V04",
-            "sub": "Cursor"
-          },
-          {
-            "label": "V05",
-            "sub": "Copilot"
-          },
-          {
-            "label": "V06",
-            "sub": "OpenRouter"
-          }
-        ]
-      },
       "text": "Why combine agents? Each model has its own design instincts. So you get more genuinely different directions, you see which model designs best for your site, and you can spread the work across accounts you already pay for.",
       "actions": [
         {
@@ -289,7 +257,39 @@
           "click": "role=button[name=/^Continue to variants$/]",
           "zoom": true
         }
-      ]
+      ],
+      "card": {
+        "kind": "mix",
+        "title": "Combining agents in one run",
+        "rows": [
+          {
+            "agent": "Claude Code",
+            "model": "opus",
+            "count": 5,
+            "on": "combine"
+          },
+          {
+            "agent": "Gemini CLI",
+            "model": "the agent's default",
+            "count": 5
+          }
+        ],
+        "total": "10 variants in all, the most there can be. OpenRouter models run through Claude Code or Codex.",
+        "items": [
+          {
+            "text": "Different design instincts",
+            "on": "instincts."
+          },
+          {
+            "text": "Compare which model designs best",
+            "on": "different"
+          },
+          {
+            "text": "Spread the work across your accounts",
+            "on": "accounts"
+          }
+        ]
+      }
     },
     {
       "id": "make",
@@ -374,7 +374,7 @@
       "step": "Your own directions",
       "card": {
         "kind": "trends",
-        "title": "This season's trends",
+        "title": "Trends I'm watching this winter",
         "from": 0.2,
         "items": [
           {
@@ -471,9 +471,12 @@
               "#5d6b4f"
             ]
           }
-        ]
+        ],
+        "fromOn": "winter,",
+        "untilEnd": 2.5,
+        "source": "Curated from the 2026 trend reports by Adobe and Canva, and AW26–27 interiors and surface-design reporting."
       },
-      "text": "Now, your own directions. Every slot starts blank, and blank means Impeccable picks a direction for that variant. To pin one, type it in your own words. I'll type the first one slowly. Tactile imperfection: raw paper, brushstrokes and stitching. Then surreal distortion: impossible proportions, dreamlike light. This winter, design is about human-made texture meeting digital surrealism: raw paper, film-noir drama, inflated chrome, warm lived-in rooms. So each of the ten variants gets one of the season's trends. You can mix, too: leave any slot blank, and Impeccable still picks that one.",
+      "text": "Now, your own directions. Every slot starts blank, and blank means Impeccable picks a direction for that variant. To pin one, type it in your own words. I'll type the first one slowly. Tactile imperfection: raw paper, brushstrokes and stitching. Then surreal distortion: impossible proportions, dreamlike light. These are the trends I'm watching this winter, drawn from this year's trend reports: human-made texture meeting digital surrealism. Raw paper, film-noir drama, inflated chrome, warm lived-in rooms. So each of the ten variants gets one of them. You can mix, too: leave any slot blank, and Impeccable still picks that one.",
       "actions": [
         {
           "spotlight": "text=/Your own directions/",
@@ -612,7 +615,7 @@
         "title": "Ten isolated copies",
         "nodes": [
           {
-            "label": "Your project",
+            "label": "Your repo",
             "sub": "main branch untouched",
             "on": "worktree,"
           },
@@ -862,16 +865,48 @@
         "title": "Pause and think",
         "question": "Which of these ten would you keep for your own site?",
         "seconds": 5,
-        "countFrom": 4.5,
-        "hint": "Clarity. Fit for your users. Holds up on every page."
+        "countOn": "site?"
       },
-      "text": "Pause the video for a moment, and think: which of these ten would you keep for your own site? Here's how I decide. First, does it still read clearly? Second, does it fit the people who use the site? And third, would it hold up on every other page? Today, I'll keep tactile imperfection.",
+      "text": "Pause the video for a moment, and think: which of these ten would you keep for your own site?",
       "actions": [
         {
           "key": "{{keep}}"
         },
         {
           "waitPanes": true
+        }
+      ],
+      "rest": 5000
+    },
+    {
+      "id": "decide",
+      "step": "Compare",
+      "card": {
+        "kind": "learn",
+        "title": "How I decide",
+        "items": [
+          {
+            "text": "Does it still read clearly?",
+            "on": "clearly?"
+          },
+          {
+            "text": "Does it fit the people who use it?",
+            "on": "people"
+          },
+          {
+            "text": "Would it hold up on every page?",
+            "on": "page?"
+          },
+          {
+            "text": "Today: tactile imperfection",
+            "on": "tactile"
+          }
+        ]
+      },
+      "text": "Here's how I decide. First, does it still read clearly? Second, does it fit the people who use the site? And third, would it hold up on every other page? Today, I'll keep tactile imperfection.",
+      "actions": [
+        {
+          "wait": 300
         }
       ]
     },
@@ -1053,27 +1088,30 @@
         "title": "The same care on variantly.style",
         "rows": [
           {
-            "label": "Transfer on a throttled phone",
+            "label": "Transfer",
+            "note": "emulated phone",
             "before": "1.5 MB",
             "after": "~400 KB",
             "on": "transfer"
           },
           {
-            "label": "Font requests on first load",
+            "label": "Font requests",
+            "note": "first load",
             "before": "68",
             "after": "~18",
-            "on": "adaptive"
+            "on": "font"
           },
           {
-            "label": "Main-thread blocking, 4× CPU",
+            "label": "Blocking time",
+            "note": "TVA concept, 4× CPU throttle",
             "before": "3,790 ms",
             "after": "2,291 ms",
-            "on": "compositor-only,"
+            "on": "blocking"
           }
         ],
-        "source": "Mobile performance pass, PR #83. Chrome, 4× CPU throttling."
+        "source": "Mobile performance pass, PR #83, prompted by an iPhone screen recording of the lag."
       },
-      "text": "The same thinking went into the website. A mobile performance pass cut the transfer on a throttled phone from one point five megabytes to about four hundred kilobytes, with adaptive quality tiers for low-power devices. The backdrop loops are compositor-only, transform and opacity, and the tour has a pause control, for WCAG two point two point two.",
+      "text": "The same care went into the website. An iPhone screen recording showed lag, so I ran a mobile performance pass. On an emulated phone, it cut the transfer from one point five megabytes to about four hundred kilobytes, font requests on first load from sixty-eight to about eighteen, and blocking time on one concept from three thousand seven hundred ninety milliseconds to two thousand two hundred ninety-one.",
       "actions": [
         {
           "wait": 300
@@ -1120,7 +1158,7 @@
         "url": "variantly.style",
         "credit": "Designs by Impeccable · impeccable.style"
       },
-      "text": "I designed and directed Variantly with Claude Code and Impeccable: I set the direction, and I made the calls. It runs entirely on your machine, with the agent you already use. No account, and no server of ours. To try it, run npx variantly in your project. The docs are at variantly.style. Thanks for watching.",
+      "text": "I designed and directed Variantly with Claude Code and Impeccable: I set the direction, I made the calls, and I tested it on a real iPhone. It runs entirely on your machine, with the agent you already use. No account, and no server of ours. To try it, run npx variantly in your project. The docs are at variantly.style. Thanks for watching.",
       "actions": [
         {
           "wait": 500

@@ -43,6 +43,7 @@
     { "word": "DESIGN.md", "say": "design dot M D", "case": true, "why": "File name, read out." },
     { "word": "PRODUCT.md", "say": "product dot M D", "case": true, "why": "File name, read out." },
     { "word": "SKILLS.md", "say": "skills dot M D", "case": true, "why": "File name, read out." },
+    { "word": "iPhone", "say": "eye-phone", "case": true, "why": "Apple product, said eye-phone." },
     { "word": "FAQ", "say": "F A Q", "case": true, "why": "Spelled out." },
     { "word": "README", "say": "read me", "case": true, "why": "Common usage." },
     { "word": "Node.js", "say": "Node J S", "case": true, "why": "Common usage." },

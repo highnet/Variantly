@@ -191,7 +191,8 @@ mix's rows replace), `zoom`, `sound`, `moveMs` (cursor travel time),
 
 Scene extras: `title` (the opening card), `lower` (the lower third),
 `terminal` (the typed command card), `timelapse` (sped up to fit its line),
-`kinetic` (full-frame kinetic type), `cta` (the closing card), `say` (what the
+`kinetic` (full-frame kinetic type), `cta` (the closing card), `rest` (ms of
+silence after the line), `say` (what the
 voice reads instead of `text`, which stays the caption), and the teaching
 cards and diagrams below.
 
@@ -206,8 +207,9 @@ SCRIPT-v4.md, "Graphics"). A scene carries one `card` or one `diagram`:
 
 | Kind | Example |
 | --- | --- |
+| `mix` | `{ "kind": "mix", "rows": [{ "agent": "Claude Code", "model": "opus", "count": 5, "on": "combine" }], "total": "…", "items": [{ "text": "…", "on": "instincts." }] }`: the wizard's agent rows, then reasons |
 | `learn`, `recap` | `{ "kind": "learn", "title": "In this video", "items": [{ "text": "Set up a run", "on": "set" }] }` |
-| `pause` | `{ "kind": "pause", "title": "Pause and think", "question": "…", "seconds": 5, "countFrom": 4.5, "hint": "…" }`: a countdown figure and a depleting line |
+| `pause` | `{ "kind": "pause", "title": "Pause and think", "question": "…", "seconds": 5, "countOn": "site?" }`: the countdown starts when the voice says that word; give the scene `"rest": 5000` for the silent hold |
 | `facts` | `{ "kind": "facts", "title": "…", "rows": [{ "label": "…", "before": "1.5 MB", "after": "~400 KB", "on": "transfer" }], "source": "…" }` |
 | `trends` | `{ "kind": "trends", "title": "…", "items": [{ "name": "…", "essence": "…", "swatch": ["#f3ecdc"] }] }`: beside the app, not over it |
 | `flow` (as `diagram`) | `{ "kind": "flow", "title": "How it works", "nodes": [{ "label": "Your project", "sub": "untouched", "on": "project" }], "connect": true }`; `"stack": "branches"` adds the V01…V10 cells |
@@ -216,7 +218,9 @@ SCRIPT-v4.md, "Graphics"). A scene carries one `card` or one `diagram`:
 (the first match after the previous item's word; `edit.mjs` resolves it from
 the word timings). Items without `on` follow the one before by 0.35 s. Cards
 draw under the logo, chapter chip and captions. `from` / `until` (seconds into
-the scene) trim a card's window.
+the scene), `fromOn` (open on a word), `untilEnd` (close that many seconds
+before the scene ends) and `source` (a small source line) also work on any
+card. A scene's `rest` (ms) adds silence after its line.
 
 To check a card without a take, serve `stage/` with a stub `/_seekreel/stage.js`
 and a synthetic `timeline.light.json`, and screenshot `light.html?t=…`.
