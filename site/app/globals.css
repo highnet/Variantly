@@ -1379,8 +1379,15 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 }
 .vy-steps > li { opacity: 0.45; transition: opacity var(--dur-base) var(--ease-out-expo); }
 .vy-steps > li.vy-step-on { opacity: 1; }
-/* Step numerals: an outline that fills with ink from the bottom as the
-   progress line reaches it, then pops once. */
+/* Step numerals: an outline that fills with liquid as the progress line
+   reaches it, then pops once. The liquid is a copy of the numeral in the
+   theme's own colour, masked by a prebaked liquid simulation: one SVG sprite
+   per numeral (public/liquid, scripts/bake-liquid.mjs), 48 frames side by
+   side, the body in the top row and the meniscus line in the bottom row.
+   The real glyph clips the liquid, so it stays inside the outline in every
+   concept's face. A frame change only moves the mask on a numeral-sized
+   element: no layout, no filters, no animated mask on anything large. Full
+   numerals drop the mask entirely and are plain, crisp text. */
 .vy-step-num { display: inline-grid; }
 .vy-step-ghost {
   -webkit-text-fill-color: transparent;
@@ -1388,29 +1395,66 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   text-shadow: none !important;
   opacity: 0.55;
 }
-/* The filled copy sits in an overflow-hidden window that slides up from
-   below while the copy slides the other way, so the glyph stays put and only
-   transforms change: compositor work, no repaint per scroll frame. */
-.vy-step-clip { overflow: hidden; pointer-events: none; }
-.vy-step-clip,
-.vy-step-fill {
-  transform: translateY(calc((1 - var(--fill, 1)) * var(--fill-dir, 1) * 100%));
-  transition: transform 160ms linear;
+.vy-step-liq { pointer-events: none; }
+/* Depth and grain inside the liquid only: a copy of the numeral painted with
+   a static grain tile over a gradient, lighter at the top and deeper toward
+   the bottom, clipped
+   to the glyph (and to the liquid by the same mask as the fill). Neutral
+   black and white over the theme's fill colour, so every concept keeps its
+   own ink. The tile is a 2 kB bake (scripts/bake-liquid.mjs); switch to the
+   shared --grain-tile token once it lands on main. */
+.vy-step-tone {
+  --liq-grain: url('/liquid/grain.png');
+  background:
+    var(--grain-tile, var(--liq-grain)) 0 0 / 40px 40px,
+    linear-gradient(to bottom, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0) 30%, rgb(0 0 0 / 0) 45%, rgb(0 0 0 / 0.32));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none !important;
+  opacity: var(--liq-tone-o, 0.8);
 }
-/* Desktop scrubs these every scroll frame: keep them on their own layers. */
-:root:not(.vy-steps-touch) .vy-steps .vy-step-clip,
-:root:not(.vy-steps-touch) .vy-steps .vy-step-fill { will-change: transform; }
-.vy-step-fill { --fill-dir: -1; display: block; }
-.vy-steps > li { --fill: 0; }
-/* Touch: no scrubbing. Each numeral fills in one short transition as its
-   step lights up (Delight sets no per-frame --fill there). */
-:root.vy-steps-touch .vy-steps > li.vy-step-on { --fill: 1; }
-:root.vy-steps-touch .vy-step-clip,
-:root.vy-steps-touch .vy-step-fill { transition: transform var(--dur-base) var(--ease-out-expo); }
-/* Until the first frame after mount, set the fill without animating, so a
-   numeral never drains from its no-JS full state before filling. */
-:root.vy-steps-touch:not(.vy-steps-anim) .vy-step-clip,
-:root.vy-steps-touch:not(.vy-steps-anim) .vy-step-fill { transition: none; }
+:root[data-theme='dark'] .vy-step-tone { --liq-tone-o: 0.6; }
+.vy-step-line {
+  display: none;
+  -webkit-text-fill-color: #fff;
+  text-shadow: none !important;
+  opacity: 0.6;
+}
+.vy-steps > li { --frame: 0; }
+/* Masks load once the steps come near the viewport (Delight adds .vy-liquid);
+   until then a numeral that is not full shows only its outline. */
+.vy-steps:not(.vy-liquid) > li:not(.vy-step-full) .vy-step-liq { opacity: 0; }
+.vy-steps.vy-liquid > li:nth-child(1) { --liq: url('/liquid/step-1.svg'); }
+.vy-steps.vy-liquid > li:nth-child(2) { --liq: url('/liquid/step-2.svg'); }
+.vy-steps.vy-liquid > li:nth-child(3) { --liq: url('/liquid/step-3.svg'); }
+.vy-steps.vy-liquid > li:not(.vy-step-full) :is(.vy-step-fill, .vy-step-tone, .vy-step-line) {
+  -webkit-mask: var(--liq) no-repeat;
+  mask: var(--liq) no-repeat;
+  -webkit-mask-size: 4800% 200%;
+  mask-size: 4800% 200%;
+  -webkit-mask-position: calc(var(--frame) * 100% / 47) var(--row, 0%);
+  mask-position: calc(var(--frame) * 100% / 47) var(--row, 0%);
+}
+.vy-steps.vy-liquid > li:not(.vy-step-full) .vy-step-line { --row: 100%; display: block; }
+/* Touch: no scrubbing. A numeral pours in one stepped run through the frames
+   once its step lights up and the scroll has settled; it pauses while a
+   scroll is under way. */
+:root.vy-steps-touch .vy-steps.vy-liquid > li.vy-step-on:not(.vy-step-full) :is(.vy-step-fill, .vy-step-tone) {
+  animation: vy-liq-pour 1.5s steps(48, jump-none) forwards;
+}
+:root.vy-steps-touch .vy-steps.vy-liquid > li.vy-step-on:not(.vy-step-full) .vy-step-line {
+  animation: vy-liq-pour-line 1.5s steps(48, jump-none) forwards;
+}
+:root.vy-steps-touch[data-scrolling] .vy-step-liq > * { animation-play-state: paused; }
+@keyframes vy-liq-pour {
+  from { -webkit-mask-position: 0% 0%; mask-position: 0% 0%; }
+  to { -webkit-mask-position: 100% 0%; mask-position: 100% 0%; }
+}
+@keyframes vy-liq-pour-line {
+  from { -webkit-mask-position: 0% 100%; mask-position: 0% 100%; }
+  to { -webkit-mask-position: 100% 100%; mask-position: 100% 100%; }
+}
 .vy-steps > li.vy-step-done .vy-step-num { animation: vy-step-pop 620ms var(--ease-spring-pop); }
 @keyframes vy-step-pop {
   35% { transform: scale(1.16) rotate(-5deg); }
@@ -1441,10 +1485,26 @@ header.vy-header-glass {
   .vy-title, .vy-scene, .vy-blobs { translate: none !important; }
   .vy-steps > li { opacity: 1; }
   .vy-steps > li .vy-step-num, .vy-sheen::after { animation: none !important; }
+  /* A still frame at the target level: a lit numeral is simply full. */
+  .vy-steps > li.vy-step-on .vy-step-liq { opacity: 1 !important; }
+  .vy-steps > li.vy-step-on :is(.vy-step-fill, .vy-step-tone) { mask: none !important; -webkit-mask: none !important; }
+  .vy-steps > li.vy-step-on .vy-step-line { display: none !important; }
 }
 :root[data-seek] .vy-title, :root[data-seek] .vy-scene, :root[data-seek] .vy-blobs { translate: none !important; }
 :root[data-seek] .vy-steps > li,
-:root[data-motion='calm'] .vy-steps > li { opacity: 1; --fill: 1; }
+:root[data-motion='calm'] .vy-steps > li { opacity: 1; }
+/* Calm and seek: no pour, every numeral is full. Low power: no pour either,
+   a numeral is outlined until its step lights, then full. */
+:root:is([data-seek], [data-motion='calm']) .vy-steps > li,
+:root[data-perf='low'] .vy-steps > li.vy-step-on {
+  & .vy-step-liq { opacity: 1 !important; }
+  & :is(.vy-step-fill, .vy-step-tone, .vy-step-line) {
+    animation: none !important;
+    -webkit-mask: none !important;
+    mask: none !important;
+  }
+  & .vy-step-line { display: none !important; }
+}
 
 /* ---- G · Candy 3D: extruded glossy letters, pastel candy ground ---------- */
 :root[data-variant='g'] {
