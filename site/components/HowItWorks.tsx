@@ -29,21 +29,14 @@ const HowItWorks = () => (
         </li>
       ))}
     </ol>
-    <div className="border-rule grid gap-4 border-t pt-6">
-      <div className="grid gap-1">
-        <Typography variant="tag" as="h3">
-          Optional add-ons
-        </Typography>
-        <p className="text-steel m-0 max-w-[60ch] text-sm leading-relaxed">
-          <strong className="text-ink">Opt-in</strong> steps in the wizard. Skip any.
-        </p>
-      </div>
-      <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-5">
+    {/* Secondary: tucked behind a disclosure so the three steps stay the focus. */}
+    <details className="vy-more group grid gap-4">
+      <summary className="text-steel hover:text-ink w-fit cursor-pointer text-sm font-semibold">
+        Optional add-ons <span className="font-normal">· opt-in steps in the wizard, skip any</span>
+      </summary>
+      <ul className="m-0 mt-4 grid list-none gap-x-8 gap-y-4 p-0 sm:grid-cols-2 lg:grid-cols-5">
         {EXTRAS.map((x) => (
-          <li
-            key={x.label}
-            className="border-rule bg-surface grid content-start gap-1 rounded-md border p-4"
-          >
+          <li key={x.label} className="grid content-start gap-1">
             <span className="condensed font-mono text-[13px] font-semibold">{x.label}</span>
             <span className="text-steel text-sm leading-snug">
               <Rich text={x.hint} />
@@ -51,7 +44,7 @@ const HowItWorks = () => (
           </li>
         ))}
       </ul>
-    </div>
+    </details>
   </section>
 );
 

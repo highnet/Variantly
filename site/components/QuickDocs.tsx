@@ -31,11 +31,11 @@ const QuickDocs = () => (
       </Typography>
     </div>
     <div className="grid gap-x-10 gap-y-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-      <dl className="border-rule m-0 grid border-t">
+      <dl className="m-0 grid gap-1">
         {COMMANDS.map(([cmd, what]) => (
           <div
             key={cmd}
-            className="border-rule grid gap-1 border-b py-3 sm:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] sm:gap-4"
+            className="grid gap-1 py-2 sm:grid-cols-[minmax(0,17rem)_minmax(0,1fr)] sm:gap-4"
           >
             <dt>
               <code className="condensed font-mono text-sm font-semibold">{cmd}</code>
@@ -44,10 +44,10 @@ const QuickDocs = () => (
           </div>
         ))}
       </dl>
-      <div className="grid content-start gap-3">
-        <Typography variant="label" color="steel" as="h3">
+      <details className="vy-more grid content-start gap-3">
+        <summary className="text-steel hover:text-ink w-fit cursor-pointer text-sm font-semibold">
           Flags
-        </Typography>
+        </summary>
         <dl className="m-0 grid gap-2.5">
           {FLAGS.map(([flag, what]) => (
             <div key={flag} className="grid grid-cols-[minmax(0,8.5rem)_minmax(0,1fr)] gap-3">
@@ -58,7 +58,7 @@ const QuickDocs = () => (
             </div>
           ))}
         </dl>
-      </div>
+      </details>
     </div>
   </section>
 );

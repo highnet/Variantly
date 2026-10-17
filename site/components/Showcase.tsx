@@ -110,7 +110,9 @@ const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
   return (
     <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
       <span className="text-steel-on-slate text-[10px] tracking-[0.08em] uppercase">{label}</span>
-      <span className="text-surface text-[15px] font-bold tabular-nums">{value}</span>
+      <span data-score className="text-surface text-[15px] font-bold tabular-nums">
+        {value}
+      </span>
       {diff !== 0 && (
         <span
           className={cn(
