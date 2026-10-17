@@ -662,14 +662,6 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 .vy-title {
   color: var(--title, var(--alert));
 }
-.vy-grain {
-  /* A pre-rendered 128px noise tile (public/grain.png): no live feTurbulence,
-     no blend mode, so the fixed layer rasterises once and never again.
-     Two copies at coprime sizes and offsets so the 128px seam grid never
-     lines up into a visible repeat. */
-  background: url('/grain.png') 0 0 / 128px repeat, url('/grain.png') 61px 37px / 181px repeat;
-}
-
 /* ---- A · Soft Clay: puffy, rounded, centred, glossy blobs ---------------- */
 :root[data-variant='a'] {
   --panel: #fff3ea; --surface: #fffaf6; --rule: #f1d3c2; --steel: #7a5a50; --ink: #2a1630;
@@ -1011,7 +1003,7 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   :root[data-variant='a'] [data-hero-grid] { border-radius: 24px; margin-inline: 12px; }
   .vy-switcher { bottom: 12px; }
   /* Line-based scenes cross the stacked copy on phones; keep them faint. */
-  :root[data-variant='c']:not([data-scrolled]) .vy-scene,
+  :root[data-variant='c']:not([data-scrolled]) .vy-scene { opacity: 0.35; }
 }
 
 /* Until the reveal starts, keep the title hidden rather than flash the final word. */
@@ -1578,8 +1570,6 @@ main > div p { line-height: 1.65; }
 :root[data-variant='f'][data-theme='dark'] { --art-1: #c9a43a; --art-2: #ff5a4f; --art-3: #4a6cf0; --art-tape: #e8dcb5; --art-shadow: #000; }
 :root[data-variant='g'] { --art-1: #ff5fa2; --art-2: #22c3ee; --art-3: #a78bfa; --art-deep: #9d2a74; }
 :root[data-variant='g'][data-theme='dark'] { --art-1: #ff4f9a; --art-2: #22d3ee; --art-3: #8b5cf6; --art-deep: #2e0a40; }
-/* Bauhaus is flat: no grain. */
-:root[data-variant='e'] .vy-grain { display: none; }
 
 /* Riso paper fibre. */
 .vy-art-fibre {

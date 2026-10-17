@@ -11,10 +11,43 @@ import { releaseFrame, seekTime } from '@/lib/seek';
 import { SCENES } from './scenes';
 import type { SceneKind } from './variants';
 
-type GlFieldProps = { scene: SceneKind; colors: string[] };
+type GlFieldProps = { scene: SceneKind; colors: string[]; grain: number };
+
+/*
+ * Film grain applied to what the scene drew, not the whole screen: the pass
+ * scales each pixel by (1 + noise), so empty (transparent) and dark areas stay
+ * clean and only the shapes pick up texture. Alpha is left untouched.
+ */
+const grainPass = (amount: number) => {
+  const mesh = new THREE.Mesh(
+    new THREE.PlaneGeometry(2, 2),
+    new THREE.ShaderMaterial({
+      uniforms: { uAmount: { value: amount } },
+      vertexShader: 'void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }',
+      fragmentShader: `
+        uniform float uAmount;
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+        void main() { gl_FragColor = vec4(vec3(hash(floor(gl_FragCoord.xy)) * uAmount), 0.0); }
+      `,
+      depthTest: false,
+      depthWrite: false,
+      transparent: true,
+      blending: THREE.CustomBlending,
+      blendEquation: THREE.AddEquation,
+      blendSrc: THREE.DstColorFactor,
+      blendDst: THREE.OneFactor,
+      blendSrcAlpha: THREE.ZeroFactor,
+      blendDstAlpha: THREE.OneFactor,
+    }),
+  );
+  mesh.frustumCulled = false;
+  const scene = new THREE.Scene();
+  scene.add(mesh);
+  return { scene, camera: new THREE.Camera() };
+};
 
 /* Hosts one variant's three.js scene; seeks to ?t in seekreel renders. */
-export const GlField = ({ scene: kind, colors }: GlFieldProps) => {
+export const GlField = ({ scene: kind, colors, grain }: GlFieldProps) => {
   const host = useRef<HTMLDivElement>(null);
   const key = colors.join();
 
@@ -48,6 +81,7 @@ export const GlField = ({ scene: kind, colors }: GlFieldProps) => {
     el.appendChild(canvas);
     const scene = new THREE.Scene();
     const { camera, update } = SCENES[kind](scene, key.split(','));
+    const film = grain > 0 ? grainPass(grain) : null;
 
     // Phones get one painted frame of the scene: a moving full-screen WebGL
     // layer behind scrolling content is the costliest thing on the page there.
@@ -56,6 +90,11 @@ export const GlField = ({ scene: kind, colors }: GlFieldProps) => {
     const draw = () => {
       update(seek ?? (still ? 6 : (performance.now() - t0) / 1000), 0);
       renderer.render(scene, camera);
+      if (film) {
+        renderer.autoClear = false;
+        renderer.render(film.scene, film.camera);
+        renderer.autoClear = true;
+      }
     };
 
     const size = () => {
@@ -124,19 +163,21 @@ export const GlField = ({ scene: kind, colors }: GlFieldProps) => {
       document.removeEventListener('visibilitychange', sync);
       removeEventListener('resize', resize);
       removeEventListener('pointermove', move);
-      scene.traverse((o) => {
-        const m = o as THREE.Mesh;
-        m.geometry?.dispose();
-        const mats = Array.isArray(m.material) ? m.material : m.material ? [m.material] : [];
-        mats.forEach((mat) => {
-          Object.values(mat).forEach((v) => v instanceof THREE.Texture && v.dispose());
-          mat.dispose();
-        });
-      });
+      [scene, film?.scene].forEach((s) =>
+        s?.traverse((o) => {
+          const m = o as THREE.Mesh;
+          m.geometry?.dispose();
+          const mats = Array.isArray(m.material) ? m.material : m.material ? [m.material] : [];
+          mats.forEach((mat) => {
+            Object.values(mat).forEach((v) => v instanceof THREE.Texture && v.dispose());
+            mat.dispose();
+          });
+        }),
+      );
       renderer.dispose();
       el.removeChild(canvas);
     };
-  }, [kind, key]);
+  }, [kind, key, grain]);
 
   return <div ref={host} className="absolute inset-0" aria-hidden="true" />;
 };

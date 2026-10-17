@@ -33,7 +33,7 @@ const useTheme = () => {
 
 /*
  * Page-wide decorative layer: the variant's three.js scene, its own static
- * background art (see BackdropArt), and a film-grain tile. Fixed behind content.
+ * background art (see BackdropArt). Grain lives on the scene's shapes (GlField).
  */
 export const Backdrop = () => {
   const key = useVariant();
@@ -70,10 +70,9 @@ export const Backdrop = () => {
       <div className="vy-scene absolute inset-0">
         {/* Reduced motion: the CSS layers only; the three.js chunk never loads. */}
         {(!calmMotion() || seekTime() !== null) && (
-          <GlField key={key + theme} scene={v.scene} colors={v.colors[theme]} />
+          <GlField key={key + theme} scene={v.scene} colors={v.colors[theme]} grain={v.grain} />
         )}
       </div>
-      <div className="vy-grain absolute inset-0" style={{ opacity: v.grain }} />
     </div>
   );
 };
