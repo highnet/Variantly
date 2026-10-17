@@ -4,7 +4,7 @@ import { QuickDocs } from '@/components/QuickDocs';
 import { Rich } from '@/components/ui/Rich';
 import { Typography } from '@/components/ui/Typography';
 import { FAQ } from '@/lib/content';
-import { REPO_URL } from '@/lib/site';
+import { AUTHOR_URL, CONTACT_EMAIL, DEMO_BOOKING_URL, REPO_URL } from '@/lib/site';
 
 /*
  * The close: how to get it, and the honest fine print a careful reader
@@ -41,10 +41,20 @@ const FinePrint = () => (
           Paul Bakaus
         </a>{' '}
         (Apache-2.0). Independent: not affiliated with or endorsed by Impeccable or Paul Bakaus;
-        names used only for credit. variantly is MIT © highnet, provided “as is”, no warranty.{' '}
+        names used only for credit. variantly is MIT ©{' '}
+        <a href={AUTHOR_URL} className="text-ink underline">
+          highnet
+        </a>
+        , provided “as is”, no warranty.{' '}
         <strong className="text-ink">Review every change before you keep it.</strong>
       </span>
-      <span className="flex gap-5">
+      <span className="flex flex-wrap gap-5">
+        <a href={`mailto:${CONTACT_EMAIL}`} className="text-ink underline">
+          Contact me
+        </a>
+        <a href={DEMO_BOOKING_URL} className="text-ink underline">
+          Book a call
+        </a>
         <a href={REPO_URL} className="text-ink underline">
           Source
         </a>
