@@ -22,6 +22,7 @@ import * as git from './git.mjs';
 import { LineBuffer, isUp, run, runOk, spawnShell } from './proc.mjs';
 import { ADAPTERS, detect, packageRunner, projectInfo as projectInfoFor } from './stacks.mjs';
 import { Session } from './session.mjs';
+import { createSiteRunner, openFolder } from './open-site.mjs';
 
 const UI_DIR = fileURLToPath(new URL('../ui/', import.meta.url));
 // The Next.js UI, built by `npm run build:ui` into ui-next/out. Without a
@@ -82,6 +83,7 @@ export const startApp = async (opts) => {
   /** @type {Set<http.ServerResponse>} */
   const clients = new Set();
   const installLog = new LineBuffer(300);
+  const site = createSiteRunner(opts.repo, () => session.state.config ?? undefined);
 
   const send = (/** @type {string} */ event, /** @type {unknown} */ data) => {
     const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
@@ -195,6 +197,10 @@ export const startApp = async (opts) => {
         return openLogin(String(body.agent ?? ''));
       case 'GET install-log':
         return { lines: installLog.tail(100) };
+      case 'POST open-site':
+        return site.open();
+      case 'POST open-folder':
+        return openFolder(opts.repo);
       case 'POST shutdown':
         setTimeout(() => app.close().then(() => process.exit(0)), 50);
         return { ok: true };
@@ -275,6 +281,7 @@ export const startApp = async (opts) => {
     session,
     close: async () => {
       for (const c of clients) c.end();
+      await site.close().catch(() => {});
       await session.close();
       await new Promise((r) => server.close(() => r(undefined)));
     },

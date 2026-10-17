@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { motion } from 'motion/react';
 import { CommandBlock } from './CommandBlock';
 import { api } from '@/lib/api';
@@ -10,6 +10,7 @@ import { setState, toast, useStore } from '@/lib/store';
 
 const Kept = () => {
   const snap = useStore((s) => s.snap);
+  const [starting, setStarting] = useState(false);
   if (!snap) return null;
   const n = snap.chosen;
   const v = snap.variants.find((x) => x.n === n);
@@ -22,6 +23,31 @@ const Kept = () => {
       setState({ detect: null, form: null });
     } catch (err) {
       toast((err as Error).message, true);
+    }
+  };
+
+  const openSite = async () => {
+    // Opened now, inside the click, so the browser doesn't block it as a popup.
+    const tab = window.open('about:blank', '_blank');
+    setStarting(true);
+    try {
+      const { url } = await api<{ url: string }>('POST', 'open-site', {});
+      if (tab) tab.location.href = url;
+      else window.open(url, '_blank', 'noopener');
+      toast('Your site is running', { body: url });
+    } catch (err) {
+      tab?.close();
+      toast('Could not start your site', { body: (err as Error).message, tone: 'error' });
+    } finally {
+      setStarting(false);
+    }
+  };
+
+  const openFolder = async () => {
+    try {
+      await api('POST', 'open-folder', {});
+    } catch (err) {
+      toast('Could not open the folder', { body: (err as Error).message, tone: 'error' });
     }
   };
 
@@ -53,6 +79,21 @@ const Kept = () => {
             {v?.review && <p className="hint">Review: {v.review}</p>}
             {v?.audit && <p className="hint data">{scoreText(v.audit, snap.baseline)}</p>}
           </div>
+          <div className="where">
+            <p>{n === null ? 'The kept variant' : vname(n)} is now in your project folder, as uncommitted changes:</p>
+            <p className="where-path">{snap.repo}</p>
+            <div className="where-actions">
+              <button className="btn primary" type="button" onClick={openSite} disabled={starting} aria-busy={starting}>
+                {starting ? 'Starting…' : 'Open your site'}
+              </button>
+              <button className="btn outline" type="button" onClick={openFolder}>
+                Open folder
+              </button>
+            </div>
+            <p className="hint">
+              The other variants stay as git branches named variantly/{snap.runId}/vN until you remove them (see Next).
+            </p>
+          </div>
           {r.conflicts.length > 0 && <p className="note bad">Merged with your own edits, with conflicts in {r.conflicts.join(', ')}. Resolve the conflict markers in those files.</p>}
           {r.rollout && (
             <p className="hint">
@@ -64,7 +105,7 @@ const Kept = () => {
           {r.depsChanged && <p className="note alert">This variant changed dependency files. Run your install command.</p>}
           <div>
             <div className="label" style={{ marginBottom: 8 }}>
-              Applied to your working tree, unstaged: {plural(r.files.length, 'file')}
+              Changed in your project (not committed): {plural(r.files.length, 'file')}
             </div>
             <ul>
               {r.files.map((f, i) => (

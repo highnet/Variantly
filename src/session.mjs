@@ -337,7 +337,7 @@ export class Session extends EventEmitter {
     });
     await Promise.all(workers);
     if (this.state.phase === 'generating') {
-      this.state.phase = this.state.variants.some((v) => v.status === 'done') ? 'ready' : 'setup';
+      this.state.phase = this.state.variants.length ? 'ready' : 'setup';
       await this.save();
     }
   }
@@ -428,7 +428,11 @@ export class Session extends EventEmitter {
 
       // With a browser, the agent can look at its own variant while it works.
       const browser = config.browser && agent.id !== 'demo';
-      const mcp = browser ? { playwright: playwrightMcp() } : undefined;
+      // Browser output (screenshots, snapshots, console logs) lands beside the
+      // briefs, never in the worktree, so it cannot end up in the variant.
+      const shots = browser ? path.join(this.dir, 'browser', `v${v.n}`) : undefined;
+      if (shots) await mkdir(shots, { recursive: true });
+      const mcp = browser ? { playwright: playwrightMcp(undefined, shots) } : undefined;
       const previewUrl = browser ? this.pool.urls(`v${v.n}`)?.preview : undefined;
       if (browser) this.pool.ensure(`v${v.n}`).catch(() => {});
 
@@ -453,6 +457,7 @@ export class Session extends EventEmitter {
           hasProduct: existsSync(path.join(appDir, 'PRODUCT.md')) || existsSync(path.join(wt, 'PRODUCT.md')),
           hasDesign: existsSync(path.join(appDir, 'DESIGN.md')) || existsSync(path.join(wt, 'DESIGN.md')),
           previewUrl,
+          shots,
         }),
       );
 
@@ -502,7 +507,7 @@ export class Session extends EventEmitter {
         const reviewPath = path.join(this.dir, 'briefs', `v${v.n}-review.md`);
         await writeFile(
           reviewPath,
-          writeReviewBrief({ variant: v.n, agent: agent.id, routes: config.routes, previewUrl, audit: scores && auditMarkdown(scores) }),
+          writeReviewBrief({ variant: v.n, agent: agent.id, routes: config.routes, previewUrl, shots, audit: scores && auditMarkdown(scores) }),
         );
         run.carry = { costUsd: run.costUsd, usage: run.usage, credits: run.credits };
         try {
@@ -666,13 +671,15 @@ export class Session extends EventEmitter {
       try {
         const browser = config.browser && agent.id !== 'demo';
         const previewUrl = browser ? this.pool.urls(`v${n}`)?.preview : undefined;
+        const shots = browser ? path.join(this.dir, 'browser', `v${n}`) : undefined;
+        if (shots) await mkdir(shots, { recursive: true });
         const briefPath = path.join(this.dir, 'briefs', `v${n}-chat-${stamp}.md`);
         await mkdir(path.dirname(briefPath), { recursive: true });
         await writeFile(
           briefPath,
-          writeChatBrief({ variant: n, agent: agent.id, direction: v.picked || v.direction, appRel: config.appRel, message: text, history: history.slice(-8), previewUrl }),
+          writeChatBrief({ variant: n, agent: agent.id, direction: v.picked || v.direction, appRel: config.appRel, message: text, history: history.slice(-8), previewUrl, shots }),
         );
-        const inv = agent.invocation({ cwd: wt, briefPath, model: who.model || undefined, permissions: config.permissions, mcp: browser ? { playwright: playwrightMcp() } : undefined });
+        const inv = agent.invocation({ cwd: wt, briefPath, model: who.model || undefined, permissions: config.permissions, mcp: browser ? { playwright: playwrightMcp(undefined, shots) } : undefined });
         inv.file = await agentFile(agent);
         for (const [file, body] of Object.entries(inv.files ?? {})) {
           await mkdir(path.dirname(file), { recursive: true });
@@ -1004,6 +1011,7 @@ export class Session extends EventEmitter {
     this.state = { version: 1, phase: 'setup', runId: '', base: '', config, variants: [], chosen: null, result: null };
     await rm(path.join(this.dir, 'briefs'), { recursive: true, force: true });
     await rm(path.join(this.dir, 'cargo'), { recursive: true, force: true });
+    await rm(path.join(this.dir, 'browser'), { recursive: true, force: true });
     await this.save();
   }
 

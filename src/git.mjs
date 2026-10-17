@@ -185,12 +185,15 @@ async function unlinkShared(worktree) {
  * those are skipped anyway, so only the unignored ones need excluding.
  * @param {string} worktree @param {string[]} exclude
  */
+/** Folders agent tooling writes into its cwd; never part of a variant. */
+export const TOOL_OUTPUT = [".playwright-mcp"];
+
 const changeSpec = async (worktree, exclude) => {
   const rels = exclude.map((p) => p.replace(/\\/g, "/"));
   const ignored = rels.length
     ? new Set((await run("git", ["check-ignore", "--", ...rels], { cwd: worktree })).stdout.split("\n").map((s) => s.trim()))
     : new Set();
-  return [".", `:(exclude)${MARKER}`, `:(exclude)**/${MARKER}`, ...rels.filter((p) => !ignored.has(p)).map((p) => `:(exclude)${p}`)];
+  return [".", `:(exclude)${MARKER}`, `:(exclude)**/${MARKER}`, ...TOOL_OUTPUT.flatMap((d) => [`:(exclude)${d}`, `:(exclude)**/${d}`]), ...rels.filter((p) => !ignored.has(p)).map((p) => `:(exclude)${p}`)];
 };
 
 /**

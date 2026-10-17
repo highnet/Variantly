@@ -72,3 +72,19 @@ test('a rollout commits only its own work, and a cancelled one leaves placed fil
   assert.deepEqual(await commitAll(wt, 'rollout', before), ['about.css']);
   await removeWorktree(repo, wt);
 });
+
+test('a variant never commits Playwright MCP output', async (t) => {
+  const { root, repo, wt } = repoWithDeps();
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  await addWorktree(repo, wt, 'variantly/t/v1', 'HEAD');
+  mkdirSync(path.join(wt, '.playwright-mcp'));
+  writeFileSync(path.join(wt, '.playwright-mcp', 'page-1.yml'), 'x
+');
+  mkdirSync(path.join(wt, 'site', '.playwright-mcp'), { recursive: true });
+  writeFileSync(path.join(wt, 'site', '.playwright-mcp', 'console.log'), 'x
+');
+  writeFileSync(path.join(wt, 'app.css'), 'body { color: red }
+');
+  assert.deepEqual(await commitAll(wt, 'variant', []), ['app.css']);
+  await removeWorktree(repo, wt);
+});

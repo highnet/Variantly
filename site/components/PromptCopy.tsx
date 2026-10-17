@@ -16,6 +16,8 @@ type PromptCopyProps = {
   preview?: boolean;
   /** A single primary button instead of the prompt card. */
   accent?: boolean;
+  /** A quiet one-line chip instead of the prompt card; the prompt shows on hover. */
+  chip?: boolean;
   className?: string;
 };
 
@@ -33,6 +35,7 @@ const PromptCopy = ({
   tone = 'light',
   preview = false,
   accent = false,
+  chip = false,
   className,
 }: PromptCopyProps) => {
   const [copied, setCopied] = useState(false);
@@ -104,6 +107,30 @@ const PromptCopy = ({
       <span className={cn(long && !open && 'line-clamp-2')}>{prompt}</span>
     </p>
   );
+
+  if (chip) {
+    return (
+      <Button
+        variant={slate ? 'prompt-slate' : 'prompt'}
+        size="prompt"
+        onClick={copy}
+        title={prompt}
+        className={cn('w-fit gap-1.5', className)}
+      >
+        {copied ? (
+          <Check aria-hidden="true" className="animate-pop" />
+        ) : (
+          <Copy aria-hidden="true" />
+        )}
+        <span className="grid [grid-template-areas:'x'] *:[grid-area:x]">
+          <span className={cn(copied && 'invisible')}>{label}</span>
+          <span aria-hidden={!copied} className={cn(!copied && 'invisible')}>
+            Copied
+          </span>
+        </span>
+      </Button>
+    );
+  }
 
   if (accent) {
     // The button, and right under it the exact words it copies: nobody should

@@ -7,7 +7,8 @@
 import { useSyncExternalStore } from 'react';
 import type { Detect, Form, ServerState, Snapshot } from './types';
 
-export type Toast = { id: number; message: string; bad: boolean } | null;
+export type ToastTone = 'ok' | 'info' | 'warn' | 'error';
+export type ToastItem = { id: number; title: string; body?: string; tone: ToastTone; leaving?: boolean };
 
 export type UiState = {
   snap: Snapshot | null;
@@ -35,7 +36,8 @@ export type UiState = {
   helpOpen: boolean;
   reconnecting: boolean;
   stopped: boolean;
-  toast: Toast;
+  /** Up to three toasts, oldest first; <Toaster /> shows them. */
+  toasts: ToastItem[];
 };
 
 let state: UiState = {
@@ -62,7 +64,7 @@ let state: UiState = {
   helpOpen: false,
   reconnecting: false,
   stopped: false,
-  toast: null,
+  toasts: [],
 };
 
 const listeners = new Set<() => void>();
@@ -87,11 +89,24 @@ export const useStore = <T>(pick: (s: UiState) => T): T =>
 export const updateForm = (patch: Partial<Form>) => setState((s) => ({ form: s.form ? { ...s.form, ...patch } : s.form }));
 
 let toastSeq = 0;
-let toastTimer: ReturnType<typeof setTimeout> | undefined;
-export const toast = (message: string, bad = false) => {
-  clearTimeout(toastTimer);
-  setState({ toast: { id: ++toastSeq, message, bad } });
-  toastTimer = setTimeout(() => setState({ toast: null }), bad ? 7000 : 3500);
+/**
+ * Show a toast, as the marketing site does: toast(title, { body, tone }).
+ * The old toast(message, bad) form still works; bad means the error tone.
+ * Toasts stack (three at most) and leave on their own; <Toaster /> times them.
+ */
+export const toast = (title: string, opts: boolean | { body?: string; tone?: ToastTone } = {}) => {
+  const o = typeof opts === 'boolean' ? { tone: opts ? ('error' as const) : ('ok' as const) } : opts;
+  const item: ToastItem = { id: ++toastSeq, title, body: o.body, tone: o.tone ?? 'ok' };
+  setState((s) => ({ toasts: [...s.toasts.slice(-2), item] }));
+  // Reduced motion switches the life-line animation off, so time it here instead.
+  if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+    setTimeout(() => dismissToast(item.id), 3200);
+  }
+};
+
+export const dismissToast = (id: number) => {
+  setState((s) => ({ toasts: s.toasts.map((t) => (t.id === id ? { ...t, leaving: true } : t)) }));
+  setTimeout(() => setState((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })), 220);
 };
 
 export const variantsOf = (s: UiState) => s.snap?.variants ?? [];

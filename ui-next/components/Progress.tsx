@@ -29,7 +29,7 @@ const Segments = ({ v, size = 'small' }: SegmentsProps) => (
           <motion.i
             className="seg-fill"
             initial={false}
-            animate={{ width: st === 'done' ? '100%' : st === 'now' ? '35%' : '0%' }}
+            animate={{ width: st === 'done' || st === 'now' ? '100%' : '0%' }}
             transition={{ ...SPRING, delay: 0.15 + i * 0.05 }}
           />
           {st === 'now' && <i className="seg-shine" />}

@@ -11,7 +11,7 @@ import clsx from 'clsx';
 import { act, goCompare } from './Board';
 import { Segments } from './Progress';
 import { fetchLog } from '@/lib/live';
-import { LIVE, STATUS, STEPS, directionLabel, elapsed, stepAt, statusKey, usageText, vname } from '@/lib/format';
+import { LIVE, STATUS, STEPS, directionLabel, elapsed, stepAt, statusKey, usageText, vname, errorHeadline } from '@/lib/format';
 import { useStore } from '@/lib/store';
 import type { Variant } from '@/lib/types';
 
@@ -163,7 +163,7 @@ const Terminal = ({ v }: TerminalProps) => {
           if (stick.current) setBehind(0);
         }}
       >
-        {list.length === 0 && <div className="t-line t-text t-empty">{v.status === 'queued' ? 'Waiting for a free slot…' : 'No output yet.'}</div>}
+        {list.length === 0 && <div className="t-line t-text t-empty" style={{ whiteSpace: 'pre-wrap' }}>{v.status === 'queued' ? 'Waiting for a free slot…' : v.error ? v.error : 'No output yet.'}</div>}
         {list.map((text, i) => (
           <Line key={first + i} n={first + i + 1} text={text} fresh={first + i >= (seenCount.current ?? Infinity)} />
         ))}
@@ -195,7 +195,7 @@ const Terminal = ({ v }: TerminalProps) => {
       </AnimatePresence>
 
       <footer className="t-foot">
-        {v.error && <span className="t-error">{v.error.split('\n')[0]}</span>}
+        {v.error && <span className="t-error" title={v.error}>{errorHeadline(v.error)}</span>}
         <span className="t-actions">
           {v.status === 'done' && (
             <button className="btn primary small" type="button" onClick={() => goCompare(v.n)}>

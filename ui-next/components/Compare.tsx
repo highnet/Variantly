@@ -23,6 +23,9 @@ import type { Audit, ServerState, Variant } from '@/lib/types';
 
 type Side = 'before' | 'after';
 
+// Shared so the store hook never sees a fresh [] as a change.
+const NO_VARIANTS: Variant[] = [];
+
 const targetUrl = (srv: ServerState | undefined, path: string) => (srv ? `http://${window.location.hostname}:${srv.proxyPort}${path}` : '');
 
 const select = (sel: 'original' | number) => {
@@ -215,7 +218,7 @@ const Info = () => {
 };
 
 const Dock = () => {
-  const vs = useStore((s) => s.snap?.variants ?? []);
+  const vs = useStore((s) => s.snap?.variants ?? NO_VARIANTS);
   const snap = useStore((s) => s.snap);
   const sel = useStore((s) => s.sel);
   const unseen = useStore((s) => s.unseen);
@@ -531,7 +534,8 @@ const Compare = () => {
   }, [sel]);
 
   const setSplitFrom = (clientX: number) => {
-    const r = compareRef.current?.getBoundingClientRect();
+    // Measure the stage, not the whole view: on a phone it is the phone frame.
+    const r = compareRef.current?.querySelector('.stage')?.getBoundingClientRect();
     if (r) setState({ split: Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100)) });
   };
 
@@ -552,7 +556,8 @@ const Compare = () => {
       ref={compareRef}
       className={clsx('compare', tucked && !confirming && !infoOpen && 'tucked')}
       data-panes-ready={!pending.before && !pending.after ? 'true' : 'false'}
-      style={{ ['--split' as string]: `${split}%` }}
+      data-device={device}
+      style={{ ['--split' as string]: `${split}%`, ['--split-n' as string]: split / 100 }}
     >
       <div className="stage" data-mode={effMode} data-device={device} data-show={sel === 'original' ? 'original' : 'variant'}>
         <div className="pane before">

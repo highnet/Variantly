@@ -95,3 +95,17 @@ export const madeBy = (snap: Pick<Snapshot, 'config' | 'phase'> | null | undefin
   if (!c?.mix?.length || (c.blind && snap?.phase !== 'finalized')) return '';
   return agentLabel(v.agent ?? c.agent, v.model ?? c.model);
 };
+
+/**
+ * The line of a failure worth reading: the agent's own last words when the
+ * error carries them ("Last output:"), not the generic exit code.
+ */
+export const errorHeadline = (error: string) => {
+  const [head, tail = ''] = error.split(/Last output:\s*/);
+  const last = tail
+    .split('\n')
+    .map((l) => l.trim().replace(/^Error:\s*/, ''))
+    .filter(Boolean)
+    .at(-1);
+  return last ?? head.split('\n')[0];
+};

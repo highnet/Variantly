@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import clsx from 'clsx';
 import { Icon } from './Icon';
-import { Segments } from './Progress';
+import { ProgressCard, Segments } from './Progress';
 import { Terminal } from './Terminal';
 import { api } from '@/lib/api';
 import { clearLog, fetchLog } from '@/lib/live';
-import { LIVE, STATUS, STEPS, agentLabel, agentShort, clock, compactTokens, directionLabel, elapsed, isPickable, pad, scoreText, stepAt, stepState, statusKey, usageText, usageTitle, madeBy, vname } from '@/lib/format';
+import { LIVE, STATUS, STEPS, agentLabel, agentShort, clock, compactTokens, directionLabel, elapsed, isPickable, pad, scoreText, stepAt, stepState, statusKey, usageText, usageTitle, madeBy, vname, errorHeadline } from '@/lib/format';
 import { seen, setState, toast, useStore } from '@/lib/store';
 import type { Variant } from '@/lib/types';
 
@@ -87,7 +87,7 @@ const Board = () => {
   const now = useNow();
   // Status changes, announced once each (the table itself is not a live region).
   const [said, setSaid] = useState('');
-  const [asking, setAsking] = useState(false);
+  const [asking, setAsking] = useState<false | 'discard' | 'change'>(false);
   const [discarding, setDiscarding] = useState(false);
   const confirmBtn = useRef<HTMLButtonElement>(null);
   const discardBtn = useRef<HTMLButtonElement>(null);
@@ -96,7 +96,7 @@ const Board = () => {
     // Focus moves into the confirm bar on open and back to Discard when it closes.
     if (asking) confirmBtn.current?.focus();
     else if (wasAsking.current) discardBtn.current?.focus();
-    wasAsking.current = asking;
+    wasAsking.current = Boolean(asking);
   }, [asking]);
   const prevStatus = useRef<Record<number, string>>({});
   const statusKeyAll = (snap?.variants ?? []).map((v) => `${v.n}:${v.status}`).join(',');
@@ -154,6 +154,13 @@ const Board = () => {
   const discard = async () => {
     setDiscarding(true);
     try {
+      // Going back to change settings lands on Review, every answer kept, so
+      // each section's Edit link is one click away.
+      if (asking === 'change') {
+        const url = new URL(window.location.href);
+        url.searchParams.set('step', 'review');
+        window.history.replaceState(null, '', url);
+      }
       await api('POST', 'discard', {});
       setState({ forceBoard: false, wantCompare: false });
     } catch (err) {
@@ -184,7 +191,7 @@ const Board = () => {
               className="confirm board-confirm"
               role="alertdialog"
               aria-modal="true"
-              aria-label={finalized ? 'Start over?' : 'Discard this run?'}
+              aria-label={finalized ? 'Start over?' : asking === 'change' ? 'Change settings?' : 'Discard this run?'}
               onKeyDown={(e) => {
                 if (e.key !== 'Escape' || discarding) return;
                 e.stopPropagation();
@@ -196,6 +203,10 @@ const Board = () => {
                   <>
                     Start over? <span className="muted">The variant you kept stays in your working tree.</span>
                   </>
+                ) : asking === 'change' ? (
+                  <>
+                    Change settings? <span className="muted">This run’s {vs.length} variants are thrown away. Your answers are kept.</span>
+                  </>
                 ) : (
                   <>
                     Throw away every variant in this run? <span className="muted">Worktrees and branches are deleted.</span>
@@ -206,12 +217,17 @@ const Board = () => {
                 Cancel
               </button>
               <button ref={confirmBtn} className="btn primary" type="button" disabled={discarding} onClick={discard}>
-                {discarding ? 'Discarding…' : finalized ? 'Start over' : 'Discard run'}
+                {discarding ? 'Discarding…' : finalized ? 'Start over' : asking === 'change' ? 'Discard and change' : 'Discard run'}
               </button>
             </div>
           ) : (
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button ref={discardBtn} className="btn outline" type="button" onClick={() => setAsking(true)}>
+              {!finalized && (
+                <button className="btn outline" type="button" onClick={() => setAsking('change')}>
+                  Change settings
+                </button>
+              )}
+              <button ref={discardBtn} className="btn outline" type="button" onClick={() => setAsking('discard')}>
                 Discard run
               </button>
               <button className="btn primary" type="button" disabled={!vs.some(isPickable)} onClick={() => goCompare()}>
@@ -277,7 +293,7 @@ const Board = () => {
                   <td className="dir">
                     {directionLabel(v.direction, v.picked)}
                     {madeBy(snap, v) && <span className="tag made-by">{madeBy(snap, v)}</span>}
-                    {v.summary ? <span className="summary">{v.summary}</span> : v.error ? <span className="summary">{v.error.split('\n')[0]}</span> : null}
+                    {v.summary ? <span className="summary">{v.summary}</span> : v.error ? <span className="summary">{errorHeadline(v.error)}</span> : null}
                     {v.review && <span className="summary">Review: {v.review}</span>}
                     {v.auditState === 'running' && <span className="summary">Scoring with axe-core and Lighthouse…</span>}
                     {v.auditState === 'failed' && <span className="summary">Not scored: {v.auditError ?? 'the audit failed'}</span>}
@@ -311,6 +327,13 @@ const Board = () => {
           </tbody>
         </table>
       </section>
+      {/* While the picked variant works, show its step stage above the raw log:
+          Compare (where the stage also lives) stays locked until one is ready. */}
+      {selected && LIVE.includes(selected.status) && (
+        <div className="board-stage">
+          <ProgressCard key={selected.n} v={selected} last={logs[`v${selected.n}`]?.at(-1)} />
+        </div>
+      )}
       {selected && <Terminal key={selected.n} v={selected} />}
       <p className="sr-only" aria-live="polite">
         {said}
