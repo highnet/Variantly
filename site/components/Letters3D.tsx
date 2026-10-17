@@ -84,7 +84,8 @@ export const Letters3D = ({ run, clock, onReady, onFail }: Letters3DProps) => {
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({
-        antialias: tier.antialias,
+        // The title canvas is small, so MSAA is cheap even on phones.
+        antialias: true,
         alpha: true,
         // Only seekreel captures need the frame kept after compositing.
         preserveDrawingBuffer: seek !== null,
@@ -95,7 +96,12 @@ export const Letters3D = ({ run, clock, onReady, onFail }: Letters3DProps) => {
       onFail();
       return;
     }
-    renderer.setPixelRatio(tier.pixelRatio);
+    // A small canvas: animate at up to 2x, then repaint the resting word once at
+    // the screen's full density so it never looks pixelated.
+    const dpr = devicePixelRatio || 1;
+    const movingRatio = Math.min(dpr, 2);
+    const restingRatio = Math.min(dpr, 3);
+    renderer.setPixelRatio(movingRatio);
     // Neutral tone mapping keeps the candy colours saturated under the studio light.
     renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.toneMappingExposure = 0.9;
@@ -309,9 +315,14 @@ export const Letters3D = ({ run, clock, onReady, onFail }: Letters3DProps) => {
           l.mesh.rotation.x = Math.sin(t * 1.1 + i) * 0.07 * calm;
           l.mesh.rotation.y = Math.sin(t * 0.9 + i * 0.8) * 0.05 * calm;
         });
-        paint();
         // Once every letter has landed (and popped) the word rests: no more frames.
         const settled = letters.every((l) => l.lockedAt >= 0 && t - l.lockedAt > 0.5);
+        const ratio = settled || still ? restingRatio : movingRatio;
+        if (renderer.getPixelRatio() !== ratio) {
+          renderer.setPixelRatio(ratio);
+          size();
+        }
+        paint();
         if (seek === null && !still && !settled && visible()) raf = requestAnimationFrame(frame);
       };
       wake = () => {
