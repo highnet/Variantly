@@ -56,17 +56,26 @@ const grainPass = (amount: number) => {
  */
 export const GlField = ({ concept, theme, grain }: GlFieldProps) => {
   const host = useRef<HTMLDivElement>(null);
+  // The scene on screen. A concept or theme change builds the next one beside
+  // it and retires this one only once the next has drawn and faded in, so a
+  // swap never shows an empty frame.
+  const shown = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     const el = host.current;
     if (!el) return;
-    let stop: (() => void) | null = null;
     let dead = false;
     const seek = seekTime();
     void CONCEPT_LOADERS[concept]
       .scene()
       .then(({ scene }) => {
-        if (!dead) stop = run(el, scene, scene.colors[theme], seek, grain) ?? null;
+        if (dead) return;
+        const prev = shown.current;
+        shown.current = run(el, scene, scene.colors[theme], seek, grain, !!prev) ?? null;
+        if (!prev) return;
+        // Retire the old scene after the new one's fade (FADE_MS).
+        if (seek !== null || calmMotion()) prev();
+        else setTimeout(prev, FADE_MS * 0.6 + 50);
       })
       .catch(() => {
         markLoaded('scene');
@@ -74,12 +83,22 @@ export const GlField = ({ concept, theme, grain }: GlFieldProps) => {
       });
     return () => {
       dead = true;
-      stop?.();
     };
   }, [concept, theme, grain]);
 
+  useEffect(
+    () => () => {
+      shown.current?.();
+      shown.current = null;
+    },
+    [],
+  );
+
   return <div ref={host} className="absolute inset-0" aria-hidden="true" />;
 };
+
+// The canvas fades in instead of popping, on load and on every swap.
+const FADE_MS = 450;
 
 const run = (
   el: HTMLDivElement,
@@ -87,6 +106,7 @@ const run = (
   colors: string[],
   seek: number | null,
   grain: number,
+  swap: boolean,
 ): (() => void) | undefined => {
   // A soft full-screen wash: rendered at ~half resolution, which the blur
   // and grain hide completely.
@@ -110,7 +130,9 @@ const run = (
   }
   renderer.setPixelRatio(tier.pixelRatio);
   const canvas = renderer.domElement;
-  canvas.style.width = canvas.style.height = '100%';
+  // Stacked, so an outgoing scene can stay under the incoming one.
+  canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
+  const fade = seek === null && !calmMotion();
   el.appendChild(canvas);
   const scene = new THREE.Scene();
   const { camera, update } = def.build(scene, colors);
@@ -130,23 +152,45 @@ const run = (
     }
   };
 
+  // Sized to its host (fixed, full viewport): drawing-buffer size, pixel
+  // ratio (re-clamped, so a DPR or zoom change never leaves it blurry or
+  // oversized) and the camera's projection, keeping the orthographic
+  // camera's own height. The scene itself is never rebuilt.
+  const half = camera instanceof THREE.OrthographicCamera ? (camera.top - camera.bottom) / 2 : 0;
+  let sized = { w: 0, h: 0, dpr: 0 };
   const size = () => {
     const { clientWidth: w, clientHeight: h } = el;
+    const dpr = glTier(0.55).pixelRatio;
+    if (!w || !h || (w === sized.w && h === sized.h && dpr === sized.dpr)) return false;
+    sized = { w, h, dpr };
+    if (dpr !== renderer.getPixelRatio()) renderer.setPixelRatio(dpr);
     renderer.setSize(w, h, false);
-    if (camera instanceof THREE.PerspectiveCamera) camera.aspect = w / h;
-    if (camera instanceof THREE.OrthographicCamera) {
-      const half = (5 * w) / h;
-      camera.left = -half;
-      camera.right = half;
+    if (camera instanceof THREE.PerspectiveCamera) {
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
     }
-    (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
+    if (camera instanceof THREE.OrthographicCamera) {
+      camera.left = (-half * w) / h;
+      camera.right = (half * w) / h;
+      camera.updateProjectionMatrix();
+    }
+    return true;
   };
   size();
-  // A resize clears the canvas; a resting scene has to repaint itself.
+  // Resizing clears the drawing buffer, so every resize repaints at once,
+  // running loop or still frame alike (no blank frame until the next tick).
+  // Batched to one per frame: a drag or rotation fires many.
+  let pending = 0;
   const resize = () => {
-    size();
-    if (!raf) draw();
+    if (pending) return;
+    pending = requestAnimationFrame(() => {
+      pending = 0;
+      if (size()) draw();
+    });
   };
+  const ro = new ResizeObserver(resize);
+  ro.observe(el);
+  // Zoom and DPR changes resize nothing the observer sees.
   addEventListener('resize', resize);
 
   // Desktop parallax is a CSS transform on the canvas, not a re-render.
@@ -193,6 +237,14 @@ const run = (
     }
   };
   draw();
+  if (fade) {
+    // First draw lands, then the canvas fades up (the opacity is composited,
+    // so it costs no repaint). A swap fades faster: the wipe already moves.
+    canvas.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: swap ? FADE_MS * 0.6 : FADE_MS,
+      easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)',
+    });
+  }
   markLoaded('scene');
   const mo = new MutationObserver(sync);
   if (!still) {
@@ -205,6 +257,8 @@ const run = (
   if (seek !== null) releaseFrame('gl');
   return () => {
     cancelAnimationFrame(raf);
+    cancelAnimationFrame(pending);
+    ro.disconnect();
     mo.disconnect();
     document.removeEventListener('visibilitychange', sync);
     document.removeEventListener('vy:gl-busy', onBusy);

@@ -1,41 +1,39 @@
 'use client';
 
 import { ChevronLeft, ChevronRight, ChevronUp, Shuffle } from 'lucide-react';
-import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type KeyboardEvent,
+} from 'react';
 
 import { Button } from '@/components/ui/Button';
 import {
   CONCEPT_BY_ID,
-  CONCEPT_IDS,
-  CONCEPTS,
+  conceptAt,
+  draftsShown,
   groupByFamily,
   prefetchConcept,
+  shownConcepts,
   type ConceptId,
 } from '@/concepts';
-import type { ConceptMeta, Theme } from '@/concepts/types';
+import type { ConceptMeta } from '@/concepts/types';
 import { useSeekTime } from '@/lib/seek';
-import { setVariant, shuffleVariant, stepVariant, useVariant } from '@/lib/variant';
+import { setVariant, shuffleVariant, stepVariant, useConcept } from '@/lib/variant';
 import { cn } from '@/lib/utils';
 
-const GROUPS = groupByFamily(CONCEPTS);
+const PHONE = '(max-width: 639px)';
 
-const useThemeName = () => {
-  const [theme, setTheme] = useState<Theme>('light');
-  useEffect(() => {
-    const html = document.documentElement;
-    const read = () => setTheme(html.dataset.theme === 'dark' ? 'dark' : 'light');
-    read();
-    const mo = new MutationObserver(read);
-    mo.observe(html, { attributes: true, attributeFilter: ['data-theme'] });
-    return () => mo.disconnect();
-  }, []);
-  return theme;
-};
-
+// Client-only (ssr: false): the first render already knows the viewport.
 const usePhone = () => {
-  const [phone, setPhone] = useState(false);
+  const [phone, setPhone] = useState(() => matchMedia(PHONE).matches);
   useEffect(() => {
-    const mq = matchMedia('(max-width: 639px)');
+    const mq = matchMedia(PHONE);
     const read = () => setPhone(mq.matches);
     read();
     mq.addEventListener('change', read);
@@ -43,6 +41,54 @@ const usePhone = () => {
   }, []);
   return phone;
 };
+
+/*
+ * On phones and touch screens the dock steps aside while the before/after
+ * demo (#demo-stage and the controls under it) fills the strip of screen the
+ * dock floats over, so it never covers the demo's own dock. It also honours
+ * html[data-demo-focus], which the demo sets itself where it can.
+ */
+const BAND = 96;
+const useYield = () => {
+  const [inBand, setInBand] = useState(false);
+  const [focus, setFocus] = useState(false);
+  useEffect(() => {
+    const html = document.documentElement;
+    const mq = matchMedia(`${PHONE}, (pointer: coarse)`);
+    let io: IntersectionObserver | null = null;
+    const watch = () => {
+      io?.disconnect();
+      io = null;
+      setFocus(mq.matches && html.hasAttribute('data-demo-focus'));
+      const demo = document.getElementById('demo-stage')?.parentElement;
+      if (!mq.matches || !demo) return setInBand(false);
+      // Only the bottom band, where the dock sits, counts.
+      io = new IntersectionObserver(([en]) => setInBand(en.isIntersecting), {
+        rootMargin: `-${Math.max(0, innerHeight - BAND)}px 0px 0px 0px`,
+      });
+      io.observe(demo);
+    };
+    watch();
+    const mo = new MutationObserver(() =>
+      setFocus(mq.matches && html.hasAttribute('data-demo-focus')),
+    );
+    mo.observe(html, { attributes: true, attributeFilter: ['data-demo-focus'] });
+    mq.addEventListener('change', watch);
+    addEventListener('resize', watch, { passive: true });
+    return () => {
+      io?.disconnect();
+      mo.disconnect();
+      mq.removeEventListener('change', watch);
+      removeEventListener('resize', watch);
+    };
+  }, []);
+  return inBand || focus;
+};
+
+// Both themes' swatches ride as custom properties; html[data-theme] picks one
+// in CSS (.vy-chip i), so the chip is right on its first frame.
+const chipColors = (meta: ConceptMeta, i: number) =>
+  ({ '--c-l': meta.swatch.light[i], '--c-d': meta.swatch.dark[i] }) as CSSProperties;
 
 // Typing in a field never steps the concept.
 const typing = (t: EventTarget | null) =>
@@ -52,12 +98,11 @@ const prefetch = (id: ConceptId) => void prefetchConcept(id, true);
 
 type ChipProps = {
   meta: ConceptMeta;
-  theme: Theme;
   size?: 'sm' | 'lg';
 };
 
 // The concept's three colours, side by side.
-const Chip = ({ meta, theme, size = 'sm' }: ChipProps) => (
+const Chip = ({ meta, size = 'sm' }: ChipProps) => (
   <span
     aria-hidden="true"
     className={cn(
@@ -65,15 +110,14 @@ const Chip = ({ meta, theme, size = 'sm' }: ChipProps) => (
       size === 'sm' ? 'h-3.5 w-7' : 'h-5 w-14',
     )}
   >
-    {meta.swatch[theme].map((c, i) => (
-      <span key={i} className="h-full flex-1" style={{ background: c }} />
+    {[0, 1, 2].map((i) => (
+      <i key={i} className="h-full flex-1" style={chipColors(meta, i)} />
     ))}
   </span>
 );
 
 type TileProps = {
   meta: ConceptMeta;
-  theme: Theme;
   selected: boolean;
   active: boolean;
   large?: boolean;
@@ -81,7 +125,7 @@ type TileProps = {
   onFocusTile: (id: ConceptId) => void;
 };
 
-const Tile = ({ meta, theme, selected, active, large, onPick, onFocusTile }: TileProps) => (
+const Tile = ({ meta, selected, active, large, onPick, onFocusTile }: TileProps) => (
   <Button
     variant="concept-tile"
     size={large ? 'tile-lg' : 'tile'}
@@ -98,12 +142,13 @@ const Tile = ({ meta, theme, selected, active, large, onPick, onFocusTile }: Til
     onPointerEnter={() => prefetch(meta.id as ConceptId)}
     className={cn(large && 'border-rule bg-surface border')}
   >
-    <Chip meta={meta} theme={theme} size={large ? 'lg' : 'sm'} />
+    <Chip meta={meta} size={large ? 'lg' : 'sm'} />
     <span className="flex min-w-0 items-baseline gap-1.5">
       <span className="font-mono text-[10px] opacity-60">{meta.id.toUpperCase()}</span>
       <span className="truncate" style={{ fontFamily: meta.font }}>
         {meta.name}
       </span>
+      {meta.status === 'draft' && <span className="vy-draft">Draft</span>}
     </span>
   </Button>
 );
@@ -113,14 +158,29 @@ const Tile = ({ meta, theme, selected, active, large, onPick, onFocusTile }: Til
  * prev/next) opens a popover of all concepts grouped by family (desktop) or a
  * bottom sheet with family tabs and a snap-scrolling strip (phones). `[` and
  * `]` step through every concept without opening it. Families and order come
- * from concept meta (concepts/metas.ts, concepts/families.ts).
+ * from concept meta (concepts/metas.ts, concepts/families.ts). Only finished
+ * concepts show; ?drafts=1 adds the drafts (concepts/README.md).
+ *
+ * It renders from html[data-variant] (set before first paint), so the dock
+ * names the right concept on its first frame.
  */
 export const VariantSwitcher = () => {
-  const current = useVariant();
+  const current = useConcept();
   const seek = useSeekTime();
-  const theme = useThemeName();
   const phone = usePhone();
+  const yieldToDemo = useYield();
+  // The boot script settles html[data-drafts] before anything mounts.
+  const {
+    list,
+    groups: GROUPS,
+    drafts,
+  } = useMemo(() => {
+    const list = shownConcepts();
+    return { list, groups: groupByFamily(list), drafts: draftsShown() };
+  }, []);
   const [open, setOpen] = useState(false);
+  // Yielding to the demo closes the picker too (state adjusted in render).
+  if (open && yieldToDemo) setOpen(false);
   const [active, setActiveState] = useState<ConceptId>('a');
   const activeRef = useRef<ConceptId>('a');
   const setActive = useCallback((id: ConceptId) => {
@@ -149,7 +209,7 @@ export const VariantSwitcher = () => {
     setOpen(true);
   };
 
-  // `[` / `]` step through all concepts from anywhere on the page.
+  // `[` / `]` step through the shown concepts from anywhere on the page.
   useEffect(() => {
     if (!current) return;
     const onKey = (e: globalThis.KeyboardEvent) => {
@@ -182,7 +242,8 @@ export const VariantSwitcher = () => {
   if (!current || seek !== null) return null;
 
   const meta = CONCEPT_BY_ID[current];
-  const at = CONCEPT_IDS.indexOf(current);
+  const at = list.findIndex((c) => c.id === current);
+  const count = list.length;
 
   const pick = (id: ConceptId) => {
     setVariant(id);
@@ -213,8 +274,8 @@ export const VariantSwitcher = () => {
           ArrowUp: at(col, (row - 1 + GROUPS[col].concepts.length) % GROUPS[col].concepts.length),
           ArrowRight: at(col + 1, row),
           ArrowLeft: at(col - 1, row),
-          Home: CONCEPT_IDS[0],
-          End: CONCEPT_IDS[CONCEPT_IDS.length - 1],
+          Home: list[0].id as ConceptId,
+          End: list[count - 1].id as ConceptId,
         };
     const next = go[e.key];
     if (next) {
@@ -253,6 +314,8 @@ export const VariantSwitcher = () => {
       <nav
         aria-label="Homepage concept"
         data-slot="concept-dock"
+        data-yield={yieldToDemo || undefined}
+        inert={yieldToDemo || undefined}
         className="vy-switcher fixed bottom-4 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-1 rounded-full p-1.5"
       >
         <span className="sr-only" aria-live="polite">
@@ -264,9 +327,7 @@ export const VariantSwitcher = () => {
           aria-label="Previous concept"
           title="Previous concept ( [ )"
           onClick={() => stepVariant(current, -1)}
-          onPointerEnter={() =>
-            prefetch(CONCEPT_IDS[(at + CONCEPT_IDS.length - 1) % CONCEPT_IDS.length])
-          }
+          onPointerEnter={() => prefetch(conceptAt(current, -1))}
         >
           <ChevronLeft />
         </Button>
@@ -274,18 +335,22 @@ export const VariantSwitcher = () => {
           ref={trigger}
           variant="concept"
           size="pill"
-          aria-label={`Concept ${at + 1} of ${CONCEPT_IDS.length}: ${meta.name}. Choose a concept`}
+          aria-label={
+            at < 0
+              ? `Draft concept: ${meta.name}. Choose a concept`
+              : `Concept ${at + 1} of ${count}: ${meta.name}. Choose a concept`
+          }
           aria-haspopup="dialog"
           aria-expanded={open}
           aria-controls={open ? 'vy-concept-picker' : undefined}
           onClick={() => (open ? close() : openPicker())}
           className="min-w-0 gap-2 px-3"
         >
-          <Chip meta={meta} theme={theme} />
+          <Chip meta={meta} />
           <span className="font-mono text-[10px] opacity-60">{current.toUpperCase()}</span>
           <span className="text-ink truncate">{meta.name}</span>
-          <span className="text-steel font-mono text-[10px]">
-            {at + 1}/{CONCEPT_IDS.length}
+          <span className="text-steel font-mono text-[10px] tabular-nums">
+            {at < 0 ? 'draft' : `${at + 1}/${count}`}
           </span>
           <ChevronUp
             aria-hidden="true"
@@ -298,7 +363,7 @@ export const VariantSwitcher = () => {
           aria-label="Next concept"
           title="Next concept ( ] )"
           onClick={() => stepVariant(current, 1)}
-          onPointerEnter={() => prefetch(CONCEPT_IDS[(at + 1) % CONCEPT_IDS.length])}
+          onPointerEnter={() => prefetch(conceptAt(current, 1))}
         >
           <ChevronRight />
         </Button>
@@ -329,7 +394,7 @@ export const VariantSwitcher = () => {
               id={titleId}
               className="vy-switcher-label font-mono text-[10px] font-semibold tracking-[0.12em] whitespace-nowrap uppercase"
             >
-              {CONCEPT_IDS.length} concepts
+              {count} concepts{drafts && ' · drafts shown'}
             </span>
             <span className="vy-switcher-label ml-auto hidden items-center gap-1 text-[11px] whitespace-nowrap sm:inline-flex">
               Step with <kbd className="vy-kbd">[</kbd>
@@ -378,7 +443,6 @@ export const VariantSwitcher = () => {
                   <Tile
                     key={c.id}
                     meta={c}
-                    theme={theme}
                     large
                     selected={c.id === current}
                     active={c.id === active}
@@ -410,7 +474,6 @@ export const VariantSwitcher = () => {
                       <Tile
                         key={c.id}
                         meta={c}
-                        theme={theme}
                         selected={c.id === current}
                         active={c.id === active}
                         onPick={pick}

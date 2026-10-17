@@ -10,7 +10,7 @@ const LEGACY_RUNNER = 'variantly-runner';
 /*
  * Reads persisted choices after mount. On the homepage the concept is the one
  * the <head> boot script already painted (html[data-variant]: `?v=`, the saved
- * pick or 'a', drafts only with ?drafts=1), so the store never disagrees with
+ * pick or 'a'; see lib/variantBoot.ts), so the store never disagrees with
  * the first frame.
  */
 export const StoreHydrator = () => {

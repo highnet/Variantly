@@ -756,6 +756,26 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   font: 600 11px/1 var(--font-mono); color: var(--ink); background: var(--surface);
 }
 .vy-chip { box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12); }
+/* Chip colours: both themes ride as --c-l / --c-d; the theme attribute picks. */
+.vy-chip i { background: var(--c-l); }
+:root[data-theme='dark'] .vy-chip i { background: var(--c-d); }
+.vy-draft {
+  align-self: center; padding: 1px 5px; border: 1px dashed currentColor; border-radius: 999px;
+  font: 600 9px/1.3 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7;
+}
+/* Phones / touch: the dock steps aside while the before/after demo fills the
+   bottom of the screen (VariantSwitcher's useYield, or the demo's own
+   html[data-demo-focus]); it slides back once the demo has scrolled past. */
+.vy-switcher {
+  transition: transform var(--dur-fast, 200ms) var(--ease-out-expo, ease-out),
+    opacity var(--dur-fast, 200ms) ease;
+}
+.vy-switcher[data-yield] { transform: translateY(calc(100% + 24px)); opacity: 0; pointer-events: none; }
+@media (max-width: 639px), (pointer: coarse) {
+  :root[data-demo-focus] .vy-switcher { transform: translateY(calc(100% + 24px)); opacity: 0; pointer-events: none; }
+  :root[data-demo-focus] .vy-switcher-pop { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .vy-switcher { transition: none; } }
 
 @media (max-width: 639px) {
   .vy-switcher { bottom: 12px; }

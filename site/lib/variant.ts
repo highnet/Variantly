@@ -1,5 +1,6 @@
 'use client';
 
+import { useSyncExternalStore } from 'react';
 import { flushSync } from 'react-dom';
 
 import {
@@ -36,7 +37,8 @@ export const currentVariant = (): ConceptId => {
 };
 
 export const setVariant = (v: ConceptId) => {
-  // Drafts are reachable only while they are shown (?drafts=1).
+  // Drafts are picked only while they are shown (?drafts=1); a ?v=<draft>
+  // link opens one directly in the boot script.
   if (!shownIds().includes(v)) return;
   const id = ++swapId;
   const html = document.documentElement;
@@ -84,3 +86,15 @@ export const shuffleVariant = (from: ConceptId) => {
 
 // The active concept on the client; null until persisted state is read.
 export const useVariant = () => useSiteStore((s) => (s.hydrated ? s.variant : null));
+
+// The concept on screen, read straight from html[data-variant] (set in <head>
+// before first paint, then by every swap), so client-only chrome renders the
+// right concept on its first frame instead of waiting for the store. null on
+// the server.
+const onVariantAttr = (cb: () => void) => {
+  const mo = new MutationObserver(cb);
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-variant'] });
+  return () => mo.disconnect();
+};
+export const useConcept = (): ConceptId | null =>
+  useSyncExternalStore(onVariantAttr, currentVariant, () => null);

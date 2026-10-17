@@ -9,18 +9,25 @@ import { markLoaded } from '@/lib/loadProgress';
 import { startPerfTier } from '@/lib/perfTier';
 import { calmMotion } from '@/lib/prefs';
 import { holdFrame, releaseFrame, seekTime } from '@/lib/seek';
-import { useVariant } from '@/lib/variant';
+import { useConcept } from '@/lib/variant';
 
 // three.js stays out of the first load: the scene arrives after the page is up.
 const GlField = dynamic(() => import('./GlField').then((m) => m.GlField), { ssr: false });
 
+const htmlTheme = () => {
+  const html = document.documentElement;
+  // seekreel renders pin the theme from the URL before the first draw.
+  const forced = new URLSearchParams(location.search).get('theme');
+  if (forced === 'light' || forced === 'dark') html.dataset.theme = forced;
+  return html.dataset.theme === 'dark' ? 'dark' : 'light';
+};
+
+// Client-only (ssr: false), so the first render already has the painted
+// theme: the scene never builds in light only to rebuild in dark.
 const useTheme = () => {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>(htmlTheme);
   useEffect(() => {
     const html = document.documentElement;
-    // seekreel renders pin the theme from the URL before the first draw.
-    const forced = new URLSearchParams(location.search).get('theme');
-    if (forced === 'light' || forced === 'dark') html.dataset.theme = forced;
     const read = () => setTheme(html.dataset.theme === 'dark' ? 'dark' : 'light');
     read();
     const mo = new MutationObserver(read);
@@ -58,13 +65,11 @@ const useConceptArt = (key: ConceptId | null) => {
  * Fixed behind content.
  */
 export const Backdrop = () => {
-  const key = useVariant();
+  // html[data-variant] (set before first paint, then by setVariant), not the
+  // store: the backdrop starts loading on mount instead of after hydration.
+  const key = useConcept();
   const theme = useTheme();
   const art = useConceptArt(key);
-  // Concept styles (concepts/<id>/concept.css) key off html[data-variant].
-  useEffect(() => {
-    if (key) document.documentElement.dataset.variant = key;
-  }, [key]);
   // Reduced motion never loads the scene, so there is nothing to wait for.
   useEffect(() => {
     if (calmMotion() && seekTime() === null) markLoaded('scene');
@@ -92,9 +97,11 @@ export const Backdrop = () => {
     >
       <div className="vy-blobs vy-art absolute inset-0">{Art && <Art key={art.id} />}</div>
       <div className="vy-scene absolute inset-0">
-        {/* Reduced motion: the CSS layers only; the three.js chunk never loads. */}
+        {/* Reduced motion: the CSS layers only; the three.js chunk never loads.
+            Not keyed: GlField cross-fades a concept or theme change itself, so
+            the old scene stays up until the new one has drawn. */}
         {(!calmMotion() || seekTime() !== null) && (
-          <GlField key={key + theme} concept={key} theme={theme} grain={CONCEPT_BY_ID[key].grain} />
+          <GlField concept={key} theme={theme} grain={CONCEPT_BY_ID[key].grain} />
         )}
       </div>
     </div>

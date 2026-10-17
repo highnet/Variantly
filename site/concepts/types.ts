@@ -25,7 +25,8 @@ export type ConceptMeta = {
   // Strength of the film grain GlField adds to the scene's shapes (0 = none).
   grain: number;
   // 'draft' keeps a concept out of the switcher, the cycle order, shuffle and
-  // ?v= links until it is finished; ?drafts=1 previews drafts (concepts/README.md).
+  // the saved pick until it is finished; `?v=<id>` opens one directly and
+  // `?drafts=1` lists every draft for review (concepts/README.md).
   // Omitted means 'live'.
   status?: 'live' | 'draft';
 };

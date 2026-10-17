@@ -4,7 +4,8 @@ Each homepage concept ("a fresh look") is one folder, `concepts/<id>/`. A
 concept agent works **only inside its own folder**: no shared file needs to
 change to add, replace or restyle a concept. All 20 ids (a–t) are already
 registered. h–t are placeholders, scaffolded from
-`.impeccable/decision/concepts-13.json`, waiting for their real design.
+`.impeccable/decision/concepts-13.json`, waiting for their real design, and
+marked `status: 'draft'` so visitors never see them (see **Drafts** below).
 
 ```
 concepts/
@@ -38,6 +39,8 @@ name and type. Nothing else changes.
      face the layout already loads (`--font-*` vars in `lib/introFonts.ts` and
      `app/layout.tsx`); a name it does not load falls back to the next entry.
    - `grain`: opacity (0–0.3) of the shared film-grain overlay.
+   - `status`: `'draft'` while the concept is being built; delete the line
+     (or set `'live'`) when it is finished. See **Drafts**.
 2. **`concept.css`**: every rule starts with `:root[data-variant='<id>']`
    (theme: add `[data-theme='dark']`). It must set the page tokens in **both
    themes**:
@@ -74,11 +77,30 @@ name and type. Nothing else changes.
 To regenerate a placeholder from the JSON: `node scripts/scaffold-concept.mjs <id> --force`
 (`--meta` rewrites only `meta.ts` and `concept.css`).
 
+## Drafts
+
+A concept whose `meta.ts` has `status: 'draft'` is hidden from visitors: it is
+left out of the switcher (dock count, picker, families), `[` / `]`, shuffle,
+"a fresh look", and a saved pick of it falls back to `a`. Finished concepts
+omit `status` (or say `'live'`). To review drafts on the homepage:
+
+- **`?v=<id>`** (e.g. `/?v=h`) opens that one concept directly, draft or not.
+  The dock shows it with a `draft` count; stepping from it moves into the
+  live list.
+- **`?drafts=1`** lists every concept, drafts included (tagged _Draft_ in the
+  picker), for the rest of the browser session. **`?drafts=0`** ends it.
+
+The boot script (`lib/variantBoot.ts`) records the flag as `html[data-drafts]`
+before first paint; `shownIds()` / `shownConcepts()` in `metas.ts` give the
+list in effect. To ship a concept, remove its `status: 'draft'` line in the
+same PR that finishes it.
+
 ## Add a 21st concept
 
 Run the scaffold (or copy a folder), then list the id once in `metas.ts` (import
-+ `ConceptId` + `CONCEPTS`), `index.ts` (`CONCEPT_LOADERS`) and `styles.ts`.
-Those three lines are the only shared edits, and only for a new id.
+
+- `ConceptId` + `CONCEPTS`), `index.ts` (`CONCEPT_LOADERS`) and `styles.ts`.
+  Those three lines are the only shared edits, and only for a new id.
 
 ## Rules
 
@@ -111,12 +133,17 @@ Those three lines are the only shared edits, and only for a new id.
 ## How it runs
 
 - `lib/variantBoot.ts` sets `html[data-variant]` in `<head>` from `?v=`, the
-  saved pick, else `a`, before first paint; every `concept.css` is already
-  loaded, so there is no flash.
+  saved pick, else `a`, before first paint (plus `html[data-drafts]` and a
+  remembered `html[data-perf='low']`); every `concept.css` is already loaded,
+  so there is no flash. Client chrome (backdrop, switcher dock) renders from
+  that attribute (`useConcept()` in `lib/variant.ts`), not the store, so its
+  first frame already shows the right concept.
 - `components/backdrop/Backdrop.tsx` renders the active concept's
   `Backdrop.tsx` (lazy) and `GlField` (the scene, lazy, one still frame on
   phones / calm / low tier; ~24fps otherwise, paused while scrolled, hidden,
-  swapping or while the title dispatches `vy:gl-busy`).
+  swapping or while the title dispatches `vy:gl-busy`). Each scene's canvas
+  fades in after its first draw, and on a concept or theme change the old
+  scene stays under the new one until it has faded in.
 - `lib/letterLook.ts` loads the active `look.ts` and serves `lookPool` /
   `letterShadow` to the 3D title.
 - `lib/perfTier.ts` publishes `html[data-perf]` (`?perf=low|high` overrides;
