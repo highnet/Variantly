@@ -15,6 +15,7 @@ import {
   Special_Elite,
   UnifrakturMaguntia,
 } from 'next/font/google';
+import localFont from 'next/font/local';
 
 // None of these is needed for first paint (the title stays hidden until its
 // reveal starts), so none is preloaded.
@@ -51,6 +52,17 @@ const rubik = Rubik_Mono_One({
 });
 const pixel = Press_Start_2P({ weight: '400', subsets: ['latin'], preload: false });
 const righteous = Righteous({ weight: '400', subsets: ['latin'], preload: false });
+// Wild display faces (SIL OFL 1.1), self-hosted and subset to the letters of
+// "variantly" by scripts/build-3d-fonts.mjs (1-4 KB each), from the same files
+// as their 3D outlines. Display-only: nothing else on the page uses them.
+const bagel = localFont({ src: '../app/fonts/wild/bagel.woff2', preload: false });
+const shrikhand = localFont({ src: '../app/fonts/wild/shrikhand.woff2', preload: false });
+const tiltWarp = localFont({ src: '../app/fonts/wild/tilt-warp.woff2', preload: false });
+const climate = localFont({ src: '../app/fonts/wild/climate-crisis.woff2', preload: false });
+const silkscreen = localFont({ src: '../app/fonts/wild/silkscreen.woff2', preload: false });
+const rye = localFont({ src: '../app/fonts/wild/rye.woff2', preload: false });
+const fascinate = localFont({ src: '../app/fonts/wild/fascinate.woff2', preload: false });
+const wetPaint = localFont({ src: '../app/fonts/wild/wet-paint.woff2', preload: false });
 // Hero display faces, one per variant concept.
 const fredoka = Fredoka({
   weight: '700',
@@ -83,17 +95,27 @@ export const INTRO_FONTS = [
   rubik,
   pixel,
   righteous,
+  // Order must match FACES in scripts/build-3d-fonts.mjs.
+  bagel,
+  shrikhand,
+  tiltWarp,
+  climate,
+  silkscreen,
+  rye,
+  fascinate,
+  wetPaint,
 ].map((f) => f.className);
 
-// Final lockup per letter of "variantly": deliberately mismatched.
+// Final lockup per letter of "variantly": deliberately mismatched, wild faces
+// between classic ones, every letter still legible.
 export const INTRO_FINAL = [
   cinzel,
-  rubik,
+  bagel,
   vibes,
   fraktur,
-  abril,
+  shrikhand,
   bungee,
-  elite,
+  rye,
   pacifico,
-  orbitron,
+  tiltWarp,
 ].map((f) => f.className);

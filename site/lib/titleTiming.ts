@@ -13,6 +13,8 @@ const scheduleFor = (index: number) => [
   ...EASE_OUT,
 ];
 const SCHEDULES = [...WORD].map((_, i) => scheduleFor(i));
+// How many shifting steps a letter goes through before it locks in.
+export const stepCount = (index: number) => SCHEDULES[index].length;
 export const startDelay = (index: number) => 200 + Math.round(jitter(index, 2) * 120);
 
 // The step a letter is on `ms` after the intro starts: -1 before it starts,
@@ -58,4 +60,23 @@ export const msToNextStep = (ms: number, index: number) => {
     if (at < 0) return -at;
   }
   return 0;
+};
+
+// Surface ("look") of a letter at a step, out of the concept's n looks: the
+// same hash as the faces on a shifted index; `step` null once locked, where
+// neighbours never share a look.
+export const lookAt = (step: number | null, index: number, n: number) =>
+  step === null ? (index * 5 + 1) % n : faceAt(step, index + 11, n);
+
+// Mismatched sizes while shifting, like the title card's jumping glyphs,
+// shared by the 2D and 3D words. Never above 1: a shifting glyph may shrink
+// inside its slot but never spill.
+export const scaleAt = (step: number, index: number) =>
+  0.72 + (((step * 13 + index * 29) % 9) / 8) * 0.28;
+
+// The lock-in pop (vy-lock in globals.css for the 2D word): 1.12x easing back
+// to 1 over 0.35s.
+export const lockPop = (sinceLock: number) => {
+  const k = Math.min(1, Math.max(0, sinceLock / 0.35));
+  return 1 + 0.12 * (1 - k) * (1 - k);
 };

@@ -8,14 +8,17 @@ import type { VariantKey } from '@/components/backdrop/variants';
  * concept's pool, and the lockup is mismatched in material too (a ransom note
  * of surfaces). Each concept has at most six looks (phones three, all cheap),
  * built once and swapped by reference, so the animation never recompiles.
- * A look may add an "extra" layer drawn from the same glyph: an ink outline
- * hull, a misregistered second ink, or a pasted-paper drop shadow.
+ * A look may add an "extra" layer drawn from the same glyph (a phosphor glow).
+ * Every look takes its colours from the 2D letter it stands in for (its CSS
+ * colour on the face, the concept's stacked text-shadow on the extruded sides),
+ * so looks differ in surface and light only and the colour scheme matches.
  */
 
 type Style = 'clay' | 'riso' | 'crt' | 'toon' | 'facet' | 'paper' | 'flat';
 
 export type LetterLook = {
-  body: THREE.Material;
+  // Front/back faces, then the extruded sides and bevel (TextGeometry groups).
+  body: [THREE.Material, THREE.Material];
   extra: THREE.Material | null;
   // Where the extra layer sits relative to the glyph (letter units).
   offset: [number, number, number];
@@ -121,6 +124,7 @@ type ShaderOpts = {
   noise?: number;
   hatch?: number;
   stripe?: number;
+  additive?: boolean;
 };
 
 const shader = (style: Style, o: ShaderOpts) =>
@@ -140,9 +144,10 @@ const shader = (style: Style, o: ShaderOpts) =>
       uHatch: { value: o.hatch ?? 0 },
       uStripe: { value: o.stripe ?? 0 },
     },
-    transparent: (o.opacity ?? 1) < 1,
+    transparent: (o.opacity ?? 1) < 1 || !!o.additive,
     depthWrite: (o.opacity ?? 1) >= 1,
     side: o.back ? THREE.BackSide : THREE.FrontSide,
+    blending: o.additive ? THREE.AdditiveBlending : THREE.NormalBlending,
     toneMapped: false,
   });
 
@@ -177,184 +182,186 @@ const patch = (key: string, rim: boolean, glitter: boolean) => (m: THREE.Materia
   return m;
 };
 
-const plain = (body: THREE.Material, env = false): LetterLook => ({
-  body,
+const plain = (face: THREE.Material, side: THREE.Material, env = false): LetterLook => ({
+  body: [face, side],
   extra: null,
   offset: [0, 0, 0],
   env,
 });
 
-// Cheap pool entries come first: phones use the first three.
-const pools: Record<VariantKey, (dark: boolean, phone: boolean) => LetterLook[]> = {
-  a: (dark) => {
-    const rim = dark ? '#ff9f80' : '#ffd9c4';
-    const clays: [string, number][] = [
-      ['#d9785c', 0],
-      ['#6fa585', 0.6],
-      ['#d9a933', 0],
-      ['#7f95cf', 0.8],
-      ['#c76f98', 0.3],
-      ['#e8e0d0', 0.9],
-    ];
-    return clays.map(([a, sheen]) => plain(shader('clay', { a, b: rim, sheen, grain: 0.045 })));
-  },
-  b: (_dark, phone) => {
-    const px = phone ? 1 : Math.min(devicePixelRatio, 1.5);
-    const inks: [string, string, number][] = [
-      ['#ff48b0', '#0078bf', 4],
-      ['#0078bf', '#ff48b0', 6],
-      ['#ffe800', '#ff6c2f', 5],
-      ['#00a95c', '#1d1d5c', 8],
-      ['#ff6c2f', '#765ba7', 4],
-      ['#765ba7', '#ffe800', 7],
-    ];
-    return inks.map(([a, b, cell], k) => ({
-      body: shader('riso', { a, b, cell: cell * px }),
-      extra: shader('flat', { a: b, opacity: 0.55, grain: 0.06, seed: k }),
-      offset: [0.06 + (k % 3) * 0.03, -0.05 - (k % 2) * 0.04, -0.08],
-    }));
-  },
-  c: (dark, phone) => {
-    const px = phone ? 1 : Math.min(devicePixelRatio, 1.5);
-    const amber = dark ? ['#ff9e1f', '#ffd27a'] : ['#c2560e', '#ff9d3c'];
-    const green = dark ? ['#1fd873', '#a6ffcf'] : ['#0f8a48', '#3fd78a'];
-    const ice = dark ? ['#9fd9ff', '#e4f5ff'] : ['#2c6c9c', '#7fc4f2'];
-    const tubes: [string[], number, number][] = [
-      [amber, 3, 0],
-      [green, 3, 0],
-      [amber, 5, 0.6],
-      [green, 4, 0.6],
-      [amber, 2, 0],
-      [ice, 3, 0.3],
-    ];
-    return tubes.map(([[a, b], cell, noise], k) =>
-      plain(shader('crt', { a, b, cell: cell * px, noise, seed: k * 3.7, grain: 0.05 })),
+// Colours of the 2D letter a 3D letter stands in for.
+export type LetterInk = { face: string; side: string };
+
+// One material per (look, face/side): `make` builds it for a colour.
+const both = (ink: LetterInk, make: (colour: string) => THREE.Material, env = false) =>
+  plain(make(ink.face), make(ink.side), env);
+
+// Each concept's surfaces for one letter. Cheap entries come first: phones use
+// the first three.
+type Pool = (ink: LetterInk, dark: boolean, phone: boolean) => LetterLook[];
+const pools: Record<VariantKey, Pool> = {
+  a: (ink, dark) => {
+    const b = dark ? '#ff9f80' : '#ffd9c4';
+    return [0, 0.6, 0.2, 0.8, 0.35, 0.9].map((sheen) =>
+      both(ink, (a) => shader('clay', { a, b, sheen, grain: 0.045 })),
     );
   },
-  d: (dark) => {
-    const ink = dark ? '#f1ece2' : '#000000';
-    const cels: [string, number, number][] = [
-      ['#ffe600', 0.07, 0],
-      ['#ff3b00', 0.05, 1],
-      ['#ffffff', 0.1, 0],
-      ['#00c2ff', 0.06, 1],
-      ['#ff3b00', 0.12, 0],
-      ['#ffe600', 0.04, 1],
+  b: (ink, _dark, phone) => {
+    const px = phone ? 1 : Math.min(devicePixelRatio, 1.5);
+    // The overprint's second ink is the concept's offset blue.
+    return [4, 6, 5, 8, 3, 7].map((cell) =>
+      both(ink, (a) => shader('riso', { a, b: '#2f5bff', cell: cell * px })),
+    );
+  },
+  c: (ink, dark, phone) => {
+    const px = phone ? 1 : Math.min(devicePixelRatio, 1.5);
+    const hot = dark ? '#ffe2a8' : '#5fd6cc';
+    const tubes: [number, number][] = [
+      [3, 0],
+      [4, 0.5],
+      [2, 0],
+      [5, 0.6],
+      [3, 0.3],
+      [4, 0],
     ];
-    return cels.map(([a, push, hatch]) => ({
-      body: shader('toon', { a, hatch, cell: 5, grain: 0.02 }),
-      // Inverted hull: back faces pushed out along the normals read as ink.
-      extra: shader('flat', { a: ink, push, back: true, grain: 0 }),
-      offset: [0, 0, 0],
+    return tubes.map(([cell, noise], k) => ({
+      ...both(ink, (a) =>
+        shader('crt', { a, b: hot, cell: cell * px, noise, seed: k * 3.7, grain: 0.05 }),
+      ),
+      // The phosphor glow: a pushed-out back-face hull, added to the screen.
+      extra: shader('flat', {
+        a: ink.face,
+        opacity: dark ? 0.3 : 0.18,
+        push: 0.08,
+        back: true,
+        additive: true,
+        grain: 0,
+      }),
     }));
   },
-  e: (dark) => [
-    plain(shader('facet', { a: '#e1261c', grain: 0.02 })),
-    plain(shader('facet', { a: '#1f4fa3', grain: 0.02 })),
-    plain(shader('facet', { a: '#f2c400', grain: 0.02 })),
-    plain(shader('flat', { a: '#e1261c', grain: 0.015 })),
-    plain(shader('facet', { a: dark ? '#f0ebe0' : '#111111', grain: 0.02 })),
-    plain(shader('flat', { a: '#1f4fa3', grain: 0.015 })),
-  ],
-  f: (dark, phone) => {
-    const shadow = () => shader('flat', { a: '#000000', opacity: dark ? 0.55 : 0.28, grain: 0 });
-    const offset: [number, number, number] = [0.14, -0.14, -0.35];
-    const paper = (o: ShaderOpts): LetterLook => ({
-      body: shader('paper', o),
-      extra: shadow(),
-      offset,
-    });
-    const foil = (): LetterLook => ({
-      body: patch(
-        'foil',
-        false,
-        false,
-      )(new THREE.MeshStandardMaterial({ color: '#d8b45a', metalness: 1, roughness: 0.32 })),
-      extra: shadow(),
-      offset,
-      env: true,
-    });
-    return [
-      paper({ a: '#fdfdf7', seed: 1.3 }),
-      paper({ a: '#b98c5a', stripe: 1, seed: 2.1 }),
-      paper({ a: '#d9d4c7', noise: 1, cell: 4, seed: 3.7 }),
-      paper({ a: '#f95738', seed: 4.2 }),
-      phone ? paper({ a: '#83c5be', seed: 5.9 }) : foil(),
-      paper({ a: '#f4d35e', seed: 6.4 }),
-    ];
-  },
-  g: (_dark, phone) => {
-    const colours = ['#ff2d87', '#6a3dff', '#00b4e6', '#ff9a00', '#13c27a', '#ff5fa2'];
+  d: (ink, _dark, phone) =>
+    [0, 1, 0, 1, 0, 1].map((hatch) =>
+      both(ink, (a) => shader('toon', { a, hatch: phone ? 0 : hatch, cell: 5, grain: 0.02 })),
+    ),
+  e: (ink) =>
+    (['facet', 'flat', 'facet', 'flat', 'facet', 'flat'] as Style[]).map((style) =>
+      both(ink, (a) => shader(style, { a, grain: 0.02 })),
+    ),
+  f: (ink) =>
+    (
+      [
+        { seed: 1.3 },
+        { stripe: 1, seed: 2.1 },
+        { noise: 1, cell: 4, seed: 3.7 },
+        { seed: 4.2 },
+        { stripe: 1, seed: 5.9 },
+        { noise: 1, cell: 3, seed: 6.4 },
+      ] as Omit<ShaderOpts, 'a'>[]
+    ).map((o) => both(ink, (a) => shader('paper', { a, ...o }))),
+  g: (ink, _dark, phone) => {
     const rim = patch('candy-rim', true, false);
     const glitter = patch('candy-glitter', false, true);
-    // Phones: no clearcoat pass; the rim shader fakes the thin-film sheen.
-    if (phone)
-      return [
-        rim(new THREE.MeshStandardMaterial({ color: colours[0], roughness: 0.2, metalness: 0.05 })),
-        glitter(new THREE.MeshStandardMaterial({ color: colours[1], roughness: 0.45 })),
-        rim(
-          new THREE.MeshStandardMaterial({ color: colours[2], roughness: 0.15, metalness: 0.05 }),
-        ),
-      ].map((m) => plain(m, true));
     const grain = patch('candy', false, false);
-    return [
-      // Iridescent clear-coat: a thin film whose hue shifts with the angle.
-      grain(
-        new THREE.MeshPhysicalMaterial({
-          color: colours[0],
-          roughness: 0.22,
-          metalness: 0.05,
-          clearcoat: 1,
-          clearcoatRoughness: 0.06,
-          iridescence: 1,
-          iridescenceIOR: 1.35,
-          iridescenceThicknessRange: [180, 720],
-        }),
-      ),
-      // Jelly: soft and sheeny.
-      grain(
-        new THREE.MeshPhysicalMaterial({
-          color: colours[1],
-          roughness: 0.35,
-          sheen: 1,
-          sheenColor: new THREE.Color('#ffd1f0'),
-          sheenRoughness: 0.4,
-          clearcoat: 0.6,
-        }),
-      ),
-      // Hard candy gloss.
-      grain(
-        new THREE.MeshPhysicalMaterial({
-          color: colours[2],
-          roughness: 0.08,
-          clearcoat: 1,
-          clearcoatRoughness: 0.02,
-        }),
-      ),
-      // Sugar glitter.
-      glitter(new THREE.MeshStandardMaterial({ color: colours[3], roughness: 0.5 })),
-      grain(
-        new THREE.MeshPhysicalMaterial({
-          color: colours[4],
-          roughness: 0.2,
-          clearcoat: 1,
-          iridescence: 0.8,
-          iridescenceIOR: 1.6,
-          iridescenceThicknessRange: [300, 900],
-        }),
-      ),
-      rim(new THREE.MeshStandardMaterial({ color: colours[5], roughness: 0.18 })),
-    ].map((m) => plain(m, true));
+    const std = (o: THREE.MeshStandardMaterialParameters) => (a: string) =>
+      new THREE.MeshStandardMaterial({ ...o, color: a });
+    const phys = (o: THREE.MeshPhysicalMaterialParameters) => (a: string) =>
+      new THREE.MeshPhysicalMaterial({ ...o, color: a });
+    const looks: ((a: string) => THREE.Material)[] = [
+      (a) => rim(std({ roughness: 0.2, metalness: 0.05 })(a)),
+      (a) => glitter(std({ roughness: 0.45 })(a)),
+      (a) => rim(std({ roughness: 0.12, metalness: 0.05 })(a)),
+    ];
+    // Phones: no clearcoat pass; the rim shader fakes the thin-film sheen.
+    if (!phone)
+      looks.push(
+        // Iridescent clear-coat: a thin film whose hue shifts with the angle.
+        (a) =>
+          grain(
+            phys({
+              roughness: 0.22,
+              metalness: 0.05,
+              clearcoat: 1,
+              clearcoatRoughness: 0.06,
+              iridescence: 0.7,
+              iridescenceIOR: 1.35,
+              iridescenceThicknessRange: [180, 720],
+            })(a),
+          ),
+        // Jelly: soft and sheeny.
+        (a) =>
+          grain(
+            phys({
+              roughness: 0.35,
+              sheen: 1,
+              sheenColor: new THREE.Color('#ffd1f0'),
+              sheenRoughness: 0.4,
+              clearcoat: 0.6,
+            })(a),
+          ),
+        // Hard candy gloss.
+        (a) => grain(phys({ roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.02 })(a)),
+      );
+    return looks.map((make) => both(ink, make, true));
   },
 };
 
-export const lookPool = (variant: VariantKey, dark: boolean, phone: boolean) => {
-  const pool = pools[variant](dark, phone);
-  return phone ? pool.slice(0, 3) : pool;
-};
+export const poolSize = (phone: boolean) => (phone ? 3 : 6);
+
+export const lookPool = (variant: VariantKey, ink: LetterInk, dark: boolean, phone: boolean) =>
+  pools[variant](ink, dark, phone).slice(0, poolSize(phone));
 
 export const disposePool = (pool: LetterLook[]) =>
   pool.forEach((l) => {
-    l.body.dispose();
+    l.body.forEach((m) => m.dispose());
     l.extra?.dispose();
   });
+
+/*
+ * The shadow the 3D letters cast on a backdrop plane just behind them, in
+ * each concept's manner: a soft warm shadow under clay, hard offset ink for
+ * riso (its blue offset print), brutal and cut & paste, a soft one under the
+ * TVA glow and the candy.
+ * `dir` points from the word toward the light (x right, y up, z toward the
+ * viewer); smaller z throws the shadow further from the letters.
+ */
+export type LetterShadow = {
+  color: string;
+  opacity: number;
+  // Blur radius in shadow-map texels (1 = hard edge).
+  radius: number;
+  dir: [number, number, number];
+};
+
+export const letterShadow = (variant: VariantKey, dark: boolean): LetterShadow => {
+  switch (variant) {
+    case 'a':
+      return {
+        color: dark ? '#1a0408' : '#8a3a1c',
+        opacity: dark ? 0.5 : 0.3,
+        radius: 8,
+        dir: [-0.3, 0.6, 1],
+      };
+    case 'b':
+      return { color: '#2f5bff', opacity: 0.6, radius: 1, dir: [-0.42, 0.3, 1] };
+    case 'c':
+      return { color: '#000000', opacity: dark ? 0.4 : 0.2, radius: 10, dir: [0, 0.45, 1] };
+    case 'd':
+      return {
+        color: dark ? '#ff3d00' : '#000000',
+        opacity: dark ? 0.6 : 0.3,
+        radius: 1,
+        dir: [-0.35, 0.35, 1],
+      };
+    case 'e':
+      return { color: '#000000', opacity: dark ? 0.45 : 0.2, radius: 2, dir: [-0.35, 0.35, 1] };
+    case 'f':
+      return { color: '#000000', opacity: dark ? 0.55 : 0.35, radius: 1, dir: [-0.3, 0.42, 1] };
+    default:
+      return {
+        color: dark ? '#05010f' : '#5b2fd6',
+        opacity: dark ? 0.55 : 0.25,
+        radius: 8,
+        dir: [-0.25, 0.6, 1],
+      };
+  }
+};
