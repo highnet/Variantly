@@ -3,6 +3,8 @@ import localFont from 'next/font/local';
 import type { ReactNode } from 'react';
 
 import { Toaster } from '@/components/Toaster';
+import { HERO_FONT_VARS } from '@/lib/introFonts';
+import { cn } from '@/lib/utils';
 import { PREFS_BOOT } from '@/lib/prefs';
 import { REPO_URL, SITE_URL } from '@/lib/site';
 
@@ -87,7 +89,7 @@ type RootLayoutProps = {
 };
 
 const RootLayout = ({ children }: RootLayoutProps) => (
-  <html lang="en" className={martian.variable} suppressHydrationWarning>
+  <html lang="en" className={cn(martian.variable, HERO_FONT_VARS)} suppressHydrationWarning>
     <head>
       {/* Theme and reading aids before first paint, so nothing flashes. */}
       <script dangerouslySetInnerHTML={{ __html: PREFS_BOOT }} />
