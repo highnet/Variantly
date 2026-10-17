@@ -8,7 +8,6 @@ import { holdFrame, seekTime } from '@/lib/seek';
 
 import dynamic from 'next/dynamic';
 import { useVariant } from '@/lib/variant';
-import { BackdropArt } from '@/components/BackdropArt';
 
 import { VARIANTS } from './variants';
 
@@ -32,8 +31,9 @@ const useTheme = () => {
 };
 
 /*
- * Page-wide decorative layer: the variant's three.js scene, its own static
- * background art (see BackdropArt). Grain lives on the scene's shapes (GlField).
+ * Page-wide decorative layer: the variant's three.js scene, over the static
+ * background art that the server already painted (BackdropPoster). Grain lives
+ * on the scene's shapes (GlField).
  */
 export const Backdrop = () => {
   const key = useVariant();
@@ -66,7 +66,6 @@ export const Backdrop = () => {
       className="vy-backdrop pointer-events-none fixed inset-0 -z-10 overflow-hidden"
       aria-hidden="true"
     >
-      <BackdropArt variant={key} />
       <div className="vy-scene absolute inset-0">
         {/* Reduced motion: the CSS layers only; the three.js chunk never loads. */}
         {(!calmMotion() || seekTime() !== null) && (

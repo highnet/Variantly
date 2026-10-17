@@ -80,3 +80,32 @@ export const lockPop = (sinceLock: number) => {
   const k = Math.min(1, Math.max(0, sinceLock / 0.35));
   return 1 + 0.12 * (1 - k) * (1 - k);
 };
+
+// Share of each step a letter spends morphing into its next face (the rest
+// holds the face it reached), and the ease of that morph.
+export const MORPH_SHARE = 0.7;
+const easeInOut = (u: number) => (u < 0.5 ? 4 * u * u * u : 1 - (-2 * u + 2) ** 3 / 2);
+
+export type MorphPhase = { step: number; e: number };
+
+// Where a letter's outline is `ms` into the reveal, written to `out` (no
+// allocation per frame): on face `step` (0 before it starts), `e` (eased) of
+// the way to the next step's face, the final face after its last step.
+// Returns false once the letter has locked.
+export const morphAt = (ms: number, index: number, out: MorphPhase) => {
+  let at = ms - startDelay(index);
+  out.step = 0;
+  out.e = 0;
+  if (at < 0) return true;
+  const schedule = SCHEDULES[index];
+  for (let k = 0; k < schedule.length; k++) {
+    if (at < schedule[k]) {
+      const hold = schedule[k] * (1 - MORPH_SHARE);
+      out.step = k;
+      out.e = at < hold ? 0 : easeInOut((at - hold) / (schedule[k] - hold));
+      return true;
+    }
+    at -= schedule[k];
+  }
+  return false;
+};
