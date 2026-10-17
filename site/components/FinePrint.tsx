@@ -11,7 +11,7 @@ import { REPO_URL } from '@/lib/site';
  * checks before running it on their project.
  */
 const FinePrint = () => (
-  <section aria-labelledby="faq-title" className="grid gap-10">
+  <section aria-labelledby="faq-title" className="grid gap-24">
     <div className="grid gap-10">
       <Typography variant="headline" as="h2" id="faq-title">
         Common questions
@@ -28,7 +28,7 @@ const FinePrint = () => (
       </dl>
     </div>
 
-    <QuickDocs className="mt-16" />
+    <QuickDocs />
 
     <footer className="border-rule text-steel flex flex-wrap items-center justify-between gap-4 border-t pt-6 text-sm">
       <span className="max-w-[90ch] leading-relaxed">
