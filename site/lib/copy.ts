@@ -13,6 +13,18 @@ export const celebrateCopy = (from?: Element | null) => {
   if (!from || calmMotion()) return;
   const r = from.getBoundingClientRect();
   burst(r.left + r.width / 2, r.top + r.height / 2, 10);
+  // From inside a tip, lift the burst into the top layer too, above the
+  // bubble, or the bubble would cover it.
+  const layer = document.body.lastElementChild;
+  if (
+    from.closest('[popover]') &&
+    layer instanceof HTMLElement &&
+    layer.classList.contains('vy-burst') &&
+    typeof layer.showPopover === 'function'
+  ) {
+    layer.popover = 'manual';
+    layer.showPopover();
+  }
   from.animate(
     [
       { transform: 'scale(0.8)' },

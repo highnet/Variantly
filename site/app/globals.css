@@ -1820,3 +1820,26 @@ main > div p { line-height: 1.65; }
     animation: tip-fade-out 100ms ease-in both !important;
   }
 }
+
+/* A toast's life line is its timer, not decoration: calm and reduced motion
+   keep it running so the toast stays long enough to read, then leaves. */
+:root[data-motion='calm'] .animate-toast-life {
+  animation: toast-life 3200ms linear forwards !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root .animate-toast-life {
+    animation: toast-life 3200ms linear forwards !important;
+  }
+}
+
+/* A copy burst lifted into the top layer (from inside a tip): drop the
+   popover's own box so it stays a full-screen, see-through layer. */
+.vy-burst[popover] {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}

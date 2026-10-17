@@ -315,7 +315,7 @@ const TipCommand = ({ command, className }: TipCommandProps) => {
         {shown}
       </code>
       <Button
-        variant="icon-slate"
+        variant="primary"
         size="icon-sm"
         onClick={copy}
         aria-label={copied ? 'Copied' : `Copy ${shown}`}

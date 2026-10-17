@@ -10,12 +10,17 @@ const LEGAL = [
 
 const VERSION = process.env.NEXT_PUBLIC_VERSION ?? '0.0.0';
 const BUILD = process.env.NEXT_PUBLIC_BUILD ?? 'dev';
+const BUILD_DATE = process.env.NEXT_PUBLIC_BUILD_DATE ?? '';
 const HOST = new URL(SITE_URL).host;
 
 const items = [
   { label: '© variantly' },
   { label: `Release notes v${VERSION}`, href: `${REPO_URL}/releases` },
-  { label: `Build ${BUILD}`, href: `${REPO_URL}/commit/${BUILD}` },
+  // The build as a small case-number stamp: this exact version of the site, and when.
+  {
+    label: `Variant record VY-${BUILD}${BUILD_DATE && ` · logged ${BUILD_DATE}`}`,
+    href: `${REPO_URL}/commit/${BUILD}`,
+  },
   { label: 'Designed by highnet', href: 'https://github.com/highnet', strong: true },
   { label: HOST, href: SITE_URL, strong: true },
 ];

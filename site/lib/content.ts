@@ -86,7 +86,7 @@ export const STEPS: { label: string; title: string; body: string; artifact: stri
   {
     label: 'Wait',
     title: 'Your AI designs',
-    body: '**Your own assistant** redesigns the site several ways, each in a **{{worktree}}**. Your files stay **untouched**.',
+    body: '**Your own assistant** redesigns the site several ways, each in a **{{worktree}}** on its own {{branch}} of your site’s timeline. Your files stay **untouched**.',
     artifact: 'Start with 4',
   },
   {

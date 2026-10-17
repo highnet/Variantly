@@ -30,17 +30,21 @@ export const GLOSSARY = {
   },
   git: {
     label: 'git',
-    body: 'Keeps a history of your code as saved snapshots, so any change can be undone. variantly uses it to keep every design apart from your files.',
+    body: 'Keeps the history of your code, so any change can be undone and parallel versions can sit side by side. variantly uses it to keep every design apart from your files.',
     href: 'https://git-scm.com/downloads',
     hrefLabel: 'Get git',
   },
   commit: {
     label: 'commit',
-    body: 'One saved snapshot of your files in git. variantly needs at least one so every design starts from the same point.',
+    body: 'One saved, timestamped snapshot of your files in git. variantly needs at least one so every design starts from the same point in time.',
   },
   worktree: {
     label: 'separate copy',
-    body: 'A git worktree: a second checkout of your project in its own folder. The AI edits that copy, never the files you work in.',
+    body: 'A git worktree: a second checkout of your project in its own folder, on its own branch. The AI edits that copy, never the files you work in.',
+  },
+  branch: {
+    label: 'branch',
+    body: 'A parallel timeline of your code in git. Each design gets its own, so nothing reaches your files until you keep one.',
   },
   agent: {
     label: 'AI coding agent',
@@ -74,7 +78,7 @@ export const GLOSSARY = {
   },
   keep: {
     label: 'keep one',
-    body: 'Press Keep on the one you like and its changes land in your files, for you to review before you commit. The others stay saved as git branches.',
+    body: 'Press Keep on the one you like and its changes land in your files, for you to review before you commit. The other timelines stay as git branches until you run `npx variantly clean`.',
   },
 } satisfies Record<string, GlossaryEntry>;
 
