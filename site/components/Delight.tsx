@@ -118,7 +118,7 @@ export const Delight = () => {
       .querySelectorAll<HTMLElement>('main > div [data-slot="command-copy"] code')
       .forEach((el) => {
         // Skip ones on screen already, and ones in the hidden agent view.
-      if (!el.offsetParent || el.getBoundingClientRect().top < innerHeight) return;
+        if (!el.offsetParent || el.getBoundingClientRect().top < innerHeight) return;
         const full = el.textContent ?? '';
         el.style.minHeight = `${el.offsetHeight}px`;
         el.textContent = '';

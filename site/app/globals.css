@@ -1443,3 +1443,22 @@ button:not(.vy-fresh):active, a.rounded-chip:active { transform: scale(0.94); tr
 :root[data-variant] [data-hero-title] { padding-block: clamp(4rem, 9vw, 8rem); }
 :root[data-variant] [data-hero-grid] { padding-block: clamp(3rem, 7vw, 6.5rem); row-gap: 3.5rem; }
 :root[data-variant] main > div section { row-gap: 2.25rem; }
+
+/* ---- Breathing room ------------------------------------------------------ */
+/* Readable measure and rhythm for body copy. */
+main > div p, main > div dd, main > div li > span + span { max-width: 65ch; }
+main > div p { line-height: 1.65; }
+/* Group with spacing, not lines: dividers inside sections step back. */
+:root[data-variant] main > div section .border-t:not(.on-slate *),
+:root[data-variant] main > div section .border-b:not(.on-slate *) { border-color: transparent; }
+/* Fewer boxes: a card inside a card becomes a soft tint instead of a frame. */
+:root[data-variant] main > div .bg-surface .bg-surface,
+:root[data-variant] main > div .on-slate .bg-surface {
+  border-color: transparent;
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+/* Disclosures: a quiet chevron, content springs in (see Delight). */
+.vy-more > summary { list-style: none; display: inline-flex; gap: 0.5em; align-items: baseline; }
+.vy-more > summary::-webkit-details-marker { display: none; }
+.vy-more > summary::before { content: '+'; font-weight: 700; color: var(--alert); transition: transform 300ms cubic-bezier(0.34, 1.6, 0.5, 1); display: inline-block; }
+.vy-more[open] > summary::before { transform: rotate(45deg); }

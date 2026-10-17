@@ -6,42 +6,16 @@ import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime, useSeekTime } from '@/lib/seek';
 import { Letters3D } from '@/components/Letters3D';
+import { startDelay, stepAt } from '@/lib/titleTiming';
 import { useSiteStore } from '@/lib/store';
 import { useVariant } from '@/lib/variant';
 import { cn } from '@/lib/utils';
 
 const WORD = 'variantly';
-// Timing after the Loki title card: every letter flickers at once, about four
-// typefaces a second, then the changes slow and each letter drops into its
-// final face. Letters lock in a loose, uneven order rather than left to right.
-const FLICKER_MS = 260;
-const EASE_OUT = [320, 400, 500, 640, 820, 1040];
-// Deterministic per-letter jitter, so a seeked frame is the same every time.
-const jitter = (index: number, salt: number) => ((index * 37 + salt * 11) % 7) / 6;
-const scheduleFor = (index: number) => [
-  ...Array(12 + Math.round(jitter(index, 1) * 4)).fill(FLICKER_MS),
-  ...EASE_OUT,
-];
-const SCHEDULES = [...WORD].map((_, i) => scheduleFor(i));
-const startDelay = (index: number) => 200 + Math.round(jitter(index, 2) * 120);
-
 const fontAt = (step: number, index: number) =>
   INTRO_FONTS[(step * 5 + index * 3 + ((step * 7 + index * 13) % 4)) % INTRO_FONTS.length];
 // Mismatched sizes while shifting, like the title card's jumping glyphs.
 const scaleAt = (step: number, index: number) => 0.8 + (((step * 13 + index * 29) % 9) / 8) * 0.4;
-
-// The step a letter is on `ms` after the intro starts: -1 before it starts,
-// null once locked.
-const stepAt = (ms: number, index: number) => {
-  let at = ms - startDelay(index);
-  if (at < 0) return -1;
-  const schedule = SCHEDULES[index];
-  for (let k = 0; k < schedule.length; k++) {
-    at -= schedule[k];
-    if (at < 0) return k;
-  }
-  return null;
-};
 
 type LetterProps = {
   char: string;

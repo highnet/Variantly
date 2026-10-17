@@ -2,22 +2,43 @@
 
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+import { FontLoader, type Font } from 'three/examples/jsm/loaders/FontLoader.js';
 
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
+import { stepAt } from '@/lib/titleTiming';
 
 const WORD = 'variantly';
-// Candy colours, one per letter, cycling.
-const COLOURS = ['#ff5fa2', '#7c5cff', '#22c3ee', '#ffb020', '#3ddc97'];
+// The 3D wardrobe: sans, serif, script-ish and mono faces (three.js examples;
+// licences beside them in public/fonts).
+const FACES = [
+  'helvetiker_bold',
+  'optimer_bold',
+  'gentilis_bold',
+  'droid_serif_bold',
+  'droid_sans_mono_regular',
+  'helvetiker_regular',
+  'optimer_regular',
+  'gentilis_regular',
+  'droid_serif_regular',
+];
+// Final lockup: deliberately mismatched, like the 2D card.
+const FINAL = [3, 0, 2, 4, 1, 0, 3, 2, 1];
+const COLOURS = ['#ff2d87', '#6a3dff', '#00b4e6', '#ff9a00', '#13c27a'];
+const faceAt = (step: number, i: number) =>
+  (step * 5 + i * 3 + ((step * 7 + i * 13) % 4)) % FACES.length;
+const scaleAt = (step: number, i: number) => 0.8 + (((step * 13 + i * 29) % 9) / 8) * 0.4;
 
 type Letters3DProps = { run: number };
 
 /*
- * The "variantly" title as real extruded letters. Each letter drops in on a
- * stagger with a springy spin (like the 2D title's lock-in), then the word
- * floats in a slow wave and tilts toward the cursor. Seeks to ?t for seekreel.
+ * The "variantly" title as glossy extruded letters with the same reveal as the
+ * 2D card: every letter shape-shifts through the 3D wardrobe at once, sizes
+ * jumping, then slows and locks into a mismatched lockup, popping as it lands.
+ * Clear-coated candy colours lit by a studio environment; the word floats and
+ * tilts toward the cursor. Seeks to ?t for seekreel.
  */
 export const Letters3D = ({ run }: Letters3DProps) => {
   const host = useRef<HTMLDivElement>(null);
@@ -33,15 +54,19 @@ export const Letters3D = ({ run }: Letters3DProps) => {
       preserveDrawingBuffer: true,
     });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    // Neutral tone mapping keeps the candy colours saturated under the studio light.
+    renderer.toneMapping = THREE.NeutralToneMapping;
+    renderer.toneMappingExposure = 0.9;
     el.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environmentIntensity = 0.55;
     const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
-    camera.position.set(0, 0, 14);
-    scene.add(new THREE.HemisphereLight('#ffffff', '#7c5cff', 1.6));
-    const key = new THREE.DirectionalLight('#ffffff', 2.4);
+    const key = new THREE.DirectionalLight('#ffffff', 1.4);
     key.position.set(-4, 6, 8);
     scene.add(key);
-    const rim = new THREE.DirectionalLight('#22c3ee', 1.6);
+    const rim = new THREE.DirectionalLight('#22c3ee', 1.2);
     rim.position.set(6, -2, -4);
     scene.add(rim);
     const group = new THREE.Group();
@@ -51,7 +76,6 @@ export const Letters3D = ({ run }: Letters3DProps) => {
       const { clientWidth: w, clientHeight: h } = el;
       renderer.setSize(w, h);
       camera.aspect = w / h;
-      // Keep the whole word in frame on narrow screens.
       // Visible width is 2·z·tan(fov/2)·aspect; keep ~17 units (the word plus margin).
       camera.position.z = Math.max(14, 17 / (2 * Math.tan((16 * Math.PI) / 180) * (w / h)));
       camera.updateProjectionMatrix();
@@ -66,70 +90,101 @@ export const Letters3D = ({ run }: Letters3DProps) => {
     };
     addEventListener('pointermove', move);
 
-    new FontLoader().load('/fonts/helvetiker_bold.typeface.json', (font) => {
-      if (disposed) return;
-      const letters: { mesh: THREE.Mesh; x: number }[] = [];
-      let cursor = 0;
-      [...WORD].forEach((ch, i) => {
-        const geo = new TextGeometry(ch, {
-          font,
-          size: 2,
-          depth: 0.7,
-          curveSegments: 10,
-          bevelEnabled: true,
-          bevelThickness: 0.12,
-          bevelSize: 0.07,
-          bevelSegments: 5,
+    const loader = new FontLoader();
+    void Promise.all(FACES.map((f) => loader.loadAsync(`/fonts/${f}.typeface.json`))).then(
+      (fonts: Font[]) => {
+        if (disposed) return;
+        // One centred geometry per (letter, face), built on first use.
+        const cache = new Map<string, { geo: THREE.BufferGeometry; w: number }>();
+        const glyph = (ch: string, f: number) => {
+          const k = `${ch}${f}`;
+          let g = cache.get(k);
+          if (!g) {
+            const geo = new TextGeometry(ch, {
+              font: fonts[f],
+              size: 2,
+              depth: 0.7,
+              curveSegments: 8,
+              bevelEnabled: true,
+              bevelThickness: 0.12,
+              bevelSize: 0.07,
+              bevelSegments: 4,
+            });
+            geo.computeBoundingBox();
+            const b = geo.boundingBox!;
+            const w = b.max.x - b.min.x;
+            geo.translate(-b.min.x - w / 2, -1, -0.35);
+            g = { geo, w };
+            cache.set(k, g);
+          }
+          return g;
+        };
+        // Slots are sized by the final faces, so the word keeps its width (and
+        // stays centred) while letters shift.
+        const widths = [...WORD].map((ch, i) => glyph(ch, FINAL[i]).w);
+        const total = widths.reduce((a, b) => a + b, 0) + 0.2 * (WORD.length - 1);
+        let x = -total / 2;
+        const letters = [...WORD].map((ch, i) => {
+          const mesh = new THREE.Mesh(
+            glyph(ch, FINAL[i]).geo,
+            new THREE.MeshPhysicalMaterial({
+              color: COLOURS[i % COLOURS.length],
+              roughness: 0.22,
+              metalness: 0.05,
+              clearcoat: 1,
+              clearcoatRoughness: 0.08,
+            }),
+          );
+          mesh.position.x = x + widths[i] / 2;
+          x += widths[i] + 0.2;
+          group.add(mesh);
+          return { ch, mesh, face: FINAL[i], lockedAt: -1 };
         });
-        geo.computeBoundingBox();
-        const box = geo.boundingBox!;
-        const w = box.max.x - box.min.x;
-        geo.translate(-box.min.x - w / 2, -1, -0.35);
-        const mesh = new THREE.Mesh(
-          geo,
-          new THREE.MeshStandardMaterial({
-            color: COLOURS[i % COLOURS.length],
-            roughness: 0.28,
-            metalness: 0.15,
-          }),
-        );
-        letters.push({ mesh, x: cursor + w / 2 });
-        cursor += w + 0.18;
-        group.add(mesh);
-      });
-      letters.forEach((l) => (l.mesh.position.x = l.x - cursor / 2));
 
-      const seek = seekTime();
-      const still = calmMotion();
-      const t0 = performance.now();
-      let tx = 0;
-      let ty = 0;
-      const frame = () => {
-        const t = seek ?? (still ? 10 : (performance.now() - t0) / 1000);
-        letters.forEach(({ mesh }, i) => {
-          // Drop-in: 0..1 per letter, staggered, with an overshooting spring.
-          const k = Math.min(1, Math.max(0, (t - 0.15 - i * 0.09) / 0.9));
-          const spring = 1 - Math.exp(-6 * k) * Math.cos(9 * k);
-          mesh.position.y = (1 - spring) * 7 + Math.sin(t * 1.4 + i * 0.6) * 0.18 * k;
-          mesh.rotation.x = (1 - spring) * -2.4 + Math.sin(t * 1.1 + i) * 0.08;
-          mesh.rotation.y = (1 - spring) * 1.6 + Math.sin(t * 0.9 + i * 0.8) * 0.12;
-          mesh.scale.setScalar(0.2 + 0.8 * Math.min(1, k * 1.6));
-        });
-        tx += (py * 0.35 - tx) * 0.06;
-        ty += (px * 0.6 - ty) * 0.06;
-        group.rotation.set(tx, ty, 0);
-        renderer.render(scene, camera);
-        if (seek === null && !still) raf = requestAnimationFrame(frame);
-      };
-      frame();
-      if (seek !== null) releaseFrame('title');
-    });
+        const seek = seekTime();
+        const still = calmMotion();
+        const t0 = performance.now();
+        let tx = 0;
+        let ty = 0;
+        const frame = () => {
+          const t = seek ?? (still ? 30 : (performance.now() - t0) / 1000);
+          letters.forEach((l, i) => {
+            const step = stepAt(t * 1000, i);
+            const face = step === null ? FINAL[i] : faceAt(Math.max(step, 0), i);
+            if (face !== l.face) {
+              l.mesh.geometry = glyph(l.ch, face).geo;
+              l.face = face;
+            }
+            // Shifting glyphs jump in size and shrink to their slot; locked ones pop once.
+            const fit = Math.min(1, widths[i] / Math.max(0.1, glyph(l.ch, face).w));
+            let s = step === null ? 1 : fit * scaleAt(Math.max(step, 0), i);
+            if (step === null) {
+              if (l.lockedAt < 0) l.lockedAt = t;
+              const k = Math.min(1, (t - l.lockedAt) / 0.45);
+              s = 1 + Math.sin(k * Math.PI) * 0.18 * (1 - k * 0.5);
+            }
+            l.mesh.scale.setScalar(s);
+            l.mesh.position.y = Math.sin(t * 1.4 + i * 0.6) * 0.16;
+            l.mesh.rotation.x = Math.sin(t * 1.1 + i) * 0.07;
+            l.mesh.rotation.y = Math.sin(t * 0.9 + i * 0.8) * 0.12;
+          });
+          tx += (py * 0.35 - tx) * 0.06;
+          ty += (px * 0.6 - ty) * 0.06;
+          group.rotation.set(tx, ty, 0);
+          renderer.render(scene, camera);
+          if (seek === null && !still) raf = requestAnimationFrame(frame);
+        };
+        frame();
+        if (seek !== null) releaseFrame('title');
+      },
+    );
 
     return () => {
       disposed = true;
       cancelAnimationFrame(raf);
       removeEventListener('resize', size);
       removeEventListener('pointermove', move);
+      pmrem.dispose();
       renderer.dispose();
       el.removeChild(renderer.domElement);
     };
