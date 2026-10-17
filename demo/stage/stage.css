@@ -118,6 +118,9 @@ body.tall { width: 1080px; height: 1920px; }
 .term pre { margin: 0; padding: 28px 36px 36px; font: inherit; white-space: pre-wrap; }
 .term .prompt { color: var(--alert); }
 .term .dim { color: var(--steel-on-slate); }
+.term .bad { color: var(--alert); font-weight: 700; }
+.term .bar { align-items: center; }
+.term .bar b { margin-left: 12px; font: 600 22px var(--mono); font-stretch: 87.5%; color: var(--steel-on-slate); }
 .term .caret { display: inline-block; width: 0.6em; height: 1.1em; vertical-align: -0.2em; background: var(--alert); }
 
 .cmd { font: 700 76px var(--mono); padding: 26px 52px; border-radius: 10px; background: var(--slate); color: var(--alert); border: 1px solid var(--slate-line); }

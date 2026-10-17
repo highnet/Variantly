@@ -8,14 +8,22 @@
 //   node build.mjs all      [--theme light|dark]    all of the above
 //
 // Without --theme, every theme that has been edited is built.
+//
+// --no-captions (wide and vertical only): a silent picture with no burned-in
+// captions, for the short cuts that carry their own lines and captions
+// (SCRIPT-90s.md). Writes out/variantly-demo-<theme>-nocaptions*.mp4 next to
+// the normal films, which keep their captions.
 import { spawn } from 'node:child_process';
-import { copyFileSync, existsSync, renameSync, rmSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { at, ffmpeg, ffmpegPath, log, readJson, run, seekreelDir } from './lib/common.mjs';
+import { at, ffmpeg, ffmpegPath, log, readJson, run, seekreelDir, writeJson } from './lib/common.mjs';
 
 const args = process.argv.slice(2);
 const themeAt = args.indexOf('--theme');
 const asked = themeAt > -1 ? [args.splice(themeAt, 2)[1]] : null;
+const noCaptionsAt = args.indexOf('--no-captions');
+const NO_CAPTIONS = noCaptionsAt > -1;
+if (NO_CAPTIONS) args.splice(noCaptionsAt, 1);
 const [mode = 'wide', times] = args;
 const themes = (asked ?? ['light', 'dark']).filter((theme) => existsSync(at(`timeline.${theme}.json`)));
 if (!themes.length) {
@@ -71,8 +79,45 @@ async function gif(theme) {
   log('build', `out/variantly-demo-${theme}.gif`);
 }
 
+/**
+ * The same render with captions left out: the stage skips them when the
+ * timeline says `burnCaptions: false`. The flag is set only for this render
+ * and the timeline is put back afterwards, so the next build has captions.
+ */
+async function withoutCaptions(theme) {
+  if (!['wide', 'vertical', 'all'].includes(mode)) throw new Error('--no-captions renders the wide and vertical films only.');
+  const file = at(`timeline.${theme}.json`);
+  const original = readFileSync(file, 'utf8');
+  const configs = [];
+  if (mode !== 'vertical') {
+    const wide = readJson(at(`seekreel.${theme}.json`));
+    configs.push({ ...wide, name: `${wide.name}-nocaptions`, out: `${wide.out}-nocaptions`, variants: [{ name: '', audio: false }] });
+  }
+  if (mode !== 'wide') {
+    const tall = readJson(at(`seekreel.${theme}.vertical.json`));
+    configs.push({ ...tall, name: `${tall.name}-nocaptions`, out: `${tall.out}-nocaptions`, variants: [{ name: 'vertical', audio: false }] });
+  }
+  try {
+    writeFileSync(file, JSON.stringify({ ...JSON.parse(original), burnCaptions: false }, null, 2) + '\n');
+    for (const [i, config] of configs.entries()) {
+      const path_ = at(`seekreel.${theme}.nocaptions${i}.json`);
+      writeJson(path_, config);
+      await seekreel('render', '--config', path_);
+      await seekreel('encode', '--config', path_);
+      rmSync(path_, { force: true });
+    }
+  } finally {
+    writeFileSync(file, original);
+  }
+  log('build', `${theme}: films without captions in out/ (*-nocaptions*)`);
+}
+
 const started = Date.now();
 for (const theme of themes) {
+  if (NO_CAPTIONS) {
+    await withoutCaptions(theme);
+    continue;
+  }
   const wide = at(`seekreel.${theme}.json`);
   const tall = at(`seekreel.${theme}.vertical.json`);
   if (mode === 'probe') {

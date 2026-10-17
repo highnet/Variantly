@@ -1,8 +1,8 @@
-# variantly: the walkthrough (script v4.1)
+# variantly: the walkthrough (script v4.2)
 
-**About 8:53** · Joaquin's voice (ElevenLabs) · 1080p60, light and dark, 16:9 and 9:16 · not recorded yet
+**About 9:47** · Joaquin's voice (ElevenLabs, trained on the owner's own voice) · 1080p60, light and dark, 16:9 and 9:16 · not recorded yet
 
-The teaching format (learn card, mental model, pause and think, recap) is the owner's ask. **On screen** is the picture and any card, **>** is the voiceover, and `[id]` is the scene id in `script.json`, which matches this script scene for scene.
+The teaching format (learn card, mental model, pause and think, recap) is the owner's ask. **On screen** is the picture and any card, **>** is the voiceover, and `[id]` is the scene id in `script.json`, which matches this script scene for scene. The corner label (`03/11 · Setup`) is on screen from the first chapter to the end card. Times are estimates at the voice's pace until the take.
 
 ---
 
@@ -10,121 +10,143 @@ The teaching format (learn card, mental model, pause and think, recap) is the ow
 
 **On screen:** fast cuts through the ten variants on the beat, then **Ten redesigns: tactile, surreal, cinematic, collage… Keep one.** and `npx variantly` typed. Music from frame one.
 
-## 1 · Why (0:09–1:12)
+## 1 · Why (0:09–1:11)
 
-**The problem** `[hi]`. **On screen:** the Tallyboard site scrolling slowly. Lower third: **Joaquin · Variantly**.
-> Hi, I'm Joaquin, the designer behind Variantly. Redesigning a site usually means betting on one direction. If it's wrong, you start over. Variantly is for developers who already use a coding agent, and for designers exploring directions. Your agent builds several complete redesigns at once, each one running as your real site, and you keep the one you like.
+**The promise** `[hi]` (0:09). **On screen:** the Tallyboard site scrolling slowly. Lower third: **Joaquin · Variantly**.
+> This is Variantly. In the next ten minutes, I'll show you one whole run, including what it costs and how to undo it. I'm Joaquin, and I built Variantly because redesigning a site usually means betting on one direction. If it's wrong, you start over. Here, your agent builds several complete redesigns at once, each one running as your real site, and you keep the one you like.
 
-**What you'll learn** `[learn]`. **On screen:** the learn card, four lines.
-> In this video, you'll learn how to set up a run, give each variant its own direction, compare the results on your real site, and keep one.
+**What you'll learn** `[learn]` (0:40). **On screen:** the learn card, four lines.
+> Here's what we'll cover: setting up a run, giving each variant its own direction, comparing them on your real site, and keeping one.
 
-**Mental model** `[model]`. **On screen:** Your project → Copies (git worktrees) → Previews → Compare → Keep → Rollout.
-> First, the mental model. Your project stays exactly where it is. Each variant is a separate copy, an isolated git worktree, with its own preview server. You compare the previews side by side. You keep one. And one last pass rolls it out to the rest of the site.
+**Mental model** `[model]` (0:51). **On screen:** Your repo → Copies (git worktrees) → Previews → Compare → Keep → Rollout.
+> First, the mental model. Your project stays where it is. Each variant is its own copy, a git worktree, with its own preview. You compare them side by side, keep one, and a last pass rolls it out to the whole site.
 
-## 2 · What you need (1:12–1:40) `[need]`
+## 2 · What you need (1:11–1:37) `[need]`
 
-**On screen:** terminal: `node -v`, the five agents, `npx variantly`; the wizard opens. Lower third: **Designs by Impeccable · impeccable.style**.
-> You need two things: Node, and a coding agent you already use. In your project folder, run npx variantly. It opens a wizard in your browser. The design work is done by Impeccable, an open-source design skill for coding agents. One thing to watch: it has to be the command-line agent. Browser builders like Lovable or Bolt can't run on your machine.
+**On screen:** terminal (`~/tallyboard $` prompt): `node -v`, the five agents, `npx variantly`; the wizard opens and the camera punches in on its title. Lower third: **Designs by Impeccable · impeccable.style**.
+> You need two things: Node, and a coding agent you already use. In your project folder, run npx variantly, and a wizard opens in your browser. The design work is done by Impeccable, an open-source design skill. One catch: it has to be the command-line agent, not a browser builder like Lovable or Bolt.
 
-## 3 · Setup (1:40–2:22)
+## 3 · Will it work on yours? (1:37–2:27)
 
-**Agents** `[setup]`. **On screen:** the setup checklist and the agent cards, each with a *Ready* tag or its fix (*Install*, *Sign in*, *Add it*); then the *Add another agent* card.
-> Setup finds your app and checks your agent. Each agent card says whether it's ready, and if it isn't, the fix sits right on the card. I'm using Claude Code. You could switch to Codex, Copilot, Gemini or Cursor, or any model on OpenRouter, and combine them in one run.
+**Stack montage** `[stacks]` (1:37). **On screen:** three terminal panels in turn, each `npx variantly doctor` and what it found: **Next.js** → `npx next dev`, **Django** → `python manage.py runserver`, **Static HTML** → the built-in static server.
+> Will it work on yours? Here's variantly doctor on a Next.js app, a Django site, and plain HTML. It finds the stack, and the command that serves it, every time. And you can always type your own.
 
-**Why combine** `[combine]`. **On screen:** the mix card: **Claude Code · opus · 5** and **Gemini CLI · default · 5**, with the three reasons landing as rows.
-> Why combine agents? Each model has its own design instincts. So you get more genuinely different directions, you see which model designs best for your site, and you can spread the work across accounts you already pay for.
+**A rough edge** `[doctor]` (1:54). **On screen:** `~/my-site $ npx variantly doctor`: ✓ node, ✓ git, **✗ repository ~/my-site (no commits yet)**, the ✗ line in the accent.
+> Here's a rough edge, on purpose. This folder has no commit yet, so doctor marks it with a cross. Variantly can make that first commit for you, or you fix it and run doctor again.
 
-## 4 · What to make (2:22–2:52) `[make]`
+**Not a developer?** `[beginner]` (2:11). **On screen:** variantly.style: open *Never used a terminal? Start here*, punch in on **Copy walk-me-through prompt**; back to the wizard.
+> Not a developer? If you can paste a command, you're set. On variantly.style, there's a walk-me-through prompt. Paste it into any AI chat, and it takes you through it one small step at a time.
+
+## 4 · Setup (2:27–3:12)
+
+**Agents** `[setup]` (2:27). **On screen:** the setup checklist and the agent cards, each with a *Ready* tag or its fix (*Install*, *Sign in*, *Add it*); then the *Add another agent* card.
+> Setup finds your app and checks your agent. Each card says if it's ready, and if not, the fix is right on the card. I'm using Claude Code. You could pick Codex, Copilot, Gemini, Cursor, or any OpenRouter model, and mix them in one run.
+
+**Why mix** `[combine]` (2:49). **On screen:** the mix card: **Claude Code · opus · 5** and **Gemini CLI · default · 5**, the reasons landing as rows, then **--blind**.
+> Why mix them? Each model has its own design instincts. So you get more varied directions, you see which model designs best for your site, and you spread the work across accounts you already pay for. Add --blind, and you won't see who made each one until you've kept it.
+
+## 5 · What to make (3:12–3:36) `[make]`
 
 **On screen:** pick **6**, open **More settings**, step Variants to **10** and At a time to **5**.
-> Next, what to make. The quick picks are two, four or six. I'll pick six, then open More settings and step it up to ten, the maximum. I'll let five agents work at a time, so the run happens in two waves. The rarer settings live behind More settings. That's progressive disclosure: the common path stays short, and the detail is there when you need it.
+> Next, what to make. The quick picks are two, four or six. I'll pick six, then step it up to ten under More settings, with five agents at a time, so it runs in two waves. The rarer settings stay back there. That's progressive disclosure: the common path stays short.
 
-## 5 · Your own directions (2:52–3:30) `[directions]`
+## 6 · Your own directions (3:36–4:03) `[directions]`
 
 **On screen:** ten empty direction fields reading *Impeccable picks*. V01 and V02 typed slowly, V03–V10 fast, under the **Trends I'm watching this winter** card.
-> Now, your own directions. Every slot starts blank, and blank means Impeccable picks. To pin one, type it in your own words. I'll type the first two slowly. Tactile imperfection: raw paper, brushstrokes and stitching. Then surreal distortion: impossible proportions, dreamlike light. These are the trends I'm watching this winter, from this year's trend reports: human-made texture meeting digital surrealism. One trend per variant. You can mix, too: leave any slot blank, and Impeccable still picks that one.
+> Now, your own directions. Every slot starts blank, and blank means Impeccable picks. To pin one, type it in your own words. Tactile imperfection: raw paper, brushstrokes, stitching. Surreal distortion: impossible proportions, dreamlike light. These are the trends I'm watching this winter: human-made texture meeting digital surrealism. One per variant, and any slot you leave blank, Impeccable picks.
 
 The ten directions: tactile imperfection · surreal distortion · cinematic drama · maximalist collage · retro-tech nostalgia · expressive typography · warm eclecticism · neo-folk craft · sensory 3D materials · quiet organic minimalism.
 
-## 6 · Review and go (3:30–4:02) `[brief]`
+## 7 · Review and go (4:03–4:34) `[brief]`
 
-**On screen:** three answers about the site typed; the review screen with *Uses 20 sessions on your Claude Code account*; click **Make 10 variants**.
-> A few words about your site, and what must stay. Here: the prices, the sign-up button and the FAQ. Agents change presentation, never behaviour. Then the review. I designed this screen to show exactly what will run and what it costs, because trust matters when an AI agent edits your code. Ten variants, each with a review pass, is twenty sessions on your own account. Make ten variants.
+**On screen:** three answers about the site typed; the review screen, punch in on *Uses 20 sessions on your Claude Code account* with the callout *The cost, before anything runs.*; click **Make 10 variants**.
+> A few words about your site, and what must stay: here, the prices, the sign-up button and the FAQ. Then the review. I designed this screen to show exactly what will run, and what it costs. Variantly is free and open source; each variant is one session on your own plan, plus one for its review. Ten variants, twenty sessions. Trying it out? Start with four.
 
-## 7 · The run (4:02–4:56)
+## 8 · The run (4:34–5:47)
 
-**Worktrees** `[worktrees]`. **On screen:** the board, then the run diagram (ten worktrees, five at a time).
-> Each variant runs in an isolated git worktree, outside your project, so your main branch is never touched. Ten worktrees, ten dev servers, and five agents at a time.
+**Is it safe?** `[worktrees]` (4:34). **On screen:** the board, then the run diagram (ten worktrees, five at a time, *main branch untouched*).
+> Can this break your site? No. Each variant runs in an isolated git worktree, outside your project, so your main branch is never touched. And agents change presentation, never behaviour. Ten worktrees, ten dev servers, five agents at a time.
 
-**One agent** `[agent]`. **On screen:** the board's Direction, Progress and Time columns; V01's step beside its log.
-> The board shows each variant's direction, progress and time, live. Let's follow one. It reads your site and builds its direction. Then it opens its variant in a real browser, at desktop and phone width, and fixes what it sees. A second pass critiques and audits it, without changing the direction.
+**One agent** `[agent]` (4:53). **On screen:** the board's Direction, Progress and Time columns; V01's step beside its log, punched in.
+> The board shows each variant's direction, progress and time, live. Let's follow one. It reads your site, builds its direction, then opens it in a real browser, at desktop and phone width, and fixes what it sees. A second pass critiques and audits it, keeping the direction.
 
-**Timelapse** `[lapse]`. **On screen:** the board sped up to 8 s, with the real elapsed time.
+**Real time, then the timelapse** `[lapse]` (5:15). **On screen:** 3.5 s of the board at real speed under **● Real time · 0:12:40** (the clock counts from the Make click), then the rest sped up under **▶▶ Sped up 40× · 0:31:05 of ~60 min**.
+> This is real time. The whole run took {{runMinutes}} minutes, start to finish, so here's the rest, sped up.
 
-**Failure is cheap** `[retry]`. **On screen:** *Show the board*, a *Retry* and a *Failed:* reason, then back to Compare.
-> If a variant fails, the board says why, in the agent's own words, and you retry just that one.
+**When it goes wrong** `[retry]` (5:25). **On screen:** *Show the board*, a *Retry* and a *Failed:* reason, then back to Compare.
+> If a variant fails, the board says why, in the agent's own words, and you retry just that one. And if one comes out broken, like a layout that falls apart on a phone, tell the agent to fix it, retry it, or just don't keep it.
 
-## 8 · Compare (4:56–6:41)
+## 9 · Compare (5:47–7:48)
 
-**Slider** `[compare]`. **On screen:** V01 against the original; drag the divider.
-> Then, compare. This is your real site running, not screenshots, so you judge the real thing: real type, real layout, real interactions. Drag the divider for a before and after.
+**Slider** `[compare]` (5:47). **On screen:** V01 against the original; drag the divider.
+> Then, compare. This is your real site running, not screenshots, so you're judging the real thing: real type, real layout, real interactions. Drag the divider for a before and after.
 
-**Walk the ten** `[walk]`. **On screen:** keys 1–9 and 0 through the variants; S for side by side with labelled panes; M for phone. *Rewrite after the real take to say what each variant actually did.*
-> Ten trends, ten sites. One: tactile imperfection, paper grain and stitched rules. Two: surreal distortion, cold light and impossible scale. Three: cinematic drama, deep shadow and oxblood. Four: maximalist collage, cut-outs that still read. Five: retro-tech, an early desktop with modern type. Six: expressive typography, the type is the event. Seven: warm eclecticism, wood and mixed eras. Eight: neo-folk craft, one named tradition. Nine: soft chrome and glass. Ten: quiet organic minimalism, space and earth tones. S is side by side, both panes labelled, on one scrollbar. M is the phone layout.
+**Walk the ten** `[walk]` (6:01). **On screen:** keys 1–9 and 0 through the variants; S for side by side with labelled panes; M for phone. *Rewrite after the real take to say what each variant actually did.*
+> One: tactile imperfection, paper grain and stitched rules. Two: surreal distortion, cold light and impossible scale. Three: cinematic drama, deep shadow and oxblood. Four: maximalist collage, cut-outs that still read. Five: retro-tech, an early desktop with modern type. Six: expressive typography, where the type is the event. Seven: warm eclecticism, wood and mixed eras. Eight: neo-folk craft, one named tradition. Nine: soft chrome and glass. Ten: quiet organic minimalism, space and earth tones. S puts them side by side, both panes labelled, on one scrollbar. M is the phone layout.
 
-**Pause and think** `[pausetry]`. **On screen:** the pause card with a 5-second countdown.
+**Pause and think** `[pausetry]` (6:43). **On screen:** the pause card with a 5-second countdown.
 > Pause the video for a moment, and think: which of these ten would you keep for your own site?
 > *(five seconds of silence)*
 
-**How I decide** `[decide]`. **On screen:** the three criteria, landing as they're said.
-> Here's how I decide. First, does it still read clearly? Second, does it fit the people who use the site? And third, would it hold up on every other page? Today, I'll keep tactile imperfection.
+**How I decide** `[decide]` (6:57). **On screen:** the three criteria, landing as they're said.
+> Here's how I decide. First, does it still read clearly? Second, does it fit the people who use the site? And third, would it hold up on every other page? Today, I'm keeping tactile imperfection.
 
-**Proof** `[scores]`. **On screen:** press I; the scores against the original.
-> Every variant is scored against your original, on your machine, with axe-core and Lighthouse. Only the change is shown: how many accessibility points it gained, and how many axe issues it fixed. That's evidence, not just a look.
+**Proof** `[scores]` (7:14). **On screen:** press I; punch in on the scores against the original.
+> Every variant is scored against your original, right on your machine, with axe-core and Lighthouse. You only see the change: how many accessibility points it gained, and how many axe issues it fixed. So it's evidence, not just a look.
 
-## 9 · Change it `[chat]` (not filmed yet)
+**Hate them all?** `[again]` (7:33). **On screen:** terminal: `npx variantly clean` and *Removed variantly worktrees, branches and state for this project.*
+> And if you hate all ten? Run it again with a sharper brief. Nothing is kept unless you press Keep, and npx variantly clean removes every worktree and branch it made.
 
+**Change it** `[chat]` (not filmed yet).
 > Almost right? Tell the agent what to change. It edits that variant, and the change comes with it when you keep it.
 
-## 10 · Keep (6:41–7:36)
+## 10 · Keep (7:48–8:47)
 
-**Keep** `[keep]`. **On screen:** keep V01; the *Restyle the rest of the site to match* checkbox; Apply.
+**Keep** `[keep]` (7:48). **On screen:** keep V01; the *Restyle the rest of the site to match* checkbox; Apply.
 > Keep the one you like. Notice this checkbox: one last agent pass carries the look to every other page. That's why we only previewed the home page. You judge one page, and the rest of the site follows.
 
-**Rollout** `[rollout]`. **On screen:** a 4 s timelapse of the rollout.
+**Rollout** `[rollout]` (8:06). **On screen:** 1.5 s at real speed under the real clock, then the rollout sped up.
 
-**Site-wide** `[sitewide]`. **On screen:** "Rolled out site-wide", the diff stat, the about page in V01's look.
-> Variantly applies it to your working tree, merging with anything you've changed since. Nothing is committed. The other variants stay as branches until you clean them up.
+**Nothing committed** `[sitewide]` (8:11). **On screen:** "Rolled out site-wide"; the take's own terminal: `git log --oneline -1` (still *before*), `git diff --stat`, the `variantly/*` branches, `npx variantly clean`; the about page in V01's look.
+> It lands in your working tree, merged with anything you've changed since. The last commit is still yours: nothing is committed. So you review it like any other change, and undo it the same way. The other variants stay as branches until you run npx variantly clean.
 
-**Hand-off** `[handoff]`. **On screen:** the kept screen: *Open your site*, *Open folder*, and the *Hand off to your agent* prompt.
-> Then hand off to your own agent. Open your site, and this prompt names its local address, the design notes to follow, and what to check. Paste it into any agent to finish the job.
+**Hand-off** `[handoff]` (8:32). **On screen:** the kept screen: *Open your site*, *Open folder*, and the *Hand off to your agent* prompt.
+> Then hand off to your own agent. Open your site, and this prompt gives it the local address, the design notes, and what to check.
 
-**On screen** `[call]`: **Your code. Your call.**
+**On screen** `[call]` (8:45): **Your code. Your call.**
 
-## 11 · Wrap (7:36–8:53)
+## 11 · Wrap (8:47–9:47)
 
-**The website** `[website]`. **On screen:** variantly.style: the title morphing as *Next concept* steps, then the demo's Winter 2026 / Classic toggle and 1–20 picker. Facts card: transfer 1.5 MB → ~400 KB, font requests 68 → ~18, blocking time 3,790 → 2,291 ms.
-> The website gets the same care. Its title morphs between typefaces, in 2D and 3D, across twenty concepts, from Bauhaus to Riso Poster to Candy 3D. Its demo has twenty redesigns of one shop, plus a Winter 2026 run of today's ten trends. And a mobile performance pass cut its transfer, font requests and blocking time on phones.
+**The website** `[website]` (8:47). **On screen:** variantly.style: the title morphing as *Next concept* steps, then the demo's Winter 2026 / Classic toggle and 1–20 picker. Facts card: transfer 1.5 MB → ~400 KB, font requests 68 → ~18, blocking time 3,790 → 2,291 ms.
+> The website got the same care: twenty title concepts, twenty redesigns of one shop plus a Winter 2026 run, and a mobile pass that cut its transfer, font requests and blocking time on phones.
 
-If the thirteen new concepts aren't live at the take, say "seven concepts, with more on the way".
+If the thirteen new concepts aren't live at the take, say "seven title concepts, with more on the way".
 
-**Recap** `[recap]`. **On screen:** the recap card.
-> So, to recap. Each variant is an isolated copy of your project. You can pin a direction per variant, and combine agents. You compare them on your real site, with real scores. And you keep one, and it rolls out to the whole site.
+**Recap** `[recap]` (9:03). **On screen:** the recap card.
+> To recap: each variant is an isolated copy. You can pin a direction per variant, and mix agents. You compare on your real site, with real scores. And you keep one, and it rolls out site-wide.
 
-**Close** `[wrap]`. **On screen:** the kept site, then the end card: `npx variantly` · variantly.style · *Designs by Impeccable*.
-> I designed and directed Variantly with Claude Code and Impeccable: I set the direction, I made the calls, and I tested it on a real iPhone. It runs entirely on your machine, with the agent you already use. No account, and no server of ours. To try it, run npx variantly in your project. The docs are at variantly.style. Thanks for watching.
+**Close** `[wrap]` (9:20). **On screen:** the kept Tallyboard scrolling; on "try", the end card: `npx variantly` · variantly.style · *Free & open source (MIT) · Designs by Impeccable*.
+> I designed and directed Variantly with Claude Code and Impeccable: I set the direction, made the calls, and tested it on a real iPhone. It's free and open source, and it runs on your machine. No account, no server of ours. To try it, run npx variantly in your project. Docs at variantly.style. Thanks for watching.
 
 ## Recording notes
 
-Rehearse with `npm run voice:lint` (must be clean) and `npm run record:dry` (the built-in demo agent, about 13 min, nothing spent). The real take is `npm run all`, which runs voice, record, edit and build:all. It needs `ELEVEN_API_KEY` and `ELEVEN_VOICE_ID` in `demo/.env` (see `.env.example`); without them the voice falls back to a local rehearsal voice.
+Rehearse with `npm run voice:lint` (must be clean) and `npm run record:dry` (the built-in demo agent, about 13 min, nothing spent). The real take is `npm run all`: voice, record, voice again (only the `lapse` line changes, now with the real run time), edit and build:all. It needs `ELEVEN_API_KEY` and `ELEVEN_VOICE_ID` in `demo/.env` (see `.env.example`); without them the voice falls back to a local rehearsal voice.
 
 The real run is ten variants, five at a time, so two waves: about 50–80 min, allow 2 h with the rollout. It uses 20 sessions on the Claude Code account (ten variants, each with a review pass). The timelapse waits up to 180 min.
 
-- `script.json` `"keep": 1` keeps V01 and `"mix": null` keeps the take on Claude Code. To film a mixed run, set `"mix": "claude:5,gemini:5"`; the count clicks then skip themselves (`unlessMix`).
+- **One scene at a time.** The voice is made per scene, so a chapter-sized retake is one command: `node --env-file-if-exists=.env voice.mjs <sceneId> [sceneId …]` (e.g. `voice.mjs walk`), then `npm run edit` and `npm run build:all`. Unchanged scenes are skipped. A new length re-times the cut; it only needs a new `record` if the line got much longer than the scene's actions.
+- **Real time, honestly.** `{{runMinutes}}` in the `lapse` line is filled from the take (the `runStart` mark on the Make click to the `runEnd` mark when every variant is done, in `video/raw-timeline.json`); before a take it reads "about 60". After a take, `voice.mjs lapse` re-voices that line with the real number. The lapse plays its first 3.5 s (`realHead`) at real speed under a **● Real time** clock counting from the Make click, then speeds up; the rollout does the same for 1.5 s.
+- **The rough edge is deterministic.** `stacks.mjs` (run by `record`, or `node stacks.mjs` on its own) makes three small projects (Next.js, Django, a copy of Tallyboard) and one git folder with no commit, runs `variantly doctor` on each, and saves the output to `video/doctor.json`; `edit` puts it in the `stacks` and `doctor` terminal cards. No agent and no keys. The ✗ is "no commits yet", which every machine shows. The `retry` beat stays optional: it only shows a failure if one happens.
+- **The terminal.** Cards render at 34 px on the 1920 frame (about 18–20 pt on a laptop screen), with a clean `~/tallyboard $` prompt (`script.json` `prompt`; the doctor cards use their own folder). No machine paths: the recorder masks them on screen and `stacks.mjs` replaces them in doctor's output. The side terminal with the diff is 22 px, readable at 1080p; don't use it in the 9:16 cut.
+- **A change every 10–20 s.** The longest holds now have a punch-in (`"zoom": true` on a spotlight or a click): the wizard title in `need`, the agent log in `agent`, the cost in `brief`, the scores in `scores`, the walk-me-through prompt in `beginner`. The close plays over the kept site and brings the end card in on "try". Cards reveal on spoken words, so card scenes change with the line.
+- `script.json` `"keep": 1` keeps V01 and `"mix": null` keeps the take on Claude Code. To film a mixed run, set `"mix": "claude:5,gemini:5"`; the count clicks then skip themselves (`unlessMix`). `--blind` only hides something in a mixed run, so the film says it over the mix card; its own clip needs a mixed `--blind` take (see `PINNED-COMMENT.md`).
+- The `beginner` beat films the live variantly.style (or `DEMO_WEB_URL`); every click there is optional, so a site change can't stop the take. The *Copy walk-me-through prompt* button is from PR #115.
 - `--fresh-impeccable` films the one-click Impeccable install for real.
-- `DEMO_WEB_URL` points the website beat at a local build (default https://variantly.style). Every site click there is optional, so a site change can't stop the take.
 - The pause beat's five silent seconds are `"rest": 5000`.
-- The chat scene stays `pending` until `record.mjs` has a `chatDone` wait and the runtime has about 10 s to spare.
+- The chat scene stays `pending` until `record.mjs` has a `chatDone` wait and the runtime has about 10 s to spare. Chapters are numbered over filmed scenes only, so a pending one leaves no gap.
 - After the take, rewrite the walk lines to say what each variant actually did. V08 names and credits the real tradition the agent chose. Add any new name to `pronunciations.json`, then run `npm run voice:dict` to rewrite `pronunciations.pls`.
-- 9:16: keep everything out of the bottom 20% and the right 120px, where Shorts, Reels and TikTok draw their own interface. No card text under 24px.
-- The facts card's numbers come from PR #83 and use its metric names.
+- **Captions** are burned into every render by the stage (16:9 and 9:16) and also written to `out/variantly-demo-<theme>.srt` for YouTube. `npm run build:nocaptions` (or `build.mjs wide|vertical --no-captions`) also renders a silent picture without them, `out/variantly-demo-<theme>-nocaptions*.mp4`, for the short cuts; the normal films keep their captions.
+- 9:16: keep everything out of the bottom 20% and the right 120px, where Shorts, Reels and TikTok draw their own interface. No card text under 24px. The corner label sits top left above the picture in 9:16 and bottom right in 16:9, and is drawn over every card and veil.
+- `edit` writes `out/youtube-description-<theme>.txt` with the real chapter times and the commands shown; copy them into `PINNED-COMMENT.md` and the description after the take.
+- Embed the final video on the site: `DEMO_VIDEO_ID_LIGHT` and `DEMO_VIDEO_ID_DARK` in `site/lib/site.ts` are empty until it's uploaded.
+- The facts card's numbers come from PR #83 and use its metric names. FAQ answers (cost, safety, "none of them", "not a developer") follow `site/lib/content.ts`.

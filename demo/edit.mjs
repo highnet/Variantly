@@ -39,19 +39,29 @@ const lineSeconds = (id) =>
 // step does the cutting and reports where every clip landed.
 const TRANSITIONS = { hi: { type: 'fade', duration: 0.5 }, lapse: { type: 'fade', duration: 0.4 }, compare: { type: 'fadeblack', duration: 0.5 } };
 const round3 = (n) => Math.round(n * 1000) / 1000;
-const clips = raw.scenes.map((scene) => {
+// A timelapse with `realHead` (ms) first plays that long at real speed, under
+// a real clock, and only then speeds up: the viewer sees the honest time
+// before the fast part. The fast part is a second clip labelled "<id>+".
+const clips = raw.scenes.flatMap((scene) => {
   const length = scene.end - scene.start;
-  const target = scene.timelapse ? Math.max(lineSeconds(scene.id) + PAD_MS / 1000, 5) : length;
-  return {
+  const from = round3(Math.max(0, scene.start - OFFSET));
+  const clip = {
     label: scene.id,
     src: `video/${THEME}/raw.mp4`,
     // The length is computed once from the shared timeline, so both themes
     // get clips of exactly the same length.
-    from: round3(Math.max(0, scene.start - OFFSET)),
-    to: round3(Math.max(0, scene.start - OFFSET) + round3(length)),
-    ...(scene.timelapse ? { speed: Number(Math.max(1, length / target).toFixed(4)) } : {}),
+    from,
+    to: round3(from + round3(length)),
     ...(TRANSITIONS[scene.id] ? { transition: TRANSITIONS[scene.id] } : {}),
   };
+  if (!scene.timelapse) return [clip];
+  const target = Math.max(lineSeconds(scene.id) + PAD_MS / 1000, (byId[scene.id]?.hold ?? 0) / 1000, 5);
+  const head = round3(Math.min((byId[scene.id]?.realHead ?? 0) / 1000, length / 4, target / 2));
+  if (head <= 0) return [{ ...clip, speed: Number(Math.max(1, length / target).toFixed(4)) }];
+  return [
+    { ...clip, to: round3(from + head) },
+    { label: `${scene.id}+`, src: clip.src, from: round3(from + head), to: clip.to, speed: Number(Math.max(1, (length - head) / (target - head)).toFixed(4)) },
+  ];
 });
 
 // The cold open: the payoff first. Quick cuts (up to ten; key 0 is V10) of the variants from the
@@ -102,7 +112,8 @@ const placed = Object.fromEntries(footage.clips.map((c) => [c.label, c]));
 function toFilm(t) {
   const scene = raw.scenes.find((s) => t >= s.start && t <= s.end);
   if (!scene) return null;
-  const clip = placed[scene.id];
+  const fast = placed[`${scene.id}+`];
+  const clip = fast && t - OFFSET >= fast.from ? fast : placed[scene.id];
   return clip.start + (t - OFFSET - clip.from) / clip.speed;
 }
 
@@ -174,11 +185,34 @@ function cuesFrom(words) {
 
 // The cold open's cuts are one scene.
 const sceneClips = [];
+// So is a timelapse's real-speed head with its fast part ("<id>+").
 for (const clip of footage.clips) {
-  const label = clip.label.startsWith('cold') ? cold.id : clip.label;
+  const label = clip.label.startsWith('cold') ? cold.id : clip.label.replace(/\+$/, '');
   const prev = sceneClips.at(-1);
-  if (prev && prev.label === label) prev.end = clip.end;
-  else sceneClips.push({ ...clip, label });
+  if (prev && prev.label === label) {
+    prev.end = clip.end;
+    if (clip.label.endsWith('+')) Object.assign(prev, { fastAt: clip.start, speed: clip.speed });
+  } else sceneClips.push({ ...clip, label });
+}
+
+// Terminal cards filled from what the take captured: `capture: "stacks"` is
+// the stack montage, `capture: "fail"` the doctor ✗ (stacks.mjs). Without a
+// capture the script's own lines stay.
+const doctor = readJson(at('video', 'doctor.json'), null);
+function terminalFor(def) {
+  const term = def.terminal;
+  if (!term?.capture || !doctor) return term ?? null;
+  if (term.capture === 'stacks') return { ...term, sequence: doctor.stacks.map((s) => ({ title: s.title, prompt: `${s.title} $`, lines: s.lines })) };
+  if (term.capture === 'fail') return { ...term, title: doctor.fail.title, prompt: `${doctor.fail.title} $`, lines: doctor.fail.lines };
+  return term;
+}
+// How long the run had taken when a timelapse began, and in all
+// (script.json `clockFrom` names the mark the clock counts from).
+function clockFor(def, clipLabel) {
+  const rawScene = raw.scenes.find((s) => s.id === clipLabel);
+  const mark = def.clockFrom && raw.marks?.[def.clockFrom];
+  if (!rawScene || mark == null) return null;
+  return { from: round3(rawScene.start - mark), total: round3(rawScene.end - mark) };
 }
 const scenes = sceneClips.map((clip, i) => {
   const def = byId[clip.label];
@@ -191,6 +225,8 @@ const scenes = sceneClips.map((clip, i) => {
     start,
     end,
     speed: Number(clip.speed.toFixed(2)),
+    fastAt: clip.fastAt ?? null,
+    clock: def.timelapse ? clockFor(def, clip.label) : null,
     voiceAt,
     voice: lineSeconds(clip.label),
     step: def.step ?? null,
@@ -199,8 +235,9 @@ const scenes = sceneClips.map((clip, i) => {
     kinetic: def.kinetic ?? null,
     diagram: typeof def.diagram === 'object' ? synced(def.diagram, clip.label, voiceAt, start) : def.diagram ?? null,
     card: synced(def.card, clip.label, voiceAt, start),
-    terminal: def.terminal ?? null,
-    cta: def.cta ?? null,
+    terminal: terminalFor(def),
+    // The end card can wait for a word (`fromOn`), so the closing line plays over the kept site first.
+    cta: def.cta ? synced(def.cta, clip.label, voiceAt, start) : null,
     montage: !!def.montage,
     captions: def.text ? cuesFrom(wordsFor(clip.label, voiceAt)) : [],
   };
@@ -234,7 +271,7 @@ const spotlights = (raw.spotlights ?? [])
 const keys = (raw.keys ?? []).map((k) => ({ ...k, t: toFilm(k.t) })).filter((k) => k.t !== null);
 const chapters = scenes.filter((s) => s.chapter || s.montage).map((s) => ({ t: s.montage ? 0 : s.start, title: s.chapter?.title ?? 'Intro' }));
 
-writeJson(at(`timeline.${THEME}.json`), { variantly: raw.variantly ?? null, fps: FPS, width: WIDTH, height: HEIGHT, duration: total, scenes, clicks, captions, cursor, spotlights, keys, chapters, diffstat: raw.diffstat ?? '', branches: raw.branches ?? [] });
+writeJson(at(`timeline.${THEME}.json`), { variantly: raw.variantly ?? null, fps: FPS, width: WIDTH, height: HEIGHT, duration: total, scenes, clicks, captions, cursor, spotlights, keys, chapters, prompt: film.prompt ?? '$', diffstat: raw.diffstat ?? '', branches: raw.branches ?? [], lastCommit: raw.lastCommit ?? '' });
 
 const stamp = (t) => {
   const ms = Math.round(t * 1000);
@@ -258,6 +295,10 @@ writeFileSync(
     '',
     'Chapters',
     ...chapters.map((c) => `${mmss(c.t)} ${c.title}`),
+    '',
+    // The same list goes in the pinned comment (PINNED-COMMENT.md).
+    'Commands shown',
+    ...[...new Set(scenes.flatMap((s) => [s.terminal?.lines ?? [], ...(s.terminal?.sequence ?? []).map((p) => p.lines), s.terminal?.after ?? []].flat()).filter((l) => l.startsWith('$ ')).map((l) => l.slice(2)))],
     '',
     'Music: generated with SeekReel',
   ].join('\n') + '\n',
