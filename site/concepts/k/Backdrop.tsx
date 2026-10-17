@@ -122,9 +122,6 @@ const Ink = () => (
           strokeDasharray="6 4"
           strokeLinecap="round"
         />
-        <text x="14" y="104" className="k-label fill-(--art-paper)">
-          No. 11 · sage
-        </text>
       </svg>
     </div>
     <div className="vy-art-float vy-art-float-2 absolute bottom-[-3vmax] left-[38%] w-[13vmax] rotate-[-9deg] max-sm:hidden">

@@ -88,3 +88,6 @@
 @media (max-width: 639px) {
 :root[data-variant='p'] [data-hero-title] { padding-bottom: 84px; }
 }
+:root[data-variant='p'][data-theme='dark'] .vy-letter { text-shadow: 0 2px 0 var(--p-red-s); }
+:root[data-variant='p'][data-theme='dark'] .vy-letter:nth-child(3n + 2) { text-shadow: 0 2px 0 var(--p-teal-s); }
+:root[data-variant='p'][data-theme='dark'] .vy-letter:nth-child(3n) { text-shadow: 0 2px 0 var(--p-ochre-s); }

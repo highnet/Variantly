@@ -4,7 +4,7 @@ import {
   Fredoka,
   Grandstander,
   Jost,
-  Bodoni_Moda,
+  Limelight,
   Bungee,
   Caveat_Brush,
   Cinzel,
@@ -80,7 +80,7 @@ const archivo = Archivo_Black({
   preload: false,
   variable: '--font-brutal',
 });
-// Concepts k, p, n: brushed hand, stitched outline, Didone.
+// Concepts k, p, n: brushed hand, stitched outline, 1930s film titles.
 const brush = Caveat_Brush({
   weight: '400',
   subsets: ['latin'],
@@ -88,11 +88,11 @@ const brush = Caveat_Brush({
   variable: '--font-brush',
 });
 const stitch = Grandstander({ subsets: ['latin'], preload: false, variable: '--font-stitch' });
-const didone = Bodoni_Moda({
+const reel = Limelight({
+  weight: '400',
   subsets: ['latin'],
-  style: ['normal', 'italic'],
   preload: false,
-  variable: '--font-didone',
+  variable: '--font-reel',
 });
 
 export const HERO_FONT_VARS = [
@@ -105,7 +105,7 @@ export const HERO_FONT_VARS = [
   rubik,
   brush,
   stitch,
-  didone,
+  reel,
 ]
   .map((f) => f.variable)
   .join(' ');

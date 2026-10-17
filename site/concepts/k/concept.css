@@ -26,7 +26,6 @@
     radial-gradient(ellipse 60% 50% at 62% 58%, color-mix(in srgb, var(--art-2) 7%, transparent), transparent 70%),
     radial-gradient(ellipse at center, transparent 62%, color-mix(in srgb, var(--art-ink) 7%, transparent));
 }
-:root[data-variant='k'] .k-label { font: 9px var(--font-brush); letter-spacing: 0.02em; }
 
 /* a wipe of plain paper lets each stroke fade, then re-draws it at a hand's uneven pace */
 :root[data-variant='k'] .k-wipe { opacity: 0; will-change: transform, opacity; animation: k-draw 24s linear infinite; }
