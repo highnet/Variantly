@@ -71,7 +71,7 @@
 }
 :root[data-variant='o'] .rounded-md, :root[data-variant='o'] .rounded-lg { border-radius: 0; }
 :root[data-variant='o'] main { counter-reset: o-sec 2; }
-:root[data-variant='o'] main > div h2.figure {
+:root[data-variant='o'] main > div h2.figure:not(h3) {
   counter-increment: o-sec; font-weight: 900; font-stretch: 62%; text-transform: uppercase; line-height: 0.88; letter-spacing: -0.01em;
   border-top: 2px solid var(--ink); padding-top: 0.2em; color: var(--ink);
 }

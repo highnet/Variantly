@@ -80,7 +80,7 @@
   content: ''; position: absolute; top: 15px; right: 24px; width: 10px; height: 10px; border-radius: 50%; background: var(--art-3);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--art-3) 25%, #0000);
 }
-:root[data-variant='j'] main > div h2.figure { font-weight: 900; font-size: clamp(2rem, 3.6vw, 3rem); text-transform: none; letter-spacing: -0.01em; color: var(--ink); }
+:root[data-variant='j'] main > div h2.figure:not(h3) { font-weight: 900; font-size: clamp(2rem, 3.6vw, 3rem); text-transform: none; letter-spacing: -0.01em; color: var(--ink); }
 :root[data-variant='j'] main > div h2::before {
   content: ''; display: inline-block; width: 0.34em; height: 0.34em; margin-right: 0.4em; vertical-align: 0.14em; border-radius: 50%;
   background: var(--alert); box-shadow: 0 0 0 0.1em color-mix(in srgb, var(--alert) 25%, #0000);
