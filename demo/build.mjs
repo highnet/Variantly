@@ -78,7 +78,7 @@ for (const theme of themes) {
   if (mode === 'probe') {
     const tl = readJson(at(`timeline.${theme}.json`));
     const pick = (id, offset) => tl.scenes.find((s) => s.id === id)?.start + offset;
-    const fallback = [pick('cold', 1.5), pick('cold', 5), pick('hi', 6), pick('need', 3), pick('make', 12), pick('worktrees', 3), pick('lapse', 3), pick('walk', 3), pick('scores', 4), pick('keep', 12), pick('wrap', 9)]
+    const fallback = [pick('cold', 1.5), pick('cold', 5), pick('hi', 6), pick('need', 3), pick('make', 12), pick('worktrees', 3), pick('lapse', 3), pick('walk', 3), pick('scores', 4), pick('keep', 3), pick('sitewide', 6), pick('wrap', 9)]
       .filter((v) => Number.isFinite(v))
       .map((v) => v.toFixed(2));
     await seekreel('probe', times ?? fallback.join(','), '--config', wide);

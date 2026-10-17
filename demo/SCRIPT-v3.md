@@ -1,5 +1,7 @@
 # variantly: the walkthrough (script v3, for review)
 
+**Recorder:** `script.json` matches this script; the chat scene is flagged `pending` and skipped until #81 merges (it also needs a `chatDone` wait in record.mjs).
+
 **What changed since v2:** five agents and OpenRouter (#71), the app's signature look (#79), keep restyles the whole site (#80), axe drops shown as "fixed" (#82), and a new chat beat for PR #81 (film it once #81 merges). The intro, setup, brief and review are tighter to make room, so the film is shorter overall.
 
 **Target:** 5:45 (5:15–6:15), 60 fps, 1080p captured at device scale 2, light and dark films identical apart from colour.

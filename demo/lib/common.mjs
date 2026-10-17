@@ -34,7 +34,12 @@ export function writeJson(file, value) {
   writeFileSync(file, JSON.stringify(value, null, 2) + '\n');
 }
 
-export const script = () => readJson(at('script.json'));
+// A scene marked pending waits on an unmerged feature: it is left out of the
+// voice, the take and the cut until the flag is dropped.
+export const script = () => {
+  const film = readJson(at('script.json'));
+  return { ...film, scenes: film.scenes.filter((s) => !s.pending) };
+};
 
 /** ffmpeg/ffprobe: $FFMPEG/$FFPROBE, else the static builds from npm. */
 export function ffmpegPath() {

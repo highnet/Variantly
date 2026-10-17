@@ -681,6 +681,7 @@ for (const [i, theme] of THEMES.entries()) {
 const director = new Director(views, {
   app,
   site: pathToFileURL(path.join(SITE, 'index.html')).href,
+  about: pathToFileURL(path.join(SITE, 'about.html')).href,
   keep: String(film.keep ?? 1),
 });
 const scenes = [];
