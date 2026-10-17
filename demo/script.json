@@ -1,18 +1,30 @@
 {
   "site": "../examples/tallyboard",
   "agent": "claude",
-  "mix": "claude:2,gemini:2",
-  "keep": 2,
+  "mix": null,
+  "keep": 1,
+  "directions": [
+    "Tactile imperfection: raw paper, brushstrokes, stitching, ivory and rust",
+    "Surreal distortion: impossible proportions, dreamlike light, icy blue",
+    "Cinematic drama: film-noir shadows, theatrical light, oxblood velvet",
+    "Maximalist collage: cut-outs, stickers, clashing patterns, still readable",
+    "Retro-tech nostalgia: early desktop OS, pixel icons, modern type",
+    "Expressive typography: inflated, warped, handwritten type as the event",
+    "Warm eclecticism: mixed eras, warm wood, lived-in warmth",
+    "Neo-folk craft: one specific folk tradition, credited",
+    "Sensory 3D materials: soft inflated chrome and glass",
+    "Quiet organic minimalism: natural materials, negative space, earth tones"
+  ],
   "scenes": [
     {
       "id": "cold",
       "montage": true,
-      "hold": 8000,
+      "hold": 9000,
       "step": "Variantly",
       "kinetic": {
-        "text": "Four redesigns. Keep one. Your whole site follows.",
+        "text": "Ten redesigns: tactile, surreal, cinematic, collage… Keep one.",
         "sub": "npx variantly",
-        "from": 4.2
+        "from": 5.2
       },
       "text": "",
       "actions": []
@@ -21,14 +33,14 @@
       "id": "hi",
       "chapter": {
         "n": 1,
-        "title": "Hi"
+        "title": "Why"
       },
-      "step": "Hi",
+      "step": "Why",
       "lower": {
         "name": "Joaquin",
         "role": "Variantly"
       },
-      "text": "Hi, I'm Joaquin from Variantly. This is Tallyboard. It works. It just looks like every other template, and redesigning it means picking one direction and hoping it was right. With Variantly, your own coding agent redesigns your site several times over, each in a different direction, and every redesign runs as your real site. You keep the one you like.",
+      "text": "Hi, I'm Joaquin, the designer behind Variantly. Redesigning a site usually means betting on one direction. If it's wrong, you start over. Variantly is for developers who already use a coding agent, and for designers exploring directions. Your agent builds several complete redesigns at once, each one running as your real site, and you keep the one you like.",
       "actions": [
         {
           "goto": "{{site}}"
@@ -57,13 +69,77 @@
       ]
     },
     {
-      "id": "promise",
-      "step": "Hi",
-      "hold": 2800,
-      "kinetic": {
-        "text": "Nothing changes until you keep one."
+      "id": "learn",
+      "step": "Why",
+      "card": {
+        "kind": "learn",
+        "title": "In this video",
+        "items": [
+          {
+            "text": "Set up a run",
+            "on": "set"
+          },
+          {
+            "text": "Give each variant its own direction",
+            "on": "direction,"
+          },
+          {
+            "text": "Compare them on your real site",
+            "on": "compare"
+          },
+          {
+            "text": "Keep one, for the whole site",
+            "on": "keep"
+          }
+        ]
       },
-      "text": "",
+      "text": "In this video, you'll learn how to set up a run, give each variant its own direction, compare the results on your real site, and keep one.",
+      "actions": [
+        {
+          "wait": 300
+        }
+      ]
+    },
+    {
+      "id": "model",
+      "step": "Why",
+      "diagram": {
+        "kind": "flow",
+        "title": "How it works",
+        "nodes": [
+          {
+            "label": "Your repo",
+            "sub": "untouched",
+            "on": "project"
+          },
+          {
+            "label": "Copies",
+            "sub": "git worktrees",
+            "on": "copy,"
+          },
+          {
+            "label": "Previews",
+            "sub": "own dev server",
+            "on": "preview"
+          },
+          {
+            "label": "Compare",
+            "sub": "side by side",
+            "on": "compare"
+          },
+          {
+            "label": "Keep",
+            "sub": "into your tree",
+            "on": "keep"
+          },
+          {
+            "label": "Rollout",
+            "sub": "every page",
+            "on": "rolls"
+          }
+        ]
+      },
+      "text": "First, the mental model. Your project stays exactly where it is. Each variant is a separate copy, an isolated git worktree, with its own preview server. You compare the previews side by side. You keep one. And one last pass rolls it out to the rest of the site.",
       "actions": [
         {
           "wait": 300
@@ -89,9 +165,9 @@
       "lower": {
         "name": "Designs by Impeccable",
         "role": "impeccable.style",
-        "from": 16
+        "from": 18
       },
-      "text": "You need Node, and a coding agent you already use: Claude Code, Codex, Copilot, Gemini or Cursor. No subscription? Point Claude Code or Codex at OpenRouter. In your project, run npx variantly. It opens a wizard in your browser. The design work is done by Impeccable, an open-source design skill for coding agents. If your agent doesn't have it yet, Variantly installs it in one click.",
+      "text": "You need two things: Node, and a coding agent you already use. In your project folder, run npx variantly. It opens a wizard in your browser. The design work is done by Impeccable, an open-source design skill for coding agents. One thing to watch: it has to be the command-line agent. Browser builders like Lovable or Bolt can't run on your machine.",
       "actions": [
         {
           "wait": 7000
@@ -126,7 +202,7 @@
         "title": "Setup"
       },
       "step": "Setup",
-      "text": "Setup finds your app and how to run it, checks your agent, and flags anything in the way. You can mix agents too: here, two variants from Claude Code and two from Gemini, for more variety. Each variant runs your dev command on its own port, and the agent may only edit files, in its own copy of your project.",
+      "text": "Setup finds your app and checks your agent. Each agent card says whether it's ready, and if it isn't, the fix sits right on the card. I'm using Claude Code. You could switch to Codex, Copilot, Gemini or Cursor, or any model on OpenRouter, and combine them in one run.",
       "actions": [
         {
           "spotlight": "text=/app found/",
@@ -142,22 +218,33 @@
           "click": "text=Use a different app or agent"
         },
         {
-          "spotlight": ".mix",
-          "ms": 2600,
-          "pad": 30,
+          "spotlight": "role=radiogroup[name=\"Agent\"]",
+          "ms": 4000,
+          "pad": 24,
           "point": true,
-          "callout": "Two from Claude Code, two from Gemini. Each row can pick its own model."
+          "callout": "Ready, or the fix right on the card."
         },
         {
-          "spotlight": "text=/Hide who made each variant/",
-          "ms": 1400,
-          "pad": 20,
-          "optional": true
-        },
+          "spotlight": "role=button[name=\"Add another agent\"]",
+          "ms": 2400,
+          "pad": 16,
+          "point": true,
+          "optional": true,
+          "callout": "One more card: split the variants across agents."
+        }
+      ]
+    },
+    {
+      "id": "combine",
+      "step": "Setup",
+      "text": "Why combine agents? Each model has its own design instincts. So you get more genuinely different directions, you see which model designs best for your site, and you can spread the work across accounts you already pay for.",
+      "actions": [
         {
-          "spotlight": "text=Dev command",
+          "spotlight": "text=How it runs",
           "ms": 1600,
-          "pad": 60
+          "pad": 60,
+          "callout": "A static site: nothing to set up.",
+          "optional": true
         },
         {
           "spotlight": "text=Permissions",
@@ -172,7 +259,39 @@
           "click": "role=button[name=/^Continue to variants$/]",
           "zoom": true
         }
-      ]
+      ],
+      "card": {
+        "kind": "mix",
+        "title": "Combining agents in one run",
+        "rows": [
+          {
+            "agent": "Claude Code",
+            "model": "opus",
+            "count": 5,
+            "on": "combine"
+          },
+          {
+            "agent": "Gemini CLI",
+            "model": "the agent's default",
+            "count": 5
+          }
+        ],
+        "total": "10 variants in all, the most there can be. OpenRouter models run through Claude Code or Codex.",
+        "items": [
+          {
+            "text": "Different design instincts",
+            "on": "instincts."
+          },
+          {
+            "text": "Compare which model designs best",
+            "on": "different"
+          },
+          {
+            "text": "Spread the work across your accounts",
+            "on": "accounts"
+          }
+        ]
+      }
     },
     {
       "id": "make",
@@ -181,72 +300,255 @@
         "title": "What to make"
       },
       "step": "What to make",
-      "text": "Pick two, four or six variants. We'll take four, of the home page. That's fastest, and when you keep one, the rest of the site follows. Extras are optional Impeccable passes: sharper copy, motion, delight, a phone pass, or hardening for accessibility. Redesign gives every variant its own visual world; Refine keeps your look and improves it. Leave a direction blank and Impeccable picks one, or type your own.",
+      "text": "Next, what to make. The quick picks are two, four or six. I'll pick six, then open More settings and step it up to ten, the maximum. I'll let five agents work at a time, so the run happens in two waves. The rarer settings live behind More settings. That's progressive disclosure: the common path stays short, and the detail is there when you need it.",
       "actions": [
         {
-          "click": "role=radio[name=\"4\"]",
-          "zoom": true
+          "spotlight": "text=How many variants?",
+          "ms": 1800,
+          "pad": 72
+        },
+        {
+          "click": "role=radio[name=\"6\"]",
+          "unlessMix": true
         },
         {
           "wait": 600
         },
         {
-          "spotlight": "text=Which pages?",
-          "ms": 1400,
-          "pad": 40
-        },
-        {
-          "hover": "role=button[name=/^All \\d+ pages$/]",
-          "optional": true
-        },
-        {
-          "spotlight": "text=/restyles the rest of the site/",
-          "ms": 2600,
-          "pad": 30,
-          "point": true
-        },
-        {
-          "spotlight": "label.pick:has-text(\"Rewrite the copy\")",
-          "ms": 1300,
-          "callout": "Sharper headlines, buttons and labels. Facts, prices and names stay.",
-          "point": true
-        },
-        {
-          "spotlight": "label.pick:has-text(\"Add motion\")",
-          "ms": 1300,
-          "callout": "Purposeful transitions and entrances, with reduced motion respected.",
-          "point": true
-        },
-        {
-          "spotlight": "label.pick:has-text(\"Add delight\")",
-          "ms": 1300,
-          "callout": "Small moments of personality: empty states, hovers, details.",
-          "point": true
-        },
-        {
-          "spotlight": "label.pick:has-text(\"Polish for phones\")",
-          "ms": 1300,
-          "callout": "Check every chosen page at phone width and fix what breaks.",
-          "point": true
-        },
-        {
-          "spotlight": "label.pick:has-text(\"Harden\")",
-          "ms": 1300,
-          "callout": "Accessibility, focus states, long text and error states.",
-          "point": true
-        },
-        {
           "click": "text=More settings"
         },
         {
-          "spotlight": "text=Approach",
-          "ms": 2600,
-          "pad": 50
+          "click": "role=button[name=\"More: Variants\"]",
+          "moveMs": 800,
+          "zoom": true,
+          "unlessMix": true
+        },
+        {
+          "click": "role=button[name=\"More: Variants\"]",
+          "moveMs": 400,
+          "zoom": false,
+          "unlessMix": true
+        },
+        {
+          "click": "role=button[name=\"More: Variants\"]",
+          "moveMs": 400,
+          "zoom": false,
+          "unlessMix": true
+        },
+        {
+          "click": "role=button[name=\"More: Variants\"]",
+          "moveMs": 400,
+          "zoom": false,
+          "unlessMix": true
+        },
+        {
+          "spotlight": "role=group[name=\"Variants\"]",
+          "ms": 1800,
+          "pad": 32,
+          "callout": "Up to ten variants."
+        },
+        {
+          "click": "role=button[name=\"More: At a time\"]",
+          "moveMs": 800
+        },
+        {
+          "click": "role=button[name=\"More: At a time\"]",
+          "moveMs": 400
+        },
+        {
+          "click": "role=button[name=\"More: At a time\"]",
+          "moveMs": 400
+        },
+        {
+          "spotlight": "role=group[name=\"At a time\"]",
+          "ms": 1800,
+          "pad": 32,
+          "callout": "Five agents at a time: two waves."
+        }
+      ]
+    },
+    {
+      "id": "directions",
+      "chapter": {
+        "n": 5,
+        "title": "Your own directions"
+      },
+      "step": "Your own directions",
+      "card": {
+        "kind": "trends",
+        "title": "Trends I'm watching this winter",
+        "from": 0.2,
+        "items": [
+          {
+            "name": "Tactile imperfection",
+            "essence": "raw paper, brushstrokes, stitching",
+            "swatch": [
+              "#f3ecdc",
+              "#b5532c",
+              "#1f1d1a",
+              "#c99a3a"
+            ],
+            "on": "winter,"
+          },
+          {
+            "name": "Surreal distortion",
+            "essence": "impossible proportions, dreamlike light",
+            "swatch": [
+              "#bfe3f2",
+              "#c9ccd3",
+              "#7b5ea7"
+            ]
+          },
+          {
+            "name": "Cinematic drama",
+            "essence": "film-noir shadow, theatrical light",
+            "swatch": [
+              "#0e0c0c",
+              "#5b1a1e",
+              "#e8dcc8"
+            ]
+          },
+          {
+            "name": "Maximalist collage",
+            "essence": "cut-outs, stickers, clashing patterns",
+            "swatch": [
+              "#ff4f7b",
+              "#ffd23f",
+              "#2a6df4",
+              "#111111"
+            ]
+          },
+          {
+            "name": "Retro-tech nostalgia",
+            "essence": "early desktop OS, pixel icons",
+            "swatch": [
+              "#c0c0c0",
+              "#008080",
+              "#000080"
+            ]
+          },
+          {
+            "name": "Expressive typography",
+            "essence": "inflated, warped, handwritten type",
+            "swatch": [
+              "#111111",
+              "#f5f1e8",
+              "#ff5a1f"
+            ]
+          },
+          {
+            "name": "Warm eclecticism",
+            "essence": "mixed eras, warm wood",
+            "swatch": [
+              "#8a5a3b",
+              "#d9a441",
+              "#4f6b4a",
+              "#efe3cf"
+            ]
+          },
+          {
+            "name": "Neo-folk craft",
+            "essence": "one credited folk tradition",
+            "swatch": [
+              "#b8202f",
+              "#1e3f8a",
+              "#f2e6c9"
+            ]
+          },
+          {
+            "name": "Sensory 3D materials",
+            "essence": "soft inflated chrome and glass",
+            "swatch": [
+              "#e6e8ee",
+              "#a9b4ff",
+              "#ffc6e5"
+            ]
+          },
+          {
+            "name": "Quiet organic minimalism",
+            "essence": "natural materials, negative space",
+            "swatch": [
+              "#e9e2d4",
+              "#a68a64",
+              "#5d6b4f"
+            ]
+          }
+        ],
+        "fromOn": "winter,",
+        "untilEnd": 2.5,
+        "source": "Curated from the 2026 trend reports by Adobe and Canva, and AW26–27 interiors and surface-design reporting."
+      },
+      "text": "Now, your own directions. Every slot starts blank, and blank means Impeccable picks. To pin one, type it in your own words. I'll type the first two slowly. Tactile imperfection: raw paper, brushstrokes and stitching. Then surreal distortion: impossible proportions, dreamlike light. These are the trends I'm watching this winter, from this year's trend reports: human-made texture meeting digital surrealism. One trend per variant. You can mix, too: leave any slot blank, and Impeccable still picks that one.",
+      "actions": [
+        {
+          "spotlight": "text=/Your own directions/",
+          "ms": 2400,
+          "pad": 64
+        },
+        {
+          "spotlight": "role=textbox[name=\"Direction for V01\"]",
+          "ms": 2400,
+          "pad": 24,
+          "callout": "Blank means Impeccable picks.",
+          "point": true
+        },
+        {
+          "fill": "role=textbox[name=\"Direction for V01\"]",
+          "text": "Tactile imperfection: raw paper, brushstrokes, stitching, ivory and rust",
+          "delay": 55
+        },
+        {
+          "fill": "role=textbox[name=\"Direction for V02\"]",
+          "text": "Surreal distortion: impossible proportions, dreamlike light, icy blue",
+          "delay": 55
+        },
+        {
+          "wait": 2500
+        },
+        {
+          "fill": "role=textbox[name=\"Direction for V03\"]",
+          "text": "Cinematic drama: film-noir shadows, theatrical light, oxblood velvet",
+          "delay": 14
+        },
+        {
+          "fill": "role=textbox[name=\"Direction for V04\"]",
+          "text": "Maximalist collage: cut-outs, stickers, clashing patterns, still readable",
+          "delay": 14
+        },
+        {
+          "fill": "role=textbox[name=\"Direction for V05\"]",
+          "text": "Retro-tech nostalgia: early desktop OS, pixel icons, modern type",
+          "delay": 14
+        },
+        {
+          "fill": "role=textbox[name=\"Direction for V06\"]",
+          "text": "Expressive typography: inflated, warped, handwritten type as the event",
+          "delay": 14
+        },
+        {
+          "fill": "role=textbox[name=\"Direction for V07\"]",
+          "text": "Warm eclecticism: mixed eras, warm wood, lived-in warmth",
+          "delay": 14
+        },
+        {
+          "fill": "role=textbox[name=\"Direction for V08\"]",
+          "text": "Neo-folk craft: one specific folk tradition, credited",
+          "delay": 14
+        },
+        {
+          "fill": "role=textbox[name=\"Direction for V09\"]",
+          "text": "Sensory 3D materials: soft inflated chrome and glass",
+          "delay": 14
+        },
+        {
+          "fill": "role=textbox[name=\"Direction for V10\"]",
+          "text": "Quiet organic minimalism: natural materials, negative space, earth tones",
+          "delay": 14
         },
         {
           "spotlight": "text=/Your own directions/",
-          "ms": 2600,
-          "pad": 60
+          "ms": 2000,
+          "pad": 64
         },
         {
           "click": "text=More settings"
@@ -259,11 +561,11 @@
     {
       "id": "brief",
       "chapter": {
-        "n": 5,
-        "title": "Brief and go"
+        "n": 6,
+        "title": "Review and go"
       },
-      "step": "Brief and go",
-      "text": "A few words about your site, and what must stay. Here: the prices, the sign-up button and the FAQ. Agents change presentation, never behaviour. The review shows exactly what runs, and how many sessions it uses on your own account. Make four variants.",
+      "step": "Review and go",
+      "text": "A few words about your site, and what must stay. Here: the prices, the sign-up button and the FAQ. Agents change presentation, never behaviour. Then the review. I designed this screen to show exactly what will run and what it costs, because trust matters when an AI agent edits your code. Ten variants, each with a review pass, is twenty sessions on your own account. Make ten variants.",
       "actions": [
         {
           "fill": "role=textbox[name=/Who is it for/]",
@@ -306,12 +608,38 @@
     {
       "id": "worktrees",
       "chapter": {
-        "n": 6,
+        "n": 7,
         "title": "The run"
       },
       "step": "The run",
-      "diagram": "worktrees",
-      "text": "Each variant gets its own git worktree, outside your project, and its own dev server. Your checkout isn't touched.",
+      "diagram": {
+        "kind": "flow",
+        "title": "Ten isolated copies",
+        "nodes": [
+          {
+            "label": "Your repo",
+            "sub": "main branch untouched",
+            "on": "worktree,"
+          },
+          {
+            "label": "Worktrees",
+            "sub": "outside your project",
+            "stack": "branches",
+            "on": "ten"
+          },
+          {
+            "label": "Previews",
+            "sub": "one dev server each",
+            "on": "servers,"
+          },
+          {
+            "label": "Five at a time",
+            "sub": "two waves",
+            "on": "five"
+          }
+        ]
+      },
+      "text": "Each variant runs in an isolated git worktree, outside your project, so your main branch is never touched. Ten worktrees, ten dev servers, and five agents at a time.",
       "actions": [
         {
           "waitFor": "body[data-view=\"board\"]"
@@ -324,36 +652,35 @@
     {
       "id": "agent",
       "step": "The run",
-      "text": "The board shows every variant live. Here's one agent at work. It reads your site, lets Impeccable choose a direction, and builds it. Then it checks its variant in a real browser, at desktop and phone width, and fixes what it sees. A second pass critiques and audits it, without changing the direction.",
+      "text": "The board shows each variant's direction, progress and time, live. Let's follow one. It reads your site and builds its direction. Then it opens its variant in a real browser, at desktop and phone width, and fixes what it sees. A second pass critiques and audits it, without changing the direction.",
       "actions": [
-        {
-          "spotlight": "text=/×2/",
-          "ms": 1800,
-          "pad": 24,
-          "point": true,
-          "optional": true,
-          "callout": "Spend adds up per agent."
-        },
         {
           "spotlight": "role=columnheader[name=\"Direction\"]",
           "ms": 1500,
           "pad": 30
         },
         {
-          "spotlight": "role=columnheader[name=\"Status\"]",
-          "ms": 1200,
+          "spotlight": "role=columnheader[name=\"Progress\"]",
+          "ms": 1500,
           "pad": 30
         },
         {
-          "spotlight": "role=columnheader[name=\"Usage\"]",
-          "ms": 1500,
+          "spotlight": "role=columnheader[name=\"Time\"]",
+          "ms": 1200,
           "pad": 30
         },
         {
           "click": "role=button[name=\"Show V01 output\"]"
         },
         {
-          "wait": 9000
+          "spotlight": ".board-detail",
+          "ms": 2400,
+          "pad": 16,
+          "optional": true,
+          "callout": "Its current step, beside the agent's log."
+        },
+        {
+          "wait": 6500
         }
       ]
     },
@@ -361,12 +688,12 @@
       "id": "lapse",
       "step": "The run",
       "timelapse": true,
-      "hold": 9000,
+      "hold": 8000,
       "text": "",
       "actions": [
         {
           "waitApi": "allDone",
-          "timeoutMin": 120
+          "timeoutMin": 180
         },
         {
           "wait": 1500
@@ -376,13 +703,28 @@
     {
       "id": "retry",
       "step": "The run",
-      "text": "If one goes wrong, stop or retry it on its own. The others keep going.",
+      "text": "If a variant fails, the board says why, in the agent's own words, and you retry just that one.",
       "actions": [
         {
-          "spotlight": "role=button[name=\"Stop\"]",
-          "ms": 3000,
+          "click": "role=button[name=\"Show the board\"]",
+          "optional": true
+        },
+        {
+          "spotlight": "role=button[name=\"Retry\"]",
+          "ms": 2000,
           "pad": 20,
           "point": true,
+          "optional": true
+        },
+        {
+          "spotlight": "role=columnheader[name=\"Progress\"]",
+          "ms": 2600,
+          "pad": 30,
+          "optional": true,
+          "callout": "A failure reads “Failed:” and why."
+        },
+        {
+          "click": "role=button[name=/^Compare$/]",
           "optional": true
         }
       ]
@@ -390,11 +732,11 @@
     {
       "id": "compare",
       "chapter": {
-        "n": 7,
+        "n": 8,
         "title": "Compare"
       },
       "step": "Compare",
-      "text": "Then compare, on your real site. Drag for a before and after.",
+      "text": "Then, compare. This is your real site running, not screenshots, so you judge the real thing: real type, real layout, real interactions. Drag the divider for a before and after.",
       "actions": [
         {
           "waitFor": "body[data-view=\"compare\"]"
@@ -421,7 +763,7 @@
       "id": "walk",
       "step": "Compare",
       "afterTake": true,
-      "text": "Each variant went its own way, and the tag says which agent made it. Switch with the number keys, see them side by side, or check the phone layout.",
+      "text": "Ten trends, ten sites. One: tactile imperfection, paper grain and stitched rules. Two: surreal distortion, cold light and impossible scale. Three: cinematic drama, deep shadow and oxblood. Four: maximalist collage, cut-outs that still read. Five: retro-tech, an early desktop with modern type. Six: expressive typography, the type is the event. Seven: warm eclecticism, wood and mixed eras. Eight: neo-folk craft, one named tradition. Nine: soft chrome and glass. Ten: quiet organic minimalism, space and earth tones. S is side by side, both panes labelled, on one scrollbar. M is the phone layout.",
       "actions": [
         {
           "key": "2"
@@ -430,7 +772,7 @@
           "waitPanes": true
         },
         {
-          "wait": 500
+          "wait": 900
         },
         {
           "key": "3"
@@ -439,7 +781,7 @@
           "waitPanes": true
         },
         {
-          "wait": 500
+          "wait": 900
         },
         {
           "key": "4"
@@ -448,7 +790,61 @@
           "waitPanes": true
         },
         {
-          "wait": 500
+          "wait": 900
+        },
+        {
+          "key": "5"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "wait": 900
+        },
+        {
+          "key": "6"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "wait": 900
+        },
+        {
+          "key": "7"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "wait": 900
+        },
+        {
+          "key": "8"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "wait": 900
+        },
+        {
+          "key": "9"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "wait": 900
+        },
+        {
+          "key": "0"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "wait": 900
         },
         {
           "key": "s"
@@ -461,6 +857,13 @@
         },
         {
           "waitPanes": true
+        },
+        {
+          "spotlight": ".compare .tags",
+          "ms": 1800,
+          "pad": 16,
+          "optional": true,
+          "callout": "Each pane labelled: original, and who made the variant."
         },
         {
           "wait": 500
@@ -486,16 +889,63 @@
       ]
     },
     {
-      "id": "scores",
+      "id": "pausetry",
       "step": "Compare",
-      "text": "Every variant is scored against your original, on your machine: how many points accessibility gained, and how many axe issues it fixed.",
+      "card": {
+        "kind": "pause",
+        "title": "Pause and think",
+        "question": "Which of these ten would you keep for your own site?",
+        "seconds": 5,
+        "countOn": "site?"
+      },
+      "text": "Pause the video for a moment, and think: which of these ten would you keep for your own site?",
       "actions": [
         {
           "key": "{{keep}}"
         },
         {
           "waitPanes": true
-        },
+        }
+      ],
+      "rest": 5000
+    },
+    {
+      "id": "decide",
+      "step": "Compare",
+      "card": {
+        "kind": "learn",
+        "title": "How I decide",
+        "items": [
+          {
+            "text": "Does it still read clearly?",
+            "on": "clearly?"
+          },
+          {
+            "text": "Does it fit the people who use it?",
+            "on": "people"
+          },
+          {
+            "text": "Would it hold up on every page?",
+            "on": "page?"
+          },
+          {
+            "text": "Today: tactile imperfection",
+            "on": "tactile"
+          }
+        ]
+      },
+      "text": "Here's how I decide. First, does it still read clearly? Second, does it fit the people who use the site? And third, would it hold up on every other page? Today, I'll keep tactile imperfection.",
+      "actions": [
+        {
+          "wait": 300
+        }
+      ]
+    },
+    {
+      "id": "scores",
+      "step": "Compare",
+      "text": "Every variant is scored against your original, on your machine, with axe-core and Lighthouse. Only the change is shown: how many accessibility points it gained, and how many axe issues it fixed. That's evidence, not just a look.",
+      "actions": [
         {
           "key": "i"
         },
@@ -526,9 +976,9 @@
     },
     {
       "id": "chat",
-      "pending": "PR #81 (chat with the agent): drop this flag once it merges",
+      "pending": "#81 has merged; still needs a chatDone wait in record.mjs, and about 10 s of runtime. Drop this flag once both are in.",
       "chapter": {
-        "n": 8,
+        "n": 9,
         "title": "Change it"
       },
       "step": "Change it",
@@ -563,11 +1013,11 @@
     {
       "id": "keep",
       "chapter": {
-        "n": 9,
+        "n": 10,
         "title": "Keep"
       },
       "step": "Keep",
-      "text": "Keep the one you like. One last agent pass carries its look to every other page of your site, not just the ones you previewed.",
+      "text": "Keep the one you like. Notice this checkbox: one last agent pass carries the look to every other page. That's why we only previewed the home page. You judge one page, and the rest of the site follows.",
       "actions": [
         {
           "click": "role=button[name=/^Keep V0/]",
@@ -589,7 +1039,7 @@
       "id": "rollout",
       "step": "Keep",
       "timelapse": true,
-      "hold": 6000,
+      "hold": 4000,
       "text": "",
       "actions": [
         {
@@ -610,7 +1060,7 @@
           "$ npx variantly clean"
         ]
       },
-      "text": "Variantly applies it to your working tree, merging with anything you've changed since. Nothing is committed: review it with git diff. The other variants stay as branches until you clean them up.",
+      "text": "Variantly applies it to your working tree, merging with anything you've changed since. Nothing is committed. The other variants stay as branches until you clean them up.",
       "actions": [
         {
           "spotlight": "text=/Rolled out site-wide/",
@@ -644,6 +1094,57 @@
       ]
     },
     {
+      "id": "handoff",
+      "step": "Keep",
+      "text": "Then hand off to your own agent. Open your site, and this prompt names its local address, the design notes to follow, and what to check. Paste it into any agent to finish the job.",
+      "actions": [
+        {
+          "goto": "{{app}}"
+        },
+        {
+          "waitFor": "body[data-view=\"kept\"]",
+          "timeoutMs": 60000
+        },
+        {
+          "wait": 800
+        },
+        {
+          "spotlight": "text=Hand off to your agent",
+          "ms": 2000,
+          "pad": 40,
+          "point": true
+        },
+        {
+          "click": "role=button[name=\"Open your site\"]",
+          "zoom": true,
+          "optional": true
+        },
+        {
+          "waitFor": "text=Your site is running",
+          "timeoutMs": 120000,
+          "optional": true
+        },
+        {
+          "spotlight": "role=button[name=\"Open folder\"]",
+          "ms": 1400,
+          "pad": 16,
+          "optional": true,
+          "callout": "Or open the project folder."
+        },
+        {
+          "click": "role=button[name=/^Show more/]",
+          "optional": true
+        },
+        {
+          "spotlight": ".handoff .prompt-copy",
+          "ms": 3000,
+          "pad": 20,
+          "optional": true,
+          "callout": "Names the URL once your site runs."
+        }
+      ]
+    },
+    {
       "id": "call",
       "step": "Keep",
       "hold": 2400,
@@ -658,18 +1159,145 @@
       ]
     },
     {
-      "id": "wrap",
+      "id": "website",
       "chapter": {
-        "n": 10,
+        "n": 11,
         "title": "Wrap"
       },
+      "step": "Wrap",
+      "card": {
+        "kind": "facts",
+        "title": "A mobile performance pass on variantly.style",
+        "rows": [
+          {
+            "label": "Transfer",
+            "note": "emulated phone",
+            "before": "1.5 MB",
+            "after": "~400 KB",
+            "on": "transfer"
+          },
+          {
+            "label": "Font requests",
+            "note": "first load",
+            "before": "68",
+            "after": "~18",
+            "on": "font"
+          },
+          {
+            "label": "Blocking time",
+            "note": "TVA concept, 4× CPU throttle",
+            "before": "3,790 ms",
+            "after": "2,291 ms",
+            "on": "blocking"
+          }
+        ],
+        "source": "Mobile performance pass, PR #83, prompted by an iPhone screen recording of the lag.",
+        "fromOn": "mobile"
+      },
+      "text": "The website gets the same care. Its title morphs between typefaces, in 2D and 3D, across twenty concepts, from Bauhaus to Riso Poster to Candy 3D. Its demo has twenty redesigns of one shop, plus a Winter 2026 run of today's ten trends. And a mobile performance pass cut its transfer, font requests and blocking time on phones.",
+      "actions": [
+        {
+          "goto": "{{web}}"
+        },
+        {
+          "wait": 2500
+        },
+        {
+          "click": "role=button[name=\"Next concept\"]",
+          "moveMs": 800,
+          "optional": true
+        },
+        {
+          "wait": 1800
+        },
+        {
+          "click": "role=button[name=\"Next concept\"]",
+          "moveMs": 400,
+          "optional": true
+        },
+        {
+          "wait": 1800
+        },
+        {
+          "click": "role=button[name=\"Next concept\"]",
+          "moveMs": 400,
+          "optional": true
+        },
+        {
+          "wait": 1800
+        },
+        {
+          "click": "role=button[name=/^Winter 2026/]",
+          "zoom": true,
+          "optional": true
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "click": "[aria-label=\"Redesigns\"] button >> nth=4",
+          "optional": true
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "click": "role=button[name=/^Classic/]",
+          "optional": true
+        },
+        {
+          "wait": 900
+        },
+        {
+          "click": "[aria-label=\"Redesigns\"] button >> nth=17",
+          "optional": true
+        },
+        {
+          "wait": 1500
+        }
+      ]
+    },
+    {
+      "id": "recap",
+      "step": "Wrap",
+      "card": {
+        "kind": "recap",
+        "title": "Recap",
+        "items": [
+          {
+            "text": "Each variant is an isolated copy",
+            "on": "isolated"
+          },
+          {
+            "text": "Pin a direction per variant, or combine agents",
+            "on": "direction,"
+          },
+          {
+            "text": "Compare on your real site, with real scores",
+            "on": "compare"
+          },
+          {
+            "text": "Keep one, and it rolls out site-wide",
+            "on": "keep"
+          }
+        ]
+      },
+      "text": "So, to recap. Each variant is an isolated copy of your project. You can pin a direction per variant, and combine agents. You compare them on your real site, with real scores. And you keep one, and it rolls out to the whole site.",
+      "actions": [
+        {
+          "wait": 300
+        }
+      ]
+    },
+    {
+      "id": "wrap",
       "step": "Try it",
       "cta": {
         "command": "npx variantly",
         "url": "variantly.style",
         "credit": "Designs by Impeccable · impeccable.style"
       },
-      "text": "Variantly runs entirely on your machine, with the agent you already use. No account, no server, and it never sees a model. Try it with npx variantly.",
+      "text": "I designed and directed Variantly with Claude Code and Impeccable: I set the direction, I made the calls, and I tested it on a real iPhone. It runs entirely on your machine, with the agent you already use. No account, and no server of ours. To try it, run npx variantly in your project. The docs are at variantly.style. Thanks for watching.",
       "actions": [
         {
           "wait": 500

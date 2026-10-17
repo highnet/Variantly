@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import clsx from 'clsx';
 import { Icon } from './Icon';
-import { Segments } from './Progress';
+import { ProgressCard, Segments } from './Progress';
 import { Terminal } from './Terminal';
 import { api } from '@/lib/api';
 import { clearLog, fetchLog } from '@/lib/live';
-import { LIVE, STATUS, STEPS, agentLabel, agentShort, clock, compactTokens, directionLabel, elapsed, isPickable, pad, scoreText, stepAt, stepState, statusKey, usageText, usageTitle, madeBy, vname } from '@/lib/format';
+import { LIVE, STATUS, STEPS, agentLabel, agentShort, boardDirection, clock, compactTokens, elapsed, isPickable, pad, progressLabel, scoreText, stepAt, stepState, statusKey, madeBy, vname } from '@/lib/format';
 import { seen, setState, toast, useStore } from '@/lib/store';
 import type { Variant } from '@/lib/types';
 
@@ -43,21 +43,24 @@ type StepCellProps = {
   last: string;
 };
 
-const StepCell = ({ v, last }: StepCellProps) => {
+const StepCell = ({ v, last, unseen }: StepCellProps & { unseen: boolean }) => {
   const at = stepAt(v);
   const live = LIVE.includes(v.status);
-  const label = live
-    ? `${at + 1}/${STEPS.length} · ${STEPS[at]}`
-    : v.status === 'done'
-      ? 'All steps done'
-      : v.status === 'queued'
-        ? `0/${STEPS.length} · Waiting for a free slot`
-        : `Stopped at ${STEPS[Math.max(0, at)]}`;
+  const label = progressLabel(v);
+  const title = [`${STATUS[v.status]}${live ? ` · step ${at + 1} of ${STEPS.length}` : ''}`, v.error, live ? last : ''].filter(Boolean).join('\n');
   return (
-    <div className="steps" title={last}>
+    <div className={clsx('steps progress-cell', unseen && 'unseen')} data-s={statusKey(v.status)} title={title}>
       <Segments v={v} />
-      <span className="now-label">{label}</span>
-      {live && <span className="last lastline">{last}</span>}
+      <motion.span key={label} className="now-label" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }}>
+        {live && (
+          <span className="working-bars" aria-hidden="true">
+            <i />
+            <i />
+            <i />
+          </span>
+        )}
+        {label}
+      </motion.span>
     </div>
   );
 };
@@ -87,7 +90,7 @@ const Board = () => {
   const now = useNow();
   // Status changes, announced once each (the table itself is not a live region).
   const [said, setSaid] = useState('');
-  const [asking, setAsking] = useState(false);
+  const [asking, setAsking] = useState<false | 'discard' | 'change'>(false);
   const [discarding, setDiscarding] = useState(false);
   const confirmBtn = useRef<HTMLButtonElement>(null);
   const discardBtn = useRef<HTMLButtonElement>(null);
@@ -96,7 +99,7 @@ const Board = () => {
     // Focus moves into the confirm bar on open and back to Discard when it closes.
     if (asking) confirmBtn.current?.focus();
     else if (wasAsking.current) discardBtn.current?.focus();
-    wasAsking.current = asking;
+    wasAsking.current = Boolean(asking);
   }, [asking]);
   const prevStatus = useRef<Record<number, string>>({});
   const statusKeyAll = (snap?.variants ?? []).map((v) => `${v.n}:${v.status}`).join(',');
@@ -139,10 +142,10 @@ const Board = () => {
       : [snap.config?.mix?.length ? 'Agents hidden' : (agentShort[snap.config?.agent ?? ''] ?? snap.config?.agent ?? '')]),
     `Elapsed ${start ? clock(end - start) : '0:00'}`,
     `${vs.filter((v) => v.status === 'done').length} of ${vs.length} ready`,
-    tokens > 0 ? `${compactTokens(tokens)} tokens` : null,
-    credits > 0 ? `${credits} premium requests` : null,
-    cost > 0 ? `$${cost.toFixed(2)}` : null,
+    // Spend shows once, in short; the full breakdown is the tooltip.
+    !mixed && cost > 0 ? `$${cost.toFixed(2)}` : null,
   ].filter(Boolean);
+  const usageFull = [tokens > 0 ? `${compactTokens(tokens)} tokens` : '', credits > 0 ? `${credits} premium requests` : '', cost > 0 ? `$${cost.toFixed(2)}` : ''].filter(Boolean).join(' · ');
 
   // The terminal follows the row you pick, else the first design at work.
   const selected = vs.find((v) => v.n === openRow) ?? vs.find((v) => LIVE.includes(v.status)) ?? list[0];
@@ -154,6 +157,13 @@ const Board = () => {
   const discard = async () => {
     setDiscarding(true);
     try {
+      // Going back to change settings lands on Review, every answer kept, so
+      // each section's Edit link is one click away.
+      if (asking === 'change') {
+        const url = new URL(window.location.href);
+        url.searchParams.set('step', 'review');
+        window.history.replaceState(null, '', url);
+      }
       await api('POST', 'discard', {});
       setState({ forceBoard: false, wantCompare: false });
     } catch (err) {
@@ -173,7 +183,7 @@ const Board = () => {
             <h1 id="board-title" className="figure">
               {pad(vs.length)} variants
             </h1>
-            <div className="label readout">
+            <div className="label readout" title={usageFull ? `Usage so far: ${usageFull}` : undefined}>
               {readout.map((p) => (
                 <span key={String(p)}>{p}</span>
               ))}
@@ -184,7 +194,7 @@ const Board = () => {
               className="confirm board-confirm"
               role="alertdialog"
               aria-modal="true"
-              aria-label={finalized ? 'Start over?' : 'Discard this run?'}
+              aria-label={finalized ? 'Start over?' : asking === 'change' ? 'Change settings?' : 'Discard this run?'}
               onKeyDown={(e) => {
                 if (e.key !== 'Escape' || discarding) return;
                 e.stopPropagation();
@@ -196,6 +206,10 @@ const Board = () => {
                   <>
                     Start over? <span className="muted">The variant you kept stays in your working tree.</span>
                   </>
+                ) : asking === 'change' ? (
+                  <>
+                    Change settings? <span className="muted">This run’s {vs.length} variants are thrown away. Your answers are kept.</span>
+                  </>
                 ) : (
                   <>
                     Throw away every variant in this run? <span className="muted">Worktrees and branches are deleted.</span>
@@ -206,12 +220,17 @@ const Board = () => {
                 Cancel
               </button>
               <button ref={confirmBtn} className="btn primary" type="button" disabled={discarding} onClick={discard}>
-                {discarding ? 'Discarding…' : finalized ? 'Start over' : 'Discard run'}
+                {discarding ? 'Discarding…' : finalized ? 'Start over' : asking === 'change' ? 'Discard and change' : 'Discard run'}
               </button>
             </div>
           ) : (
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button ref={discardBtn} className="btn outline" type="button" onClick={() => setAsking(true)}>
+              {!finalized && (
+                <button className="btn outline" type="button" onClick={() => setAsking('change')}>
+                  Change settings
+                </button>
+              )}
+              <button ref={discardBtn} className="btn outline" type="button" onClick={() => setAsking('discard')}>
                 Discard run
               </button>
               <button className="btn primary" type="button" disabled={!vs.some(isPickable)} onClick={() => goCompare()}>
@@ -225,11 +244,8 @@ const Board = () => {
             <tr>
               <th className="label">Variant</th>
               <th className="label">Direction</th>
-              <th className="label">Status</th>
+              <th className="label">Progress</th>
               <th className="label">Time</th>
-              <th className="label hide-compact">Files</th>
-              <th className="label">Usage</th>
-              <th className="label">Step</th>
             </tr>
           </thead>
           <tbody>
@@ -240,12 +256,7 @@ const Board = () => {
                   Your site as it is
                   <span className="summary scores">{snap.baseline ? scoreText(snap.baseline) : snap.baselineError ? `Not scored: ${snap.baselineError}` : 'Scoring with axe-core and Lighthouse…'}</span>
                 </td>
-                <td>
-                  <span className="status" data-s="scheduled">
-                    <span className="flap-text">Baseline</span>
-                  </span>
-                </td>
-                <td colSpan={4} />
+                <td colSpan={2} />
               </tr>
             )}
             {list.map((v) => {
@@ -275,43 +286,39 @@ const Board = () => {
                     </button>
                   </td>
                   <td className="dir">
-                    {directionLabel(v.direction, v.picked)}
+                    {(() => {
+                      const d = boardDirection(v);
+                      return <span className={clsx('dir-label', d.pending && 'muted')}>{d.text}</span>;
+                    })()}
                     {madeBy(snap, v) && <span className="tag made-by">{madeBy(snap, v)}</span>}
-                    {v.summary ? <span className="summary">{v.summary}</span> : v.error ? <span className="summary">{v.error.split('\n')[0]}</span> : null}
+                    {v.summary && <span className="summary">{v.summary}</span>}
                     {v.review && <span className="summary">Review: {v.review}</span>}
                     {v.auditState === 'running' && <span className="summary">Scoring with axe-core and Lighthouse…</span>}
                     {v.auditState === 'failed' && <span className="summary">Not scored: {v.auditError ?? 'the audit failed'}</span>}
                     {v.audit && <span className="summary scores">{scoreText(v.audit, snap.baseline)}</span>}
                   </td>
-                  <td>
-                    <span className={clsx('status', unseen.includes(v.n) && 'unseen')} data-s={statusKey(v.status)}>
-                      <motion.span key={v.status} className="flap-text" initial={{ rotateX: -90, opacity: 0 }} animate={{ rotateX: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-                        {STATUS[v.status]}
-                      </motion.span>
-                      {['running', 'reviewing'].includes(v.status) && (
-                        <span className="working-bars" aria-hidden="true">
-                          <i />
-                          <i />
-                          <i />
-                        </span>
-                      )}
-                    </span>
+                  <td className="step-cell">
+                    <StepCell v={v} last={last} unseen={unseen.includes(v.n)} />
                   </td>
                   <td className="num data">{elapsed(v, now)}</td>
-                  <td className="num data hide-compact">{v.files?.length ? String(v.files.length) : '—'}</td>
-                  <td className="num data" title={usageTitle(v)}>
-                    {usageText(v)}
-                  </td>
-                  <td className="step-cell">
-                    <StepCell v={v} last={last} />
-                  </td>
                 </motion.tr>,
               ];
             })}
           </tbody>
         </table>
       </section>
-      {selected && <Terminal key={selected.n} v={selected} />}
+      {/* The picked variant: while it works, its step stage beside the raw log
+          (Compare, where the stage also lives, stays locked until one is ready). */}
+      {selected && (
+        <div className="board-detail">
+          {LIVE.includes(selected.status) && (
+            <div className="board-stage">
+              <ProgressCard key={selected.n} v={selected} last={logs[`v${selected.n}`]?.at(-1)} compact />
+            </div>
+          )}
+          <Terminal key={selected.n} v={selected} compact />
+        </div>
+      )}
       <p className="sr-only" aria-live="polite">
         {said}
       </p>

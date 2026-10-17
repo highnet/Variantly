@@ -73,6 +73,17 @@
       const max = el.scrollHeight - window.innerHeight;
       el.scrollTop = msg.mode === 'pixels' ? msg.y : Math.round((msg.ratio ?? 0) * Math.max(0, max));
     }
+    if (msg.type === 'scrollbar') {
+      // Side by side scrolls both panes together; only one needs a bar.
+      let tag = document.getElementById('variantly-no-scrollbar');
+      if (msg.hidden && !tag) {
+        tag = document.createElement('style');
+        tag.id = 'variantly-no-scrollbar';
+        tag.textContent = 'html{scrollbar-width:none}html::-webkit-scrollbar{display:none}';
+        document.head.appendChild(tag);
+      }
+      if (!msg.hidden) tag?.remove();
+    }
     if (msg.type === 'hello') post({ type: 'ready', path: where(), ratio: ratio() });
   });
 

@@ -11,6 +11,8 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import clsx from 'clsx';
+import { AgentIcon, shortVersion } from './AgentIcon';
+import { CommandBlock } from './CommandBlock';
 import { Icon } from './Icon';
 import { ViewSkeleton } from './Skeleton';
 import { api } from '@/lib/api';
@@ -144,12 +146,26 @@ const blockers = (d: Detect, f: Form): Note[] => {
   for (const id of agentIds(f).filter((x) => x !== 'demo')) {
     const a = d.agents.find((x) => x.id === id);
     if (!a?.installed)
-      list.push(['bad', `${a?.name ?? id} isn't installed. Install it, then sign in once.`, a?.install ? <FixButton key={`i${id}`} label={`Install ${a.name}`} onClick={() => runFix('install-agent', { agent: a.id }, `Installing ${a.name}…`)} /> : undefined]);
+      list.push(['bad', `${a?.name ?? id} isn't installed. Install it, then sign in once.`, a?.install ? (
+          <span key={`i${id}`} className="note-fix">
+            <FixButton label={`Install ${a.name}`} onClick={() => runFix('install-agent', { agent: a.id }, `Installing ${a.name}…`)} />
+            <span className="note-or">or run it yourself</span>
+            <CommandBlock command={a.install} />
+          </span>
+        ) : undefined]);
     if (a?.installed && a.signedIn === false)
       list.push([
         'bad',
         `${a.name} is installed but not signed in. A window opens; follow it, then come back here.`,
-        <FixButton key={`l${id}`} label={`Sign in to ${a.name}`} onClick={() => runFix('login', { agent: a.id }, 'Sign-in window opened. Come back when it says you are signed in.').then(() => setTimeout(loadDetect, 15000))} />,
+        <span key={`l${id}`} className="note-fix">
+          <FixButton label={`Sign in to ${a.name}`} onClick={() => runFix('login', { agent: a.id }, 'Sign-in window opened. Come back when it says you are signed in.').then(() => setTimeout(loadDetect, 15000))} />
+          {a.login && (
+            <>
+              <span className="note-or">or run it yourself</span>
+              <CommandBlock command={a.login} />
+            </>
+          )}
+        </span>,
       ]);
     if (a?.installed && !a.impeccable)
       list.push(['bad', `${a.name} doesn't have the Impeccable design skill yet. variantly needs it; installing takes a minute.`, <FixButton key={`m${id}`} label={`Install Impeccable for ${a.name}`} onClick={() => installImpeccable(a.id)} />]);
@@ -244,21 +260,90 @@ type OptionCardProps = {
   title: string;
   detail?: string;
   tags?: ReactNode;
+  icon?: ReactNode;
+  muted?: boolean;
   onChange: () => void;
 };
 
-const OptionCard = ({ name, checked, title, detail, tags, onChange }: OptionCardProps) => (
-  <motion.label className="option" animate={{ scale: checked ? 1.02 : 1 }} transition={{ type: 'spring', stiffness: 500, damping: 26 }}>
+const OptionCard = ({ name, checked, title, detail, tags, icon, muted, onChange }: OptionCardProps) => (
+  <motion.label className={clsx('option', icon && 'with-icon', muted && 'muted')} animate={{ scale: checked ? 1.02 : 1 }} transition={{ type: 'spring', stiffness: 500, damping: 26 }}>
     <input type="radio" name={name} checked={checked} onChange={onChange} />
+    {icon}
     <span className="name">{title}</span>
     {detail && <span className="detail">{detail}</span>}
-    {tags && <span style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>{tags}</span>}
+    {tags && <span className="option-tags">{tags}</span>}
+    {checked && (
+      <span className="option-check" aria-hidden="true">
+        <svg viewBox="0 0 16 16">
+          <path d="M4 8.3l2.5 2.5L12 5.2" />
+        </svg>
+      </span>
+    )}
   </motion.label>
+);
+
+/** A fix right on an agent card; it mustn't also select the card. */
+const CardFix = ({ label, onClick }: { label: string; onClick: () => unknown }) => (
+  <button
+    type="button"
+    className="card-fix"
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onClick();
+    }}
+  >
+    {label}
+  </button>
 );
 
 type PartProps = {
   d: Detect;
   f: Form;
+};
+
+const BUILT_IN = '{variantly}/src/static-server';
+
+/**
+ * The command each variant runs. variantly's own static server needs no
+ * explaining; a real command shows read-only until you choose to edit it.
+ */
+const DevCommand = ({ f }: { f: Form }) => {
+  const [editing, setEditing] = useState(false);
+  const builtIn = f.command.includes(BUILT_IN);
+  return (
+    <div className="field">
+      <span className="label">How it runs</span>
+      {builtIn && !editing ? (
+        <div className="dev-builtin">
+          <span>variantly serves your files itself. Nothing to set up.</span>
+          <button type="button" className="link" onClick={() => setEditing(true)}>
+            Use my own command
+          </button>
+        </div>
+      ) : editing ? (
+        <>
+          <CommandBlock command={f.command} label="Dev command" onEdit={(command) => updateForm({ command })} />
+          <p className="hint">
+            Runs in every variant. <code>{'{port}'}</code> is the port, <code>{'{port2}'}</code> a spare one, <code>{'{run}'}</code> your package runner.{' '}
+            <button type="button" className="link" onClick={() => setEditing(false)}>
+              Done
+            </button>
+          </p>
+        </>
+      ) : (
+        <>
+          <CommandBlock command={f.command} />
+          <p className="hint">
+            Runs in every variant.{' '}
+            <button type="button" className="link" onClick={() => setEditing(true)}>
+              Edit
+            </button>
+          </p>
+        </>
+      )}
+    </div>
+  );
 };
 
 const AppPicker = ({ d, f }: PartProps) => {
@@ -282,22 +367,16 @@ const AppPicker = ({ d, f }: PartProps) => {
         </div>
       </div>
       <div className="field-row">
-        <label className="field">
-          <span className="label">Dev command</span>
-          <input className="input" value={f.command} spellCheck={false} onChange={(e) => updateForm({ command: e.target.value })} />
-          <p className="hint">
-            Runs in every variant. <code>{'{port}'}</code> is the port, <code>{'{port2}'}</code> a spare one, <code>{'{run}'}</code> your package runner.
-          </p>
-        </label>
+        <DevCommand f={f} />
         <div className="field">
           <span className="label" id="seg-original">
-            The original
+            Your current site
           </span>
           <SegToggle
             labelledBy="seg-original"
             pairs={[
-              ['start', 'variantly starts it'],
-              ['running', 'Already running'],
+              ['start', 'Start it for me'],
+              ['running', 'It’s already running'],
             ]}
             value={f.originalUrl ? 'running' : 'start'}
             onPick={(v) => updateForm({ originalUrl: v === 'running' ? f.originalUrl || cand?.defaultUrl || 'http://localhost:3000' : '' })}
@@ -305,7 +384,7 @@ const AppPicker = ({ d, f }: PartProps) => {
           {f.originalUrl ? (
             <input className="input" value={f.originalUrl} aria-label="URL of your running app" onChange={(e) => updateForm({ originalUrl: e.target.value })} />
           ) : (
-            <p className="hint">Your checkout gets its own server on a free port, next to the variants.</p>
+            <p className="hint">variantly runs your current site next to the variants, so you can compare before and after.</p>
           )}
         </div>
       </div>
@@ -408,25 +487,38 @@ const AgentPicker = ({ d, f }: PartProps) => {
                 key={a.id}
                 name="agent"
                 checked={f.agent === a.id}
-                title={a.name}
-                detail={a.installed ? a.version || 'installed' : a.install}
+                title={a.name.replace(/ CLI$/, '')}
+                icon={<AgentIcon id={a.id} />}
+                detail={a.id === 'demo' ? 'Built in, no AI' : a.installed ? (a.version ? `v${shortVersion(a.version)}` : 'Installed') : undefined}
+                muted={a.id !== 'demo' && (!a.installed || a.signedIn === false || !a.impeccable)}
                 tags={
-                  a.id === 'demo' ? null : (
+                  a.id === 'demo' ? null : !a.installed ? (
                     <>
-                      <span className={clsx('tag', a.installed ? 'ok' : 'bad')}>{a.installed ? 'Installed' : 'Not installed'}</span>
-                      {a.installed && <span className={clsx('tag', a.impeccable ? 'ok' : 'bad')}>{a.impeccable ? 'Impeccable' : 'No Impeccable'}</span>}
+                      <span className="tag bad">Not installed</span>
+                      {a.install && <CardFix label="Install" onClick={() => runFix('install-agent', { agent: a.id }, `Installing ${a.name}…`)} />}
+                    </>
+                  ) : a.signedIn === false ? (
+                    <>
+                      <span className="tag bad">Not signed in</span>
+                      <CardFix label="Sign in" onClick={() => runFix('login', { agent: a.id }, 'Sign-in window opened. Come back when it says you are signed in.').then(() => setTimeout(loadDetect, 15000))} />
+                    </>
+                  ) : a.impeccable ? (
+                    <span className="tag ok">Ready</span>
+                  ) : (
+                    <>
+                      <span className="tag bad">No Impeccable</span>
+                      <CardFix label="Add it" onClick={() => installImpeccable(a.id)} />
                     </>
                   )
                 }
                 onChange={() => updateForm({ agent: a.id })}
               />
             ))}
-          </div>
-          <p className="hint">
             <button
               type="button"
-              className="link"
+              className="option add-agent"
               disabled={f.count < 2}
+              title={f.count < 2 ? 'Needs at least two variants to split' : undefined}
               onClick={() => {
                 // Split the variants in two: the current agent keeps the first half.
                 const other = agents.find((a) => a.installed && a.id !== f.agent && a.id !== 'demo')?.id ?? f.agent;
@@ -437,10 +529,17 @@ const AgentPicker = ({ d, f }: PartProps) => {
                 ]);
               }}
             >
-              Add another agent
-            </button>{' '}
-            to split the variants, say two with Claude and two with Gemini.
-          </p>
+              <span className="add-plus" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
+              </span>
+              <span className="add-text">
+                <span className="name">Add another agent</span>
+                <span className="detail">Split the variants, for example two with Claude and two with Gemini</span>
+              </span>
+            </button>
+          </div>
         </div>
       )}
       {allDemo(f) ? (
@@ -584,7 +683,7 @@ const SetupStep = ({ d, f }: StepBodyProps) => {
   const agentOk = agentIds(f).every(ready);
   const cand = candidateOf(d, f);
   const appDetail = `${f.appRel || 'repo root'} · ${f.originalUrl ? `running at ${f.originalUrl.replace(/^https?:\/\//, '')}` : 'variantly starts it'}`;
-  const agentDetail = allDemo(f) ? 'no AI, fixed restyles' : !a?.installed ? 'not installed' : !a.impeccable ? 'Impeccable missing' : a.version || 'installed';
+  const agentDetail = allDemo(f) ? 'no AI, fixed restyles' : !a?.installed ? 'not installed' : !a.impeccable ? 'Impeccable missing' : a.version ? `v${shortVersion(a.version)}` : 'installed';
   return (
     <>
       <ul className="checks">
@@ -742,7 +841,7 @@ const banked = (d: Detect, f: Form): Record<StepId, string> => {
   return {
     setup: `${stackName(d, f)} · ${isMixed(f) ? plural(agentIds(f).length, 'agent') : allDemo(f) ? 'Demo' : (a?.name ?? f.agent)}`,
     designs: `${plural(f.count, 'variant')} · ${f.routes.map((r) => (r === '/' ? 'Home' : r)).join(', ')}${extras.length ? ` · ${extras.join(', ')}` : ''}`,
-    site: d.hasProduct ? 'PRODUCT.md' : answered ? plural(answered, 'answer') : 'Skipped',
+    site: d.hasProduct ? 'PRODUCT.md' : answered ? plural(answered, 'answer') : 'No preferences',
     review: '',
   };
 };
@@ -819,7 +918,9 @@ const Checkin = () => {
     if (!snapConfig) {
       try {
         const draft = JSON.parse(localStorage.getItem(draftKey(d)) ?? 'null') as Partial<Form> | null;
-        if (draft) updateForm(draft);
+        // A saved draft never brings back an agent that isn't installed now.
+        const usable = (id?: string) => d.agents.some((a) => a.id === id && (a.installed || a.id === 'demo'));
+        if (draft) updateForm(usable(draft.agent) ? draft : { ...draft, agent: f.agent, model: f.model });
         // A new draft starts from the last mix, unless the command line set the agents.
         else if (!d.suggested.mix?.length) {
           const last = readJson<{ mix?: AgentRow[]; blind?: boolean } | null>(MIX_KEY, null);

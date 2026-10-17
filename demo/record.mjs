@@ -501,6 +501,8 @@ class Director {
   async act(step) {
     // Steps that only make sense with a real agent (installing Impeccable).
     if (step.realOnly && agent === 'demo') return;
+    // Steps that set the count by hand: a mix sets it with its rows instead.
+    if (step.unlessMix && mix) return;
     const began = Date.now();
     const from = this.now();
     try {
@@ -662,6 +664,19 @@ async function openView(theme, mirror) {
       window.fetch = (input, init = {}) => {
         const url = new URL(typeof input === 'string' ? input : input.url, location.href);
         const method = (init.method ?? (typeof input === 'string' ? 'GET' : input.method) ?? 'GET').toUpperCase();
+        // The kept screen's "Open your site" goes through too, so both themes
+        // show the same local URL in the hand-off prompt. The light page asks
+        // first; until its server pool exists this call can fail, so retry.
+        if (url.origin === location.origin && url.pathname === '/api/open-site' && method === 'POST') {
+          return (async () => {
+            await new Promise((r) => setTimeout(r, 1500));
+            for (let i = 0; ; i++) {
+              const res = await real(input, init);
+              if (res.ok || i >= 20) return res;
+              await new Promise((r) => setTimeout(r, 500));
+            }
+          })();
+        }
         if (url.origin === location.origin && url.pathname.startsWith('/api/') && method !== 'GET' && !url.pathname.startsWith('/api/ensure/')) {
           return Promise.resolve(new Response('{"ok":true}', { status: 200, headers: { 'content-type': 'application/json' } }));
         }
@@ -670,6 +685,11 @@ async function openView(theme, mirror) {
     });
   }
   const page = await context.newPage();
+  // A tab the app opens ("Open your site" on the kept screen) is never
+  // filmed: give the recorded page the focus back so its frames keep coming.
+  context.on('page', (opened) => {
+    if (opened !== page) setTimeout(() => page.bringToFront().catch(() => {}), 300);
+  });
   const capture = await startScreencast(page, at('video', theme, 'frames'), { width: WIDTH, height: HEIGHT });
   const view = { theme, context, page, capture, t0: Date.now(), errors: [] };
   page.on('pageerror', (e) => view.errors.push(String(e)));
@@ -686,6 +706,8 @@ const director = new Director(views, {
   app,
   site: pathToFileURL(path.join(SITE, 'index.html')).href,
   about: pathToFileURL(path.join(SITE, 'about.html')).href,
+  // The website beat films the live site (or a local build: DEMO_WEB_URL).
+  web: process.env.DEMO_WEB_URL || 'https://variantly.style',
   keep: String(film.keep ?? 1),
 });
 const scenes = [];
@@ -704,7 +726,8 @@ try {
       for (const view of views) schemes[view.theme] = await view.page.evaluate(() => ({ media: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light', ui: document.documentElement.dataset.theme ?? null }));
     }
     // Hold until the line has been spoken, plus a breath.
-    const hold = start + lineSeconds(scene) + PAD_MS / 1000 - director.now();
+    // `rest`: extra silence after the line (a pause for the viewer).
+    const hold = start + lineSeconds(scene) + (scene.rest ?? 0) / 1000 + PAD_MS / 1000 - director.now();
     if (hold > 0) await director.page.waitForTimeout(hold * 1000);
     else if (!scene.timelapse && hold < -1) {
       director.warnings.push(`${scene.id}: actions ran ${(-hold).toFixed(1)}s past the narration (dead air)`);

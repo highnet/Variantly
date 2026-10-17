@@ -38,18 +38,23 @@ export const PageSkeleton = ({ className }: PageSkeletonProps) => (
 type ViewSkeletonProps = { label: string };
 
 export const ViewSkeleton = ({ label }: ViewSkeletonProps) => (
+  // Shaped like the wizard that follows it: a title, the repo line, then
+  // the step card, all in the same centred column.
   <div className="view-skeleton" role="status">
-    <span className="sk-row">
-      <i className="sk" style={{ width: 220, height: 28 }} />
-    </span>
-    <div className="sk-cards">
-      {[0, 1, 2, 3, 4, 5].map((i) => (
-        <span key={i} className="sk-col sk-card">
-          <i className="sk" style={{ width: '40%', height: 12 }} />
-          <i className="sk" style={{ width: '85%', height: 18 }} />
-          <i className="sk" style={{ width: '100%', height: 8 }} />
-        </span>
-      ))}
+    <i className="sk sk-title" />
+    <i className="sk" style={{ width: '70%', height: 12 }} />
+    <div className="sk-col sk-card sk-panel">
+      <span className="sk-row sk-steps">
+        {[0, 1, 2, 3].map((i) => (
+          <i key={i} className="sk sk-dot" />
+        ))}
+      </span>
+      <i className="sk" style={{ width: 160, height: 20 }} />
+      <i className="sk" style={{ width: '60%', height: 14 }} />
+      <i className="sk" style={{ width: '50%', height: 14 }} />
+      <span className="sk-row sk-end">
+        <i className="sk" style={{ width: 180, height: 36, borderRadius: 999 }} />
+      </span>
     </div>
     <p className="sk-label">{label}</p>
   </div>

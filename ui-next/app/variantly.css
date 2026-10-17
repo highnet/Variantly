@@ -841,6 +841,14 @@ textarea.input {
   max-width: 70ch;
 }
 
+.cmd code,
+.note .cmd code {
+  border: 0;
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
 .hint code,
 .note code {
   font: 500 12px var(--mono);
@@ -907,6 +915,163 @@ textarea.input {
 .option .detail {
   font-size: 13px;
   color: var(--steel);
+}
+
+/* Under the agent grid: add a second agent to the run. One row, full width. */
+.option.add-agent {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border-style: dashed;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.option.add-agent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.add-text {
+  display: grid;
+  gap: 2px;
+}
+
+.add-plus {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--rule);
+  background: var(--panel);
+  transition:
+    border-color 160ms var(--ease),
+    transform 160ms var(--ease);
+}
+
+.add-plus svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.option.add-agent:hover:not(:disabled) .add-plus {
+  border-color: var(--alert);
+  transform: scale(1.08);
+}
+
+.option.add-agent .detail {
+  font-size: 12px;
+}
+
+/* The picked card: accent edge, a faint tint, and a check in the corner. */
+.option:has(input:checked) {
+  border-color: var(--alert);
+  box-shadow: inset 0 0 0 1px var(--alert);
+  background: color-mix(in srgb, var(--alert) 10%, var(--surface));
+}
+
+.option-check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--alert);
+  color: var(--surface);
+}
+
+.option-check svg {
+  width: 12px;
+  height: 12px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* An agent that can't run yet: quieter, with its fix on the card. */
+.option.muted .agent-icon,
+.option.muted .name,
+.option.muted .detail {
+  opacity: 0.55;
+}
+
+.card-fix {
+  height: 22px;
+  padding: 0 10px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--panel);
+  color: inherit;
+  font: 700 10px/1 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+
+.card-fix:hover {
+  border-color: var(--alert);
+}
+
+.dev-builtin {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  font-size: 14px;
+}
+
+.dev-builtin .link {
+  justify-self: start;
+}
+
+.option-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+/* A card with a mark: the icon in its own column, name and status beside it,
+   the tag pinned to the bottom so a row of cards lines up. */
+.option.with-icon {
+  grid-template-columns: 28px minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
+  column-gap: 12px;
+  align-items: start;
+}
+
+.option.with-icon .agent-icon {
+  grid-row: 1 / span 3;
+  width: 28px;
+  height: 28px;
+}
+
+.option.with-icon .name,
+.option.with-icon .detail,
+.option.with-icon .option-tags {
+  grid-column: 2;
+}
+
+.option.with-icon .option-tags {
+  align-self: end;
 }
 
 .tag {
@@ -1100,6 +1265,15 @@ textarea.input {
 .note.bad {
   background: var(--fail-wash);
   color: var(--fail-wash-ink);
+}
+
+/* A note with a fix: the text on the left, its button on the right. */
+.notes .note:has(> button) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
 }
 
 .cost {
@@ -2053,23 +2227,183 @@ body[data-view='compare'] .help {
   color: var(--steel);
 }
 
-.toast {
+.toaster {
   position: fixed;
-  left: 50%;
-  top: 16px;
-  transform: translateX(-50%);
-  z-index: 30;
-  padding: 10px 14px;
-  border-radius: var(--r-sm);
-  background: var(--ink);
-  color: var(--surface);
-  font-size: 14px;
-  box-shadow: var(--lift);
-  max-width: min(640px, calc(100vw - 32px));
+  right: 16px;
+  bottom: 16px;
+  left: 16px;
+  z-index: 60;
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  pointer-events: none;
 }
 
-.toast.bad {
-  background: var(--fail);
+@media (min-width: 640px) {
+  .toaster {
+    left: auto;
+    width: 360px;
+  }
+}
+
+/* A slate card like the site's: white title, steel body, a tone-coloured
+   icon and life line. Dark theme keeps the light values inside it. */
+.toast {
+  --toast-ok: #7ee2a8;
+  --toast-tone: var(--toast-ok);
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 12px;
+  overflow: hidden;
+  padding: 12px 8px 12px 14px;
+  border: 1px solid var(--slate-line);
+  border-radius: 12px;
+  background: var(--slate);
+  color: var(--surface);
+  box-shadow: 0 18px 40px -14px rgb(13 13 16 / 0.65);
+  pointer-events: auto;
+  animation: toast-in 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+:root[data-theme='dark'] .toast {
+  box-shadow: 0 18px 44px -14px rgb(0 0 0 / 0.85);
+}
+
+.toast.leaving {
+  animation: toast-out 200ms ease-in both;
+}
+
+.toast-info {
+  --toast-tone: var(--surface);
+}
+
+.toast-warn {
+  --toast-tone: var(--alert);
+}
+
+.toast-error {
+  --toast-tone: var(--fail-on-slate);
+}
+
+.toast-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-top: 2px;
+  border-radius: 50%;
+  color: var(--toast-tone);
+  background: color-mix(in srgb, var(--toast-tone) 15%, transparent);
+  animation: toast-pop 260ms cubic-bezier(0.34, 1.7, 0.5, 1);
+}
+
+.toast-info .toast-icon {
+  background: color-mix(in srgb, var(--surface) 10%, transparent);
+}
+
+.toast-text {
+  display: grid;
+  gap: 2px;
+  padding-top: 2px;
+}
+
+.toast-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.toast-body {
+  color: var(--steel-on-slate);
+  font-size: 13px;
+  line-height: 1.375;
+}
+
+.toast-close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--steel-on-slate);
+  cursor: pointer;
+}
+
+.toast-close:hover {
+  background: var(--slate-line);
+  color: var(--surface);
+}
+
+.toast-close:focus-visible {
+  outline: 2px solid var(--alert);
+  outline-offset: 2px;
+}
+
+.toast-life {
+  position: absolute;
+  inset: auto 0 0;
+  height: 2px;
+  background: var(--toast-tone);
+  transform-origin: left;
+  animation: toast-life 3200ms linear forwards;
+}
+
+/* Errors carry a reason worth reading, so they stay longer (as before toasts stacked). */
+.toast-error .toast-life {
+  animation-duration: 7000ms;
+}
+
+.toast-info .toast-life {
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+}
+
+.toast:hover .toast-life {
+  animation-play-state: paused;
+}
+
+@keyframes toast-in {
+  0% {
+    opacity: 0;
+    translate: 0 16px;
+    scale: 0.94;
+  }
+  100% {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+
+@keyframes toast-out {
+  100% {
+    opacity: 0;
+    translate: 24px 0;
+    scale: 0.96;
+  }
+}
+
+@keyframes toast-life {
+  0% {
+    scale: 1 1;
+  }
+  100% {
+    scale: 0 1;
+  }
+}
+
+@keyframes toast-pop {
+  0% {
+    scale: 0.6;
+  }
+  100% {
+    scale: 1;
+  }
 }
 
 .loading {
@@ -2526,6 +2860,12 @@ body[data-view='compare'] .help {
   color: #fff3b0;
 }
 
+.action-dock .notes .btn.small:hover:not([disabled]) {
+  background: var(--surface);
+  color: var(--ink);
+  filter: brightness(0.9);
+}
+
 .action-dock .notes .btn.small {
   background: var(--surface);
   color: var(--ink);
@@ -2847,11 +3187,26 @@ ul.checks .check .detail {
   background: var(--panel);
 }
 
+/* The stage narrows to the phone so the divider's 0–100% spans the phone
+   frame, not the empty space around it. */
+.compare[data-device='mobile'] {
+  --phone-w: min(390px, calc(100% - 24px));
+}
+
+.compare[data-device='mobile'] .stage {
+  left: calc(50% - var(--phone-w) / 2);
+  right: auto;
+  width: var(--phone-w);
+}
+
+.compare[data-device='mobile'] .divider {
+  left: calc(50% - var(--phone-w) / 2 + var(--phone-w) * var(--split-n, 0.5));
+}
+
 .stage[data-device='mobile'] .pane iframe {
-  width: 390px;
-  max-width: calc(100% - 24px);
+  width: 100%;
   height: min(844px, calc(100% - 120px));
-  margin: 24px auto 0;
+  margin: 24px 0 0;
   border: 1px solid var(--ink);
   border-radius: 18px;
   box-shadow: var(--lift);
@@ -3697,11 +4052,68 @@ button.wiz-hit:hover .wiz-name {
 .cmd code {
   flex: 1;
   min-width: 0;
-  overflow-x: auto;
-  white-space: nowrap;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
   font: inherit;
   background: none;
   color: inherit;
+}
+
+/* An editable command: same block, the text grows to fit instead of scrolling. */
+.cmd-edit {
+  align-items: flex-start;
+  margin: 0;
+}
+
+.cmd-edit .cmd-prompt {
+  padding-top: 3px;
+}
+
+.cmd-edit textarea {
+  flex: 1;
+  min-width: 0;
+  padding: 3px 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  resize: none;
+  field-sizing: content;
+  overflow-wrap: anywhere;
+}
+
+.cmd-edit textarea:focus {
+  outline: none;
+}
+
+.cmd-edit:focus-within {
+  box-shadow: 0 0 0 2px var(--alert);
+}
+
+/* A note that fixes something: what's wrong on top, then the one-click fix,
+   then the same command to run by hand. */
+.notes .note:has(> .note-fix) {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  font-size: 14px;
+}
+
+.note-fix {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+}
+
+.note-or {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.note-fix .cmd {
+  flex: 1 1 220px;
+  margin: 0;
 }
 
 .cmd-prompt {
@@ -3823,8 +4235,41 @@ button.wiz-hit:hover .wiz-name {
 
 .view-skeleton {
   display: grid;
-  gap: 24px;
+  gap: 12px;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
   padding: 32px 24px;
+}
+
+.view-skeleton .sk-title {
+  width: 55%;
+  height: clamp(2.5rem, 4.6vw, 4.5rem);
+}
+
+.view-skeleton .sk-panel {
+  gap: 16px;
+  margin-top: 24px;
+  padding: 24px;
+}
+
+.view-skeleton .sk-steps {
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.view-skeleton .sk-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+
+.view-skeleton .sk-end {
+  justify-content: flex-end;
+}
+
+.view-skeleton .sk-label {
+  text-align: center;
 }
 
 .sk-card {
@@ -4227,4 +4672,379 @@ body::before {
 
 .mix-row .stepper .figure {
   font-size: 24px;
+}
+
+.option:has(input:checked) .name {
+  padding-right: 24px;
+}
+
+/* The step in progress: a quiet violet track with one highlight gliding
+   across it, eased at both ends. No yellow, no stub. */
+.seg.now .seg-fill,
+.board .seg.now .seg-fill,
+.terminal .seg.now .seg-fill,
+.progress-card .seg.now .seg-fill {
+  background: color-mix(in srgb, var(--alert) 30%, transparent);
+  box-shadow: none;
+}
+
+.seg-shine {
+  width: 60%;
+  background: linear-gradient(90deg, transparent, var(--alert) 45%, color-mix(in srgb, var(--alert) 35%, #fff) 55%, transparent);
+  animation: seg-glide 1.8s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+
+@keyframes seg-glide {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(170%);
+  }
+}
+
+/* The picked variant's panel: step stage on the left while it works, the
+   live log filling the rest. Stacks on narrow screens. */
+.board-detail {
+  display: grid;
+  gap: 16px;
+  min-height: 0;
+}
+
+.board-detail:has(> .board-stage) {
+  grid-template-columns: minmax(300px, 400px) minmax(0, 1fr);
+}
+
+.board-detail > * {
+  min-height: 0;
+}
+
+.board-stage {
+  overflow: auto;
+}
+
+.board-stage .progress-card {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .board-detail:has(> .board-stage) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Progress card, polished: a dark glass card in both themes, hairline
+   dividers instead of black rules, calm segments, and a clear now-step. */
+.progress-card {
+  background: color-mix(in srgb, var(--slate) 94%, transparent);
+  border: 1px solid rgb(255 255 255 / 0.08);
+  color: var(--surface);
+  overflow: hidden;
+}
+
+.progress-card header {
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid rgb(255 255 255 / 0.07);
+}
+
+.progress-body {
+  padding: 18px 22px 20px;
+  gap: 14px;
+}
+
+.progress-dir {
+  color: var(--surface);
+  opacity: 0.92;
+}
+
+.progress-card .seg {
+  height: 6px;
+  background: rgb(255 255 255 / 0.08);
+  box-shadow: none;
+}
+
+.progress-card .seg.done .seg-fill {
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+}
+
+.progress-now {
+  color: var(--surface);
+}
+
+.progress-next {
+  color: var(--steel-on-slate, rgb(255 255 255 / 0.55));
+}
+
+.progress-steps li {
+  color: rgb(255 255 255 / 0.45);
+}
+
+.progress-steps li.done {
+  color: rgb(255 255 255 / 0.7);
+}
+
+.progress-steps li.now {
+  color: var(--alert);
+  font-weight: 600;
+}
+
+.progress-time {
+  color: rgb(255 255 255 / 0.55);
+}
+
+.progress-last {
+  margin: 0;
+  padding: 12px 22px;
+  border-top: 1px solid rgb(255 255 255 / 0.07);
+  background: rgb(0 0 0 / 0.18);
+  color: rgb(255 255 255 / 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The stage inside the dark progress card: a recessed dark panel, lines
+   and mini-page on the card's own palette instead of a white box. */
+.progress-card .step-stage,
+.progress-card [class*='stage-wrap'] {
+  --stg-bg: rgb(255 255 255 / 0.05);
+  --stg-line: rgb(255 255 255 / 0.14);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+}
+
+.progress-card .stg-page {
+  background: rgb(255 255 255 / 0.1);
+  box-shadow: none;
+}
+
+/* Kept: where the kept result lives, and how to open it. */
+.kept .where {
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  background: var(--panel);
+}
+
+.kept .where p {
+  margin: 0;
+}
+
+.kept .where-path {
+  font: 500 14px var(--mono);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.kept .where-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* The Kept-scoped inline code style must not box the text inside a CommandBlock. */
+.kept .cmd code {
+  border: 0;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+}
+
+/* Stage text inside the dark card: read as light, not ink. */
+.progress-card .step-stage {
+  --ink: #f2effc;
+  color: rgb(255 255 255 / 0.82);
+}
+
+.progress-card .step-stage .stg-kicker {
+  color: rgb(255 255 255 / 0.5);
+}
+
+/* ---- Board declutter: one progress column, quieter cells ---- */
+.board .step-cell {
+  min-width: 150px;
+}
+.board .progress-cell {
+  gap: 6px;
+  max-width: 220px;
+}
+.board .progress-cell .now-label {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: clip;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.board .progress-cell .working-bars {
+  display: inline-flex;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.board .progress-cell[data-s='failed'] .now-label {
+  color: var(--fail-on-slate);
+}
+.board .progress-cell:is([data-s='scheduled'], [data-s='cancelled']) .now-label {
+  color: var(--steel-on-slate);
+}
+.board .progress-cell.unseen .now-label {
+  color: var(--alert);
+}
+.board .dir .dir-label {
+  display: block;
+}
+.board .dir .dir-label.muted {
+  color: var(--steel-on-slate);
+  font-style: italic;
+}
+.progress-card.compact .progress-now {
+  margin-top: 4px;
+}
+
+/* Side by side: label each pane too (who made it, which direction). */
+.stage[data-mode='side'] ~ .tags {
+  display: flex;
+}
+
+/* Who made each pane stays readable while the rest of the chrome recedes. */
+.compare.tucked .tags {
+  opacity: 0.92;
+}
+
+/* Agent prompt card, as on the site (PromptCopy): header with a copy
+   button, the prompt clamped behind a Show more pill sitting on the edge. */
+.prompt-copy {
+  display: grid;
+}
+
+.prompt-copy.is-long {
+  padding-bottom: 16px;
+}
+
+.pc-card {
+  position: relative;
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.pc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 4px 4px 16px;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 16px 16px 0 0;
+  background: var(--panel);
+  color: var(--steel);
+}
+
+.pc-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.pc-icon {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.pc-copy {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background 150ms var(--ease), transform 120ms var(--ease);
+}
+
+.pc-copy:hover {
+  background: var(--rule);
+  color: var(--ink);
+}
+
+.pc-copy:active {
+  transform: scale(0.92);
+}
+
+.pc-pop {
+  color: var(--alert);
+  animation: toast-pop 320ms var(--ease) both;
+}
+
+.pc-body {
+  margin: 0;
+  padding: 12px 16px 14px;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--steel);
+  white-space: pre-line;
+}
+
+.prompt-copy.is-long .pc-body {
+  padding-bottom: 24px;
+}
+
+.pc-clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pc-more {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink);
+  font: 600 12px/1 var(--mono);
+  cursor: pointer;
+}
+
+.pc-labels {
+  display: grid;
+}
+
+.pc-labels > span {
+  grid-area: 1 / 1;
+  transition: opacity 160ms var(--ease);
+}
+
+.pc-labels > .pc-off {
+  opacity: 0;
+}
+
+.pc-chevron {
+  width: 14px;
+  height: 14px;
+  transition: transform 200ms var(--ease);
+}
+
+.pc-chevron.pc-flip {
+  transform: rotate(180deg);
 }
