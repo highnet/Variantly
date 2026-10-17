@@ -1334,7 +1334,7 @@
           },
           {
             "label": "Blocking time",
-            "note": "TVA concept, 4× CPU throttle",
+            "note": "Amber Terminal concept, 4× CPU throttle",
             "before": "3,790 ms",
             "after": "2,291 ms",
             "on": "blocking"

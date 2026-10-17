@@ -292,7 +292,7 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
 };
 
 /*
- * TVA-style title card: "variantly" spelled in nine mismatched typefaces,
+ * Amber-terminal title card: "variantly" spelled in nine mismatched typefaces,
  * each letter flickering through variants before it settles. It plays on
  * load and again whenever the concept switches (clicking does not replay).
  */
