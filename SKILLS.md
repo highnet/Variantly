@@ -89,7 +89,9 @@ npx variantly install-skill      # put the variantly skill where your agents rea
 ```
 
 Flags for the default command: `--agent claude|codex|copilot|gemini|cursor|demo`,
-`--count 1..10`, `--brief "<text>"`, `--yes` (skip the wizard and start
+`--agents <agent[:model]:count,...>` (split the variants across agents and
+models, e.g. `claude:opus:2,gemini:2`; every agent must be installed and signed
+in), `--blind` (hide who made each variant until one is kept), `--count 1..10`, `--brief "<text>"`, `--yes` (skip the wizard and start
 generating with detected defaults), `--demo` (the built-in demo agent: no AI,
 crude fixed restyles, for trying the flow), `--no-open`, `--port <n>`.
 

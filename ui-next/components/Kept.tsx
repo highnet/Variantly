@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import { CommandBlock } from './CommandBlock';
 import { api } from '@/lib/api';
 import { resetRun } from '@/lib/live';
-import { directionLabel, pad, plural, scoreText, usageText, vname } from '@/lib/format';
+import { directionLabel, madeBy, pad, plural, scoreText, usageText, vname } from '@/lib/format';
 import { setState, toast, useStore } from '@/lib/store';
 
 const Kept = () => {
@@ -100,6 +100,12 @@ const Kept = () => {
                 {n === null ? '—' : `${vname(n)} of ${pad(snap.variants.length)}`}
               </dd>
             </div>
+            {v && madeBy(snap, v) && (
+              <div>
+                <dt className="label">Made by</dt>
+                <dd>{madeBy(snap, v)}</dd>
+              </div>
+            )}
             <div>
               <dt className="label">Files</dt>
               <dd>{r.files.length}</dd>

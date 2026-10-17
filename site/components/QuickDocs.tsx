@@ -12,6 +12,8 @@ export const COMMANDS = [
 
 export const FLAGS = [
   ['--agent <id>', 'claude, codex, copilot, gemini, cursor or demo'],
+  ['--agents <mix>', 'split variants across agents: claude:opus:2,gemini:2'],
+  ['--blind', 'hide who made each variant until you keep one'],
   ['--count <n>', 'how many variants, 1–10'],
   ['--brief <txt>', 'what you want, in your words'],
   ['--yes', 'skip the wizard, use detected defaults'],

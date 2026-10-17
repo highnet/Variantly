@@ -29,6 +29,10 @@ import { at, HEIGHT, log, PAD_MS, readJson, REPO, run, script, WIDTH, writeJson 
 const film = script();
 const IN_PAGE_CURSOR = Boolean(process.env.IN_PAGE_CURSOR);
 const agent = process.argv.includes('--dry') ? 'demo' : process.env.DEMO_AGENT || film.agent;
+// The run's agent mix (script.json `mix`, e.g. "claude:2,gemini:2"). A dry
+// run keeps the split with the demo agent in every row, so the wizard and
+// the labels look the same.
+const mix = film.mix ? (agent === 'demo' ? film.mix.split(',').map((r) => `demo:${r.split(':').at(-1)}`).join(',') : film.mix) : '';
 const single = process.argv.includes('--single');
 const THEMES = single ? ['light'] : ['light', 'dark'];
 const port = Number(process.env.DEMO_PORT || 4499);
@@ -77,7 +81,7 @@ async function preflight() {
 }
 
 function startVariantly() {
-  const args = [path.join(REPO, 'bin', 'variantly.mjs'), SITE, '--agent', agent, '--no-open', '-p', String(port)];
+  const args = [path.join(REPO, 'bin', 'variantly.mjs'), SITE, ...(mix ? ['--agents', mix] : ['--agent', agent]), '--no-open', '-p', String(port)];
   const child = spawn(process.execPath, args, {
     cwd: SITE,
     env: {
@@ -591,7 +595,7 @@ if (filmed.problems.length) {
   }
   log('record', 'ALLOW_STALE is set: recording anyway. Do not publish this take.');
 }
-log('record', `agent: ${agent}${agent === 'demo' ? ' (dry run, no AI)' : ''}; themes: ${THEMES.join(', ')}`);
+log('record', `agent: ${mix || agent}${agent === 'demo' ? ' (dry run, no AI)' : ''}; themes: ${THEMES.join(', ')}`);
 await smokeTest();
 await prepareSite();
 hideImpeccable();
