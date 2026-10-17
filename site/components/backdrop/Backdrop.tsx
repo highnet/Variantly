@@ -221,7 +221,10 @@ export const Backdrop = () => {
         </div>
       )}
       <div className="vy-scene absolute inset-0">
-        <GlField key={key + theme} scene={v.scene} colors={v.colors[theme]} />
+        {/* Reduced motion: the CSS layers only; the three.js chunk never loads. */}
+        {(!calmMotion() || seekTime() !== null) && (
+          <GlField key={key + theme} scene={v.scene} colors={v.colors[theme]} />
+        )}
       </div>
       <div className="vy-grain absolute inset-0" style={{ opacity: v.grain }} />
     </div>
