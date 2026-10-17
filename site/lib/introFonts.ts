@@ -2,8 +2,11 @@ import {
   Abril_Fatface,
   Archivo_Black,
   Fredoka,
+  Grandstander,
   Jost,
+  Bodoni_Moda,
   Bungee,
+  Caveat_Brush,
   Cinzel,
   Great_Vibes,
   Monoton,
@@ -77,8 +80,33 @@ const archivo = Archivo_Black({
   preload: false,
   variable: '--font-brutal',
 });
+// Concepts k, p, n: brushed hand, stitched outline, Didone.
+const brush = Caveat_Brush({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-brush',
+});
+const stitch = Grandstander({ subsets: ['latin'], preload: false, variable: '--font-stitch' });
+const didone = Bodoni_Moda({
+  subsets: ['latin'],
+  style: ['normal', 'italic'],
+  preload: false,
+  variable: '--font-didone',
+});
 
-export const HERO_FONT_VARS = [abril, elite, orbitron, fredoka, jost, archivo, rubik]
+export const HERO_FONT_VARS = [
+  abril,
+  elite,
+  orbitron,
+  fredoka,
+  jost,
+  archivo,
+  rubik,
+  brush,
+  stitch,
+  didone,
+]
   .map((f) => f.variable)
   .join(' ');
 

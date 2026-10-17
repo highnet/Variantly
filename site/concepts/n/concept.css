@@ -1,20 +1,74 @@
-/* n · Noir Velvet: placeholder tokens from the roll's palette. */
+/* n · Noir Velvet: oxblood velvet, one spotlight, blind shadows, a Didone title. */
 :root[data-variant='n'] {
-  --panel: color-mix(in srgb, #efe7dc 94%, #140d0c); --surface: #efe7dc; --rule: color-mix(in srgb, #140d0c 18%, #efe7dc); --steel: color-mix(in srgb, #140d0c 66%, #efe7dc); --ink: #140d0c;
-  --alert: #6e1420; --alert-hover: color-mix(in srgb, #6e1420 85%, #efe7dc); --on-alert: #ffffff;
-  --hero-bg: #efe7dc; --hero-ink: #140d0c; --hero-mute: color-mix(in srgb, #140d0c 66%, #efe7dc); --hero-line: color-mix(in srgb, #140d0c 22%, #efe7dc); --hero-box: color-mix(in srgb, #efe7dc 96%, #140d0c);
-  --title: #6e1420;
-  --flap-bg: #6e1420; --flap-ink: #ffffff;
-  --art-1: #6e1420; --art-2: #c79a5b; --art-3: #3a2e2b; --art-ink: #140d0c; --art-shadow: #140d0c;
-  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
-  --board-bg: #080506; --board-raised: color-mix(in srgb, #080506 88%, #f1e6d8); --board-line: color-mix(in srgb, #080506 70%, #f1e6d8);
-  --board-mute: color-mix(in srgb, #f1e6d8 72%, #080506); --board-text: #f1e6d8; --board-deep: color-mix(in srgb, #080506 80%, #000); --board-ok: #9b1c2c;
+  --panel: #efe7dc; --surface: #f8f2e9; --rule: #d6c6b0; --steel: #5a4a44; --ink: #140d0c;
+  --alert: #6e1420; --alert-hover: #87202d; --on-alert: #fdf6ec;
+  --hero-bg: #efe7dc; --hero-ink: #140d0c; --hero-mute: #5a4a44; --hero-line: #cdb89a; --hero-box: #f8f2e9;
+  --hero-face: var(--font-didone); --title: #6e1420; --hero-alpha: 30%; --blob-o: 1;
+  --flap-bg: #140d0c; --flap-ink: #efe7dc;
+  --board-bg: #140d0c; --board-raised: #22191a; --board-line: #3c2c29; --board-mute: #cdbcaa; --board-text: #f1e6d8; --board-deep: #080506; --board-ok: #d4a96a;
+  --art-1: #6e1420; --art-2: #c79a5b; --art-3: #3a2e2b; --art-ink: #140d0c; --art-hi: #fff6e6;
+  --n-gold: #8a6430; --n-rule: #b8925a; --n-letter: #6e1420; --n-side: #3d0a12;
+  --n-fold: rgb(20 13 12 / 0.06); --n-light: rgb(255 249 238 / 0.95); --n-bar: rgb(20 13 12 / 0.09); --n-shade: #efe7dc;
 }
 :root[data-variant='n'][data-theme='dark'] {
-  --panel: color-mix(in srgb, #080506 94%, #f1e6d8); --surface: #080506; --rule: color-mix(in srgb, #f1e6d8 18%, #080506); --steel: color-mix(in srgb, #f1e6d8 66%, #080506); --ink: #f1e6d8;
-  --alert: #9b1c2c; --alert-hover: color-mix(in srgb, #9b1c2c 85%, #080506); --on-alert: #ffffff;
-  --hero-bg: #080506; --hero-ink: #f1e6d8; --hero-mute: color-mix(in srgb, #f1e6d8 66%, #080506); --hero-line: color-mix(in srgb, #f1e6d8 22%, #080506); --hero-box: color-mix(in srgb, #080506 96%, #f1e6d8);
-  --title: #f1e6d8;
-  --flap-bg: #9b1c2c; --flap-ink: #ffffff;
-  --art-1: #9b1c2c; --art-2: #d4a96a; --art-3: #231a19; --art-ink: #f1e6d8; --art-shadow: #f1e6d8;
+  --panel: #080506; --surface: #120c0d; --rule: #2e2220; --steel: #c4b4a2; --ink: #f1e6d8;
+  --alert: #d4a96a; --alert-hover: #e2bd84; --on-alert: #140d0c;
+  --hero-bg: #080506; --hero-ink: #f1e6d8; --hero-mute: #c4b4a2; --hero-line: #3a2a26; --hero-box: #110b0c;
+  --title: #d4a96a;
+  --flap-bg: #9b1c2c; --flap-ink: #f1e6d8;
+  --art-1: #9b1c2c; --art-2: #d4a96a; --art-3: #231a19; --art-ink: #000000; --art-hi: #f1e6d8;
+  --n-gold: #d4a96a; --n-rule: #8c6a3e; --n-letter: #f1e6d8; --n-side: #9b1c2c;
+  --n-fold: rgb(155 28 44 / 0.10); --n-light: rgb(255 214 170 / 0.16); --n-bar: rgb(255 226 190 / 0.07); --n-shade: #080506;
+}
+
+/* the wall: velvet folds; the pool: one hard spotlight above the title */
+:root[data-variant='n'] .n-wall {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 3vw, var(--n-fold) 5vw, transparent 7vw 9vw),
+    linear-gradient(var(--panel), color-mix(in srgb, var(--panel) 88%, var(--art-1)));
+}
+:root[data-variant='n'] .n-pool { background: radial-gradient(ellipse 46vw 34vw at 50% 30%, var(--n-light), transparent 72%); }
+/* blind bars sweep through the light: 4 bar periods per 24s, so the loop closes on itself */
+:root[data-variant='n'] .n-blinds { inset: -40vmax; rotate: -16deg; }
+:root[data-variant='n'] .n-bars {
+  background: repeating-linear-gradient(180deg, var(--n-bar) 0 26px, transparent 26px 64px);
+  will-change: transform; animation: n-sweep 24s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+}
+@keyframes n-sweep { 0%, 100% { transform: none; } 50% { transform: translateY(128px); } 50.001% { transform: translateY(-128px); } }
+/* darkness closes over everything the spotlight misses */
+:root[data-variant='n'] .n-dark { background: radial-gradient(ellipse 50vw 38vw at 50% 30%, transparent 40%, var(--n-shade) 100%); opacity: 0.92; }
+:root[data-variant='n'][data-theme='dark'] .n-dark { opacity: 1; }
+:root[data-variant='n'] .n-grain { inset: -96px; will-change: transform; animation: n-grain 1s steps(4) infinite; }
+@keyframes n-grain { 0%, 100% { transform: none; } 25% { transform: translate(37px, 61px); } 50% { transform: translate(-53px, 19px); } 75% { transform: translate(23px, -47px); } }
+:root[data-variant='n'][data-scrolled] :is(.n-bars, .n-grain) { animation-play-state: paused; }
+@media (pointer: coarse) { :root[data-variant='n'] :is(.n-bars, .n-grain) { animation: none; } }
+
+/* the title card: a Didone word in the light, credits in small caps */
+:root[data-variant='n'] .vy-title { color: var(--n-letter); text-shadow: 0 2px 0 var(--n-side), 0 14px 22px rgb(0 0 0 / 0.35); }
+:root[data-variant='n'] [data-hero-title] { border-bottom: 0; padding-bottom: 76px; }
+:root[data-variant='n'] [data-hero-title]::after {
+  content: 'a picture in several cuts'; position: absolute; inset: auto 16px 26px; text-align: center;
+  font: 500 15px/1 var(--font-didone); font-variant: small-caps; letter-spacing: 0.32em; color: var(--n-gold);
+}
+:root[data-variant='n'] #hero-title { font-weight: 600; letter-spacing: -0.015em; line-height: 1.02; }
+:root[data-variant='n'] .vy-fresh { font-style: italic; font-weight: 500; text-decoration: underline solid color-mix(in srgb, var(--n-gold) 60%, transparent); text-decoration-thickness: 1px; text-underline-offset: 0.16em; }
+:root[data-variant='n'] main > div h2 { text-transform: none; font-variant: small-caps; letter-spacing: 0.06em; font-weight: 600; }
+/* placards: a gold double rule, lit from above */
+:root[data-variant='n'] [data-hero-side],
+:root[data-variant='n'] main > div .bg-surface {
+  border: 0; border-radius: 2px;
+  box-shadow: inset 0 0 0 1px var(--n-rule), inset 0 0 0 5px var(--surface), inset 0 0 0 6px color-mix(in srgb, var(--n-rule) 55%, transparent), 0 22px 40px -26px rgb(0 0 0 / 0.55);
+}
+:root[data-variant='n'] [data-hero-side] {
+  background: var(--hero-box); padding: 26px 22px 22px;
+  box-shadow: inset 0 0 0 1px var(--n-rule), inset 0 0 0 5px var(--hero-box), inset 0 0 0 6px color-mix(in srgb, var(--n-rule) 55%, transparent), 0 22px 40px -26px rgb(0 0 0 / 0.55);
+}
+:root[data-variant='n'] main > div .figure:not(h3) { font-style: italic; }
+:root[data-variant='n'] .flap-cell { border-radius: 1px; box-shadow: inset 0 0 0 1px var(--n-rule); }
+:root[data-variant='n'] .vy-loadbar { height: 2px; }
+:root[data-variant='n'] .vy-loadbar-fill { background: linear-gradient(90deg, transparent, var(--art-2) 30%, var(--art-2)); }
+/* light is the layout: copy sits in the lit house, not on the drapes */
+:root[data-variant='n'] [data-hero-grid] {
+  background: color-mix(in srgb, var(--hero-bg) 90%, transparent);
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--hero-bg) 90%, transparent);
 }

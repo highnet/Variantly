@@ -1,20 +1,90 @@
-/* p · Tenango Thread: placeholder tokens from the roll's palette. */
+/* p · Tenango Thread: satin stitch on white cotton manta, after the Otomí–Hñähñu
+   embroidery of Tenango de Doria, Hidalgo. One colour per motif. */
 :root[data-variant='p'] {
-  --panel: color-mix(in srgb, #fbf8f2 94%, #1d1b1a); --surface: #fbf8f2; --rule: color-mix(in srgb, #1d1b1a 18%, #fbf8f2); --steel: color-mix(in srgb, #1d1b1a 66%, #fbf8f2); --ink: #1d1b1a;
-  --alert: #c2263a; --alert-hover: color-mix(in srgb, #c2263a 85%, #fbf8f2); --on-alert: #ffffff;
-  --hero-bg: #fbf8f2; --hero-ink: #1d1b1a; --hero-mute: color-mix(in srgb, #1d1b1a 66%, #fbf8f2); --hero-line: color-mix(in srgb, #1d1b1a 22%, #fbf8f2); --hero-box: color-mix(in srgb, #fbf8f2 96%, #1d1b1a);
-  --title: #c2263a;
-  --flap-bg: #c2263a; --flap-ink: #ffffff;
-  --art-1: #c2263a; --art-2: #1b8a7f; --art-3: #e08a3c; --art-ink: #1d1b1a; --art-shadow: #1d1b1a;
-  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
-  --board-bg: #14110f; --board-raised: color-mix(in srgb, #14110f 88%, #f6f1e8); --board-line: color-mix(in srgb, #14110f 70%, #f6f1e8);
-  --board-mute: color-mix(in srgb, #f6f1e8 72%, #14110f); --board-text: #f6f1e8; --board-deep: color-mix(in srgb, #14110f 80%, #000); --board-ok: #ef476f;
+  --panel: #fbf8f2; --surface: #ffffff; --rule: #e6ddcf; --steel: #5b534c; --ink: #1d1b1a;
+  --alert: #c2263a; --alert-hover: #a51e30; --on-alert: #ffffff;
+  --hero-bg: #fbf8f2; --hero-ink: #1d1b1a; --hero-mute: #5b534c; --hero-line: #e2d8c8; --hero-box: #ffffff;
+  --hero-face: var(--font-stitch); --title: #c2263a; --hero-alpha: 58%; --blob-o: 1;
+  --flap-bg: #1b8a7f; --flap-ink: #ffffff;
+  --board-bg: #1d1b1a; --board-raised: #2b2826; --board-line: #47423e; --board-mute: #d3cbc1; --board-text: #fbf8f2; --board-deep: #0e0d0c; --board-ok: #2ec4b6;
+  --art-1: #c2263a; --art-2: #1b8a7f; --art-3: #e08a3c; --art-cloth: #fbf8f2; --art-weave: rgb(60 40 20 / 0.045);
+  --p-red: #c2263a; --p-red-s: #8a1626; --p-teal: #1b8a7f; --p-teal-s: #0f5a52; --p-ochre: #e08a3c; --p-ochre-s: #a3591b;
 }
 :root[data-variant='p'][data-theme='dark'] {
-  --panel: color-mix(in srgb, #14110f 94%, #f6f1e8); --surface: #14110f; --rule: color-mix(in srgb, #f6f1e8 18%, #14110f); --steel: color-mix(in srgb, #f6f1e8 66%, #14110f); --ink: #f6f1e8;
-  --alert: #ef476f; --alert-hover: color-mix(in srgb, #ef476f 85%, #14110f); --on-alert: #ffffff;
-  --hero-bg: #14110f; --hero-ink: #f6f1e8; --hero-mute: color-mix(in srgb, #f6f1e8 66%, #14110f); --hero-line: color-mix(in srgb, #f6f1e8 22%, #14110f); --hero-box: color-mix(in srgb, #14110f 96%, #f6f1e8);
+  --panel: #14110f; --surface: #1e1a17; --rule: #3a332e; --steel: #bcb2a6; --ink: #f6f1e8;
+  --alert: #ef476f; --alert-hover: #f6688b; --on-alert: #14110f;
+  --hero-bg: #14110f; --hero-ink: #f6f1e8; --hero-mute: #bcb2a6; --hero-line: #3a332e; --hero-box: #1b1714;
   --title: #ef476f;
-  --flap-bg: #ef476f; --flap-ink: #ffffff;
-  --art-1: #ef476f; --art-2: #2ec4b6; --art-3: #ffb563; --art-ink: #f6f1e8; --art-shadow: #f6f1e8;
+  --flap-bg: #2ec4b6; --flap-ink: #14110f;
+  --board-bg: #0b0a09; --board-raised: #1e1a17; --board-line: #3a332e; --board-deep: #000000;
+  --art-1: #ef476f; --art-2: #2ec4b6; --art-3: #ffb563; --art-cloth: #14110f; --art-weave: rgb(255 240 220 / 0.035);
+  --p-red: #ef476f; --p-red-s: #a3244a; --p-teal: #2ec4b6; --p-teal-s: #187a70; --p-ochre: #ffb563; --p-ochre-s: #b9772c;
+}
+
+/* manta: a fine plain weave */
+:root[data-variant='p'] .p-manta {
+  background:
+    repeating-linear-gradient(0deg, var(--art-weave) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, var(--art-weave) 0 1px, transparent 1px 3px);
+}
+:root[data-variant='p'] .p-breathe { transform-origin: 50% 60%; will-change: transform; animation: p-breathe 8s ease-in-out infinite; }
+@keyframes p-breathe { 0%, 100% { transform: none; } 50% { transform: scale(1.035) rotate(-1deg); } }
+
+/* one red thread running round the border, a stitch every 3s */
+:root[data-variant='p'] .p-run { position: absolute; overflow: hidden; inset: 12px 12px auto; height: 3px; }
+:root[data-variant='p'] .p-run-b { inset: auto 12px 12px; }
+:root[data-variant='p'] .p-run-l { inset: 12px auto 12px 12px; width: 3px; height: auto; }
+:root[data-variant='p'] .p-run-r { inset: 12px 12px 12px auto; width: 3px; height: auto; }
+:root[data-variant='p'] .p-run::before {
+  content: ''; position: absolute; inset: 0 -16px; border-radius: 2px; will-change: transform;
+  background: repeating-linear-gradient(90deg, var(--art-1) 0 10px, transparent 10px 16px);
+  animation: p-run-x 3s linear infinite;
+}
+:root[data-variant='p'] .p-run-b::before { animation-direction: reverse; }
+:root[data-variant='p'] :is(.p-run-l, .p-run-r)::before {
+  inset: -16px 0; background: repeating-linear-gradient(180deg, var(--art-1) 0 10px, transparent 10px 16px);
+  animation-name: p-run-y;
+}
+:root[data-variant='p'] .p-run-l::before { animation-direction: reverse; }
+@keyframes p-run-x { 0% { transform: translateX(-16px); } 100% { transform: none; } }
+@keyframes p-run-y { 0% { transform: translateY(-16px); } 100% { transform: none; } }
+:root[data-variant='p'] .p-run::before { transform: translate(-16px, 0); }
+:root[data-variant='p'] :is(.p-run-l, .p-run-r)::before { transform: translate(0, -16px); }
+:root[data-variant='p'][data-scrolled] :is(.p-breathe, .p-run::before) { animation-play-state: paused; }
+@media (pointer: coarse) { :root[data-variant='p'] :is(.p-breathe, .p-run::before) { animation: none; } }
+
+/* the title: each letter one thread colour, satin over a raised pad */
+:root[data-variant='p'] .vy-letter { color: var(--p-red); text-shadow: 0 2px 0 var(--p-red-s), 0 8px 14px rgb(40 20 10 / 0.18); }
+:root[data-variant='p'] .vy-letter:nth-child(3n + 2) { color: var(--p-teal); text-shadow: 0 2px 0 var(--p-teal-s), 0 8px 14px rgb(40 20 10 / 0.18); }
+:root[data-variant='p'] .vy-letter:nth-child(3n) { color: var(--p-ochre); text-shadow: 0 2px 0 var(--p-ochre-s), 0 8px 14px rgb(40 20 10 / 0.18); }
+:root[data-variant='p'] [data-hero-title] { padding-bottom: 72px; }
+/* provenance on the surface: the credit stays with the work */
+:root[data-variant='p'] [data-hero-title]::after {
+  content: 'Motifs after Tenango embroidery · Otomí (Hñähñu) artisans of Tenango de Doria, Hidalgo, México';
+  position: absolute; inset: auto 16px 22px; text-align: center;
+  font: 500 12px/1.4 var(--font-sans); letter-spacing: 0.04em; color: var(--hero-mute);
+}
+:root[data-variant='p'] #hero-title { font-weight: 800; letter-spacing: -0.01em; line-height: 1.05; }
+:root[data-variant='p'] main > div h2 { text-transform: none; font-weight: 800; letter-spacing: -0.01em; }
+/* cards: cotton panels with a satin-stitched band along the top */
+:root[data-variant='p'] [data-hero-side],
+:root[data-variant='p'] main > div .bg-surface {
+  border: 0; border-radius: 6px; position: relative;
+  box-shadow: 0 0 0 1px var(--rule), 0 16px 30px -22px rgb(60 30 10 / 0.45);
+}
+:root[data-variant='p'] [data-hero-side] { background: var(--hero-box); padding: 30px 22px 22px; box-shadow: 0 0 0 1px var(--hero-line), 0 16px 30px -22px rgb(60 30 10 / 0.45); }
+:root[data-variant='p'] :is([data-hero-side], main > div .bg-surface)::before {
+  content: ''; position: absolute; inset: 0 0 auto; height: 6px; border-radius: 6px 6px 0 0; pointer-events: none;
+  background:
+    repeating-linear-gradient(70deg, rgb(255 255 255 / 0.32) 0 1px, transparent 1px 3px),
+    linear-gradient(90deg, var(--p-red) 0 33%, var(--p-teal) 33% 66%, var(--p-ochre) 66%);
+}
+:root[data-variant='p'] main > div .bg-surface .bg-surface::before { content: none; }
+:root[data-variant='p'] .flap-cell { border-radius: 3px; }
+:root[data-variant='p'] .flap-cell:nth-child(3n + 1) { --flap-bg: var(--p-red); --flap-ink: #fff; }
+:root[data-variant='p'][data-theme='dark'] .flap-cell:nth-child(3n + 1) { --flap-ink: #14110f; }
+:root[data-variant='p'] .vy-loadbar { height: 4px; inset: 6px 12px auto; }
+:root[data-variant='p'] .vy-loadbar-fill { border-radius: 2px; background: repeating-linear-gradient(90deg, var(--art-1) 0 10px, transparent 10px 16px); }
+@media (max-width: 639px) {
+:root[data-variant='p'] [data-hero-title] { padding-bottom: 84px; }
 }
