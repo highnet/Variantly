@@ -3,6 +3,14 @@
 //   ELEVEN_API_KEY=... ELEVEN_VOICE_ID=... node voice.mjs [sceneId ...]
 //   node voice.mjs --voice local     rehearsal voice, no keys: the system's own
 //                                    speech (Windows SAPI, macOS say, espeak)
+//   node voice.mjs --lint            list narration words with no pronunciation
+//                                    rule (capitals, digits, symbols); exit 1 if any
+//   node voice.mjs --dict            write pronunciations.pls and, with keys,
+//                                    upload it as an ElevenLabs dictionary
+//
+// Captions keep the written text; the voice reads the spoken text that
+// lib/pronounce.mjs makes from it with pronunciations.json (or a scene's own
+// `say`). Word timings are mapped back onto the written words.
 //
 // Writes audio/<id>.mp3, audio/<id>.wav (48 kHz, what SeekReel mixes),
 // audio/<id>.words.json (word timings) and audio/durations.json.
@@ -11,11 +19,30 @@
 import { createHash } from 'node:crypto';
 import { existsSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { at, duration, ffmpeg, log, readJson, run, script, writeJson } from './lib/common.mjs';
+import { risky, toPls, toSpoken, toWritten } from './lib/pronounce.mjs';
 
 const args = process.argv.slice(2);
 const voiceFlag = args.indexOf('--voice');
 const wantLocal = voiceFlag > -1 && args[voiceFlag + 1] === 'local';
 if (voiceFlag > -1) args.splice(voiceFlag, 2);
+
+if (args.includes('--lint')) {
+  let bad = 0;
+  for (const scene of script().scenes) {
+    if (!scene.text) continue;
+    const words = risky(scene.text);
+    if (words.length) {
+      bad += words.length;
+      console.log(`${scene.id}: ${words.join(', ')}`);
+    }
+  }
+  if (bad) {
+    console.log(`\n${bad} word(s) without a pronunciation rule. Add them to pronunciations.json (or give the scene a "say").`);
+    process.exit(1);
+  }
+  log('voice', 'lint: every risky word has a pronunciation rule');
+  process.exit(0);
+}
 
 const key = process.env.ELEVEN_API_KEY;
 const voice = process.env.ELEVEN_VOICE_ID;
@@ -64,12 +91,40 @@ function spreadWords(text, seconds) {
 }
 
 const model = process.env.ELEVEN_MODEL || 'eleven_multilingual_v2';
+// A calm, even read: a little more stability, almost no style, slightly
+// under normal speed.
 const settings = {
-  stability: Number(process.env.ELEVEN_STABILITY ?? 0.55),
+  stability: Number(process.env.ELEVEN_STABILITY ?? 0.62),
   similarity_boost: Number(process.env.ELEVEN_SIMILARITY ?? 0.8),
-  style: Number(process.env.ELEVEN_STYLE ?? 0.1),
+  style: Number(process.env.ELEVEN_STYLE ?? 0.05),
+  speed: Number(process.env.ELEVEN_SPEED ?? 0.95),
   use_speaker_boost: true,
 };
+// An uploaded pronunciation dictionary (voice.mjs --dict prints these).
+// Optional: the aliases are already applied to the text.
+const dictionary = process.env.ELEVEN_DICT_ID
+  ? [{ pronunciation_dictionary_id: process.env.ELEVEN_DICT_ID, version_id: process.env.ELEVEN_DICT_VERSION }]
+  : undefined;
+
+if (args.includes('--dict')) {
+  writeFileSync(at('pronunciations.pls'), toPls());
+  log('voice', 'wrote pronunciations.pls');
+  if (LOCAL) {
+    log('voice', 'No ElevenLabs keys: not uploaded. The aliases still apply to the text.');
+    process.exit(0);
+  }
+  const form = new FormData();
+  form.append('name', 'variantly-demo');
+  form.append('file', new Blob([toPls()], { type: 'application/pls+xml' }), 'pronunciations.pls');
+  const res = await fetch('https://api.elevenlabs.io/v1/pronunciation-dictionaries/add-from-file', { method: 'POST', headers: { 'xi-api-key': key }, body: form });
+  if (!res.ok) {
+    console.error(`ElevenLabs ${res.status}: ${await res.text()}`);
+    process.exit(1);
+  }
+  const body = await res.json();
+  log('voice', `uploaded. Add to .env:\nELEVEN_DICT_ID=${body.id}\nELEVEN_DICT_VERSION=${body.version_id}`);
+  process.exit(0);
+}
 
 const only = new Set(args);
 const scenes = script().scenes;
@@ -100,7 +155,8 @@ function words(alignment) {
 // like one take instead of twelve separate ones.
 for (const [i, scene] of scenes.entries()) {
   if (only.size && !only.has(scene.id)) continue;
-  const hash = createHash('sha1').update(JSON.stringify(LOCAL ? [scene.text, 'local'] : [scene.text, voice, model, settings])).digest('hex');
+  const line = toSpoken(scene.text, scene.say);
+  const hash = createHash('sha1').update(JSON.stringify(LOCAL ? [line.spoken, scene.text, 'local'] : [line.spoken, scene.text, voice, model, settings, dictionary])).digest('hex');
   const mp3 = at('audio', `${scene.id}.mp3`);
   if (!only.size && manifest[scene.id] === hash && existsSync(mp3)) {
     log('voice', `${scene.id}: unchanged`);
@@ -109,12 +165,12 @@ for (const [i, scene] of scenes.entries()) {
 
   if (LOCAL) {
     const raw = at('audio', `${scene.id}.local.wav`);
-    await speakLocally(scene.text, raw);
+    await speakLocally(line.spoken, raw);
     await ffmpeg(['-i', raw, '-ar', '48000', '-ac', '1', at('audio', `${scene.id}.wav`)]);
     await ffmpeg(['-i', raw, '-b:a', '128k', mp3]);
     rmSync(raw, { force: true });
     durations[scene.id] = Number((await duration(mp3)).toFixed(3));
-    writeJson(at('audio', `${scene.id}.words.json`), spreadWords(scene.text, durations[scene.id]));
+    writeJson(at('audio', `${scene.id}.words.json`), toWritten(spreadWords(line.spoken, durations[scene.id]), line));
     manifest[scene.id] = hash;
     log('voice', `${scene.id}: ${durations[scene.id]}s (local)`);
     continue;
@@ -126,11 +182,12 @@ for (const [i, scene] of scenes.entries()) {
       method: 'POST',
       headers: { 'xi-api-key': key, 'content-type': 'application/json' },
       body: JSON.stringify({
-        text: scene.text,
+        text: line.spoken,
         model_id: model,
         voice_settings: settings,
-        previous_text: scenes[i - 1]?.text,
-        next_text: scenes[i + 1]?.text,
+        pronunciation_dictionary_locators: dictionary,
+        previous_text: scenes[i - 1] && toSpoken(scenes[i - 1].text, scenes[i - 1].say).spoken,
+        next_text: scenes[i + 1] && toSpoken(scenes[i + 1].text, scenes[i + 1].say).spoken,
       }),
     },
   );
@@ -140,7 +197,7 @@ for (const [i, scene] of scenes.entries()) {
   }
   const body = await response.json();
   writeFileSync(mp3, Buffer.from(body.audio_base64, 'base64'));
-  writeJson(at('audio', `${scene.id}.words.json`), words(body.alignment));
+  writeJson(at('audio', `${scene.id}.words.json`), toWritten(words(body.alignment), line));
   // SeekReel's cue engine mixes WAV; 48 kHz matches its default rate.
   await ffmpeg(['-i', mp3, '-ar', '48000', '-ac', '1', at('audio', `${scene.id}.wav`)]);
 

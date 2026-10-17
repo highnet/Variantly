@@ -4,6 +4,7 @@
 // overlays drawn from timeline.json. Everything visible is a pure function of
 // t, so any frame renders the same on its own. No CSS transitions anywhere.
 import { time, span as spanAt, ease, shown, punchIn, captionAt, loadFootage, markReady } from '/_seekreel/stage.js';
+import { drawCards } from './cards.mjs';
 
 const t = time();
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -300,24 +301,8 @@ export async function mount(layout, theme = 'light') {
     document.body.append(term);
   }
 
-  // ---------------------------------------------------------------- diagram
-  const wt = tl.scenes.find((s) => s.diagram === 'worktrees');
-  if (wt) {
-    const k = window_(wt.start + 0.2, wt.end - 0.1, 0.4);
-    if (k > 0) {
-      const branches = tl.branches?.length ? tl.branches : [1, 2, 3, 4].map((n) => `variantly/<run>/v${n}`);
-      const step = (i) => ease(span(wt.start + 0.5 + i * 0.35, wt.start + 0.9 + i * 0.35));
-      const cols = branches
-        .slice(0, 4)
-        .map((b, i) => `<div class="wt" style="opacity:${step(i + 1)}"><b>V0${i + 1}</b><code>${esc(b)}</code><span>dev server</span></div>`)
-        .join('');
-      const card = el('div', 'diagram', `<div class="repo" style="opacity:${step(0)}"><b>Your project</b><span>untouched</span></div><div class="arrow" style="opacity:${step(1)}">↓ one git worktree each, outside your project</div><div class="wts">${cols}</div><div class="arrow" style="opacity:${step(5)}">↓ side by side in one preview</div>`);
-      card.style.opacity = String(k);
-      const veil = el('div', 'veil');
-      veil.style.opacity = String(0.82 * k);
-      document.body.append(veil, card);
-    }
-  }
+  // ---------------------------------------------------------------- teaching cards and diagrams
+  drawCards(tl, t, { span, ease, window_, el, esc, tall });
 
   // ---------------------------------------------------------------- kinetic type
   for (const s of tl.scenes) {
@@ -366,7 +351,7 @@ export async function mount(layout, theme = 'light') {
   markReady();
 }
 
-/** The thumbnail: a 2×2 grid of the four variants under the title. */
+/** The thumbnail: a 2×2 grid of four of the variants under the title. */
 export async function mountThumbnail(theme = 'light') {
   document.body.classList.add('thumb', theme);
   const tl = await (await fetch(`../timeline.${theme}.json`)).json();
@@ -375,7 +360,7 @@ export async function mountThumbnail(theme = 'light') {
   const at = cold ? [0, 1, 2, 3].map((i) => cold.start + 0.45 + i * 0.9) : [1, 2, 3, 4].map((i) => (tl.duration * i) / 5);
   const grid = el('div', 'grid');
   for (const time of at) grid.append(await film.image(time));
-  const title = el('div', 'title', `<div class="kicker figure"><img src="icon.svg" alt="">variantly</div><div class="big figure">Four redesigns.<br>One command.</div><div class="cmd">npx variantly</div>`);
+  const title = el('div', 'title', `<div class="kicker figure"><img src="icon.svg" alt="">variantly</div><div class="big figure">Ten redesigns.<br>Keep one.</div><div class="cmd">npx variantly</div>`);
   document.body.append(grid, title);
   await document.fonts.ready;
   markReady();

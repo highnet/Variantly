@@ -6,6 +6,7 @@ import path from 'node:path';
 import { extractReview, writeBrief, writeReviewBrief } from '../src/brief.mjs';
 import { auditMarkdown, findChrome, NPX_HALF_INSTALLED, playwrightMcp } from '../src/checks.mjs';
 import { normalizeConfig } from '../src/server.mjs';
+import { AGENTS } from '../src/agents.mjs';
 
 const BASE = { variant: 1, count: 2, approach: /** @type {const} */ ('redesign'), direction: '', brief: '', routes: [], appRel: '', stackName: 'Static', stackId: 'static', styles: '', hasProduct: false, hasDesign: false };
 
@@ -74,4 +75,26 @@ test('a half-finished npx install is recognised, other audit errors are not', ()
   assert.match("Cannot find module '/home/u/.npm/_npx/abc/node_modules/axe-core/axe.min.js'", NPX_HALF_INSTALLED);
   assert.doesNotMatch('Could not start the audit: spawn npx ENOENT', NPX_HALF_INSTALLED);
   assert.doesNotMatch('net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4000/', NPX_HALF_INSTALLED);
+});
+
+test('every agent gets a Playwright MCP that writes its output outside the worktree', () => {
+  const state = path.join(os.tmpdir(), 'variantly-state');
+  const cwd = path.join(state, 'v1');
+  const out = path.join(state, 'browser', 'v1');
+  const mcp = { playwright: playwrightMcp('/bin/chrome', out) };
+  const at = mcp.playwright.args.indexOf('--output-dir');
+  assert.equal(mcp.playwright.args[at + 1], out);
+  assert.ok(path.relative(cwd, out).startsWith('..'), 'output dir is outside the worktree');
+  for (const agent of AGENTS) {
+    const inv = agent.invocation({ cwd, briefPath: path.join(state, 'briefs', 'v1.md'), permissions: 'full', mcp });
+    const all = JSON.stringify([inv.args, inv.files ?? {}]);
+    assert.ok(all.includes('--output-dir'), `${agent.id} passes --output-dir`);
+    assert.ok(all.includes(JSON.stringify(JSON.stringify(out)).slice(2, -2)) || all.includes(JSON.stringify(out).slice(1, -1)), `${agent.id} passes the output dir`);
+  }
+});
+
+test('the brief points screenshots at the output dir', () => {
+  const md = writeBrief({ ...BASE, previewUrl: 'http://127.0.0.1:5000/', shots: '/state/browser/v1' });
+  assert.match(md, /Save screenshots only in \/state\/browser\/v1/);
+  assert.doesNotMatch(writeBrief({ ...BASE, previewUrl: 'http://127.0.0.1:5000/' }), /Save screenshots/);
 });

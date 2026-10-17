@@ -6,7 +6,7 @@ import { useRef, type MouseEvent } from 'react';
 import { Button } from '@/components/ui/Button';
 import { EASE } from '@/lib/motion';
 import { calmMotion } from '@/lib/prefs';
-import { setVariant, useVariant, VARIANT_KEYS } from '@/lib/variant';
+import { currentVariant, stepVariant } from '@/lib/variant';
 
 const SPARKS = 26;
 const GLYPHS = ['✦', '✶', '●', '■', '▲'];
@@ -85,12 +85,11 @@ export const burst = (x: number, y: number, sparks = SPARKS) => {
  * wobble, a burst flies out, and then the next concept wipes in.
  */
 export const FreshLook = () => {
-  const current = useVariant();
   const self = useRef<HTMLButtonElement>(null);
 
   const next = (e: MouseEvent<HTMLButtonElement>) => {
-    const at = VARIANT_KEYS.indexOf(current ?? 'a');
-    const go = () => setVariant(VARIANT_KEYS[(at + 1) % VARIANT_KEYS.length]);
+    // The next shown concept (drafts are skipped unless ?drafts=1).
+    const go = () => stepVariant(currentVariant(), 1);
     if (calmMotion()) return go();
 
     const el = self.current;
