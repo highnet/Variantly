@@ -1,5 +1,6 @@
 import { AgentDoc } from '@/components/AgentDoc';
 import { AudienceFork } from '@/components/AudienceFork';
+import { BackdropPoster } from '@/components/backdrop/BackdropPoster';
 import { FinePrint } from '@/components/FinePrint';
 import { DemoVideo } from '@/components/DemoVideo';
 import { HowItWorks } from '@/components/HowItWorks';
@@ -57,19 +58,23 @@ const Human = () => (
 );
 
 const Page = () => (
-  <AudienceFork
-    brand={<Brand />}
-    aside={
-      <div className="flex items-center gap-3">
-        <PrefsMenu />
-        <GitHubLink />
-      </div>
-    }
-    human={<Human />}
-    agent={<AgentDoc />}
-    chrome={<HumanChrome />}
-    footer={<SiteFooter />}
-  />
+  <>
+    {/* The concept's background art paints with the first frame, under the title. */}
+    <BackdropPoster />
+    <AudienceFork
+      brand={<Brand />}
+      aside={
+        <div className="flex items-center gap-3">
+          <PrefsMenu />
+          <GitHubLink />
+        </div>
+      }
+      human={<Human />}
+      agent={<AgentDoc />}
+      chrome={<HumanChrome />}
+      footer={<SiteFooter />}
+    />
+  </>
 );
 
 export default Page;

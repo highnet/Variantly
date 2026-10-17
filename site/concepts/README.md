@@ -97,10 +97,10 @@ same PR that finishes it.
 
 ## Add a 21st concept
 
-Run the scaffold (or copy a folder), then list the id once in `metas.ts` (import
-
-- `ConceptId` + `CONCEPTS`), `index.ts` (`CONCEPT_LOADERS`) and `styles.ts`.
-  Those three lines are the only shared edits, and only for a new id.
+Run the scaffold (or copy a folder), then list the id once in `metas.ts` (the
+import, `ConceptId` and `CONCEPTS`), `index.ts` (`CONCEPT_LOADERS`), `posters.ts`
+and `styles.ts`. Those four lines are the only shared edits, and only for a new
+id.
 
 ## Rules
 
@@ -122,8 +122,9 @@ Run the scaffold (or copy a folder), then list the id once in `metas.ts` (import
   (`html[data-swapping]`) pause every `.vy-backdrop` animation; on touch screens
   only `.vy-art-float-0` keeps drifting. Do not add your own rAF loops or
   listeners outside `scene.update`.
-- **Perf budget.** Only the active concept's Backdrop, scene and look are
-  downloaded (lazy imports; the switcher prefetches on hover/focus). Keep each
+- **Perf budget.** Only the active concept's scene and look are downloaded
+  (lazy imports; the switcher prefetches on hover/focus); live concepts'
+  Backdrops are server HTML. Keep each
   `Backdrop.tsx` under ~6 kB, a scene under ~100k triangles at 24fps (it renders
   one still frame on phones), and look shaders free of per-frame allocation.
   `concept.css` loads for everyone, so keep it lean (a–g are 2–4 kB each).
@@ -138,10 +139,16 @@ Run the scaffold (or copy a folder), then list the id once in `metas.ts` (import
   so there is no flash. Client chrome (backdrop, switcher dock) renders from
   that attribute (`useConcept()` in `lib/variant.ts`), not the store, so its
   first frame already shows the right concept.
-- `components/backdrop/Backdrop.tsx` renders the active concept's
-  `Backdrop.tsx` (lazy) and `GlField` (the scene, lazy, one still frame on
+- `components/backdrop/BackdropPoster.tsx` server-renders every live
+  concept's `Backdrop.tsx` (via `posters.ts`) into the page HTML; CSS shows the
+  one `html[data-variant]` names, so the shapes paint with the first frame and
+  a swap restyles them instantly. Keep `Backdrop.tsx` server-renderable (no
+  hooks or browser APIs while rendering) and lean: every live concept's art
+  ships in the HTML.
+- `components/backdrop/Backdrop.tsx` renders `GlField` (and a previewed
+  draft's `Backdrop.tsx`, lazily): the scene, lazy, one still frame on
   phones / calm / low tier; ~24fps otherwise, paused while scrolled, hidden,
-  swapping or while the title dispatches `vy:gl-busy`). Each scene's canvas
+  swapping or while the title dispatches `vy:gl-busy`. Each scene's canvas
   fades in after its first draw, and on a concept or theme change the old
   scene stays under the new one until it has faded in.
 - `lib/letterLook.ts` loads the active `look.ts` and serves `lookPool` /
