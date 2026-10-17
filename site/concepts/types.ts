@@ -24,6 +24,10 @@ export type ConceptMeta = {
   font: string;
   // Strength of the film grain GlField adds to the scene's shapes (0 = none).
   grain: number;
+  // 'draft' keeps a concept out of the switcher, the cycle order, shuffle and
+  // ?v= links until it is finished; ?drafts=1 previews drafts (concepts/README.md).
+  // Omitted means 'live'.
+  status?: 'live' | 'draft';
 };
 
 // Backdrop.tsx default export: the concept's 2D background composition.

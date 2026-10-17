@@ -3,11 +3,16 @@
 import { useEffect } from 'react';
 
 import { useSiteStore } from '@/lib/store';
-import { VARIANT_KEYS } from '@/lib/variant';
+import { isConceptId } from '@/concepts/metas';
 
 const LEGACY_RUNNER = 'variantly-runner';
 
-/* Reads persisted choices after mount; a `?v=` in the URL beats the stored concept. */
+/*
+ * Reads persisted choices after mount. On the homepage the concept is the one
+ * the <head> boot script already painted (html[data-variant]: `?v=`, the saved
+ * pick or 'a', drafts only with ?drafts=1), so the store never disagrees with
+ * the first frame.
+ */
 export const StoreHydrator = () => {
   useEffect(() => {
     void Promise.resolve(useSiteStore.persist.rehydrate()).then(() => {
@@ -19,8 +24,8 @@ export const StoreHydrator = () => {
           patch.runner = old as never;
         }
       } catch {}
-      const v = new URLSearchParams(location.search).get('v');
-      if (v && (VARIANT_KEYS as string[]).includes(v)) patch.variant = v as never;
+      const v = document.documentElement.dataset.variant;
+      if (isConceptId(v)) patch.variant = v;
       useSiteStore.setState(patch);
     });
   }, []);

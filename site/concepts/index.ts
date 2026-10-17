@@ -1,6 +1,6 @@
 import type { ConceptLoaders } from '@/concepts/types';
 
-import { CONCEPT_IDS, type ConceptId } from './metas';
+import { shownIds, type ConceptId } from './metas';
 
 export * from './metas';
 export { FAMILIES, groupByFamily } from './families';
@@ -136,7 +136,11 @@ export const prefetchConcept = (id: ConceptId, scene = false): Promise<unknown> 
   );
 };
 
+// The concept `by` steps from `id` among the shown ones (a draft being
+// previewed steps into the shown list from its own place).
 export const conceptAt = (id: ConceptId, by: number) => {
-  const at = CONCEPT_IDS.indexOf(id);
-  return CONCEPT_IDS[(at + by + CONCEPT_IDS.length * 4) % CONCEPT_IDS.length];
+  const ids = shownIds();
+  const at = ids.indexOf(id);
+  if (at < 0) return ids[by > 0 ? 0 : ids.length - 1];
+  return ids[(((at + by) % ids.length) + ids.length) % ids.length];
 };
