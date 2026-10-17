@@ -1,95 +1,429 @@
 'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { motion } from 'motion/react';
+import { ChevronLeft, ChevronRight, ChevronUp, Shuffle } from 'lucide-react';
+import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 
-import { VARIANTS } from '@/components/backdrop/variants';
 import { Button } from '@/components/ui/Button';
+import {
+  CONCEPT_BY_ID,
+  CONCEPT_IDS,
+  CONCEPTS,
+  groupByFamily,
+  prefetchConcept,
+  type ConceptId,
+} from '@/concepts';
+import type { ConceptMeta, Theme } from '@/concepts/types';
 import { useSeekTime } from '@/lib/seek';
-import { setVariant, useVariant, VARIANT_KEYS } from '@/lib/variant';
+import { setVariant, shuffleVariant, stepVariant, useVariant } from '@/lib/variant';
 import { cn } from '@/lib/utils';
 
+const GROUPS = groupByFamily(CONCEPTS);
+
+const useThemeName = () => {
+  const [theme, setTheme] = useState<Theme>('light');
+  useEffect(() => {
+    const html = document.documentElement;
+    const read = () => setTheme(html.dataset.theme === 'dark' ? 'dark' : 'light');
+    read();
+    const mo = new MutationObserver(read);
+    mo.observe(html, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => mo.disconnect();
+  }, []);
+  return theme;
+};
+
+const usePhone = () => {
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    const mq = matchMedia('(max-width: 639px)');
+    const read = () => setPhone(mq.matches);
+    read();
+    mq.addEventListener('change', read);
+    return () => mq.removeEventListener('change', read);
+  }, []);
+  return phone;
+};
+
+// Typing in a field never steps the concept.
+const typing = (t: EventTarget | null) =>
+  t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+
+const prefetch = (id: ConceptId) => void prefetchConcept(id, true);
+
+type ChipProps = {
+  meta: ConceptMeta;
+  theme: Theme;
+  size?: 'sm' | 'lg';
+};
+
+// The concept's three colours, side by side.
+const Chip = ({ meta, theme, size = 'sm' }: ChipProps) => (
+  <span
+    aria-hidden="true"
+    className={cn(
+      'vy-chip flex shrink-0 overflow-hidden rounded-full',
+      size === 'sm' ? 'h-3.5 w-7' : 'h-5 w-14',
+    )}
+  >
+    {meta.swatch[theme].map((c, i) => (
+      <span key={i} className="h-full flex-1" style={{ background: c }} />
+    ))}
+  </span>
+);
+
+type TileProps = {
+  meta: ConceptMeta;
+  theme: Theme;
+  selected: boolean;
+  active: boolean;
+  large?: boolean;
+  onPick: (id: ConceptId) => void;
+  onFocusTile: (id: ConceptId) => void;
+};
+
+const Tile = ({ meta, theme, selected, active, large, onPick, onFocusTile }: TileProps) => (
+  <Button
+    variant="concept-tile"
+    size={large ? 'tile-lg' : 'tile'}
+    role="option"
+    id={`vy-tile-${meta.id}`}
+    data-concept={meta.id}
+    aria-selected={selected}
+    tabIndex={active ? 0 : -1}
+    onClick={() => onPick(meta.id as ConceptId)}
+    onFocus={() => {
+      onFocusTile(meta.id as ConceptId);
+      prefetch(meta.id as ConceptId);
+    }}
+    onPointerEnter={() => prefetch(meta.id as ConceptId)}
+    className={cn(large && 'border-rule bg-surface border')}
+  >
+    <Chip meta={meta} theme={theme} size={large ? 'lg' : 'sm'} />
+    <span className="flex min-w-0 items-baseline gap-1.5">
+      <span className="font-mono text-[10px] opacity-60">{meta.id.toUpperCase()}</span>
+      <span className="truncate" style={{ fontFamily: meta.font }}>
+        {meta.name}
+      </span>
+    </span>
+  </Button>
+);
+
 /*
- * Floating dock that swaps the whole homepage between the six concepts.
- * The pick sticks (localStorage) and lands in the URL so it can be shared.
+ * The homepage concept picker. A compact dock (current swatch, letter, name,
+ * prev/next) opens a popover of all concepts grouped by family (desktop) or a
+ * bottom sheet with family tabs and a snap-scrolling strip (phones). `[` and
+ * `]` step through every concept without opening it. Families and order come
+ * from concept meta (concepts/metas.ts, concepts/families.ts).
  */
 export const VariantSwitcher = () => {
   const current = useVariant();
   const seek = useSeekTime();
+  const theme = useThemeName();
+  const phone = usePhone();
+  const [open, setOpen] = useState(false);
+  const [active, setActiveState] = useState<ConceptId>('a');
+  const activeRef = useRef<ConceptId>('a');
+  const setActive = useCallback((id: ConceptId) => {
+    activeRef.current = id;
+    setActiveState(id);
+  }, []);
+  const [tab, setTab] = useState(0);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+
+  const close = useCallback((refocus = true) => {
+    setOpen(false);
+    if (refocus) trigger.current?.focus();
+  }, []);
+
+  const openPicker = () => {
+    if (!current) return;
+    setActive(current);
+    setTab(
+      Math.max(
+        0,
+        GROUPS.findIndex((g) => g.concepts.some((c) => c.id === current)),
+      ),
+    );
+    setOpen(true);
+  };
+
+  // `[` / `]` step through all concepts from anywhere on the page.
+  useEffect(() => {
+    if (!current) return;
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.metaKey || e.ctrlKey || e.altKey || typing(e.target)) return;
+      if (e.key === '[' || e.key === ']') {
+        e.preventDefault();
+        stepVariant(current, e.key === ']' ? 1 : -1);
+      }
+    };
+    addEventListener('keydown', onKey);
+    return () => removeEventListener('keydown', onKey);
+  }, [current]);
+
+  // Opening moves focus to the active tile; clicks outside close.
+  useEffect(() => {
+    if (!open) return;
+    const tile = document.getElementById(`vy-tile-${activeRef.current}`);
+    tile?.focus({ preventScroll: phone });
+    if (phone) tile?.scrollIntoView({ inline: 'center', block: 'nearest' });
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Node;
+      if (!panel.current?.contains(t) && !trigger.current?.contains(t)) close(false);
+    };
+    document.addEventListener('pointerdown', onDown);
+    return () => document.removeEventListener('pointerdown', onDown);
+    // Focus moves only when it opens or the tab changes, not on every arrow
+    // step (the active tile is read from a ref).
+  }, [open, tab, phone, close]);
 
   if (!current || seek !== null) return null;
 
-  const at = VARIANT_KEYS.indexOf(current);
-  const step = (by: number) =>
-    setVariant(VARIANT_KEYS[(at + by + VARIANT_KEYS.length) % VARIANT_KEYS.length]);
+  const meta = CONCEPT_BY_ID[current];
+  const at = CONCEPT_IDS.indexOf(current);
+
+  const pick = (id: ConceptId) => {
+    setVariant(id);
+    close();
+  };
+  const focusTile = (id: ConceptId) => {
+    setActive(id);
+    document.getElementById(`vy-tile-${id}`)?.focus();
+  };
+
+  // Desktop grid: up/down within a family column, left/right across columns
+  // (same row), Home/End to the first/last concept, Enter picks, Esc closes.
+  const onGridKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    const col = GROUPS.findIndex((g) => g.concepts.some((c) => c.id === active));
+    const row = GROUPS[col]?.concepts.findIndex((c) => c.id === active) ?? 0;
+    const at = (c: number, r: number) => {
+      const g = GROUPS[(c + GROUPS.length) % GROUPS.length].concepts;
+      return g[Math.max(0, Math.min(g.length - 1, r))].id as ConceptId;
+    };
+    const go: Partial<Record<string, ConceptId>> = phone
+      ? {
+          ArrowRight: GROUPS[tab].concepts[Math.min(GROUPS[tab].concepts.length - 1, row + 1)]
+            ?.id as ConceptId,
+          ArrowLeft: GROUPS[tab].concepts[Math.max(0, row - 1)]?.id as ConceptId,
+        }
+      : {
+          ArrowDown: at(col, (row + 1) % GROUPS[col].concepts.length),
+          ArrowUp: at(col, (row - 1 + GROUPS[col].concepts.length) % GROUPS[col].concepts.length),
+          ArrowRight: at(col + 1, row),
+          ArrowLeft: at(col - 1, row),
+          Home: CONCEPT_IDS[0],
+          End: CONCEPT_IDS[CONCEPT_IDS.length - 1],
+        };
+    const next = go[e.key];
+    if (next) {
+      e.preventDefault();
+      focusTile(next);
+    }
+  };
+
+  const onTabsKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    const by = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!by) return;
+    e.preventDefault();
+    const next = (tab + by + GROUPS.length) % GROUPS.length;
+    setTab(next);
+    setActive(GROUPS[next].concepts[0].id as ConceptId);
+    document.getElementById(`vy-tab-${next}`)?.focus();
+  };
+
+  const shuffle = (
+    <Button
+      variant="concept-tile"
+      size={phone ? 'tile-lg' : 'tile'}
+      onClick={() => {
+        shuffleVariant(current);
+        close();
+      }}
+      className={cn(phone && 'border-rule bg-surface border border-dashed')}
+    >
+      <Shuffle aria-hidden="true" />
+      <span>Shuffle</span>
+    </Button>
+  );
 
   return (
-    <nav
-      aria-label="Homepage concept"
-      className="vy-switcher fixed bottom-4 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-1 overflow-x-auto rounded-full p-1.5"
-    >
-      {/* Phones: a prev/next cycler instead of six chips. */}
-      <Button
-        variant="concept"
-        size="small"
-        aria-label="Previous concept"
-        onClick={() => step(-1)}
-        className="rounded-full sm:hidden"
+    <>
+      <nav
+        aria-label="Homepage concept"
+        data-slot="concept-dock"
+        className="vy-switcher fixed bottom-4 left-1/2 z-50 flex max-w-[calc(100vw-2rem)] -translate-x-1/2 items-center gap-1 rounded-full p-1.5"
       >
-        <ChevronLeft />
-      </Button>
-      <span
-        aria-live="polite"
-        className="flex min-w-36 items-center justify-center gap-2 text-[13px] font-semibold sm:hidden"
-      >
-        <span
-          className={cn('vy-swatch size-3 rounded-full', `vy-swatch-${current}`)}
-          aria-hidden="true"
-        />
-        {VARIANTS[current].name}
-        <span className="text-steel font-mono text-[10px]">
-          {at + 1}/{VARIANT_KEYS.length}
+        <span className="sr-only" aria-live="polite">
+          {meta.name}
         </span>
-      </span>
-      <Button
-        variant="concept"
-        size="small"
-        aria-label="Next concept"
-        onClick={() => step(1)}
-        className="rounded-full sm:hidden"
-      >
-        <ChevronRight />
-      </Button>
-      <span className="vy-switcher-label hidden px-3 font-mono text-[10px] font-semibold tracking-[0.12em] uppercase sm:inline">
-        Concept
-      </span>
-      {VARIANT_KEYS.map((k) => (
         <Button
-          key={k}
           variant="concept"
-          size="small"
-          aria-pressed={k === current}
-          title={VARIANTS[k].name}
-          onClick={() => setVariant(k)}
-          className="relative isolate hidden shrink-0 rounded-full aria-pressed:bg-transparent sm:inline-flex"
+          size="touch"
+          aria-label="Previous concept"
+          title="Previous concept ( [ )"
+          onClick={() => stepVariant(current, -1)}
+          onPointerEnter={() =>
+            prefetch(CONCEPT_IDS[(at + CONCEPT_IDS.length - 1) % CONCEPT_IDS.length])
+          }
         >
-          {/* One pill slides between chips instead of jumping. */}
-          {k === current && (
-            <motion.span
-              layoutId="vy-switcher-pill"
-              aria-hidden="true"
-              className="vy-switcher-pill absolute inset-0 -z-1 rounded-full"
-              transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-            />
-          )}
-          <span
-            className={cn('vy-swatch size-3 rounded-full', `vy-swatch-${k}`)}
-            aria-hidden="true"
-          />
-          <span className="hidden md:inline">{VARIANTS[k].name}</span>
-          <span className="md:hidden">{k.toUpperCase()}</span>
+          <ChevronLeft />
         </Button>
-      ))}
-    </nav>
+        <Button
+          ref={trigger}
+          variant="concept"
+          size="pill"
+          aria-label={`Concept ${at + 1} of ${CONCEPT_IDS.length}: ${meta.name}. Choose a concept`}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-controls={open ? 'vy-concept-picker' : undefined}
+          onClick={() => (open ? close() : openPicker())}
+          className="min-w-0 gap-2 px-3"
+        >
+          <Chip meta={meta} theme={theme} />
+          <span className="font-mono text-[10px] opacity-60">{current.toUpperCase()}</span>
+          <span className="text-ink truncate">{meta.name}</span>
+          <span className="text-steel font-mono text-[10px]">
+            {at + 1}/{CONCEPT_IDS.length}
+          </span>
+          <ChevronUp
+            aria-hidden="true"
+            className={cn('transition-transform duration-200', open && 'rotate-180')}
+          />
+        </Button>
+        <Button
+          variant="concept"
+          size="touch"
+          aria-label="Next concept"
+          title="Next concept ( ] )"
+          onClick={() => stepVariant(current, 1)}
+          onPointerEnter={() => prefetch(CONCEPT_IDS[(at + 1) % CONCEPT_IDS.length])}
+        >
+          <ChevronRight />
+        </Button>
+      </nav>
+
+      {open && (
+        <div
+          ref={panel}
+          id="vy-concept-picker"
+          role="dialog"
+          aria-modal={phone}
+          aria-labelledby={titleId}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              close();
+            }
+          }}
+          className={cn(
+            'vy-switcher-pop fixed z-50',
+            phone
+              ? 'inset-x-0 bottom-0 rounded-t-2xl px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]'
+              : 'bottom-20 left-1/2 w-[min(64rem,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl p-4',
+          )}
+        >
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <span
+              id={titleId}
+              className="vy-switcher-label font-mono text-[10px] font-semibold tracking-[0.12em] whitespace-nowrap uppercase"
+            >
+              {CONCEPT_IDS.length} concepts
+            </span>
+            <span className="vy-switcher-label ml-auto hidden items-center gap-1 text-[11px] whitespace-nowrap sm:inline-flex">
+              Step with <kbd className="vy-kbd">[</kbd>
+              <kbd className="vy-kbd">]</kbd>
+            </span>
+            {!phone && shuffle}
+          </div>
+
+          {phone ? (
+            <>
+              <div
+                role="tablist"
+                aria-label="Families"
+                onKeyDown={onTabsKey}
+                className="mb-3 flex gap-1 overflow-x-auto"
+              >
+                {GROUPS.map((g, i) => (
+                  <Button
+                    key={g.family}
+                    id={`vy-tab-${i}`}
+                    role="tab"
+                    variant="concept"
+                    size="pill"
+                    aria-selected={i === tab}
+                    aria-controls="vy-strip"
+                    tabIndex={i === tab ? 0 : -1}
+                    onClick={() => {
+                      setTab(i);
+                      setActive(g.concepts[0].id as ConceptId);
+                    }}
+                    className="aria-selected:bg-ink aria-selected:text-surface shrink-0"
+                  >
+                    {g.family}
+                  </Button>
+                ))}
+              </div>
+              <div
+                id="vy-strip"
+                role="listbox"
+                aria-label={GROUPS[tab].family}
+                aria-orientation="horizontal"
+                onKeyDown={onGridKey}
+                className="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto scroll-smooth px-4 pb-2"
+              >
+                {GROUPS[tab].concepts.map((c) => (
+                  <Tile
+                    key={c.id}
+                    meta={c}
+                    theme={theme}
+                    large
+                    selected={c.id === current}
+                    active={c.id === active}
+                    onPick={pick}
+                    onFocusTile={setActive}
+                  />
+                ))}
+                {shuffle}
+              </div>
+            </>
+          ) : (
+            <div
+              role="listbox"
+              aria-labelledby={titleId}
+              onKeyDown={onGridKey}
+              className="grid gap-4"
+              style={{ gridTemplateColumns: `repeat(${GROUPS.length}, minmax(0, 1fr))` }}
+            >
+              {GROUPS.map((g, i) => (
+                <div key={g.family} role="group" aria-labelledby={`vy-fam-${i}`}>
+                  <span
+                    id={`vy-fam-${i}`}
+                    className="vy-switcher-label mb-1.5 block px-2 font-mono text-[10px] font-semibold tracking-[0.12em] uppercase"
+                  >
+                    {g.family}
+                  </span>
+                  <div className="flex flex-col gap-0.5">
+                    {g.concepts.map((c) => (
+                      <Tile
+                        key={c.id}
+                        meta={c}
+                        theme={theme}
+                        selected={c.id === current}
+                        active={c.id === active}
+                        onPick={pick}
+                        onFocusTile={setActive}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </>
   );
 };

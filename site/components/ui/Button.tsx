@@ -38,6 +38,10 @@ const buttonVariants = cva(
         // A concept chip in the homepage switcher dock.
         concept:
           'normal-case tracking-normal font-sans text-steel hover:text-ink aria-pressed:bg-ink aria-pressed:text-surface',
+        // A tile in the concept picker: the selected one inverts, the
+        // keyboard-active one gets the alert ring.
+        'concept-tile':
+          'normal-case tracking-normal font-sans font-semibold text-ink justify-start text-left hover:bg-panel aria-selected:bg-ink aria-selected:text-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
         // The show-more pill that sits on a card's bottom edge.
         pill: 'border border-rule bg-surface text-ink normal-case tracking-normal font-sans hover:border-ink',
         'pill-slate':
@@ -61,6 +65,12 @@ const buttonVariants = cva(
           'min-h-8 rounded-control px-2.5 py-1.5 text-left text-[13px] leading-tight font-semibold whitespace-normal',
         cell: 'h-10 min-w-11 rounded-control px-2 text-[15px] aria-[current=true]:min-w-15 aria-[current=true]:text-2xl',
         pill: 'h-8 rounded-full px-4 text-[13px] font-semibold',
+        // Desktop picker row and the phone sheet's large strip tile.
+        tile: 'h-11 w-full rounded-control px-2 text-[13px] gap-2.5',
+        'tile-lg':
+          'h-32 w-40 shrink-0 snap-start flex-col items-start justify-between rounded-pass p-3 text-lg whitespace-normal',
+        // Phone dock arrows: at least 44px to hit.
+        touch: 'size-11 rounded-full',
         grip: 'h-11 rounded-full px-2 text-[10px] gap-1 tracking-[0.08em]',
       },
     },
