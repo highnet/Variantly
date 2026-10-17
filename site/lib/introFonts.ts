@@ -3,9 +3,12 @@ import {
   Archivo_Black,
   Fredoka,
   Jost,
+  Major_Mono_Display,
   Bungee,
   Cinzel,
   Great_Vibes,
+  Inter_Tight,
+  Italiana,
   Monoton,
   Orbitron,
   Pacifico,
@@ -13,6 +16,7 @@ import {
   Righteous,
   Rubik_Mono_One,
   Special_Elite,
+  Syne,
   UnifrakturMaguntia,
 } from 'next/font/google';
 import localFont from 'next/font/local';
@@ -78,7 +82,40 @@ const archivo = Archivo_Black({
   variable: '--font-brutal',
 });
 
-export const HERO_FONT_VARS = [abril, elite, orbitron, fredoka, jost, archivo, rubik]
+// i Liquid Glass, l Inflated Chrome (+ its captions), m Uncanny Mirror.
+const interTight = Inter_Tight({
+  weight: '600',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-glass',
+});
+const syne = Syne({ weight: '800', subsets: ['latin'], preload: false, variable: '--font-chrome' });
+const majorMono = Major_Mono_Display({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-caption',
+});
+const italiana = Italiana({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-mirror',
+});
+
+export const HERO_FONT_VARS = [
+  abril,
+  elite,
+  orbitron,
+  fredoka,
+  jost,
+  archivo,
+  rubik,
+  interTight,
+  syne,
+  majorMono,
+  italiana,
+]
   .map((f) => f.variable)
   .join(' ');
 
