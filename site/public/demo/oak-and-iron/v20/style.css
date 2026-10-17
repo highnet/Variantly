@@ -1,0 +1,83 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=VT323&display=swap");
+
+/* Terminal shop: the store as one shell session. Phosphor green for text, amber for prompts and prices, box-drawn panels. */
+:root{
+  color-scheme:dark;
+  --bg:#0a0f0b;--panel:#0f1711;--line:#2f6a43;--text:#b8f5c8;--bright:#54ff8e;--mute:#8fc9a0;--amber:#ffb84d;--on-bright:#04110a;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  --crt:"VT323","JetBrains Mono",monospace;
+}
+html[data-theme="light"]{color-scheme:light;--bg:#f1f4ec;--panel:#ffffff;--line:#6d8f76;--text:#103a1f;--bright:#0b6a2f;--mute:#355a40;--amber:#8a4d00;--on-bright:#ffffff}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--text);font:400 1rem/1.65 var(--mono);font-variant-ligatures:none;overflow-x:hidden;
+  background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px)}
+html[data-theme="light"] body{background-image:none}
+::selection{background:var(--bright);color:var(--on-bright)}
+a{color:var(--bright);cursor:pointer;text-underline-offset:.25em}
+:focus-visible{outline:2px dashed var(--amber);outline-offset:3px}
+
+.navbar,.cover,.features,.shop,.newsletter,footer{max-width:1080px;margin-inline:auto;padding-inline:clamp(16px,4vw,40px)}
+.navbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 24px;padding-block:14px;border-bottom:1px dashed var(--line)}
+.logo{font:400 1.9rem/1 var(--crt);color:var(--bright);text-decoration:none;text-transform:lowercase}
+.logo::before{content:"~/";color:var(--amber)}
+.navbar ul{display:flex;flex-wrap:wrap;gap:4px 8px;list-style:none;margin:0;padding:0}
+.navbar ul a{color:var(--text);text-decoration:none;padding:2px 8px}
+.navbar ul a::before{content:"[";color:var(--line)}
+.navbar ul a::after{content:"]";color:var(--line)}
+.navbar ul a:hover,.navbar ul a[aria-current]{background:var(--bright);color:var(--on-bright)}
+.navbar ul a[aria-current]::before,.navbar ul a[aria-current]::after,.navbar ul a:hover::before,.navbar ul a:hover::after{color:var(--on-bright)}
+
+.cover{padding-block:clamp(40px,7vw,88px)}
+.cover::before{content:"oak@iron:~$ ./welcome --since 2019";display:block;color:var(--amber);margin-bottom:20px;overflow-wrap:anywhere}
+.cover h1{font:400 clamp(2.8rem,7.4vw,6rem)/.95 var(--crt);color:var(--bright);margin:0 0 28px;text-shadow:0 0 12px rgba(84,255,142,.35);text-wrap:balance}
+html[data-theme="light"] .cover h1{text-shadow:none}
+.cursor{display:inline-block;width:.5em;height:.8em;background:var(--bright);margin-left:.12em;vertical-align:-.04em;animation:blink 1.1s steps(1) infinite}
+.cover-foot{border:3px double var(--line);padding:20px 22px;position:relative;max-width:46em}
+.cover-foot::before{content:" README ";position:absolute;top:-.8em;left:16px;background:var(--bg);color:var(--amber);padding:0 4px}
+.intro{margin:0 0 20px;color:var(--text)}
+.cover-links{display:flex;flex-wrap:wrap;align-items:center;gap:12px 24px;margin:0}
+.btn,button{display:inline-block;background:var(--bright);color:var(--on-bright);border:0;border-radius:0;padding:10px 18px;font:700 .95rem/1.2 var(--mono);text-decoration:none;cursor:pointer}
+.btn::before,button::before{content:"> "}
+.btn:hover,button:hover{background:var(--amber)}
+.link::before{content:"--"}
+
+.section-h{font:400 clamp(2rem,4.4vw,3rem)/1 var(--crt);color:var(--bright);margin:0 0 24px}
+.section-h::before{content:"oak@iron:~$ cat ";color:var(--amber);font:400 .95rem/1.4 var(--mono);display:block;margin-bottom:6px}
+.features,.shop,.newsletter{padding-block:clamp(36px,6vw,64px);border-top:1px dashed var(--line)}
+.feature-list{margin:0;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.feature-list>div{border:1px solid var(--line);padding:16px 18px;background:var(--panel)}
+.feature-list dt{color:var(--amber);font-weight:700;margin-bottom:6px}
+.feature-list dt::before{content:"+ ";color:var(--bright)}
+.feature-list dd{margin:0;color:var(--mute)}
+
+.item{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:4px 28px;border:3px double var(--line);background:var(--panel);padding:18px 22px 22px;margin-bottom:20px;position:relative}
+.item-name{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;border-bottom:1px dashed var(--line);padding-bottom:10px;margin-bottom:10px}
+.item-name h3{margin:0;font:400 2rem/1 var(--crt);color:var(--bright)}
+.art{margin:0;color:var(--amber);order:2}
+.item-img{color:var(--bright);aspect-ratio:2/1.1;background:repeating-linear-gradient(90deg,transparent 0 19px,rgba(84,255,142,.08) 19px 20px),repeating-linear-gradient(0deg,transparent 0 19px,rgba(84,255,142,.08) 19px 20px);padding:18px}
+.item-img svg{width:100%;height:100%}
+.item-text{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end}
+.item-text p{margin:0 0 6px}
+.spec{color:var(--mute)}
+.spec::before{content:"spec: ";color:var(--amber)}
+.price{color:var(--amber);font-weight:700;font-size:1.25rem;margin:6px 0 14px!important}
+
+.newsletter>p{color:var(--mute);margin:0 0 16px}
+label{display:block;color:var(--amber);margin-bottom:8px}
+label::after{content:":"}
+.row{display:flex;flex-wrap:wrap;gap:10px;max-width:640px}
+input{flex:1 1 220px;min-height:48px;padding:0 14px;font:inherit;color:var(--bright);caret-color:var(--amber);background:var(--panel);border:1px solid var(--line);border-radius:0}
+input:focus{border-color:var(--bright)}
+input::placeholder{color:var(--mute);opacity:1}
+
+footer{padding-block:32px 48px;border-top:1px dashed var(--line);color:var(--mute);font-size:.9rem}
+footer p{margin:0 0 6px}
+.sign{color:var(--amber);margin-bottom:14px!important}
+.small{font-size:.85rem}
+
+@keyframes blink{50%{opacity:0}}
+@media (max-width:760px){
+  .feature-list,.item{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){.cursor{animation:none}}

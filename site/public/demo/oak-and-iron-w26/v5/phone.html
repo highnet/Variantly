@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Oak &amp; Iron</title>
+    <!-- Phone edition for the narrow before/after split: every variant shares
+         ../phone.css, so each band sits at the same height in every design. -->
+    <link rel="stylesheet" href="../phone.css" />
+    <link rel="stylesheet" href="phone.css" />
+  </head>
+  <body>
+    <nav class="band b-head" aria-label="Main">
+      <a class="logo"><svg class="px" viewBox="0 0 12 12" aria-hidden="true"><path d="M5 0h2v2H5zM3 2h6v2H3zM2 4h8v4H2zM3 8h6v2H3zM5 10h2v2H5z"/></svg>Oak &amp; Iron</a><span class="clock">Shop</span>
+    </nav>
+    <header class="band b-hero">
+      <p class="kicker">Welcome — Oak &amp; Iron</p>
+      <h1>Furniture for real homes, made by&nbsp;hand.</h1>
+      <p class="intro">Tables, stools and shelves in reclaimed oak and forged steel, built outside Graz since 2019.</p>
+      <p class="ctas"><a class="btn">Open the shop</a> <a class="link">Contact us</a></p>
+    </header>
+    <h2 class="band b-sec">How we work</h2>
+    <div class="band b-feat"><h3><svg class="px" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 1h8v3H1zM4 4h2v7H4z"/></svg>Handmade</h3><p>Every piece is built by hand in our workshop outside Graz.</p></div>
+    <div class="band b-feat"><h3><svg class="px" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1h2v1h1v2h1v4H9v1H8v1H4V9H3V7H2V4h1V3h1V2h2zM5 10h1v2H5z"/></svg>Reclaimed oak</h3><p>We use reclaimed oak and forged steel wherever we can.</p></div>
+    <div class="band b-feat"><h3><svg class="px" viewBox="0 0 12 12" aria-hidden="true"><path d="M0 3h7v5H0zM7 5h4v3H7zM1 8h2v2H1zM8 8h2v2H8z"/></svg>Personal delivery</h3><p>Delivered by the person who built it. Lead time 6–8 weeks.</p></div>
+    <h2 class="band b-sec" id="shop">This month’s products</h2>
+    <article class="band b-item i1">
+      <div class="art" aria-hidden="true"><svg viewBox="0 0 24 14"><path class="wood" d="M1 3h22v2H1z"/><path class="iron" d="M4 5h2v8H4zM18 5h2v8h-2zM6 8h12v1H6zM3 12h4v1H3zM17 12h4v1h-4z"/></svg></div>
+      <p class="no">table.obj</p>
+      <h3>The Long Table</h3>
+      <p class="desc">2.4 m of reclaimed oak on steel trestles.</p>
+      <p class="buy"><span class="price">€ 2.890,-</span> <button type="button">Add to cart</button></p>
+    </article>
+    <article class="band b-item i2">
+      <div class="art" aria-hidden="true"><svg viewBox="0 0 24 14"><path class="wood" d="M6 1h12v2H6z"/><path class="iron" d="M7 3h2v3H7zM6 6h2v7H6zM15 3h2v3h-2zM16 6h2v7h-2zM11 3h2v10h-2zM8 9h8v1H8z"/></svg></div>
+      <p class="no">stool.obj</p>
+      <h3>Smithy Stool</h3>
+      <p class="desc">Hand-forged legs, oiled seat.</p>
+      <p class="buy"><span class="price">€ 340,-</span> <button type="button">Add to cart</button></p>
+    </article>
+    <article class="band b-item i3">
+      <div class="art" aria-hidden="true"><svg viewBox="0 0 24 14"><path class="iron" d="M11 0h2v14h-2z"/><path class="wood" d="M3 3h18v1H3zM3 7h18v1H3zM3 11h18v1H3zM5 1h1v2H5zM6 0h1v3H6zM16 5h3v2h-3zM7 9h2v2H7z"/></svg></div>
+      <p class="no">shelf-no-4.obj</p>
+      <h3>Wall Shelf No. 4</h3>
+      <p class="desc">Three shelves, one bracket, no screws visible.</p>
+      <p class="buy"><span class="price">€ 410,-</span> <button type="button">Add to cart</button></p>
+    </article>
+    <h2 class="band b-sec">Newsletter</h2>
+    <form class="band b-news" id="newsletter">
+      <p>News about new products and workshop days. No spam.</p>
+      <label for="email">Email address</label>
+      <input id="email" type="email" placeholder="name@example.com" required />
+      <button>Subscribe</button>
+    </form>
+    <footer class="band b-foot" id="contact">
+      <p>Werkstattgasse 4 · 8010 Graz<br />hello@oak-and-iron.example</p>
+      <p class="small">© 2026 Oak &amp; Iron. A fictional shop: demo content for variantly.</p>
+    </footer>
+    <script>
+      document.getElementById('newsletter').addEventListener('submit', (e) => {
+        e.preventDefault();
+        e.target.querySelector('button').textContent = 'Thanks!';
+      });
+    </script>
+  </body>
+</html>

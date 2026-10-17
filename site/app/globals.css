@@ -689,7 +689,7 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   border-bottom: 0;
 }
 /* The hero grid is capped at 1440px; on wider screens its tint carries on to
-   the edges (Soft Clay and TVA keep their framed card). */
+   the edges (Soft Clay and Amber Terminal keep their framed card). */
 :root[data-variant]:not([data-variant='a'], [data-variant='c']) [data-hero-grid] {
   box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--hero-bg) var(--hero-alpha, 70%), transparent);
   clip-path: inset(0 -100vmax);
@@ -761,7 +761,7 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   background: var(--hero-box);
 }
 
-/* ---- C · TVA Terminal: amber CRT, console frames, typewriter ------------- */
+/* ---- C · Amber Terminal: amber CRT, console frames, typewriter ------------- */
 :root[data-variant='c'] {
   --panel: #e9e2c8; --surface: #f4efdc; --rule: #b9ae86; --steel: #4d4a3a; --ink: #1d2a28;
   --alert: #1f6f6a; --alert-hover: #2a8a84;
@@ -805,18 +805,8 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 :root[data-variant='c'] #hero-title::before { content: '> '; color: var(--title); }
 :root[data-variant='c'] [data-hero-side] {
   border: 1px solid var(--hero-line);
-  padding: 34px 18px 18px;
+  padding: 18px;
   position: relative;
-}
-:root[data-variant='c'] [data-hero-side]::before {
-  content: 'TVA // MISCELLANEOUS EXPENSES · FORM 7-B';
-  position: absolute;
-  inset: 0 0 auto;
-  padding: 5px 10px;
-  font: 600 10px/1.2 var(--font-martian);
-  letter-spacing: 0.12em;
-  background: var(--hero-line);
-  color: var(--hero-bg);
 }
 
 /* ---- D · Brutal Zine: hard borders, highlighter, sticker, ticker --------- */
@@ -967,7 +957,7 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 :root[data-variant='b'] main > div .grid > .bg-surface:nth-child(even) { transform: rotate(0.6deg); }
 :root[data-variant='b'] main > div .figure:not(h3) { color: #ff4f9a; text-shadow: 4px 3px 0 rgb(47 91 255 / 0.8); }
 
-/* C · TVA Terminal: case-file sections, ruled paper, form-strip cards */
+/* C · Amber Terminal: case-file sections, ruled paper, form-strip cards */
 :root[data-variant='c'] body {
   background-image: repeating-linear-gradient(to bottom, transparent 0 31px, color-mix(in srgb, var(--rule) 45%, transparent) 31px 32px);
 }
@@ -1710,7 +1700,7 @@ main > div p { line-height: 1.65; }
   transition: transform 500ms var(--ease-out-expo);
 }
 .vy-loadbar-text { display: none; }
-/* TVA: a printed terminal bar. */
+/* Amber Terminal: a printed terminal bar. */
 :root[data-variant='c'] .vy-loadbar { height: auto; inset: auto auto 12px 12px; }
 :root[data-variant='c'] .vy-loadbar-fill { display: none; }
 :root[data-variant='c'] .vy-loadbar-text {

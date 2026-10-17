@@ -62,7 +62,6 @@
     { "word": "2026", "say": "twenty twenty-six", "why": "A year, as in 'Winter 2026': said as a year, not 'two thousand twenty-six'." },
     { "word": "Bauhaus", "say": "BOW-house", "case": true, "why": "German school of design; a variantly.style concept." },
     { "word": "Riso", "say": "REE-zoh", "case": true, "why": "Short for Risograph; the 'Riso Poster' concept." },
-    { "word": "TVA", "say": "T V A", "case": true, "why": "The 'TVA Terminal' concept, spelled out." },
     { "word": "Noir", "say": "nwahr", "case": true, "why": "French, as in film noir; the 'Noir Velvet' concept." },
     { "word": "noir", "say": "nwahr", "why": "Lowercase noir on its own (film-noir is one token and reads fine)." },
     { "word": "Oak", "say": "Oak", "case": true, "why": "The demo shop 'Oak & Iron'; listed for the lint." },

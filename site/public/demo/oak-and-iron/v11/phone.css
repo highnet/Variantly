@@ -1,0 +1,27 @@
+/* Phone edition: engineering blueprint. */
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400&display=swap");
+:root{color-scheme:dark;--cyan:#0f3d75;--deep:#0a2c57;--line:#eaf2ff;--soft:#b9cfee;--grid:rgba(234,242,255,.08)}
+body{background:var(--cyan);color:var(--line);font:400 16px/1.5 "IBM Plex Sans",system-ui,sans-serif;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:20px 20px}
+a{color:var(--line)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px dashed #ffe8a3;outline-offset:3px}
+.b-head{border-bottom:2px solid var(--line)}
+.logo{font:600 24px/1 "Barlow Condensed",sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.kicker,.no,.b-news label,.small{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.kicker{border:1px solid var(--line);padding:6px 10px;align-self:flex-start}
+h1{font:600 52px/.98 "Barlow Condensed",sans-serif;text-transform:uppercase}
+.intro{color:var(--soft)}
+.btn,button{background:var(--line);color:var(--deep);border:1px solid var(--line);border-radius:0;padding:12px 18px;font:500 14px "IBM Plex Mono",monospace;text-transform:uppercase;text-decoration:none}
+.link{font:500 14px "IBM Plex Mono",monospace;text-transform:uppercase;text-decoration:underline;text-underline-offset:5px}
+.b-sec{font:600 28px/1 "Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px dashed var(--soft)}
+.num{font:500 13px "IBM Plex Mono",monospace;display:inline-grid;place-items:center;width:30px;height:30px;border:1px solid var(--line);border-radius:50%;vertical-align:middle;margin-right:8px}
+.b-feat{border-bottom:1px solid rgba(234,242,255,.3)}
+.b-feat h3{font:600 24px/1 "Barlow Condensed",sans-serif;text-transform:uppercase}
+.b-feat p,.desc{color:var(--soft)}
+.b-item{border:1px solid var(--line);border-width:1px 0;margin-top:-1px}
+.b-item .art{color:var(--line);border-bottom:1px dashed var(--soft);padding:28px 36px}
+.b-item h3{font:600 30px/1 "Barlow Condensed",sans-serif;text-transform:uppercase}
+.price{font:500 19px "IBM Plex Mono",monospace}
+.b-news input{background:var(--deep);color:var(--line);border:1px solid var(--line);border-radius:0;padding:0 12px;font-family:"IBM Plex Mono",monospace}
+.b-news input::placeholder{color:#9db6da}
+.b-news p{color:var(--soft)}
+.b-foot{border-top:2px solid var(--line);color:var(--soft);font-family:"IBM Plex Mono",monospace;font-size:13px}

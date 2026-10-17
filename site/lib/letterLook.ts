@@ -53,7 +53,7 @@ const BODIES: Record<Style, string> = {
   float rad = sqrt(clamp(t * 1.1 - 0.1, 0.0, 1.0)) * 0.62;
   float m = smoothstep(rad, rad - 0.12, length(fract(r) - 0.5));
   c = mix(uA, uB, m);`,
-  // TVA terminal: phosphor glow, hot fresnel edge, scanlines, optional static.
+  // Amber terminal: phosphor glow, hot fresnel edge, scanlines, optional static.
   crt: `
   float fres = pow(1.0 - abs(dot(n, v)), 2.0);
   float d = clamp(dot(n, L), 0.0, 1.0);
@@ -320,7 +320,7 @@ export const disposePool = (pool: LetterLook[]) =>
  * The shadow the 3D letters cast on a backdrop plane just behind them, in
  * each concept's manner: a soft warm shadow under clay, hard offset ink for
  * riso (its blue offset print), brutal and cut & paste, a soft one under the
- * TVA glow and the candy.
+ * amber terminal glow and the candy.
  * `dir` points from the word toward the light (x right, y up, z toward the
  * viewer); smaller z throws the shadow further from the letters.
  */

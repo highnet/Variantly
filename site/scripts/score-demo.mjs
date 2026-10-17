@@ -1,8 +1,9 @@
 /*
  * Re-measures the Showcase demo pages with variantly's own axe-core and
  * Lighthouse check and writes lib/demo-scores.json, so the scores on the
- * page always match the pages it shows. Run after changing any page in
- * public/demo/oak-and-iron:
+ * page always match the pages it shows. Every run folder under
+ * public/demo (oak-and-iron, oak-and-iron-w26, ...) is scored, and results
+ * are keyed by run, then variant. Run after changing any demo page:
  *
  *   npm run score-demo
  *
@@ -24,7 +25,7 @@ import { runAudit } from '../../src/checks.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(here, '..', 'public');
-const demo = path.join(root, 'demo', 'oak-and-iron');
+const demoRoot = path.join(root, 'demo');
 const out = path.join(here, '..', 'lib', 'demo-scores.json');
 
 const types = {
@@ -48,18 +49,26 @@ const server = http.createServer((req, res) => {
 await new Promise((r) => server.listen(0, '127.0.0.1', r));
 const port = /** @type {import('node:net').AddressInfo} */ (server.address()).port;
 
-const pages = readdirSync(demo)
-  .filter((d) => /^v\d+$/.test(d))
-  .sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)));
-/** @type {Record<string, { a11y: number, axe: number }>} */
+const byNumber = (a, b) => Number(a.slice(1)) - Number(b.slice(1));
+const runs = readdirSync(demoRoot)
+  .filter((d) => statSync(path.join(demoRoot, d)).isDirectory())
+  .sort();
+/** @type {Record<string, Record<string, { a11y: number, axe: number }>>} */
 const scores = {};
 try {
-  for (const v of pages) {
-    const a = await runAudit(`http://127.0.0.1:${port}/demo/oak-and-iron/${v}/index.html`);
-    if (typeof a.lighthouse.accessibility !== 'number')
-      throw new Error(`${v}: Lighthouse gave no accessibility score`);
-    scores[v] = { a11y: a.lighthouse.accessibility, axe: a.axe.total };
-    console.log(`${v}  a11y ${scores[v].a11y}  axe ${scores[v].axe}`);
+  for (const run of runs) {
+    const pages = readdirSync(path.join(demoRoot, run))
+      .filter((d) => /^v\d+$/.test(d))
+      .sort(byNumber);
+    if (!pages.length) continue;
+    scores[run] = {};
+    for (const v of pages) {
+      const a = await runAudit(`http://127.0.0.1:${port}/demo/${run}/${v}/index.html`);
+      if (typeof a.lighthouse.accessibility !== 'number')
+        throw new Error(`${run}/${v}: Lighthouse gave no accessibility score`);
+      scores[run][v] = { a11y: a.lighthouse.accessibility, axe: a.axe.total };
+      console.log(`${run}/${v}  a11y ${scores[run][v].a11y}  axe ${scores[run][v].axe}`);
+    }
   }
 } finally {
   server.close();

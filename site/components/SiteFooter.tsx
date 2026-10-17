@@ -21,7 +21,7 @@ const items = [
     label: `Variant record VY-${BUILD}${BUILD_DATE && ` · logged ${BUILD_DATE}`}`,
     href: `${REPO_URL}/commit/${BUILD}`,
   },
-  { label: 'Designed by highnet', href: 'https://github.com/highnet', strong: true },
+  { label: 'Designed by highnet', href: 'https://highnet.at/', strong: true },
   { label: HOST, href: SITE_URL, strong: true },
 ];
 
