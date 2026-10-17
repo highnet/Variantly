@@ -275,14 +275,16 @@ const Showcase = () => {
   const [under, setUnder] = useState<Pane | null>(null);
   const [was, setWas] = useState(selected);
   const [wasRun, setWasRun] = useState(runIdx);
+  // Where a newly picked run starts: its first design, or its last when the
+  // phone's back button steps across from the run after it.
+  const [runStart, setRunStart] = useState(1);
   if (wasRun !== runIdx) {
-    // A new run starts at its first design; the old run's pane stays drawn
-    // underneath until the new one arrives.
+    // The old run's pane stays drawn underneath until the new one arrives.
     setWasRun(runIdx);
-    setSelected(1);
-    setWas(1);
+    setSelected(runStart);
+    setWas(runStart);
     setUnder({ run: wasRun, n: was });
-    setMounted(new Set([1]));
+    setMounted(new Set([runStart]));
   } else if (was !== selected) {
     setWas(selected);
     setUnder({ run: runIdx, n: was });
@@ -310,12 +312,14 @@ const Showcase = () => {
     },
     [takeOver, goLive, variants],
   );
-  const chooseRun = (i: number) => {
+  const chooseRun = (i: number, start = 1) => {
     takeOver();
     goLive();
+    setRunStart(start);
     setRunIdx(i);
     const r = DEMO_RUNS[i];
-    setSaid(`${r.label}: ${r.variants.length} redesigns. Showing V01, ${r.variants[0].direction}`);
+    const v = r.variants[start - 1];
+    setSaid(`${r.label}: ${r.variants.length} redesigns. Showing ${vname(start)}, ${v.direction}`);
   };
 
   // Calm mode, now and whenever the visitor changes it, pauses the tour.
@@ -787,6 +791,15 @@ const Showcase = () => {
   const original = run.original;
   const prevN = ((selected + count - 2) % count) + 1;
   const nextN = (selected % count) + 1;
+  // Phones step through every run as one list: past a run's end, on to the
+  // next run's first design (and back to the previous run's last).
+  const total = DEMO_RUNS.reduce((t, r) => t + r.variants.length, 0);
+  const position = DEMO_RUNS.slice(0, runIdx).reduce((t, r) => t + r.variants.length, 0) + selected;
+  const step = (by: 1 | -1) => {
+    if (selected + by >= 1 && selected + by <= count) return choose(selected + by);
+    const i = (runIdx + by + DEMO_RUNS.length) % DEMO_RUNS.length;
+    chooseRun(i, by > 0 ? 1 : DEMO_RUNS[i].variants.length);
+  };
   const cells = useRef<(HTMLButtonElement | null)[]>([]);
   // Arrow keys move through the numbers, focus following the selection.
   const onCellsKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -1201,7 +1214,7 @@ const Showcase = () => {
             <div
               role="group"
               aria-label="Redesign run"
-              className="bg-ink rounded-control flex gap-0.5 p-0.5 max-sm:basis-full max-sm:justify-center lg:flex-col"
+              className="bg-ink rounded-control flex gap-0.5 p-0.5 max-sm:hidden lg:flex-col"
             >
               {DEMO_RUNS.map((r, i) => (
                 <Button
@@ -1233,6 +1246,15 @@ const Showcase = () => {
             >
               <ChevronLeft className="size-4" aria-hidden="true" />
             </Button>
+            <Button
+              variant="cell"
+              size="cell"
+              aria-label="Previous redesign"
+              className="sm:hidden"
+              onClick={() => step(-1)}
+            >
+              <ChevronLeft className="size-4" aria-hidden="true" />
+            </Button>
             {/* Ten to a row, so twenty fit a phone in two rows and every
                 number stays in view. */}
             <div
@@ -1240,7 +1262,7 @@ const Showcase = () => {
               role="radiogroup"
               aria-label={`${run.label} redesigns, 1 to ${count}`}
               onKeyDown={onCellsKey}
-              className="grid grid-cols-[repeat(10,minmax(0,2.125rem))] gap-0.5 sm:grid-cols-[repeat(10,2.5rem)] sm:gap-1"
+              className="hidden gap-1 sm:grid sm:grid-cols-[repeat(10,2.5rem)]"
             >
               {variants.map((v) => {
                 const active = selected === v.n;
@@ -1278,6 +1300,21 @@ const Showcase = () => {
               className="hidden sm:inline-flex"
               title="Next"
               onClick={() => choose(nextN)}
+            >
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </Button>
+            <span
+              aria-hidden="true"
+              className="text-surface min-w-24 text-center text-[15px] tabular-nums sm:hidden"
+            >
+              {String(position).padStart(2, '0')} / {total}
+            </span>
+            <Button
+              variant="cell"
+              size="cell"
+              aria-label="Next redesign"
+              className="sm:hidden"
+              onClick={() => step(1)}
             >
               <ChevronRight className="size-4" aria-hidden="true" />
             </Button>
