@@ -345,7 +345,7 @@ export const Letters3D = ({ run, clock, onReady, onFail }: Letters3DProps) => {
     <div
       ref={host}
       aria-hidden="true"
-      className="vy-letters3d absolute inset-0 opacity-0 transition-[opacity,transform] duration-700 ease-out"
+      className="vy-letters3d absolute inset-0 opacity-0 [transition:opacity_0.5s_ease-out_0.15s,transform_0.7s_ease-out]"
     />
   );
 };
