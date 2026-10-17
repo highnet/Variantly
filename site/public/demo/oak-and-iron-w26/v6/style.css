@@ -1,0 +1,90 @@
+/* Puffed Letters: inflated, warped and handwritten type is the whole event. */
+@import url("https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Caveat:wght@600;700&family=Fraunces:opsz,wght,SOFT,WONK@9..144,100..900,0..100,0..1&display=swap");
+:root{color-scheme:light;
+  --paper:#f6ecdc;--ink:#2a1d18;--mute:#5e4a3f;--ox:#7b1f2b;--sienna:#b4532a;--teal:#2c6766;--cream:#fff7ea;--puff:#e7b08f;--field:#fffaf2}
+html[data-theme="dark"]{color-scheme:dark;
+  --paper:#1d1512;--ink:#f6ead8;--mute:#c9b6a3;--ox:#e2707b;--sienna:#ec8a5c;--teal:#8ccac6;--cream:#2a1f1b;--puff:#6b3420;--field:#140e0c}
+*{box-sizing:border-box}
+::selection{background:var(--sienna);color:var(--cream)}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 18px/1.6 Fraunces,Georgia,serif;font-variation-settings:"SOFT" 100,"WONK" 1;overflow-x:hidden;
+  background-image:radial-gradient(circle at 20% 10%,rgba(180,83,42,.10),transparent 40%),radial-gradient(circle at 90% 60%,rgba(44,103,102,.08),transparent 45%)}
+a{color:inherit}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--teal);outline-offset:4px;border-radius:12px}
+.hand{font-family:Caveat,cursive;font-weight:700;color:var(--sienna);letter-spacing:0}
+.puff{font-family:"Bagel Fat One",sans-serif;font-weight:400;color:var(--ox);letter-spacing:.01em;
+  text-shadow:0 .04em 0 var(--puff),0 .08em .02em rgba(42,29,24,.18),0 .16em .2em rgba(42,29,24,.12)}
+
+.navbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px 24px;padding:20px clamp(16px,4vw,48px)}
+.logo{font:400 26px "Bagel Fat One",sans-serif;color:var(--ox);text-decoration:none}
+.navbar ul{list-style:none;display:flex;flex-wrap:wrap;gap:4px 22px;margin:0;padding:0;font:700 24px Caveat,cursive}
+.navbar ul a{text-decoration:none;cursor:pointer}
+.navbar ul a:hover,.navbar ul a[aria-current]{color:var(--sienna);text-decoration:underline wavy;text-underline-offset:6px;text-decoration-thickness:2px}
+
+.hero{text-align:center;padding:10px 16px 90px;position:relative}
+.mark{margin:0;font:400 clamp(92px,20vw,300px)/.9 "Bagel Fat One",sans-serif;color:var(--ox);white-space:nowrap}
+.mark b{display:inline-block;font-weight:400;
+  text-shadow:0 .03em 0 var(--puff),0 .06em 0 var(--puff),0 .1em .04em rgba(42,29,24,.22),0 .22em .3em rgba(42,29,24,.16);
+  animation:inflate 5.5s cubic-bezier(.45,0,.25,1) infinite;animation-delay:calc(var(--i) * .22s);transform-origin:50% 85%}
+.mark .amp{color:var(--sienna);font-family:Caveat,cursive;font-weight:700;font-size:.8em;text-shadow:none;margin:0 .02em;transform:rotate(-8deg)}
+/* The one digital effect: the wordmark breathes, letter by letter, like a balloon filling. */
+@keyframes inflate{0%,70%,100%{transform:scale(1,1)}80%{transform:scale(1.07,1.12) translateY(-.02em)}88%{transform:scale(.98,.96)}}
+.mark .amp{animation-name:wobble}
+@keyframes wobble{0%,70%,100%{transform:rotate(-8deg)}82%{transform:rotate(6deg)}}
+@media (prefers-reduced-motion:reduce){.mark b{animation:none}}
+.arc{display:block;width:min(640px,92%);margin:-1.2em auto 0;overflow:visible}
+.arc text{font:700 29px Caveat,cursive;fill:var(--teal)}
+h1{max-width:15ch;margin:24px auto 0;font-weight:700;font-size:clamp(40px,5.6vw,80px);line-height:1;letter-spacing:-.02em;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1;text-wrap:balance}
+h1 .puff{font-size:1.05em}
+h1 .hand{display:inline-block;font-size:1.35em;line-height:.8;transform:rotate(-3deg)}
+.intro{max-width:52ch;margin:28px auto 34px;color:var(--mute)}
+.ctas{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:16px 26px;margin:0}
+.btn,button{cursor:pointer;display:inline-block;font:400 21px "Bagel Fat One",sans-serif;letter-spacing:.01em;text-decoration:none;color:var(--cream);background:var(--ox);border:0;border-radius:999px;padding:14px 30px 16px;
+  box-shadow:inset 0 -5px 0 rgba(0,0,0,.22),inset 0 3px 0 rgba(255,255,255,.18),0 10px 22px -10px rgba(42,29,24,.5);transition:transform .2s cubic-bezier(.34,1.56,.64,1)}
+.btn:hover,button:hover{transform:scale(1.06) rotate(-1.5deg)}
+.btn:active,button:active{transform:scale(.97)}
+.link{font:700 26px Caveat,cursive;color:var(--teal);cursor:pointer;text-decoration:underline wavy;text-underline-offset:6px}
+
+.sec{text-align:center;margin:0 0 48px;font-size:clamp(48px,7vw,104px);font-weight:900;line-height:.95;letter-spacing:-.03em;font-variation-settings:"opsz" 144,"SOFT" 100,"WONK" 1}
+.sec .hand{font-size:1.2em;display:inline-block;transform:rotate(-4deg)}
+.features,.shop,.newsletter{padding:80px clamp(16px,5vw,64px);max-width:1280px;margin:0 auto}
+.features dl{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;margin:0}
+.features dl>div{text-align:center}
+.features dt{line-height:1;margin-bottom:14px}
+.f1 dt{font:700 clamp(54px,5.4vw,78px) Caveat,cursive;color:var(--sienna);transform:rotate(-4deg)}
+.f2 dt{font:400 clamp(38px,3.6vw,52px) "Bagel Fat One",sans-serif;color:var(--ox);text-shadow:0 .05em 0 var(--puff),0 .12em .14em rgba(42,29,24,.16)}
+.f3 dt{font-style:italic;font-weight:900;font-size:clamp(40px,3.8vw,56px);color:var(--teal);letter-spacing:-.03em}
+.features dd{margin:0 auto;max-width:28ch;color:var(--mute)}
+
+.shop{display:grid;grid-template-columns:repeat(2,1fr);gap:72px 64px}
+.shop .sec{grid-column:1/-1}
+.item{display:flex;flex-direction:column;gap:10px;color:var(--ink)}
+.item h3{margin:0;font:400 clamp(44px,4.4vw,66px)/.92 "Bagel Fat One",sans-serif;color:var(--ox);text-shadow:0 .04em 0 var(--puff),0 .1em .12em rgba(42,29,24,.16)}
+.i1{grid-column:1/-1;display:grid;grid-template-columns:1.1fr 1fr;grid-template-areas:"h art" "d art" "b art";column-gap:56px;align-items:end}
+.i1 h3{grid-area:h;font-size:clamp(72px,9vw,136px)}
+.i1 .art{grid-area:art}.i1 .desc{grid-area:d}.i1 .buy{grid-area:b}
+.i2 h3{color:var(--teal)}
+.i3 h3{font:700 clamp(58px,5.6vw,84px)/.9 Caveat,cursive;color:var(--sienna);text-shadow:none;transform:rotate(-2deg)}
+.art{width:100%;max-height:240px;color:var(--ink);padding:10px}
+.desc{margin:0;color:var(--mute)}
+.buy{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin:auto 0 0}
+.price{font:700 34px Caveat,cursive;color:var(--ink);padding:0 14px;border:2.5px solid var(--sienna);border-radius:52% 48% 55% 45% / 60% 50% 50% 40%;transform:rotate(-2deg)}
+.price s{color:var(--mute);font-size:.7em;margin-right:4px}
+
+.newsletter{text-align:center}
+.newsletter .sec .puff{font-size:1em}
+.newsletter p{margin:0 auto 24px;max-width:48ch;color:var(--mute)}
+label{display:block;font:700 26px Caveat,cursive;color:var(--teal);margin-bottom:6px}
+.row{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;max-width:620px;margin:0 auto}
+input{flex:1 1 260px;min-height:56px;padding:0 24px;font:400 18px Fraunces,serif;color:var(--ink);background:var(--field);border:2.5px solid var(--ink);border-radius:999px}
+input::placeholder{color:var(--mute)}
+
+footer{text-align:center;padding:60px 16px 48px;color:var(--mute);font-size:16px}
+footer p{margin:6px 0}
+.sign{font:700 64px Caveat,cursive;color:var(--sienna);transform:rotate(-3deg)}
+.small{font-size:14px}
+
+@media (max-width:860px){
+  .features dl,.shop{grid-template-columns:1fr}
+  .i1{grid-template-columns:1fr;grid-template-areas:"h" "art" "d" "b"}
+  .features,.shop,.newsletter{padding:56px 16px}
+}

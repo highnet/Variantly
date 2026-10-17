@@ -1,0 +1,99 @@
+/* The Front Room: inherited furniture, patterned wallpaper, walnut wainscot, a lamp left on. */
+@import url("https://fonts.googleapis.com/css2?family=Gloock&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Courier+Prime:wght@400;700&display=swap");
+:root{color-scheme:light;
+  --wall:#23423f;--motif:#8f3a2c;--motif2:#c9974a;--ivory:#f6eedd;--ivory-mute:#dccfb6;--ink:#2a1c14;--mute:#5d4a3c;
+  --walnut:#5a3520;--walnut2:#6e4329;--ox:#7a2330;--ochre:#c9974a;--teal:#2f6866;--manila:#efdcb3;--gilt:#b88a3e;--field:#fffaf0}
+html[data-theme="dark"]{color-scheme:dark;
+  --wall:#132422;--motif:#5e2820;--motif2:#7d5f33;--ivory:#f3e8d4;--ivory-mute:#cdbfa6;--ink:#2a1c14;--mute:#5d4a3c;
+  --walnut:#2f1c11;--walnut2:#3a2416;--ox:#d06a74;--ochre:#d8a85a;--teal:#7fbcb8;--manila:#e6d2a8;--gilt:#a07a38;--field:#fffaf0}
+*{box-sizing:border-box}
+::selection{background:var(--ochre);color:var(--ink)}
+body{margin:0;color:var(--ivory);font:400 18px/1.6 Newsreader,Georgia,serif;overflow-x:hidden;
+  background-color:var(--wall);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='%238f3a2c' fill-opacity='.55'%3E%3Cpath d='M36 14c5 6 5 12 0 18-5-6-5-12 0-18zM36 58c5-6 5-12 0-18-5 6-5 12 0 18zM14 36c6-5 12-5 18 0-6 5-12 5-18 0zM58 36c-6-5-12-5-18 0 6 5 12 5 18 0z'/%3E%3C/g%3E%3Cg fill='%23c9974a' fill-opacity='.5'%3E%3Ccircle cx='36' cy='36' r='3'/%3E%3Ccircle cx='0' cy='0' r='2.5'/%3E%3Ccircle cx='72' cy='0' r='2.5'/%3E%3Ccircle cx='0' cy='72' r='2.5'/%3E%3Ccircle cx='72' cy='72' r='2.5'/%3E%3C/g%3E%3C/svg%3E")}
+/* The one digital effect: as you scroll down, evening falls and the lamp warms the room. */
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 78% 22%,rgba(255,190,110,.0),transparent 60%);animation:dusk linear both;animation-timeline:scroll(root)}
+@keyframes dusk{to{background:radial-gradient(ellipse at 78% 22%,rgba(255,180,90,.22),rgba(20,10,5,.35) 70%)}}
+@media (prefers-reduced-motion:reduce){body::before{animation:none}}
+body>*{position:relative;z-index:1}
+a{color:inherit}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--ochre);outline-offset:4px}
+h1,h2,h3{font-family:Gloock,Georgia,serif;font-weight:400;letter-spacing:-.01em;margin:0}
+
+.navbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px 32px;padding:18px clamp(16px,4vw,56px);background:var(--walnut);border-bottom:3px double var(--gilt)}
+.logo{display:flex;align-items:center;gap:12px;font:400 24px Gloock,serif;text-decoration:none}
+.crest{display:grid;place-items:center;width:44px;height:44px;border:1.5px solid var(--gilt);border-radius:50%;font:700 12px "Courier Prime",monospace;color:var(--ochre)}
+.navbar ul{list-style:none;display:flex;flex-wrap:wrap;gap:4px 26px;margin:0;padding:0;font-style:italic}
+.navbar ul a{text-decoration:none;cursor:pointer;padding-bottom:2px}
+.navbar ul a:hover,.navbar ul a[aria-current]{color:var(--ochre);border-bottom:1px solid var(--ochre)}
+
+.hero{display:grid;grid-template-columns:1.3fr .7fr;gap:48px;align-items:center;max-width:1200px;margin:0 auto;padding:80px clamp(16px,4vw,56px) 72px}
+.hero-text{background:var(--ivory);color:var(--ink);padding:48px 52px;border-radius:2px;box-shadow:0 30px 50px -24px rgba(0,0,0,.6);position:relative;
+  outline:1px solid var(--gilt);outline-offset:-12px}
+.since{margin:0 0 16px;font:700 13px "Courier Prime",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--ox)}
+h1{font-size:clamp(46px,5.4vw,78px);line-height:1;text-wrap:balance}
+.intro{max-width:46ch;margin:22px 0 30px;color:var(--mute)}
+.ctas{display:flex;flex-wrap:wrap;align-items:center;gap:14px 26px;margin:0}
+.btn,button{cursor:pointer;display:inline-block;font:600 17px Newsreader,serif;text-decoration:none;color:var(--ivory);background:var(--ox);border:0;border-radius:999px 999px 6px 6px;padding:12px 26px;box-shadow:0 8px 16px -8px rgba(0,0,0,.6);transition:background .2s,transform .2s ease-out}
+.btn:hover,button:hover{background:var(--teal);transform:translateY(-2px)}
+.link{font-style:italic;color:var(--ox);cursor:pointer;text-underline-offset:4px}
+.mirror{margin:0;aspect-ratio:3/4;border-radius:50% 50% 46% 46%/40% 40% 30% 30%;border:12px solid var(--gilt);outline:2px solid var(--walnut);outline-offset:-20px;background:radial-gradient(circle at 50% 46%,#f3c98a 0,#a2643a 42%,var(--walnut) 80%);box-shadow:0 30px 50px -20px rgba(0,0,0,.7),inset 0 0 40px rgba(0,0,0,.5);display:grid;place-items:center;padding:24px}
+.mirror svg{width:80%}
+.lamp-shade{fill:var(--ox);stroke:var(--gilt);stroke-width:2}
+.lamp-stem{stroke:var(--gilt);stroke-width:4}
+.glow{fill:rgba(255,214,150,.18);stroke:none;animation:flicker 6s ease-in-out infinite}
+@keyframes flicker{50%{fill:rgba(255,214,150,.28)}}
+
+.features{background:linear-gradient(var(--walnut2),var(--walnut)),var(--walnut);background-image:repeating-linear-gradient(90deg,rgba(0,0,0,.18) 0 2px,transparent 2px 160px),repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 1px,transparent 1px 7px);background-color:var(--walnut);border-top:6px solid var(--gilt);border-bottom:6px solid var(--gilt);padding:72px clamp(16px,4vw,56px)}
+.features h2,.shop h2{text-align:center;font-size:clamp(40px,4.6vw,64px);margin-bottom:44px}
+.features dl{display:flex;flex-wrap:wrap;justify-content:center;gap:32px;max-width:1100px;margin:0 auto}
+.card{flex:1 1 280px;max-width:340px;background:var(--manila);color:var(--ink);padding:28px 28px 30px;box-shadow:0 18px 28px -16px rgba(0,0,0,.7);
+  background-image:repeating-linear-gradient(transparent 0 31px,rgba(47,104,102,.25) 31px 32px);background-position:0 18px}
+.c1{transform:rotate(-1.6deg)}.c2{transform:rotate(1deg) translateY(14px);background-color:var(--ivory)}.c3{transform:rotate(-.6deg)}
+.card dt{font:400 30px Gloock,serif;color:var(--ox);margin-bottom:8px;border-bottom:1px solid var(--ox);padding-bottom:6px}
+.card dd{margin:0;line-height:2;font-size:17px}
+
+.shop{max-width:1200px;margin:0 auto;padding:88px clamp(16px,4vw,56px) 72px}
+.wall{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:48px;align-items:start}
+.item{display:flex;flex-direction:column;align-items:center;gap:0;text-align:center}
+.frame{width:100%;display:grid;place-items:center;color:var(--ink);box-shadow:0 26px 40px -22px rgba(0,0,0,.75)}
+.frame svg{width:78%}
+.oval{aspect-ratio:5/4;border-radius:50%;background:radial-gradient(var(--ivory),var(--ivory-mute));border:14px solid var(--gilt);outline:3px solid var(--walnut);outline-offset:-8px}
+.arch{aspect-ratio:3/4;border-radius:999px 999px 4px 4px;background:var(--ivory);border:16px solid var(--walnut2);box-shadow:inset 0 0 0 3px var(--gilt),0 26px 40px -22px rgba(0,0,0,.75)}
+.mat{aspect-ratio:1;background:var(--ivory);border:10px solid var(--ink);padding:28px;box-shadow:inset 0 0 0 28px var(--manila),inset 0 0 0 30px var(--ox),0 26px 40px -22px rgba(0,0,0,.75)}
+.i2{margin-top:60px}.i3{margin-top:20px}
+.tag{position:relative;margin-top:34px;background:var(--manila);color:var(--ink);padding:18px 22px 16px;border-radius:4px 4px 4px 4px;clip-path:polygon(14px 0,calc(100% - 14px) 0,100% 14px,100% 100%,0 100%,0 14px);transform:rotate(-2deg);max-width:300px}
+.tag::before{content:"";position:absolute;top:8px;left:50%;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:var(--wall)}
+.i2 .tag{transform:rotate(2.5deg)}
+.tag h3{font-size:26px;margin-top:8px}
+.tag p{margin:4px 0 0;font-size:16px;color:var(--mute)}
+.tag .price{font:700 18px "Courier Prime",monospace;color:var(--ox)}
+.price s{color:var(--mute);font-weight:400}
+.item button{margin-top:18px}
+
+.newsletter{padding:40px clamp(16px,4vw,56px) 96px}
+.postcard{max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:40px;background:var(--ivory);color:var(--ink);padding:44px;box-shadow:0 30px 50px -24px rgba(0,0,0,.7);transform:rotate(-.8deg);
+  border:10px solid transparent;border-image:repeating-linear-gradient(45deg,var(--ox) 0 10px,var(--ivory) 10px 20px,var(--teal) 20px 30px,var(--ivory) 30px 40px) 10}
+.postcard h2{font-size:clamp(40px,4.4vw,58px);color:var(--ox)}
+.postcard p{color:var(--mute)}
+#newsletter{border-left:1px solid var(--mute);padding-left:40px;position:relative;display:flex;flex-direction:column;gap:10px;justify-content:flex-end;padding-top:80px}
+.stamp{position:absolute;top:0;right:0;width:76px;height:88px;display:grid;place-items:center;text-align:center;font:700 13px/1.3 "Courier Prime",monospace;color:var(--ivory);background:var(--teal);outline:3px dotted var(--ivory);outline-offset:-6px;transform:rotate(4deg)}
+label{font:700 13px "Courier Prime",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--ink)}
+input{min-height:48px;padding:0 4px;font:400 19px Newsreader,serif;color:var(--ink);background:transparent;border:0;border-bottom:1.5px solid var(--ink)}
+input::placeholder{color:var(--mute)}
+#newsletter button{align-self:flex-start;margin-top:8px}
+
+footer{background:var(--walnut);border-top:3px double var(--gilt);padding:28px clamp(16px,4vw,56px);font-size:15px;color:var(--ivory-mute);text-align:center}
+footer p{margin:4px 0}
+.small{font:400 13px "Courier Prime",monospace}
+
+@media (max-width:860px){
+  .hero{grid-template-columns:1fr;padding-top:40px}
+  .hero-text{padding:36px 28px}
+  .mirror{max-width:260px;margin:0 auto}
+  .wall{grid-template-columns:1fr;gap:56px}
+  .i2,.i3{margin-top:0}
+  .frame{max-width:340px}
+  .postcard{grid-template-columns:1fr;padding:28px;transform:none}
+  #newsletter{border-left:0;padding-left:0;border-top:1px solid var(--mute);padding-top:100px}
+}
