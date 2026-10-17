@@ -11,6 +11,9 @@ import { releaseFrame, seekTime } from '@/lib/seek';
 import { stepAt } from '@/lib/titleTiming';
 
 const WORD = 'variantly';
+// Space between letter slots, wide enough that tilts, bevels and the lock-in
+// pop never make neighbours touch.
+const GAP = 0.75;
 // The 3D wardrobe: sans, serif, script-ish and mono faces (three.js examples;
 // licences beside them in public/fonts).
 const FACES = [
@@ -29,7 +32,8 @@ const FINAL = [3, 0, 2, 4, 1, 0, 3, 2, 1];
 const COLOURS = ['#ff2d87', '#6a3dff', '#00b4e6', '#ff9a00', '#13c27a'];
 const faceAt = (step: number, i: number) =>
   (step * 5 + i * 3 + ((step * 7 + i * 13) % 4)) % FACES.length;
-const scaleAt = (step: number, i: number) => 0.8 + (((step * 13 + i * 29) % 9) / 8) * 0.4;
+// Never above 1, so a shifting glyph stays inside its slot.
+const scaleAt = (step: number, i: number) => 0.72 + (((step * 13 + i * 29) % 9) / 8) * 0.28;
 
 type Letters3DProps = { run: number };
 
@@ -62,7 +66,7 @@ export const Letters3D = ({ run }: Letters3DProps) => {
     const pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
     scene.environmentIntensity = 0.55;
-    const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 100);
+    const camera = new THREE.PerspectiveCamera(22, 1, 0.1, 200);
     const key = new THREE.DirectionalLight('#ffffff', 1.4);
     key.position.set(-4, 6, 8);
     scene.add(key);
@@ -76,8 +80,8 @@ export const Letters3D = ({ run }: Letters3DProps) => {
       const { clientWidth: w, clientHeight: h } = el;
       renderer.setSize(w, h);
       camera.aspect = w / h;
-      // Visible width is 2·z·tan(fov/2)·aspect; keep ~17 units (the word plus margin).
-      camera.position.z = Math.max(14, 17 / (2 * Math.tan((16 * Math.PI) / 180) * (w / h)));
+      // Visible width is 2·z·tan(fov/2)·aspect; keep ~22 units (the word plus margin).
+      camera.position.z = Math.max(21, 22 / (2 * Math.tan((11 * Math.PI) / 180) * (w / h)));
       camera.updateProjectionMatrix();
     };
     size();
@@ -103,7 +107,7 @@ export const Letters3D = ({ run }: Letters3DProps) => {
             const geo = new TextGeometry(ch, {
               font: fonts[f],
               size: 2,
-              depth: 0.7,
+              depth: 0.45,
               curveSegments: 8,
               bevelEnabled: true,
               bevelThickness: 0.12,
@@ -113,7 +117,7 @@ export const Letters3D = ({ run }: Letters3DProps) => {
             geo.computeBoundingBox();
             const b = geo.boundingBox!;
             const w = b.max.x - b.min.x;
-            geo.translate(-b.min.x - w / 2, -1, -0.35);
+            geo.translate(-b.min.x - w / 2, -1, -0.22);
             g = { geo, w };
             cache.set(k, g);
           }
@@ -122,7 +126,7 @@ export const Letters3D = ({ run }: Letters3DProps) => {
         // Slots are sized by the final faces, so the word keeps its width (and
         // stays centred) while letters shift.
         const widths = [...WORD].map((ch, i) => glyph(ch, FINAL[i]).w);
-        const total = widths.reduce((a, b) => a + b, 0) + 0.2 * (WORD.length - 1);
+        const total = widths.reduce((a, b) => a + b, 0) + GAP * (WORD.length - 1);
         let x = -total / 2;
         const letters = [...WORD].map((ch, i) => {
           const mesh = new THREE.Mesh(
@@ -136,7 +140,7 @@ export const Letters3D = ({ run }: Letters3DProps) => {
             }),
           );
           mesh.position.x = x + widths[i] / 2;
-          x += widths[i] + 0.2;
+          x += widths[i] + GAP;
           group.add(mesh);
           return { ch, mesh, face: FINAL[i], lockedAt: -1 };
         });
@@ -161,15 +165,15 @@ export const Letters3D = ({ run }: Letters3DProps) => {
             if (step === null) {
               if (l.lockedAt < 0) l.lockedAt = t;
               const k = Math.min(1, (t - l.lockedAt) / 0.45);
-              s = 1 + Math.sin(k * Math.PI) * 0.18 * (1 - k * 0.5);
+              s = 1 + Math.sin(k * Math.PI) * 0.08;
             }
             l.mesh.scale.setScalar(s);
             l.mesh.position.y = Math.sin(t * 1.4 + i * 0.6) * 0.16;
             l.mesh.rotation.x = Math.sin(t * 1.1 + i) * 0.07;
-            l.mesh.rotation.y = Math.sin(t * 0.9 + i * 0.8) * 0.12;
+            l.mesh.rotation.y = Math.sin(t * 0.9 + i * 0.8) * 0.05;
           });
           tx += (py * 0.35 - tx) * 0.06;
-          ty += (px * 0.6 - ty) * 0.06;
+          ty += (px * 0.35 - ty) * 0.06;
           group.rotation.set(tx, ty, 0);
           renderer.render(scene, camera);
           if (seek === null && !still) raf = requestAnimationFrame(frame);

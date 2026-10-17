@@ -15,7 +15,8 @@ const WORD = 'variantly';
 const fontAt = (step: number, index: number) =>
   INTRO_FONTS[(step * 5 + index * 3 + ((step * 7 + index * 13) % 4)) % INTRO_FONTS.length];
 // Mismatched sizes while shifting, like the title card's jumping glyphs.
-const scaleAt = (step: number, index: number) => 0.8 + (((step * 13 + index * 29) % 9) / 8) * 0.4;
+// Never above 1: a shifting glyph may shrink inside its slot but never spill.
+const scaleAt = (step: number, index: number) => 0.72 + (((step * 13 + index * 29) % 9) / 8) * 0.28;
 
 type LetterProps = {
   char: string;
@@ -112,7 +113,7 @@ export const VariantTitle = () => {
         data-keep-cycle
         onClick={() => setRun((r) => r + 1)}
         className={cn(
-          'vy-title relative z-1 flex cursor-pointer items-end gap-[0.04em] text-[clamp(2.5rem,16vw,11rem)]',
+          'vy-title relative z-1 flex cursor-pointer items-end gap-[0.12em] text-[clamp(2.5rem,16vw,11rem)]',
           solid && 'vy-title-solid',
         )}
       >

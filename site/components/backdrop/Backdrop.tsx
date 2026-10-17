@@ -76,14 +76,64 @@ const Blob = ({ ramp, i, sharp, id }: BlobProps) => {
       transition={{ duration: 30 + i * 6, repeat: Infinity, ease: 'easeInOut' }}
     >
       <defs>
-        <radialGradient id={`${id}-fill`} cx="45%" cy="40%" r="60%">
+        {/* An opaque body ramp (warm core up-left, cool rim) for the lighting to shape. */}
+        <radialGradient id={`${id}-fill`} cx="36%" cy="30%" r="78%">
           <stop offset="0" stopColor={ramp[0]} />
-          <stop offset="0.45" stopColor={ramp[1]} />
-          <stop offset="0.82" stopColor={ramp[2]} stopOpacity="0.9" />
-          <stop offset="1" stopColor={ramp[2]} stopOpacity="0" />
+          <stop offset="0.5" stopColor={ramp[1]} />
+          <stop offset="1" stopColor={ramp[2]} />
         </radialGradient>
-        <filter id={`${id}-grain`} x="-20%" y="-20%" width="140%" height="140%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation={sharp ? 0 : 2.4} result="soft" />
+        {/*
+          2.5D, then grain: the alpha is blurred into a height map, lit with a
+          soft diffuse key and a specular highlight, given a cast shadow, and
+          only then scattered through fractal noise, so the volume keeps the
+          grainy-gradient texture.
+        */}
+        <filter id={`${id}-grain`} x="-25%" y="-25%" width="150%" height="160%">
+          <feGaussianBlur in="SourceAlpha" stdDeviation={sharp ? 1.6 : 5} result="bump" />
+          <feDiffuseLighting
+            in="bump"
+            surfaceScale={sharp ? 2.5 : 6}
+            diffuseConstant="1.15"
+            lightingColor="#ffffff"
+            result="diffuse"
+          >
+            <feDistantLight azimuth="235" elevation="42" />
+          </feDiffuseLighting>
+          <feComposite
+            in="SourceGraphic"
+            in2="diffuse"
+            operator="arithmetic"
+            k1="1.05"
+            k2="0.12"
+            result="shaded"
+          />
+          <feSpecularLighting
+            in="bump"
+            surfaceScale={sharp ? 2.5 : 6}
+            specularConstant="0.85"
+            specularExponent="18"
+            lightingColor="#ffffff"
+            result="spec"
+          >
+            <fePointLight x="24" y="14" z="70" />
+          </feSpecularLighting>
+          <feComposite in="spec" in2="SourceAlpha" operator="in" result="specIn" />
+          <feComposite
+            in="specIn"
+            in2="shaded"
+            operator="arithmetic"
+            k2="0.7"
+            k3="1"
+            result="lit"
+          />
+          <feGaussianBlur in="SourceAlpha" stdDeviation="5" result="shadowBlur" />
+          <feOffset in="shadowBlur" dx="3" dy="9" result="shadowOff" />
+          <feFlood floodColor="#1a1030" floodOpacity="0.28" />
+          <feComposite in2="shadowOff" operator="in" result="shadow" />
+          <feMerge result="body">
+            <feMergeNode in="shadow" />
+            <feMergeNode in="lit" />
+          </feMerge>
           <feTurbulence
             type="fractalNoise"
             baseFrequency="1.15"
@@ -92,9 +142,9 @@ const Blob = ({ ramp, i, sharp, id }: BlobProps) => {
             result="noise"
           />
           <feDisplacementMap
-            in="soft"
+            in="body"
             in2="noise"
-            scale={sharp ? 5 : 14}
+            scale={sharp ? 5 : 12}
             xChannelSelector="R"
             yChannelSelector="G"
           />
