@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import { createParser } from './agent-output.mjs';
 import { agentById, agentFile } from './agents.mjs';
 import { productFromCode } from './product.mjs';
-import { defaultDirections, extractReview, extractRollout, extractSummary, hasAnswers, productMarkdown, writeBrief, writeReviewBrief, writeRolloutBrief } from './brief.mjs';
+import { defaultDirections, extractReview, extractRollout, extractSummary, hasAnswers, productMarkdown, writeBrief, writeChatBrief, writeReviewBrief, writeRolloutBrief } from './brief.mjs';
 import { auditMarkdown, killAudits, playwrightMcp, runAudit, warmPlaywrightMcp } from './checks.mjs';
 import { stepFrom } from './steps.mjs';
 import * as git from './git.mjs';
@@ -73,6 +73,17 @@ const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  * @property {'running' | 'failed'} [auditState]
  * @property {string} [auditError]
  * @property {string[]} [exclude]  files variantly placed in the worktree, kept out of its commits
+ * @property {ChatTurn[]} [chat]  follow-up requests to the agent from the chat panel
+ */
+
+/**
+ * @typedef {object} ChatTurn
+ * @property {string} id
+ * @property {'user' | 'agent'} role
+ * @property {string} text
+ * @property {number} at
+ * @property {'running' | 'done' | 'failed'} [status]   agent turns only
+ * @property {string[]} [files]                         what the agent turn changed
  */
 
 /**
@@ -110,6 +121,8 @@ export class Session extends EventEmitter {
     this.runs = new Map();
     /** @type {Promise<unknown> | undefined} */
     this.gitQueue = undefined;
+    /** Variants with a chat turn in flight: one at a time each. @type {Set<number>} */
+    this.chatting = new Set();
     /** PRODUCT.md answers read from the code, once per run, shared by every variant. @type {import('./brief.mjs').ProductAnswers | undefined} */
     this.codeProduct = undefined;
     /** @type {Promise<void> | undefined} */
@@ -454,7 +467,7 @@ export class Session extends EventEmitter {
         if (run.cancelled) return;
       }
 
-      await update({ status: 'committing' });
+      await update({ status: 'committing', exclude });
       const files = await git.commitAll(wt, `variantly: variant ${v.n} (${v.direction})`, exclude);
       if (!files.length) throw nothingChanged();
       say(`Committed ${files.length} changed file${files.length === 1 ? '' : 's'}.`);
@@ -558,6 +571,81 @@ export class Session extends EventEmitter {
       }
     }
     return { placed, lockfiles };
+  }
+
+  /**
+   * A follow-up from the chat panel: run the agent again in a finished
+   * variant's worktree with the owner's message, stream its output as chat
+   * events, and commit what it changed to the variant's branch, so keeping
+   * the variant keeps the change.
+   * @param {number} n
+   * @param {string} message
+   */
+  async chat(n, message) {
+    const v = this.state.variants.find((x) => x.n === n);
+    const config = this.state.config;
+    const text = message.trim();
+    if (!v || !config) throw new Error(`No variant ${n}.`);
+    if (v.status !== 'done') throw new Error(`Variant ${n} isn't finished yet.`);
+    if (this.state.phase === 'finalized') throw new Error('This run is finished; start a new one to keep chatting.');
+    if (!text) throw new Error('Type a change for the agent first.');
+    if (this.chatting.has(n)) throw new Error(`The agent is still working on V${String(n).padStart(2, '0')}.`);
+    const agent = agentById(config.agent);
+    if (!agent) throw new Error(`Unknown agent "${config.agent}".`);
+
+    const history = (v.chat ?? []).filter((t) => t.status !== 'failed').map(({ role, text: t }) => ({ role, text: t }));
+    const stamp = Date.now();
+    /** @type {ChatTurn} */
+    const ask = { id: `c${stamp}u`, role: 'user', text, at: stamp };
+    /** @type {ChatTurn} */
+    const reply = { id: `c${stamp}a`, role: 'agent', text: '', at: stamp, status: 'running' };
+    v.chat = [...(v.chat ?? []), ask, reply];
+    this.chatting.add(n);
+    await this.save();
+
+    const wt = this.worktreeFor(n);
+    /** @type {AgentRunState} */
+    const run = { cancelled: false };
+    const lines = /** @type {string[]} */ ([]);
+    const say = (/** @type {string} */ line) => {
+      lines.push(line);
+      this.emit('chat', { n, id: reply.id, line });
+      this.emit('log', { target: `v${n}`, lines: [line] });
+    };
+    // Run in the background: the request returns as soon as the turn is queued.
+    (async () => {
+      try {
+        const browser = config.browser && agent.id !== 'demo';
+        const previewUrl = browser ? this.pool.urls(`v${n}`)?.preview : undefined;
+        const briefPath = path.join(this.dir, 'briefs', `v${n}-chat-${stamp}.md`);
+        await mkdir(path.dirname(briefPath), { recursive: true });
+        await writeFile(
+          briefPath,
+          writeChatBrief({ variant: n, agent: agent.id, direction: v.picked || v.direction, appRel: config.appRel, message: text, history: history.slice(-8), previewUrl }),
+        );
+        const inv = agent.invocation({ cwd: wt, briefPath, model: config.model || undefined, permissions: config.permissions, mcp: browser ? { playwright: playwrightMcp() } : undefined });
+        inv.file = await agentFile(agent);
+        for (const [file, body] of Object.entries(inv.files ?? {})) {
+          await mkdir(path.dirname(file), { recursive: true });
+          await writeFile(file, body);
+        }
+        const { text: output } = await this.#runAgent(run, inv, wt, config.agentTimeoutMin, say);
+        const files = await this.gitLock(() => git.commitAll(wt, `variantly: chat on variant ${n}: ${text.slice(0, 60)}`, v.exclude ?? []));
+        reply.text = extractSummary(output) || lines.filter((l) => !l.startsWith('$ ')).slice(-3).join('\n') || 'Done.';
+        reply.files = files;
+        reply.status = 'done';
+        if (files.length) v.files = [...new Set([...(v.files ?? []), ...files])];
+        else reply.text += '\n(No files changed.)';
+      } catch (err) {
+        reply.status = 'failed';
+        reply.text = err instanceof Error ? err.message.split('\n').slice(0, 4).join('\n') : String(err);
+      } finally {
+        this.chatting?.delete(n);
+        await this.save();
+        this.emit('chat', { n, id: reply.id, done: true });
+      }
+    })();
+    return { ok: true, id: reply.id };
   }
 
   /**

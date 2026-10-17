@@ -337,6 +337,51 @@ export const extractSummary = (text) => {
 };
 
 /**
+ * @typedef {object} ChatBriefInput
+ * @property {number} variant
+ * @property {string} agent
+ * @property {string} direction   what this variant became (its picked world or pinned direction)
+ * @property {string} appRel
+ * @property {string} message     what the owner just asked for
+ * @property {{ role: 'user' | 'agent', text: string }[]} history  earlier turns, oldest first
+ * @property {string} [previewUrl]
+ */
+
+/**
+ * A follow-up brief from the chat: a small, focused change to a finished
+ * variant, in the owner's words, with the conversation so far for context.
+ * @param {ChatBriefInput} c
+ */
+export const writeChatBrief = (c) => {
+  const meta = JSON.stringify({ variant: c.variant, appRel: c.appRel, chat: true, message: c.message.slice(0, 400) });
+  const where = c.appRel ? `The app lives in \`${c.appRel}/\` inside this repository.` : 'The app lives at the root of this repository.';
+  const past = c.history.length
+    ? `\n## The conversation so far\n\n${c.history.map((t) => `- **${t.role === 'user' ? 'Owner' : 'You'}:** ${t.text.replace(/\s+/g, ' ').slice(0, 600)}`).join('\n')}\n`
+    : '';
+  const look = c.previewUrl
+    ? `Check the result at ${c.previewUrl} in the browser before you finish.`
+    : 'Verify by reading your code; there is no browser here.';
+  return `<!-- variantly ${meta} -->
+# A change to variant ${c.variant}
+
+You built this variant${c.direction ? ` (${c.direction})` : ''}. Its owner is looking at it and asked for a change.
+${where}
+${past}
+## The owner asks
+
+${c.message.trim()}
+
+## How to work
+
+1. Make exactly this change, in the variant's existing visual language. Keep everything else as it is.
+2. Keep it small and focused. Do not start a new redesign, rename things, or touch unrelated files.
+3. ${look}
+4. If the request is unclear or would break the design, make the most sensible version of it and say what you assumed.
+5. Finish with one or two plain sentences for the owner: what you changed, where. No headings, no lists.
+`;
+};
+
+/**
  * Read the machine header back out of a brief (used by the demo agent).
  * @param {string} brief
  */

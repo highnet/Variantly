@@ -99,6 +99,27 @@ test('generates two variants, serves them, and finalizes the chosen one', async 
   const frame = await fetch(`http://127.0.0.1:${status?.proxyPort}/__variantly/frame.js`);
   assert.equal(frame.status, 200);
 
+  // A chat follow-up runs the agent again in variant 2 and commits its change
+  // to the variant's branch, so keeping the variant keeps the change.
+  assert.equal((await api('POST', 'chat/2', { message: '   ' })).status, 400);
+  assert.equal((await api('POST', 'chat/9', { message: 'bigger header' })).status, 400);
+  const asked = await api('POST', 'chat/2', { message: 'make the headings tighter' });
+  assert.equal(asked.status, 200, JSON.stringify(asked.json));
+  // One turn at a time per variant.
+  assert.equal((await api('POST', 'chat/2', { message: 'and again' })).status, 400);
+  const turns = () => app.session.state.variants[1].chat ?? [];
+  await until(() => turns().at(-1)?.status === 'done');
+  assert.deepEqual(turns().map((t) => t.role), ['user', 'agent']);
+  assert.match(turns()[1].text, /make the headings tighter/);
+  assert.deepEqual(turns()[1].files, ['style.css']);
+  const chatCss = readFileSync(path.join(app.session.worktreeFor(2), 'style.css'), 'utf8');
+  assert.match(chatCss, /variantly demo chat: make the headings tighter/);
+  const wtGit = (/** @type {string[]} */ ...args) => runOk('git', args, { cwd: app.session.worktreeFor(2) });
+  assert.match(await wtGit('log', '-1', '--format=%s'), /chat on variant 2/);
+  assert.equal(await wtGit('status', '--porcelain', '--untracked-files=no'), '');
+  // The shared PRODUCT.md was placed, not built: the chat commit leaves it out too.
+  assert.doesNotMatch(await wtGit('show', '--name-only', '--format=', 'HEAD'), /PRODUCT\.md/);
+
   // The user keeps editing while they compare; finalize must merge, not clobber.
   writeFileSync(path.join(repo, 'about.html'), '<!doctype html><html><head><title>About us</title></head><body>About</body></html>');
 
@@ -108,6 +129,7 @@ test('generates two variants, serves them, and finalizes the chosen one', async 
   assert.equal(existsSync(path.join(repo, 'PRODUCT.md')), false);
   assert.deepEqual(fin.json.conflicts, []);
   assert.match(readFileSync(path.join(repo, 'style.css'), 'utf8'), /Swiss precision/);
+  assert.match(readFileSync(path.join(repo, 'style.css'), 'utf8'), /variantly demo chat/);
   assert.match(readFileSync(path.join(repo, 'about.html'), 'utf8'), /About us/);
   assert.equal(existsSync(app.session.worktreeFor(1)), false);
   assert.equal(existsSync(app.session.worktreeFor(2)), false);

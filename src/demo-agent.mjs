@@ -36,6 +36,20 @@ if (!meta) {
   process.exit(2);
 }
 const look = LOOKS[(meta.variant - 1) % LOOKS.length];
+// A chat follow-up: make a small, visible, harmless change and answer in one line.
+if (meta.chat) {
+  const appRoot = path.resolve(process.cwd(), meta.appRel || '.');
+  const sheet = ['style.css', 'styles.css', 'css/style.css', 'app/globals.css', 'src/index.css'].map((r) => path.join(appRoot, r)).find((p) => existsSync(p));
+  const note = String(meta.message ?? '').replace(/\*\//g, '').slice(0, 120);
+  console.log('→ Read the request');
+  await new Promise((r) => setTimeout(r, Number(process.env.VARIANTLY_DEMO_DELAY ?? 10_000) / 4));
+  if (sheet) {
+    appendFileSync(sheet, `\n/* variantly demo chat: ${note} */\nh1, h2 { letter-spacing: -0.03em !important; }\n`);
+    console.log(`→ Edit ${path.relative(appRoot, sheet)}`);
+  }
+  console.log(`SUMMARY: Demo change for "${note}": tightened the heading letter-spacing${sheet ? ` in ${path.basename(sheet)}` : ''}. A real agent would make the change you asked for.`);
+  process.exit(0);
+}
 const appDir = path.resolve(process.cwd(), meta.appRel || '.');
 console.log(`Demo agent: variant ${meta.variant} → ${look.name}`);
 // Long enough to watch the progress view (about 10s per variant); tests set

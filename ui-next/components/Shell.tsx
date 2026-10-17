@@ -32,6 +32,7 @@ const KEYS: [string, string][] = [
   ['s', 'cycle slider · single · side by side'],
   ['m', 'switch desktop · phone'],
   ['i', 'show or hide details'],
+  ['c', 'chat with the agent about this variant'],
   ['[ ]', 'nudge the slider'],
   ['Esc', 'close panels'],
 ];

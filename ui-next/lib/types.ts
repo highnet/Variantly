@@ -28,6 +28,17 @@ export type Variant = {
   audit?: Audit;
   auditState?: 'running' | 'failed' | 'done';
   auditError?: string;
+  chat?: ChatTurn[];
+};
+
+/** One turn of a variant's chat with the agent. */
+export type ChatTurn = {
+  id: string;
+  role: 'user' | 'agent';
+  text: string;
+  at: number;
+  status?: 'running' | 'done' | 'failed';
+  files?: string[];
 };
 
 export type ServerState = { id: string; state: 'ready' | 'starting' | 'sleeping' | 'failed' | string; proxyPort: number; log?: string[]; error?: string };

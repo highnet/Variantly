@@ -90,6 +90,7 @@ export const startApp = async (opts) => {
   session.on('state', (s) => send('state', s));
   session.on('server', (s) => send('server', s));
   session.on('log', (l) => send('log', l));
+  session.on('chat', (c) => send('chat', c));
   session.on('error', (e) => send('problem', { message: String(e?.message ?? e) }));
 
   let port = opts.port;
@@ -164,6 +165,8 @@ export const startApp = async (opts) => {
         return session.retry(n);
       case 'POST cancel':
         return session.cancel(n);
+      case 'POST chat':
+        return session.chat(n, String(body.message ?? '').slice(0, 4000));
       case 'POST ensure':
         session.pool.ensure(arg).catch(() => {});
         return session.pool.status(arg);

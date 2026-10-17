@@ -26,6 +26,9 @@ export type UiState = {
   applying: number | null;
   sitewide: boolean;
   infoOpen: boolean;
+  chatOpen: boolean;
+  /** Agent output streaming into chat turns that are still running, by turn id. */
+  chatLive: Record<string, string[]>;
   forceBoard: boolean;
   wantCompare: boolean;
   openRow: number | null;
@@ -51,6 +54,8 @@ let state: UiState = {
   applying: null,
   sitewide: true,
   infoOpen: false,
+  chatOpen: false,
+  chatLive: {},
   forceBoard: false,
   wantCompare: false,
   openRow: null,
