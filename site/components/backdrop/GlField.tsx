@@ -12,85 +12,39 @@ import { CONCEPT_LOADERS, type ConceptId } from '@/concepts';
 import type { ConceptScene } from '@/concepts/types';
 import { perfTier } from '@/lib/perfTier';
 
-type GlFieldProps = {
-  concept: ConceptId;
-  theme: 'light' | 'dark';
-  grain: number;
-  chroma: number;
-};
+type GlFieldProps = { concept: ConceptId; theme: 'light' | 'dark'; grain: number };
 
 /*
- * Film grain on what the scene drew, not the whole screen. After the scene
- * renders, the frame is copied into a texture and redrawn through this pass:
- * each pixel moves by a grain value weighted to its luminance (strongest in
- * midtones, gentle in deep darks and bright highlights), with a little
- * independent per-channel noise for chroma. Colour is un-premultiplied first
- * and alpha kept, so empty (transparent) areas stay clean and soft edges fade
- * the grain with them. The noise is keyed to screen pixels only (no clock),
- * so it never shimmers; on a canvas drawn at ~half resolution each grain is
- * about two CSS pixels across, which reads as a coarse film grain.
+ * Film grain applied to what the scene drew, not the whole screen: the pass
+ * scales each pixel by (1 + noise), so empty (transparent) and dark areas stay
+ * clean and only the shapes pick up texture. Alpha is left untouched.
  */
-const grainPass = (amount: number, chroma: number) => {
-  let frame = new THREE.FramebufferTexture(1, 1);
-  const res = new THREE.Vector2(1, 1);
+const grainPass = (amount: number) => {
   const mesh = new THREE.Mesh(
     new THREE.PlaneGeometry(2, 2),
     new THREE.ShaderMaterial({
-      uniforms: {
-        tFrame: { value: frame },
-        uRes: { value: res },
-        uAmount: { value: amount },
-        uChroma: { value: chroma },
-      },
+      uniforms: { uAmount: { value: amount } },
       vertexShader: 'void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }',
       fragmentShader: `
-        uniform sampler2D tFrame;
-        uniform vec2 uRes;
         uniform float uAmount;
-        uniform float uChroma;
         float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-        void main() {
-          vec4 c = texture2D(tFrame, gl_FragCoord.xy / uRes);
-          if (c.a < 0.004) { gl_FragColor = c; return; }
-          vec3 rgb = c.rgb / c.a;
-          float l = dot(rgb, vec3(0.2126, 0.7152, 0.0722));
-          float w = (0.3 + 2.8 * l * (1.0 - l)) * smoothstep(0.0, 0.18, l + 0.04);
-          vec2 p = floor(gl_FragCoord.xy);
-          // Two hashes summed: a triangular (film-like) distribution in -1..1.
-          float n = hash(p) + hash(p + 41.7) - 1.0;
-          vec3 ch = vec3(hash(p + 7.3), hash(p + 19.1), hash(p + 29.9)) - 0.5;
-          rgb += uAmount * w * (n + uChroma * ch);
-          gl_FragColor = vec4(clamp(rgb, 0.0, 1.0) * c.a, c.a);
-        }
+        void main() { gl_FragColor = vec4(vec3(hash(floor(gl_FragCoord.xy)) * uAmount), 0.0); }
       `,
       depthTest: false,
       depthWrite: false,
-      blending: THREE.NoBlending,
+      transparent: true,
+      blending: THREE.CustomBlending,
+      blendEquation: THREE.AddEquation,
+      blendSrc: THREE.DstColorFactor,
+      blendDst: THREE.OneFactor,
+      blendSrcAlpha: THREE.ZeroFactor,
+      blendDstAlpha: THREE.OneFactor,
     }),
   );
   mesh.frustumCulled = false;
   const scene = new THREE.Scene();
   scene.add(mesh);
-  const camera = new THREE.Camera();
-  const size = new THREE.Vector2();
-  const material = mesh.material;
-  return {
-    scene,
-    // Re-made at the drawing buffer's size whenever the canvas resizes.
-    fit: (renderer: THREE.WebGLRenderer) => {
-      renderer.getDrawingBufferSize(size);
-      if (size.equals(res)) return;
-      res.copy(size);
-      frame.dispose();
-      frame = new THREE.FramebufferTexture(size.x, size.y);
-      material.uniforms.tFrame.value = frame;
-    },
-    apply: (renderer: THREE.WebGLRenderer) => {
-      renderer.copyFramebufferToTexture(frame);
-      renderer.render(scene, camera);
-    },
-    dispose: () => frame.dispose(),
-  };
+  return { scene, camera: new THREE.Camera() };
 };
 
 /*
@@ -100,7 +54,7 @@ const grainPass = (amount: number, chroma: number) => {
  * frame; elsewhere it runs at ~24fps only while the hero shows, the tab is
  * visible and the title is not busy animating ('vy:gl-busy').
  */
-export const GlField = ({ concept, theme, grain, chroma }: GlFieldProps) => {
+export const GlField = ({ concept, theme, grain }: GlFieldProps) => {
   const host = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -112,7 +66,7 @@ export const GlField = ({ concept, theme, grain, chroma }: GlFieldProps) => {
     void CONCEPT_LOADERS[concept]
       .scene()
       .then(({ scene }) => {
-        if (!dead) stop = run(el, scene, scene.colors[theme], seek, grain, chroma) ?? null;
+        if (!dead) stop = run(el, scene, scene.colors[theme], seek, grain) ?? null;
       })
       .catch(() => {
         markLoaded('scene');
@@ -122,7 +76,7 @@ export const GlField = ({ concept, theme, grain, chroma }: GlFieldProps) => {
       dead = true;
       stop?.();
     };
-  }, [concept, theme, grain, chroma]);
+  }, [concept, theme, grain]);
 
   return <div ref={host} className="absolute inset-0" aria-hidden="true" />;
 };
@@ -133,7 +87,6 @@ const run = (
   colors: string[],
   seek: number | null,
   grain: number,
-  chroma: number,
 ): (() => void) | undefined => {
   // A soft full-screen wash: rendered at ~half resolution, which the blur
   // and grain hide completely.
@@ -161,7 +114,7 @@ const run = (
   el.appendChild(canvas);
   const scene = new THREE.Scene();
   const { camera, update } = def.build(scene, colors);
-  const film = grain > 0 ? grainPass(grain, chroma) : null;
+  const film = grain > 0 ? grainPass(grain) : null;
 
   // Phones get one painted frame of the scene: a moving full-screen WebGL
   // layer behind scrolling content is the costliest thing on the page there.
@@ -172,7 +125,7 @@ const run = (
     renderer.render(scene, camera);
     if (film) {
       renderer.autoClear = false;
-      film.apply(renderer);
+      renderer.render(film.scene, film.camera);
       renderer.autoClear = true;
     }
   };
@@ -180,7 +133,6 @@ const run = (
   const size = () => {
     const { clientWidth: w, clientHeight: h } = el;
     renderer.setSize(w, h, false);
-    film?.fit(renderer);
     if (camera instanceof THREE.PerspectiveCamera) camera.aspect = w / h;
     if (camera instanceof THREE.OrthographicCamera) {
       const half = (5 * w) / h;
@@ -270,7 +222,6 @@ const run = (
         });
       }),
     );
-    film?.dispose();
     renderer.dispose();
     el.removeChild(canvas);
   };

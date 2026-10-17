@@ -996,23 +996,10 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 /* 8 · the switcher's sliding pill */
 .vy-switcher-pill { background: var(--ink); }
 .vy-switcher [aria-pressed='true'] { color: var(--surface); }
-/* 10 · parallax: the title drifts through the hero; the backdrop keeps going
-   for the whole page. --px-p (0 → 1, set by Delight on .vy-scene/.vy-blobs,
-   desktop pointers only) maps scroll to layered depth: the blurred scene is
-   farthest and sinks a little, the shapes rise faster the nearer they are
-   (float-0 is the big foreground piece). Full-bleed textures stay put. The
-   scene is overscaled by more than its travel so no edge ever shows; the
-   shapes are free-standing, so leaving the top is just them passing by. */
+/* 10 · hero parallax: scene, shapes and title drift at different speeds */
+:root:not([data-scrolled]) .vy-scene { translate: 0 calc(var(--px-y, 0px) * 0.35); }
+:root:not([data-scrolled]) .vy-blobs { translate: 0 calc(var(--px-y, 0px) * -0.15); }
 .vy-title { translate: 0 calc(var(--px-y, 0px) * 0.18); }
-:root.vy-parallax .vy-scene {
-  scale: 1.14;
-  translate: 0 calc(var(--px-p, 0) * 6vh);
-}
-:root.vy-parallax .vy-blobs .vy-art-float-0 { translate: 0 calc(var(--px-p, 0) * -26vh); }
-:root.vy-parallax .vy-blobs .vy-art-float-1 { translate: 0 calc(var(--px-p, 0) * -16vh); }
-:root.vy-parallax .vy-blobs .vy-art-float-2 { translate: 0 calc(var(--px-p, 0) * -9vh); }
-:root.vy-parallax .vy-blobs .vy-art-radar { translate: 0 calc(var(--px-p, 0) * -10vh); }
-:root[data-perf='low'] .vy-backdrop * { translate: none !important; }
 /* 5 · "How it works" progress line and steps lighting up */
 .vy-steps { position: relative; }
 .vy-steps::before {
@@ -1089,11 +1076,11 @@ header.vy-header-glass {
 }
 @keyframes vy-sheen { to { transform: translateX(120%); } }
 @media (prefers-reduced-motion: reduce) {
-  .vy-title, .vy-scene, .vy-blobs, .vy-blobs * { translate: none !important; }
+  .vy-title, .vy-scene, .vy-blobs { translate: none !important; }
   .vy-steps > li { opacity: 1; }
   .vy-steps > li .vy-step-num, .vy-sheen::after { animation: none !important; }
 }
-:root[data-seek] .vy-title, :root[data-seek] .vy-scene, :root[data-seek] .vy-blobs, :root[data-seek] .vy-blobs * { translate: none !important; }
+:root[data-seek] .vy-title, :root[data-seek] .vy-scene, :root[data-seek] .vy-blobs { translate: none !important; }
 :root[data-seek] .vy-steps > li,
 :root[data-motion='calm'] .vy-steps > li { opacity: 1; --fill: 1; }
 
