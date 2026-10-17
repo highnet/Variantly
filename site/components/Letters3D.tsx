@@ -180,7 +180,9 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
     // Phones and the low power tier (html[data-perf='low']) animate at 2x at
     // most, 30fps, with the shadow map redrawn only when a letter steps,
     // then repaint once at full density, shadow and all, when the word settles.
-    const fullRatio = Math.min(devicePixelRatio || 1, 3);
+    const dpr = () => Math.min(devicePixelRatio || 1, 3);
+    // Re-read on resize: browser zoom or a move to another screen changes it.
+    let fullRatio = dpr();
     renderer.setPixelRatio(fullRatio);
     const light = () => seek === null && (phone || lowRef.current);
     const ratio = (r: number) => {
@@ -258,14 +260,33 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
     });
     io.observe(el.parentElement ?? el);
     document.addEventListener('visibilitychange', vis);
-    // A resize moves the 2D word and clears the canvas: follow it, repaint once.
+    // A resize moves the 2D word and clears the canvas: follow it and repaint
+    // in the same frame (no blank, no rebuild, the reveal carries on). The
+    // card can change size without the window (and the density without the
+    // size), so both are watched; an unchanged size and density is a no-op.
+    let laidOut = '';
     const resize = () => {
+      fullRatio = dpr();
+      if (laidOut === `${el.clientWidth}x${el.clientHeight}@${fullRatio}`) return;
       relayout();
       paint();
     };
     addEventListener('resize', resize);
+    const ro = new ResizeObserver(resize);
+    ro.observe(el);
+    // A move to a screen of another density fires no resize: watch for it.
+    let density: MediaQueryList | null = null;
+    const onDensity = () => {
+      density?.removeEventListener('change', onDensity);
+      density = matchMedia(`(resolution: ${devicePixelRatio}dppx)`);
+      density.addEventListener('change', onDensity);
+      resize();
+    };
+    onDensity();
     cleanups.push(
       () => io.disconnect(),
+      () => ro.disconnect(),
+      () => density?.removeEventListener('change', onDensity),
       () => document.removeEventListener('visibilitychange', vis),
       () => removeEventListener('resize', resize),
       () => probes.forEach(({ p }) => p.remove()),
@@ -369,6 +390,7 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
       const layout = () => {
         const W = el.clientWidth;
         const H = el.clientHeight;
+        laidOut = `${W}x${H}@${fullRatio}`;
         renderer.setSize(W, H);
         fontPx = parseFloat(getComputedStyle(word).fontSize) || 16;
         unit = fontPx / EM;

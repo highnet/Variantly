@@ -103,7 +103,6 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
 
   useEffect(() => {
     if (seekTime() !== null || calmMotion()) return;
-    document.documentElement.removeAttribute('data-intro');
     // Where the 3D word can load, it plays the reveal: the HTML word holds
     // still on its final faces as the poster it fades in over, so the
     // flicker never changes material halfway through.
@@ -365,10 +364,9 @@ export const VariantTitle = () => {
   return (
     <div
       data-hero-title
-      className={cn(
-        'vy-card border-slate-line relative grid place-items-center overflow-hidden border-b px-4 py-14 sm:py-20',
-        want3d && 'min-h-[clamp(180px,34vw,460px)]',
-      )}
+      // Sized for the 3D word from first paint, so the hero never grows when
+      // it takes over.
+      className="vy-card border-slate-line relative grid min-h-[clamp(180px,34vw,460px)] place-items-center overflow-hidden border-b px-4 py-14 sm:py-20"
     >
       <div
         ref={word}
