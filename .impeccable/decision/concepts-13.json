@@ -1,0 +1,600 @@
+{
+  "title": "variantly — 13 more concepts (h–t)",
+  "seed": "seed:1c22451124ce250d",
+  "question": "Which of the 13 new worlds join the switcher?",
+  "declined": [
+    {
+      "catalogId": "posters-covers-sleeves-torn-flyer-photocopy-wall",
+      "verdict": "declined",
+      "reason": "duplicates f Cut & Paste",
+      "kept": "layer history as state: concepts already viewed stay visible as a record"
+    }
+  ],
+  "switcher": "Twenty swatches overflow the current row of 7 chips, so the switcher should become a two-level picker grouped into families (Print & Paper: b, d, f, m, o; Material & Craft: a, n, p, r, t; Screen & Signal: c, h, i, j; Structure & Space: e, k, l, q, s; plus g). On desktop: a compact trigger showing the current concept's swatch, letter and name. It opens a popover grid, 4-5 columns with one family per column. Each tile is a 3-colour chip plus the name in that concept's own display face, so you preview the world before you click. Keep keyboard order a to t, roving arrow-key focus, and [ / ] (and the existing shortcuts) to step through all 20 without opening the grid. On mobile: the trigger becomes a bottom sheet with a horizontal snap-scroll strip of large tiles under family tabs, plus prev/next buttons at 44px or more. Persist the choice, deep-link with ?v=<id>, and offer a 'shuffle' tile so 20 concepts read as abundance, not a long menu.",
+  "options": [
+    {
+      "id": "h",
+      "label": "Pixel Metropolis",
+      "kind": "challenger",
+      "kicker": "THE ROLL · CHALLENGER",
+      "lineage": "eBoy pixoramas: isometric RGB pixel cities on one hard grid",
+      "thesis": "Every variant is a building in one crisp isometric pixel city; the site is a block you can zoom into.",
+      "palette": [
+        "#f4f1e8",
+        "#16161d",
+        "#ff2e4c",
+        "#1fb6ff",
+        "#ffd23f"
+      ],
+      "paletteDark": [
+        "#0d0d1a",
+        "#f4f1e8",
+        "#ff2e4c",
+        "#1fb6ff",
+        "#7cff4f"
+      ],
+      "materials": [
+        "integer-scaled pixel blocks, zero anti-aliasing",
+        "deliberate 2-colour dithering",
+        "isometric 2:1 tile grid"
+      ],
+      "typography": "Silkscreen for UI labels, Pixelify Sans for the title; title built as stacked isometric pixel blocks",
+      "displayFonts": [
+        "Pixelify Sans",
+        "Silkscreen"
+      ],
+      "background": "isometric tile field (repeating-linear-gradient diamonds) with pixel cars sliding along 2:1 streets in steps(); 24s loop = one street length",
+      "letterLook": "voxel bricks: flat-shaded MeshLambert cubes per letter-pixel, no smoothing, primary RGB faces",
+      "backdropScene": "InstancedMesh voxel city block under an orthographic iso camera; cranes and blinking windows stepping on a 24s cycle",
+      "motion": "stepped, frame-quantised (steps(n)), never eased; zoom in whole multiples",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Turns into retro-game nostalgia costume ('level up' copy) instead of a city grammar; pixel text is unreadable below 12px.",
+      "raised": [
+        {
+          "from": "challenger-datamatics",
+          "raise": "Only integer scales and one grid unit for everything, chrome included; no half pixels."
+        },
+        {
+          "from": "own",
+          "raise": "One hidden joke per block at deeper zoom, never in body copy."
+        }
+      ],
+      "catalogId": "eboy-pixorama-metropolis"
+    },
+    {
+      "id": "i",
+      "label": "Data Sublime",
+      "kind": "challenger",
+      "kicker": "THE ROLL · CHALLENGER",
+      "lineage": "Ryoji Ikeda datamatics: barcode fields, sine lattices, pure black and white",
+      "thesis": "Variants as frequencies: a strobing field of hairline bars where the design is the signal and everything else is data.",
+      "palette": [
+        "#ffffff",
+        "#000000",
+        "#000000",
+        "#ffffff"
+      ],
+      "paletteDark": [
+        "#000000",
+        "#ffffff",
+        "#ffffff",
+        "#000000"
+      ],
+      "materials": [
+        "hairline barcode bars",
+        "monospace numerics at data density",
+        "full-frame inversion"
+      ],
+      "typography": "Space Mono / JetBrains Mono only; title as a barcode wordmark: 'variantly' above its own bar encoding",
+      "displayFonts": [
+        "Space Mono",
+        "JetBrains Mono"
+      ],
+      "background": "vertical repeating-linear-gradient bar fields at three widths drifting at coprime speeds whose LCM is 24s; one SVG sine path scrolling via stroke-dashoffset",
+      "letterLook": "binary: unlit MeshBasic pure white/black faces with hairline EdgesGeometry, no shading",
+      "backdropScene": "LineSegments lattice forming a sine surface plus a point-cloud barcode wall; rare 1-frame invert",
+      "motion": "strobe and snap; 1-frame cuts, otherwise dead still",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Collapses into TVA Terminal if any colour creeps in; strobing must respect reduced-motion and stay under 3 flashes/s.",
+      "raised": [
+        {
+          "from": "challenger-instruments",
+          "raise": "Every number on screen is a real value (variant count, port, ms), never decorative noise."
+        }
+      ],
+      "catalogId": "ikeda-datamatics"
+    },
+    {
+      "id": "j",
+      "label": "Night Cockpit",
+      "kind": "challenger",
+      "kicker": "THE ROLL · CHALLENGER",
+      "lineage": "the six-pack of a light aircraft at night: luminous gauges in a black panel",
+      "thesis": "Your variants are six instruments you trust through cloud; one glowing needle tells you which to keep.",
+      "palette": [
+        "#e9e6df",
+        "#1d1f22",
+        "#ff8a1f",
+        "#9fd8c9",
+        "#5a5f66"
+      ],
+      "paletteDark": [
+        "#07090b",
+        "#d9f7ee",
+        "#ff8a1f",
+        "#3fe0b5",
+        "#2a2f35"
+      ],
+      "materials": [
+        "matte black crackle panel",
+        "radium-lume numerals",
+        "brushed bezels with screw heads"
+      ],
+      "typography": "B612 / B612 Mono (cockpit faces) for UI, title in Saira Stencil One with lume fill",
+      "displayFonts": [
+        "Saira Stencil One",
+        "B612 Mono"
+      ],
+      "background": "grid of circular gauge faces (conic-gradient tick rings) with needles on 24s looped keyframes; attitude ball tilting",
+      "letterLook": "lume and bezel: emissive mint numerals on satin black MeshStandard body with a thin metallic bevel",
+      "backdropScene": "attitude-indicator sphere (sky/ground halves) gently banking inside a ring of tick marks",
+      "motion": "damped, overshooting needles (spring); slow banking",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Skeuomorphic dashboard cliche that reads as a fake analytics panel.",
+      "raised": [
+        {
+          "from": "challenger-tensegrity",
+          "raise": "Each needle is honest: it points at real state (current variant, load progress)."
+        }
+      ],
+      "catalogId": "signals-instruments-night-flight-six-pack"
+    },
+    {
+      "id": "k",
+      "label": "Tension Rig",
+      "kind": "challenger",
+      "kicker": "THE ROLL · CHALLENGER",
+      "lineage": "Kenneth Snelson tensegrity: carbon rods held by red cord",
+      "thesis": "Opposed forces held in balance: the page is a rigid structure that visibly breathes, the way variants pull against the original.",
+      "palette": [
+        "#efeeea",
+        "#141414",
+        "#e02a1b",
+        "#8a8a86"
+      ],
+      "paletteDark": [
+        "#121212",
+        "#ededea",
+        "#ff3b2a",
+        "#4a4a48"
+      ],
+      "materials": [
+        "matte carbon rods",
+        "taut red cord",
+        "machined aluminium end caps"
+      ],
+      "typography": "Big Shoulders Display for the title (letters as rods with cord crossings), Archivo Narrow for UI",
+      "displayFonts": [
+        "Big Shoulders Display",
+        "Archivo Narrow"
+      ],
+      "background": "SVG rods and red cords forming a tensegrity prism, nodes moving on a closed 24s breathing path",
+      "letterLook": "strut and cord: anodised black metal rods with red TubeGeometry wrapped between glyph nodes",
+      "backdropScene": "3-strut tensegrity column (CylinderGeometry + red TubeGeometry) that inhales and lengthens on a sine",
+      "motion": "slow inhale/exhale, tension-held; nothing ever falls",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Reads as a generic architecture-firm diagram; red on grey can look corporate.",
+      "raised": [
+        {
+          "from": "challenger-pixel",
+          "raise": "One structural unit (rod length) scales all spacing, the way the pixel does."
+        }
+      ],
+      "catalogId": "kinetic-sculpture-automata-tensegrity-breathing-column"
+    },
+    {
+      "id": "l",
+      "label": "Event Horizon",
+      "kind": "challenger",
+      "kicker": "THE ROLL · CHALLENGER",
+      "lineage": "accretion-disk imagery (EHT image, Interstellar's Gargantua)",
+      "thesis": "Choosing is a threshold: variants orbit a dark centre and the one you keep crosses the horizon.",
+      "palette": [
+        "#f6efe4",
+        "#1a120b",
+        "#ff9a3c",
+        "#b33a1a",
+        "#ffe2b0"
+      ],
+      "paletteDark": [
+        "#000000",
+        "#ffe7c4",
+        "#ff9a3c",
+        "#c2410c",
+        "#3b1d0b"
+      ],
+      "materials": [
+        "incandescent plasma rings",
+        "lensed photon ring",
+        "absolute black void"
+      ],
+      "typography": "Unbounded for the title, warped around the ring on a curved text path; Syne for UI",
+      "displayFonts": [
+        "Unbounded",
+        "Syne"
+      ],
+      "background": "concentric conic + radial gradient rings rotating at differing speeds (24s LCM) around a pure black disc, with a skewed duplicate ring for the lensed arc",
+      "letterLook": "plasma: emissive orange-gold MeshPhysical with sheen, fading to black at glyph cores",
+      "backdropScene": "RingGeometry disk with additive orbiting particles around a black sphere, top arc tilted for lensing",
+      "motion": "slow orbit, time-dilated: outer rings fast, inner slow",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Space wallpaper; the glow drifts into AI-startup purple-orange cliche.",
+      "raised": [
+        {
+          "from": "challenger-datamatics",
+          "raise": "Total commitment to black: the void is true #000 and takes real area."
+        }
+      ],
+      "catalogId": "galaxies-nebulae-deep-time-accretion-disk-threshold"
+    },
+    {
+      "id": "m",
+      "label": "Cyanotype Plan",
+      "kind": "grounded",
+      "kicker": "GROUNDED",
+      "lineage": "sun-printed cyanotypes and architects' diazo blueprints",
+      "thesis": "Each variant is a sun-printed plan of your page: white line on Prussian blue, exposed, washed and pinned.",
+      "palette": [
+        "#e8eef3",
+        "#0f2c5c",
+        "#1d4e9e",
+        "#f7f4ea",
+        "#c58b2a"
+      ],
+      "paletteDark": [
+        "#0b2149",
+        "#e8f0fb",
+        "#7fb2ff",
+        "#13306a",
+        "#e0b25a"
+      ],
+      "materials": [
+        "Prussian-blue cotton rag",
+        "white chalk linework",
+        "brass drafting pins"
+      ],
+      "typography": "Rubik Mono One for the title with construction lines and dimension arrows; IBM Plex Mono for labels",
+      "displayFonts": [
+        "Rubik Mono One",
+        "IBM Plex Mono"
+      ],
+      "background": "drafting grid (repeating-linear-gradient) with dimension lines drawing on via stroke-dashoffset and a T-square sweep; 24s",
+      "letterLook": "blueprint enamel: deep blue matte with white emissive edge lines (wireframe overlay)",
+      "backdropScene": "white wireframe architectural massing (EdgesGeometry) slowly orbiting in blue fog",
+      "motion": "drafted: lines draw, then hold; measured easing",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Generic 'blueprint' tech trope; white-on-blue body copy is tiring to read.",
+      "raised": [
+        {
+          "from": "challenger-instruments",
+          "raise": "Annotations are real: dimensions label actual layout widths."
+        }
+      ]
+    },
+    {
+      "id": "n",
+      "label": "Delft Tile",
+      "kind": "grounded",
+      "kicker": "GROUNDED",
+      "lineage": "Delftware tin-glaze tiles and Portuguese azulejos",
+      "thesis": "Variants as hand-painted tiles: a wall of cobalt-on-white squares, each telling one version of the story.",
+      "palette": [
+        "#f7f5ef",
+        "#1b2a6b",
+        "#2f4fb5",
+        "#d9dde9",
+        "#a26b2c"
+      ],
+      "paletteDark": [
+        "#0e1530",
+        "#eef1fb",
+        "#6f8ff0",
+        "#1e2a5c",
+        "#c8955a"
+      ],
+      "materials": [
+        "crackled tin glaze",
+        "cobalt brushwork",
+        "grout lines"
+      ],
+      "typography": "Fraunces (soft, wonky) for the title in brushed cobalt with corner-ornament frames; Cormorant for UI",
+      "displayFonts": [
+        "Fraunces",
+        "Cormorant"
+      ],
+      "background": "tile grid whose corner ornaments (radial-gradient quarter circles) join into continuous motifs; a tile-flip wave crosses the wall in 24s",
+      "letterLook": "glazed ceramic: clearcoat white MeshPhysical with a cobalt-painted face map and slight wobble normals",
+      "backdropScene": "curved wall of tiles flipping in a travelling wave",
+      "motion": "gentle, rhythmic tile flips",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Souvenir-shop kitsch; drifts toward Soft Clay if the glaze is too soft.",
+      "raised": [
+        {
+          "from": "challenger-pixel",
+          "raise": "The tile is the only grid unit; everything snaps to it."
+        }
+      ]
+    },
+    {
+      "id": "o",
+      "label": "Herbarium Sheet",
+      "kind": "grounded",
+      "kicker": "GROUNDED",
+      "lineage": "Victorian herbarium sheets: pressed specimens, gummed tape, archival labels",
+      "thesis": "Each variant is a pressed specimen taped to acid-free card with its label: collected, named, compared.",
+      "palette": [
+        "#f1ece0",
+        "#2b2a22",
+        "#5c7a3a",
+        "#b5523b",
+        "#d8cfb8"
+      ],
+      "paletteDark": [
+        "#1a1c16",
+        "#ece6d6",
+        "#9cbf6e",
+        "#e07a5f",
+        "#33362b"
+      ],
+      "materials": [
+        "acid-free cotton card",
+        "gummed linen tape",
+        "foxing spots",
+        "pressed leaf silhouettes"
+      ],
+      "typography": "Playfair Display italic for the title with a typed accession label in Courier Prime",
+      "displayFonts": [
+        "Playfair Display",
+        "Courier Prime"
+      ],
+      "background": "pressed-leaf silhouettes (clip-path shapes) swaying slightly, tape strips, and a slow light sweep across the card; 24s",
+      "letterLook": "pressed paper: rough MeshStandard card with leaf-vein relief and taped corners",
+      "backdropScene": "a few flat leaf planes drifting and turning as if under a lifting glass",
+      "motion": "quiet, slow drift; long holds",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Wedding-stationery / cottagecore costume; may be too quiet for a tool site.",
+      "raised": [
+        {
+          "from": "challenger-datamatics",
+          "raise": "Labels carry real fields (variant id, date, model) in strict tabular form."
+        }
+      ]
+    },
+    {
+      "id": "p",
+      "label": "Urushi Lacquer",
+      "kind": "grounded",
+      "kicker": "GROUNDED",
+      "lineage": "Japanese urushi lacquerware with maki-e gold",
+      "thesis": "Deep layered black and vermilion lacquer: the variant you keep is polished until it reflects you.",
+      "palette": [
+        "#f3ede4",
+        "#1a0f0c",
+        "#b4231a",
+        "#c9a24a",
+        "#3b1a14"
+      ],
+      "paletteDark": [
+        "#0a0606",
+        "#f2e6d4",
+        "#d0352a",
+        "#d8b25a",
+        "#2a1210"
+      ],
+      "materials": [
+        "mirror-polished black lacquer",
+        "vermilion layer showing through wear",
+        "sprinkled gold maki-e"
+      ],
+      "typography": "Shippori Mincho B1 for the title with a gold-dust stroke; Zen Kaku Gothic New for UI",
+      "displayFonts": [
+        "Shippori Mincho B1",
+        "Zen Kaku Gothic New"
+      ],
+      "background": "layered vermilion/black bands with a slow specular streak (linear-gradient sweep) and drifting gold flecks; 24s",
+      "letterLook": "lacquer: MeshPhysical clearcoat 1, roughness 0.05, black and vermilion, gold flake sparkle",
+      "backdropScene": "a lacquer bowl reflecting an environment map, with a slow highlight orbit",
+      "motion": "slow, weighty, reflective glints",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Orientalist pastiche; must avoid fake-Japanese copy and stay led by the material.",
+      "raised": [
+        {
+          "from": "challenger-tensegrity",
+          "raise": "Restraint of means: two colours plus gold, nothing else."
+        }
+      ]
+    },
+    {
+      "id": "q",
+      "label": "Transit Wayfinding",
+      "kind": "grounded",
+      "kicker": "GROUNDED",
+      "lineage": "Vignelli's NYC subway diagram and Kinneir/Calvert station signage",
+      "thesis": "Every variant is a line on one map; you ride to a station and keep the stop you like.",
+      "palette": [
+        "#ffffff",
+        "#111111",
+        "#ee352e",
+        "#0039a6",
+        "#00933c",
+        "#fccc0a"
+      ],
+      "paletteDark": [
+        "#121314",
+        "#f5f5f5",
+        "#ff4b42",
+        "#4a7dff",
+        "#22c55e",
+        "#fccc0a"
+      ],
+      "materials": [
+        "enamel signage panels",
+        "route bullets",
+        "45-degree line geometry"
+      ],
+      "typography": "Overpass (Highway Gothic heir) for the title on a black sign band with coloured route bullets; Inter Tight for UI",
+      "displayFonts": [
+        "Overpass",
+        "Inter Tight"
+      ],
+      "background": "45/90-degree coloured lines (SVG paths) with train dots running along them via offset-path; 24s round trip",
+      "letterLook": "enamel sign: glossy painted steel, white vinyl-cut letters, coloured disc bullets",
+      "backdropScene": "3D tube map: coloured TubeGeometry lines with small cars moving along the curves",
+      "motion": "punctual, linear, constant speed",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Overlaps Bauhaus primaries; a generic 'map metaphor'.",
+      "raised": [
+        {
+          "from": "challenger-instruments",
+          "raise": "Stations are real: each stop is an actual variant or step."
+        }
+      ]
+    },
+    {
+      "id": "r",
+      "label": "Stained Glass",
+      "kind": "grounded",
+      "kicker": "GROUNDED",
+      "lineage": "Gothic and Tiffany leaded glass",
+      "thesis": "Variants as panes in one window; light passes through the one you choose.",
+      "palette": [
+        "#f5f1ea",
+        "#1b1a1f",
+        "#1f5fbf",
+        "#c0262d",
+        "#e6a81b",
+        "#2e8b57"
+      ],
+      "paletteDark": [
+        "#0c0b10",
+        "#efeaf7",
+        "#4f8ff0",
+        "#ff4a52",
+        "#ffc23a",
+        "#3fbf7f"
+      ],
+      "materials": [
+        "leaded came lines",
+        "seeded cathedral glass",
+        "sunlight caustics"
+      ],
+      "typography": "Cinzel Decorative for the title as leaded glyphs (thick black came around jewel fills); Alegreya for UI",
+      "displayFonts": [
+        "Cinzel Decorative",
+        "Alegreya"
+      ],
+      "background": "field of clip-path polygon panes; a light band sweeps across, changing pane brightness; 24s",
+      "letterLook": "glass: MeshPhysical transmission 0.9 with thickness, jewel tints and a black came outline",
+      "backdropScene": "rotating rose-window disc of transparent coloured shards with a moving light",
+      "motion": "slow luminous sweep, like the sun moving",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Ecclesiastical heaviness; transmission materials cost a lot of GPU.",
+      "raised": [
+        {
+          "from": "challenger-pixel",
+          "raise": "Came lines share one stroke width everywhere, UI borders included."
+        }
+      ]
+    },
+    {
+      "id": "s",
+      "label": "Survey Contour",
+      "kind": "grounded",
+      "kicker": "GROUNDED",
+      "lineage": "Ordnance Survey / USGS topographic maps",
+      "thesis": "Variants as terrain: contour lines show how far each one climbs from the original.",
+      "palette": [
+        "#f4efe2",
+        "#2a2620",
+        "#b0602c",
+        "#3a7d5c",
+        "#4f86b8"
+      ],
+      "paletteDark": [
+        "#13161a",
+        "#ebe4d2",
+        "#e08a4f",
+        "#5fbf8a",
+        "#7fb0e0"
+      ],
+      "materials": [
+        "map paper",
+        "brown contour ink",
+        "hachures and spot heights"
+      ],
+      "typography": "Barlow Condensed for the title as raised terrain with contours following the letterforms; Spectral for text",
+      "displayFonts": [
+        "Barlow Condensed",
+        "Spectral"
+      ],
+      "background": "nested contour rings (repeating-radial-gradient) offset into hills, with a survey line and pin marching across; 24s",
+      "letterLook": "terraced relief: one extruded layer per contour, sand-to-green banding",
+      "backdropScene": "PlaneGeometry heightfield with contour-line shading in a slow flyover",
+      "motion": "steady drift, a surveyor's patience",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Generic hiking app; contour noise can muddy text contrast.",
+      "raised": [
+        {
+          "from": "challenger-datamatics",
+          "raise": "Spot heights are true numbers (e.g. diff size per variant)."
+        }
+      ]
+    },
+    {
+      "id": "t",
+      "label": "Terrazzo Floor",
+      "kind": "grounded",
+      "kicker": "GROUNDED",
+      "lineage": "Venetian terrazzo and Memphis-era terrazzo laminates",
+      "thesis": "Variants as chips set in one poured floor; polishing reveals the composition.",
+      "palette": [
+        "#f2ede6",
+        "#2a2422",
+        "#e2725b",
+        "#5b8c85",
+        "#f0b84a",
+        "#9aa6c9"
+      ],
+      "paletteDark": [
+        "#1c1a19",
+        "#efe9e1",
+        "#ff8a70",
+        "#7fbfb6",
+        "#ffc95e",
+        "#aab6dd"
+      ],
+      "materials": [
+        "polished cementitious matrix",
+        "marble and glass chips",
+        "brass divider strips"
+      ],
+      "typography": "Bricolage Grotesque for the title with a chip-flecked fill; DM Serif Display for accents",
+      "displayFonts": [
+        "Bricolage Grotesque",
+        "DM Serif Display"
+      ],
+      "background": "scattered clip-path chips drifting in place, plus a polish highlight sweep; 24s",
+      "letterLook": "polished stone: MeshPhysical roughness 0.25 matrix with embedded chip colours",
+      "backdropScene": "instanced flat chips tumbling slowly above a polished plane",
+      "motion": "settled, slow, slightly playful",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Instagram-cafe decor; overlaps Candy 3D's playfulness.",
+      "raised": [
+        {
+          "from": "challenger-tensegrity",
+          "raise": "Brass strips impose structure: a strict division grid under the play."
+        }
+      ]
+    }
+  ]
+}
