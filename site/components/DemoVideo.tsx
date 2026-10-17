@@ -24,7 +24,7 @@ const videoForTheme = () =>
 const DemoVideo = () => {
   const [videoId, setVideoId] = useState('');
   return (
-    <section aria-labelledby="demo-title" className="grid gap-6">
+    <section aria-labelledby="demo-title" className="grid gap-9">
       <div className="grid max-w-[68ch] gap-3">
         <Typography variant="headline" as="h2" id="demo-title">
           Watch a run

@@ -55,6 +55,7 @@ test('Copilot CLI invocation: -p with JSON output, deny list, brief and skill di
   assert.deepEqual(safe.args, [
     '-p', PROMPT, '--output-format', 'json', '--no-ask-user', '--no-color',
     '--allow-all-tools',
+    '--allow-all-paths',
     '--deny-tool=shell(git push)', '--deny-tool=shell(git commit)', '--deny-tool=shell(rm)',
     '--add-dir', BRIEF_DIR,
     '--model', 'gpt-5.4',

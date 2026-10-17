@@ -8,9 +8,13 @@ import { api } from '@/lib/api';
 import { clock, directionLabel, usageText, vname } from '@/lib/format';
 import { setState, toast, useStore } from '@/lib/store';
 
+// One shared empty list: a fresh [] per read makes useSyncExternalStore see a
+// change every time and re-render forever (React error #185).
+const NO_LINES: string[] = [];
+
 const Rolling = () => {
   const snap = useStore((s) => s.snap);
-  const lines = useStore((s) => s.logs.rollout ?? []);
+  const lines = useStore((s) => s.logs.rollout ?? NO_LINES);
   const [now, setNow] = useState(Date.now());
   const [cancelling, setCancelling] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);

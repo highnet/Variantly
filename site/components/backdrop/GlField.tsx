@@ -121,8 +121,17 @@ export const GlField = ({ scene: kind, colors, grain }: GlFieldProps) => {
       const x = (e.clientX / innerWidth - 0.5) * -24;
       canvas.style.transform = `translate3d(${x.toFixed(1)}px, 0, 0) scale(1.04)`;
     };
+    // The scene fades in over the art the server already painted, rather
+    // than popping in on top of it.
+    const fade = 'opacity 0.8s ease-out';
+    if (seek === null) {
+      canvas.style.opacity = '0';
+      canvas.style.transition = fade;
+      // Commit the hidden start, so clearing it below transitions.
+      void canvas.offsetWidth;
+    }
     if (!still) {
-      canvas.style.transition = 'transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1)';
+      canvas.style.transition = `${fade}, transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1)`;
       addEventListener('pointermove', move, { passive: true });
     }
 
@@ -149,6 +158,11 @@ export const GlField = ({ scene: kind, colors, grain }: GlFieldProps) => {
       }
     };
     draw();
+    // Fade only once the first frame is on screen: the draw reaches the
+    // compositor a frame after it is issued (later still while shaders compile).
+    let shown = requestAnimationFrame(() => {
+      shown = requestAnimationFrame(() => (canvas.style.opacity = ''));
+    });
     markLoaded('scene');
     const mo = new MutationObserver(sync);
     if (!still) {
@@ -159,6 +173,7 @@ export const GlField = ({ scene: kind, colors, grain }: GlFieldProps) => {
     if (seek !== null) releaseFrame('gl');
     return () => {
       cancelAnimationFrame(raf);
+      cancelAnimationFrame(shown);
       mo.disconnect();
       document.removeEventListener('visibilitychange', sync);
       removeEventListener('resize', resize);

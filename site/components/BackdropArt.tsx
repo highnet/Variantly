@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 import type { VariantKey } from '@/components/backdrop/variants';
 import { cn } from '@/lib/utils';
+import { VARIANT_KEYS } from '@/lib/variantBoot';
 
 /*
  * Each concept's own background art, drawn once and never repainted: plain
@@ -337,4 +338,23 @@ const BackdropArt = ({ variant }: BackdropArtProps) => {
   );
 };
 
-export { BackdropArt };
+/*
+ * Every concept's art, server-rendered so it paints with the first frame,
+ * before the title and long before the three.js scene. CSS shows only the one
+ * matching html[data-variant] (set by VARIANT_BOOT before paint), so a concept
+ * switch restyles it instantly, inside the view transition.
+ */
+const BackdropPoster = () => (
+  <div
+    className="vy-backdrop vy-backdrop-art pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+    aria-hidden="true"
+  >
+    {VARIANT_KEYS.map((k) => (
+      <div key={k} data-art={k} className="absolute inset-0">
+        <BackdropArt variant={k} />
+      </div>
+    ))}
+  </div>
+);
+
+export { BackdropArt, BackdropPoster };
