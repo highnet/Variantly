@@ -69,37 +69,88 @@ const PromptCopy = ({
   };
 
   const slate = tone === 'slate';
+  const long = prompt.length > CLAMP_AT;
+
+  // The prompt itself, clamped behind a crossfading show-more pill when long.
+  const toggleButton = long && (
+    <Button
+      variant={slate ? 'pill-slate' : 'pill'}
+      size="pill"
+      onClick={toggle}
+      aria-expanded={open}
+      className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 gap-1.5"
+    >
+      {/* Both labels share one cell, so the pill keeps its width as they crossfade. */}
+      <span className="grid [grid-template-areas:'x'] *:[grid-area:x]">
+        <span aria-hidden={open} className={cn('vy-label', open && 'vy-label-off')}>
+          Show more
+        </span>
+        <span aria-hidden={!open} className={cn('vy-label', !open && 'vy-label-off')}>
+          Show less
+        </span>
+      </span>
+      <ChevronDown aria-hidden="true" className={cn('vy-chevron size-3.5', open && 'rotate-180')} />
+    </Button>
+  );
+  const promptText = (
+    <p
+      ref={body}
+      className={cn(
+        'm-0 px-4 pt-3 text-[14px] leading-relaxed',
+        long ? 'pb-6' : 'pb-3.5',
+        slate ? 'text-steel-on-slate' : 'text-steel',
+      )}
+    >
+      <span className={cn(long && !open && 'line-clamp-2')}>{prompt}</span>
+    </p>
+  );
 
   if (accent) {
+    // The button, and right under it the exact words it copies: nobody should
+    // paste a prompt into their assistant without seeing it first.
     return (
-      <Button
-        variant="primary"
-        size="prompt"
-        onClick={copy}
-        title={prompt}
-        className={cn('w-fit', className)}
-      >
-        <span className="grid [grid-template-areas:'x'] *:[grid-area:x]">
-          <span className={cn('inline-flex items-center gap-1.5', copied && 'invisible')}>
-            <ClipboardCopy aria-hidden="true" />
-            {label}
+      <div className={cn('grid gap-3', long && 'pb-4', className)}>
+        <Button variant="primary" size="prompt" onClick={copy} title={prompt} className="w-fit">
+          <span className="grid [grid-template-areas:'x'] *:[grid-area:x]">
+            <span className={cn('inline-flex items-center gap-1.5', copied && 'invisible')}>
+              <ClipboardCopy aria-hidden="true" />
+              {label}
+            </span>
+            <span
+              aria-hidden={!copied}
+              className={cn(
+                'inline-flex items-center justify-center gap-1.5',
+                !copied && 'invisible',
+              )}
+            >
+              <Check className="animate-pop" aria-hidden="true" />
+              Copied
+            </span>
           </span>
+        </Button>
+        <div
+          data-slot="prompt-copy"
+          className={cn(
+            'rounded-pass relative border',
+            slate ? 'on-slate border-slate-line bg-ink text-surface' : 'border-rule bg-surface',
+          )}
+        >
           <span
-            aria-hidden={!copied}
             className={cn(
-              'inline-flex items-center justify-center gap-1.5',
-              !copied && 'invisible',
+              'flex items-center gap-2 px-4 pt-2.5 text-[12px]',
+              slate ? 'text-steel-on-slate' : 'text-steel',
             )}
           >
-            <Check className="animate-pop" aria-hidden="true" />
-            Copied
+            <FileText aria-hidden="true" className="size-3.5" />
+            Exactly what you’re copying
           </span>
-        </span>
-      </Button>
+          {promptText}
+          {toggleButton}
+        </div>
+      </div>
     );
   }
 
-  const long = prompt.length > CLAMP_AT;
   return (
     <div className={cn('grid', long && 'pb-4', className)}>
       <div
@@ -129,39 +180,8 @@ const PromptCopy = ({
             {copied ? <Check className="animate-pop" /> : <Copy />}
           </Button>
         </div>
-        <p
-          ref={body}
-          className={cn(
-            'm-0 px-4 pt-3 text-[14px] leading-relaxed',
-            long ? 'pb-6' : 'pb-3.5',
-            slate ? 'text-steel-on-slate' : 'text-steel',
-          )}
-        >
-          <span className={cn(long && !open && 'line-clamp-2')}>{prompt}</span>
-        </p>
-        {long && (
-          <Button
-            variant={slate ? 'pill-slate' : 'pill'}
-            size="pill"
-            onClick={toggle}
-            aria-expanded={open}
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 gap-1.5"
-          >
-            {/* Both labels share one cell, so the pill keeps its width as they crossfade. */}
-            <span className="grid [grid-template-areas:'x'] *:[grid-area:x]">
-              <span aria-hidden={open} className={cn('vy-label', open && 'vy-label-off')}>
-                Show more
-              </span>
-              <span aria-hidden={!open} className={cn('vy-label', !open && 'vy-label-off')}>
-                Show less
-              </span>
-            </span>
-            <ChevronDown
-              aria-hidden="true"
-              className={cn('vy-chevron size-3.5', open && 'rotate-180')}
-            />
-          </Button>
-        )}
+        {promptText}
+        {toggleButton}
         <span className="sr-only" role="status">
           {copied ? 'Copied to clipboard' : ''}
         </span>
