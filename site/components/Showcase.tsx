@@ -680,6 +680,18 @@ const Showcase = () => {
                     <strong className="text-surface">Enter</strong>.
                   </li>
                 </ol>
+                <div className="mt-3 grid gap-2">
+                  <p className="m-0">
+                    Rather be walked through it? Paste this into any AI chat (Claude, ChatGPT, or
+                    your editor&apos;s chat):
+                  </p>
+                  <PromptCopy
+                    chip
+                    tone="slate"
+                    prompt={PROMPTS.walkthrough}
+                    label="Copy walk-me-through prompt"
+                  />
+                </div>
               </details>
             </div>
             <div className="border-slate-line grid gap-2.5 border-t pt-4">
