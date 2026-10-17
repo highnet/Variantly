@@ -11,7 +11,7 @@
   --panel: #111111; --surface: #1a1a19; --rule: #34332f; --steel: #a9a59c; --ink: #efebe3; --alert: #e0583a; --alert-hover: #ea6d50;
   --on-alert: #111111; --hero-bg: #111111; --hero-ink: #efebe3; --hero-mute: #a9a59c; --hero-line: #3a3936; --hero-box: #1a1a19; --title: #efebe3;
   --flap-bg: #050505; --art-1: #e0583a; --art-2: #5c5a55; --art-3: #5a9a9d; --art-ink: #efebe3; --art-plate: #111111; --art-lcd: #050505;
-  --key-1: #efebe3; --key-2: #8d8a83; --key-3: #e0583a; --key-4: #5a9a9d; --alu: #3a3936;
+  --key-1: #efebe3; --key-2: #a9a59c; --key-3: #e0583a; --key-4: #5a9a9d; --alu: #3a3936;
 }
 :root[data-variant='j'] .vy-j-dots { background: radial-gradient( circle, color-mix(in srgb, var(--art-ink) 10%, #0000) 1.3px, #0000 1.7px ) 0 0 / 12px 12px; }
 :root[data-variant='j'] .vy-j-ring {
