@@ -704,7 +704,8 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   transform: rotate(1.5deg);
   background: var(--hero-box);
 }
-:root[data-variant='b'] .vy-blobs { mix-blend-mode: multiply; opacity: 0.55; }
+:root[data-variant='b'] .vy-blobs { mix-blend-mode: multiply; }
+:root[data-variant='b'][data-theme='dark'] .vy-blobs { mix-blend-mode: screen; }
 
 /* ---- C · TVA Terminal: amber CRT, console frames, typewriter ------------- */
 :root[data-variant='c'] {
@@ -1315,3 +1316,14 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   --steel: var(--hero-mute);
   --rule: var(--hero-line);
 }
+
+/* ---- Grainy-gradient shapes: strength per concept ------------------------- */
+.vy-blobs { opacity: var(--blob-o, 0.7); }
+:root[data-theme='dark'] .vy-blobs { mix-blend-mode: screen; }
+:root[data-variant='a'] { --blob-o: 0.8; }
+:root[data-variant='b'] { --blob-o: 0.6; }
+:root[data-variant='c'] { --blob-o: 0.45; }
+:root[data-variant='d'] { --blob-o: 0.65; }
+:root[data-variant='e'] { --blob-o: 0.55; }
+:root[data-variant='f'] { --blob-o: 0.5; }
+:root[data-scrolled] .vy-blobs { opacity: 0.16; }
