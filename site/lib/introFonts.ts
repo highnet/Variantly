@@ -26,7 +26,7 @@ const elite = Special_Elite({ weight: '400', subsets: ['latin'], variable: '--fo
 const orbitron = Orbitron({ weight: '900', subsets: ['latin'], variable: '--font-arcade' });
 const monoton = Monoton({ weight: '400', subsets: ['latin'] });
 const bungee = Bungee({ weight: '400', subsets: ['latin'] });
-const rubik = Rubik_Mono_One({ weight: '400', subsets: ['latin'] });
+const rubik = Rubik_Mono_One({ weight: '400', subsets: ['latin'], variable: '--font-ransom' });
 const pixel = Press_Start_2P({ weight: '400', subsets: ['latin'] });
 const righteous = Righteous({ weight: '400', subsets: ['latin'] });
 // Hero display faces, one per variant concept.
@@ -34,7 +34,7 @@ const fredoka = Fredoka({ weight: '700', subsets: ['latin'], variable: '--font-c
 const jost = Jost({ weight: '800', subsets: ['latin'], variable: '--font-geo' });
 const archivo = Archivo_Black({ weight: '400', subsets: ['latin'], variable: '--font-brutal' });
 
-export const HERO_FONT_VARS = [abril, elite, orbitron, fredoka, jost, archivo]
+export const HERO_FONT_VARS = [abril, elite, orbitron, fredoka, jost, archivo, rubik]
   .map((f) => f.variable)
   .join(' ');
 

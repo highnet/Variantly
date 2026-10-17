@@ -32,6 +32,9 @@ const buttonVariants = cva(
           'border border-slate-line bg-transparent text-surface normal-case tracking-normal font-sans hover:bg-ink active:translate-y-px',
         // A numbered cell on the slate dock; the current one lifts, white.
         cell: 'relative bg-slate-raised text-surface opacity-55 tracking-normal tabular-nums [font-stretch:75%] hover:opacity-90 aria-[current=true]:bg-surface aria-[current=true]:text-ink aria-[current=true]:opacity-100 aria-[current=true]:-translate-y-0.5 aria-[current=true]:shadow-cell',
+        // A word inside a headline that is also a button (the hero's "a fresh look").
+        'headline-word':
+          'inline normal-case tracking-[inherit] font-[inherit] [font-stretch:inherit] text-[length:inherit] leading-[inherit] text-inherit whitespace-normal',
         // A concept chip in the homepage switcher dock.
         concept:
           'normal-case tracking-normal font-sans text-steel hover:text-ink aria-pressed:bg-ink aria-pressed:text-surface',
@@ -50,6 +53,7 @@ const buttonVariants = cva(
         icon: 'size-9 rounded-chip',
         'icon-sm': 'size-7 rounded-chip',
         round: 'size-9 rounded-full',
+        none: '',
         segment: 'rounded-[8px] px-2 py-2.5 text-[13px] font-semibold',
         toggle: 'rounded px-1.5 py-1 text-[10px] gap-1.5 [&_svg]:size-3.5',
         // Wraps on narrow screens instead of running off the edge.

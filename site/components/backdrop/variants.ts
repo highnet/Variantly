@@ -1,5 +1,5 @@
 export type VariantKey = 'a' | 'b' | 'c' | 'd' | 'e' | 'f';
-export type SceneKind = 'clay' | 'halftone' | 'terrain' | 'wire' | 'bauhaus' | 'synth';
+export type SceneKind = 'clay' | 'halftone' | 'terrain' | 'wire' | 'bauhaus' | 'paper';
 
 type Variant = {
   name: string;
@@ -61,11 +61,14 @@ export const VARIANTS: Record<VariantKey, Variant> = {
     grain: 0.06,
   },
   f: {
-    name: 'Synth Sunset',
-    scene: 'synth',
-    colors: { light: ['#ff2e88', '#7a2cff'], dark: ['#ff2e88', '#18e0ff'] },
+    name: 'Cut & Paste',
+    scene: 'paper',
+    colors: {
+      light: ['#fbf7ee', '#e5322d', '#2346c8', '#f2c94c'],
+      dark: ['#f3ead6', '#ff5a4f', '#4a6cf0', '#f2c94c'],
+    },
     blobs: null,
     blur: 0,
-    grain: 0.14,
+    grain: 0.2,
   },
 };

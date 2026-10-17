@@ -12,6 +12,7 @@ import {
 } from 'react';
 
 import { CommandCopy } from '@/components/CommandCopy';
+import { FreshLook } from '@/components/FreshLook';
 import { PageSkeleton } from '@/components/PageSkeleton';
 import { PromptCopy } from '@/components/PromptCopy';
 import { RunnerPicker } from '@/components/RunnerPicker';
@@ -483,7 +484,7 @@ const Showcase = () => {
               id="hero-title"
               className="text-surface text-[clamp(2.25rem,4.2vw,4.25rem)]"
             >
-              Your website needs a fresh look
+              Your website needs <FreshLook />
             </Typography>
             <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">
               <strong className="text-surface">One command.</strong> Your own AI assistant redesigns
@@ -606,7 +607,7 @@ const Showcase = () => {
               tabIndex={v.n === selected ? 0 : -1}
               loading={v.n === 1 ? 'eager' : 'lazy'}
               className={cn(
-                'absolute inset-0 size-full border-0 transition-opacity duration-1000 ease-in-out [clip-path:inset(0_0_0_var(--split))]',
+                'vy-split-clip absolute inset-0 size-full border-0 transition-opacity duration-1000 ease-in-out',
                 v.n === selected ? 'opacity-100' : 'pointer-events-none opacity-0',
               )}
             />
@@ -673,10 +674,11 @@ const Showcase = () => {
             <div className="bg-ink/70 group-hover/track:bg-ink group-active/track:bg-ink absolute inset-x-0.5 top-[var(--thumb-top,0px)] h-[var(--thumb-h,40px)] rounded-full shadow-[0_0_0_1px_rgb(255_255_255/.5)] transition-colors" />
           </div>
 
+          {/* The divider leans slightly; the clip, its shadow and the line share one
+            edge in globals.css (.vy-split-*), so they meet at any height. */}
+          <div className="vy-split-shade pointer-events-none absolute inset-0 z-20" />
+          <div className="vy-split-line pointer-events-none absolute inset-0 z-20" />
           <div className="pointer-events-none absolute inset-y-0 left-[var(--split)] z-20 w-0">
-            {/* A soft shadow the line casts on the after side: depth, not a filter on the page. */}
-            <div className="absolute inset-y-0 left-0 w-10 bg-linear-to-r from-black/15 to-transparent" />
-            <div className="bg-ink shadow-divider absolute inset-y-0 -left-px w-0.5" />
             <Button
               ref={grip}
               variant="grip"

@@ -189,43 +189,84 @@ const bauhaus = (scene: THREE.Scene, colors: string[]): Built => {
   };
 };
 
-/* A neon grid floor rolling toward the horizon. */
-const synth = (scene: THREE.Scene, colors: string[]): Built => {
-  const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 200);
-  camera.position.set(0, 1.2, 8);
-  camera.lookAt(0, 1.4, -10);
-  const mat = new THREE.ShaderMaterial({
-    transparent: true,
-    uniforms: {
-      uTime: { value: 0 },
-      uA: { value: new THREE.Color(colors[0]) },
-      uB: { value: new THREE.Color(colors[1]) },
-    },
-    vertexShader: `varying vec2 vW; void main(){ vW = position.xy; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
-    fragmentShader: `
-uniform float uTime; uniform vec3 uA; uniform vec3 uB; varying vec2 vW;
-void main(){
-  vec2 p = vec2(vW.x, vW.y + uTime*2.0);
-  vec2 g = abs(fract(p*0.5)-0.5)/fwidth(p*0.5);
-  float line = 1.0 - min(min(g.x,g.y), 1.0);
-  float depth = clamp((vW.y + 40.0)/60.0, 0.0, 1.0);
-  vec3 col = mix(uB, uA, depth);
-  float a = line * smoothstep(0.0, 0.35, 1.0-depth) + line*0.25;
-  if (a < 0.02) discard;
-  gl_FragColor = vec4(col, a);
-}`,
-    extensions: { derivatives: true } as never,
+/* Paper scraps (sheets, folded corners, triangles) drifting and turning. */
+const paper = (scene: THREE.Scene, colors: string[]): Built => {
+  const camera = persp(12);
+  scene.add(new THREE.AmbientLight('#ffffff', 1.6));
+  const sun = new THREE.DirectionalLight('#ffffff', 1.8);
+  sun.position.set(-4, 6, 8);
+  scene.add(sun);
+  // A sheet folded once down its middle, so it catches light on two faces.
+  const folded = (w: number, h: number, fold: number) => {
+    const g = new THREE.BufferGeometry();
+    const x = w / 2;
+    const v = [
+      -x,
+      -h / 2,
+      0,
+      0,
+      -h / 2,
+      fold,
+      0,
+      h / 2,
+      fold,
+      -x,
+      h / 2,
+      0,
+      x,
+      -h / 2,
+      0,
+      x,
+      h / 2,
+      0,
+    ];
+    g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+    g.setIndex([0, 1, 2, 0, 2, 3, 1, 4, 5, 1, 5, 2]);
+    g.computeVertexNormals();
+    return g;
+  };
+  const tri = new THREE.BufferGeometry();
+  tri.setAttribute(
+    'position',
+    new THREE.Float32BufferAttribute([-1, -0.8, 0, 1.1, -0.6, 0, 0, 1, 0], 3),
+  );
+  tri.computeVertexNormals();
+  const shapes: [THREE.BufferGeometry, number, number, number, number][] = [
+    [folded(2.6, 3.4, 0.5), -6.5, 2.2, -1, 0],
+    [folded(2, 2.6, -0.4), 6.2, 2.8, -2, 1],
+    [tri, 4.8, -2.6, 0, 2],
+    [folded(1.6, 2, 0.3), -4.2, -3, 0.5, 3],
+    [tri, -1.5, 3.6, -3, 1],
+    [folded(1.2, 1.6, -0.3), 1.8, -3.8, -1, 0],
+  ];
+  const meshes = shapes.map(([geo, x, y, z, c]) => {
+    const m = new THREE.Mesh(
+      geo,
+      new THREE.MeshLambertMaterial({
+        color: colors[c % colors.length],
+        side: THREE.DoubleSide,
+        flatShading: true,
+      }),
+    );
+    m.position.set(x, y, z);
+    scene.add(m);
+    return m;
   });
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), mat);
-  floor.rotation.x = -Math.PI / 2;
-  floor.position.z = -20;
-  scene.add(floor);
   return {
     camera,
     update: (t, px) => {
-      mat.uniforms.uTime.value = t;
-      camera.position.x = px * 1.5;
-      camera.lookAt(0, 1.4, -10);
+      meshes.forEach((m, i) => {
+        const [, x, y] = shapes[i];
+        m.position.x = x + Math.sin(t * 0.2 + i) * 0.3;
+        m.position.y = y + Math.sin(t * 0.35 + i * 1.7) * 0.4;
+        m.rotation.set(
+          0.4 + Math.sin(t * 0.3 + i) * 0.5,
+          t * 0.25 + i,
+          Math.sin(t * 0.2 + i * 2) * 0.4,
+        );
+      });
+      camera.position.x = px * 1.2;
+      camera.lookAt(0, 0, 0);
     },
   };
 };
@@ -236,5 +277,5 @@ export const SCENES: Record<SceneKind, (s: THREE.Scene, c: string[]) => Built> =
   terrain,
   wire,
   bauhaus,
-  synth,
+  paper,
 };
