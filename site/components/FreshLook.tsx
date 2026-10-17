@@ -15,7 +15,7 @@ const GLYPHS = ['✦', '✶', '●', '■', '▲'];
  * plus a ring. It plays out before the page wipes to the next concept (a
  * view transition would freeze it in the old snapshot).
  */
-const burst = (x: number, y: number) => {
+export const burst = (x: number, y: number, sparks = SPARKS) => {
   const css = getComputedStyle(document.documentElement);
   const colours = ['--alert', '--title', '--board-ok', '--alert', '--hero-ink']
     .map((v) => css.getPropertyValue(v).trim())
@@ -38,7 +38,7 @@ const burst = (x: number, y: number) => {
     { duration: 480, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)', fill: 'forwards' },
   );
 
-  for (let i = 0; i < SPARKS; i++) {
+  for (let i = 0; i < sparks; i++) {
     const s = document.createElement('span');
     s.className = 'vy-spark';
     s.textContent = GLYPHS[i % GLYPHS.length];
@@ -47,8 +47,8 @@ const burst = (x: number, y: number) => {
     s.style.color = colours[i % colours.length] ?? 'currentColor';
     s.style.fontSize = `${16 + Math.random() * 20}px`;
     layer.appendChild(s);
-    const angle = (i / SPARKS) * Math.PI * 2 + Math.random() * 0.5;
-    const dist = 90 + Math.random() * 150;
+    const angle = (i / sparks) * Math.PI * 2 + Math.random() * 0.5;
+    const dist = (sparks < SPARKS ? 30 : 90) + Math.random() * (sparks < SPARKS ? 50 : 150);
     const dx = Math.cos(angle) * dist;
     const dy = Math.sin(angle) * dist;
     const spin = (Math.random() - 0.5) * 720;

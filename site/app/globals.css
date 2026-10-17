@@ -779,21 +779,8 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 }
 :root[data-variant='d'] [data-hero-title] {
   border-block: 4px solid var(--hero-line);
-  padding-bottom: 76px;
 }
-:root[data-variant='d'] [data-hero-title]::after {
-  content: 'VARIANT ✶ VARIANT ✶ VARIANT ✶ VARIANT ✶ VARIANT ✶ VARIANT ✶ VARIANT ✶ VARIANT ✶ VARIANT ✶ VARIANT ✶ VARIANT ✶ VARIANT ✶';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  white-space: nowrap;
-  padding: 10px 0;
-  width: 200%;
-  font: 400 20px/1 var(--font-brutal);
-  background: #ff3d00;
-  color: #0a0a0a;
-  animation: vy-ticker 18s linear infinite;
-}
+
 :root[data-variant='d'] .vy-title {
   transform: skewX(-8deg);
   background: linear-gradient(transparent 58%, #c6ff00 58% 88%, transparent 88%);
@@ -995,8 +982,6 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 
 @media (max-width: 639px) {
   :root[data-variant='c'] [data-hero-grid] { margin: 0 12px 24px; }
-  :root[data-variant='d'] [data-hero-title] { padding-bottom: 60px; }
-  :root[data-variant='d'] [data-hero-title]::after { font-size: 15px; }
   :root[data-variant='d'] [data-hero-side] { box-shadow: 6px 6px 0 var(--hero-line); transform: none; }
   :root[data-variant='b'] [data-hero-side] { transform: none; }
   :root[data-variant='a'] [data-hero-grid] { border-radius: 24px; margin-inline: 12px; }
@@ -1355,3 +1340,106 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   opacity: 1;
   box-shadow: none;
 }
+
+/* ---- Agent mark: the split folds into a terminal prompt ------------------ */
+.brand-node { display: none; }
+.brand-agent { opacity: 0; transform: scale(0.6) rotate(20deg); transform-origin: 16px 16px;
+  transition: opacity 260ms ease, transform 520ms var(--brand-spring); }
+[data-audience='agent'] .brand-agent { opacity: 1; transform: none; transition-delay: 80ms; }
+.brand-prompt { fill: none; stroke: #ffffff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.brand-cursor { fill: var(--alert); }
+.brand-spark { fill: var(--alert); opacity: 0.85; }
+[data-audience='agent'] .brand-cursor { animation: brand-blink 1.1s steps(1) infinite; }
+[data-audience='agent'] .brand-spark { animation: brand-breathe 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes brand-blink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .brand-cursor, .brand-spark { animation: none !important; } }
+
+/* ---- Delights ------------------------------------------------------------- */
+/* 8 · the switcher's sliding pill */
+.vy-switcher-pill { background: var(--ink); }
+.vy-switcher [aria-pressed='true'] { color: var(--surface); }
+/* 10 · hero parallax: scene, shapes and title drift at different speeds */
+:root:not([data-scrolled]) .vy-scene { translate: 0 calc(var(--px-y, 0px) * 0.35); }
+:root:not([data-scrolled]) .vy-blobs { translate: 0 calc(var(--px-y, 0px) * -0.15); }
+.vy-title { translate: 0 calc(var(--px-y, 0px) * 0.18); }
+/* 5 · "How it works" progress line and steps lighting up */
+.vy-steps { position: relative; }
+.vy-steps::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -14px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--alert);
+  transform-origin: left;
+  transform: scaleX(var(--steps-p, 0));
+  transition: transform 120ms linear;
+}
+.vy-steps > li { opacity: 0.45; transition: opacity 400ms ease, transform 500ms cubic-bezier(0.34, 1.5, 0.5, 1); }
+.vy-steps > li.vy-step-on { opacity: 1; }
+.vy-steps > li.vy-step-on .figure { animation: vy-step-pop 520ms cubic-bezier(0.34, 1.7, 0.5, 1); }
+@keyframes vy-step-pop { 40% { transform: scale(1.18) rotate(-4deg); } }
+/* 11 · typing caret */
+.vy-typing::after { content: '▍'; margin-left: 1px; animation: brand-blink 0.9s steps(1) infinite; }
+/* 17 · frosted header once scrolled */
+header { transition: background-color 300ms ease, box-shadow 300ms ease, backdrop-filter 300ms ease; }
+header.vy-header-glass {
+  background: color-mix(in srgb, var(--panel) 62%, transparent) !important;
+  backdrop-filter: blur(14px) saturate(1.6);
+  box-shadow: 0 8px 24px -16px rgb(0 0 0 / 0.35);
+}
+/* 19 · every button squashes on press */
+button:not(.vy-fresh):active, a.rounded-chip:active { transform: scale(0.94); transition: transform 60ms ease; }
+/* 20 · a light streak across cards as they land */
+.vy-sheen { position: relative; overflow: hidden; }
+.vy-sheen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.35) 50%, transparent 65%);
+  transform: translateX(-120%);
+  animation: vy-sheen 1.1s 0.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes vy-sheen { to { transform: translateX(120%); } }
+@media (prefers-reduced-motion: reduce) {
+  .vy-title, .vy-scene, .vy-blobs { translate: none !important; }
+  .vy-steps > li { opacity: 1; }
+  .vy-steps > li .figure, .vy-sheen::after, .vy-typing::after { animation: none !important; }
+}
+:root[data-seek] .vy-title, :root[data-seek] .vy-scene, :root[data-seek] .vy-blobs { translate: none !important; }
+:root[data-seek] .vy-steps > li { opacity: 1; }
+
+/* ---- G · Candy 3D: extruded glossy letters, pastel candy ground ---------- */
+:root[data-variant='g'] {
+  --panel: #f6f2ff; --surface: #ffffff; --rule: #ddd3fb; --steel: #5b5280; --ink: #1a1033;
+  --alert: #7c5cff; --alert-hover: #9479ff; --on-alert: #ffffff;
+  --hero-bg: #f1ebff; --hero-ink: #1a1033; --hero-mute: #5b5280; --hero-line: #cfc2fa; --hero-box: #ffffff;
+  --hero-face: var(--font-clay); --title: #7c5cff; --hero-alpha: 40%;
+  --board-bg: #1a1033; --board-raised: #2a1c52; --board-line: #43307a; --board-mute: #c9bff0; --board-text: #ffffff; --board-deep: #0d0820; --board-ok: #ff5fa2;
+  --flap-bg: #7c5cff; --flap-ink: #ffffff; --blob-o: 0.7;
+}
+:root[data-variant='g'][data-theme='dark'] {
+  --panel: #0f0a20; --surface: #1a1236; --rule: #33255f; --steel: #b7aee0; --ink: #f4f0ff;
+  --hero-bg: #130c29; --hero-ink: #f4f0ff; --hero-mute: #b7aee0; --hero-line: #3d2c70; --hero-box: #0b0718;
+  --title: #a58bff;
+}
+/* The HTML word stays for screen readers and clicks; the canvas shows it. */
+.vy-title-solid { opacity: 0; }
+:root[data-variant='g'] [data-hero-title] { min-height: clamp(220px, 34vw, 460px); }
+.vy-letters3d { pointer-events: none; }
+:root[data-variant='g'] main > div h2 { text-transform: none; text-shadow: 0 3px 0 #ff5fa2, 0 6px 0 #22c3ee; }
+:root[data-variant='g'] main > div .bg-surface { border: 0; border-radius: 22px; box-shadow: 0 1px 0 rgb(255 255 255 / 0.8) inset, 0 18px 40px -20px rgb(124 92 255 / 0.55); }
+:root[data-variant='g'] [data-hero-side] { background: var(--hero-box); border-radius: 22px; padding: 22px; box-shadow: 0 18px 40px -20px rgb(124 92 255 / 0.55); }
+:root[data-variant='g'] .flap-cell:nth-child(5n + 1) { --flap-bg: #ff5fa2; }
+:root[data-variant='g'] .flap-cell:nth-child(5n + 3) { --flap-bg: #22c3ee; --flap-ink: #0d0820; }
+:root[data-variant='g'] .flap-cell:nth-child(5n + 4) { --flap-bg: #ffb020; --flap-ink: #0d0820; }
+.vy-swatch-g { background: conic-gradient(#ff5fa2, #7c5cff, #22c3ee, #ffb020, #ff5fa2); }
+
+/* ---- More breathing room: sections spread out vertically ----------------- */
+:root[data-variant] main > div.mx-auto { row-gap: clamp(7rem, 14vw, 12rem); padding-top: clamp(6rem, 10vw, 9rem); padding-bottom: clamp(5rem, 8vw, 8rem); }
+:root[data-variant] [data-hero-title] { padding-block: clamp(4rem, 9vw, 8rem); }
+:root[data-variant] [data-hero-grid] { padding-block: clamp(3rem, 7vw, 6.5rem); row-gap: 3.5rem; }
+:root[data-variant] main > div section { row-gap: 2.25rem; }

@@ -1,4 +1,4 @@
-export type VariantKey = 'a' | 'b' | 'c' | 'd' | 'e' | 'f';
+export type VariantKey = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g';
 export type SceneKind = 'clay' | 'halftone' | 'terrain' | 'wire' | 'bauhaus' | 'paper';
 
 type Ramp = [string, string, string];
@@ -121,5 +121,22 @@ export const VARIANTS: Record<VariantKey, Variant> = {
     },
     blur: 0,
     grain: 0.2,
+  },
+  g: {
+    name: 'Candy 3D',
+    scene: 'clay',
+    colors: { light: ['#c4b5fd', '#99f6e4', '#fbcfe8'], dark: ['#7c5cff', '#22c3ee', '#ff5fa2'] },
+    blobs: {
+      light: [
+        ['#ffd1e6', '#ff5fa2', '#7c5cff'],
+        ['#c7f9ff', '#22c3ee', '#7c5cff'],
+      ],
+      dark: [
+        ['#ff9cc8', '#ff5fa2', '#4c1d95'],
+        ['#9cf0ff', '#22c3ee', '#3b0764'],
+      ],
+    },
+    blur: 0,
+    grain: 0.12,
   },
 };

@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { motion } from 'motion/react';
 
 import { VARIANTS } from '@/components/backdrop/variants';
 import { Button } from '@/components/ui/Button';
@@ -70,8 +71,17 @@ export const VariantSwitcher = () => {
           aria-pressed={k === current}
           title={VARIANTS[k].name}
           onClick={() => setVariant(k)}
-          className="hidden shrink-0 rounded-full sm:inline-flex"
+          className="relative isolate hidden shrink-0 rounded-full aria-pressed:bg-transparent sm:inline-flex"
         >
+          {/* One pill slides between chips instead of jumping. */}
+          {k === current && (
+            <motion.span
+              layoutId="vy-switcher-pill"
+              aria-hidden="true"
+              className="vy-switcher-pill absolute inset-0 -z-1 rounded-full"
+              transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+            />
+          )}
           <span
             className={cn('vy-swatch size-3 rounded-full', `vy-swatch-${k}`)}
             aria-hidden="true"

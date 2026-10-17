@@ -68,13 +68,16 @@ export const ScrollReveal = () => {
         { duration: 0.6, delay: 0.12, ease: [0.16, 1, 0.3, 1] },
       ),
     );
-    each(CARDS, { opacity: '0', transform: 'translateY(48px) scale(0.96)' }, (el) =>
-      animate(
+    each(CARDS, { opacity: '0', transform: 'translateY(48px) scale(0.96)' }, (el) => {
+      // 20 · a light streak sweeps the card once as it lands.
+      el.classList.add('vy-sheen');
+      setTimeout(() => el.classList.remove('vy-sheen'), 1400);
+      return animate(
         el,
         { opacity: 1, transform: 'translateY(0px) scale(1)' },
         { ...SPRING, opacity: { duration: 0.35 } },
-      ),
-    );
+      );
+    });
     // Lists: the container stays put; its items cascade in.
     document.querySelectorAll<HTMLElement>(GROUPS).forEach((list) => {
       if (list.dataset.revealed || !below(list) || list.closest('[data-revealed="pending"]'))
@@ -98,7 +101,14 @@ export const ScrollReveal = () => {
                 ...SPRING,
                 delay: stagger(0.045),
               },
-            ).finished.then(() => list.style.removeProperty('background-color'));
+            ).finished.then(() => {
+              // Hand the items back to the stylesheet (e.g. step dimming).
+              list.style.removeProperty('background-color');
+              items.forEach((i) => {
+                i.style.removeProperty('opacity');
+                i.style.removeProperty('transform');
+              });
+            });
           },
           { amount: 0.1 },
         ),

@@ -1,7 +1,7 @@
 import type { VariantKey } from '@/components/backdrop/variants';
 
 // Server-safe: the concept list and the <head> boot script used by the root layout.
-export const VARIANT_KEYS: VariantKey[] = ['a', 'b', 'c', 'd', 'e', 'f'];
+export const VARIANT_KEYS: VariantKey[] = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
 
 /*
  * Runs in <head> before first paint on the homepage: applies the concept

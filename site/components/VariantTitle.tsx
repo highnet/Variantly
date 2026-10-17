@@ -5,7 +5,9 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime, useSeekTime } from '@/lib/seek';
+import { Letters3D } from '@/components/Letters3D';
 import { useSiteStore } from '@/lib/store';
+import { useVariant } from '@/lib/variant';
 import { cn } from '@/lib/utils';
 
 const WORD = 'variantly';
@@ -114,13 +116,16 @@ const Letter = ({ char, index, run }: LetterProps) => {
  */
 export const VariantTitle = () => {
   const [run, setRun] = useState(0);
+  // The 3D concept draws the word as extruded letters; the HTML word stays for
+  // screen readers and as the replay target.
+  const solid = useVariant() === 'g';
   useEffect(() => {
-    if (seekTime() !== null) releaseFrame('title');
+    if (seekTime() !== null && !solid) releaseFrame('title');
     // A new concept gets its own title reveal.
     return useSiteStore.subscribe((s, prev) => {
       if (prev.hydrated && s.variant !== prev.variant) setRun((r) => r + 1);
     });
-  }, []);
+  }, [solid]);
   return (
     <div
       data-hero-title
@@ -132,12 +137,16 @@ export const VariantTitle = () => {
         title="Replay"
         data-keep-cycle
         onClick={() => setRun((r) => r + 1)}
-        className="vy-title relative z-1 flex cursor-pointer items-end gap-[0.04em] text-[clamp(2.5rem,16vw,11rem)]"
+        className={cn(
+          'vy-title relative z-1 flex cursor-pointer items-end gap-[0.04em] text-[clamp(2.5rem,16vw,11rem)]',
+          solid && 'vy-title-solid',
+        )}
       >
         {[...WORD].map((c, i) => (
           <Letter key={i} char={c} index={i} run={run} />
         ))}
       </button>
+      {solid && <Letters3D run={run} />}
     </div>
   );
 };

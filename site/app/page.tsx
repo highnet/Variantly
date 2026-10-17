@@ -12,6 +12,7 @@ import { WithLive } from '@/components/WithLive';
 import { StartChecklist } from '@/components/StartChecklist';
 import { siGithub } from 'simple-icons';
 import { Backdrop } from '@/components/backdrop/Backdrop';
+import { Delight } from '@/components/Delight';
 import { ScrollReveal } from '@/components/ScrollReveal';
 import { VariantSwitcher } from '@/components/VariantSwitcher';
 
@@ -75,6 +76,7 @@ const Page = () => (
     <SiteFooter />
     <VariantSwitcher />
     <ScrollReveal />
+    <Delight />
   </>
 );
 
