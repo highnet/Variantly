@@ -36,7 +36,30 @@ export async function hasCommits(root) {
  * @returns {Promise<{ base: string, dirty: boolean, untracked: string[] }>}
  */
 export async function snapshotBase(root) {
-  const stash = (await git(root, ["stash", "create", "variantly base"])).trim();
+  // One snapshot per repo at a time: `git stash create` writes the index and
+  // fails quietly (exit 1) when another one holds index.lock. Detect and
+  // generate can ask at once, so queue them, and retry a lock held elsewhere.
+  const prev = snapshots.get(root) ?? Promise.resolve();
+  const next = prev.catch(() => {}).then(() => takeSnapshot(root));
+  snapshots.set(root, next);
+  return next;
+}
+
+/** @type {Map<string, Promise<{ base: string, dirty: boolean, untracked: string[] }>>} */
+const snapshots = new Map();
+
+/** @param {string} root */
+async function takeSnapshot(root) {
+  let stash = "";
+  for (let attempt = 0; ; attempt++) {
+    try {
+      stash = (await git(root, ["stash", "create", "variantly base"])).trim();
+      break;
+    } catch (err) {
+      if (attempt >= 4) throw err;
+      await new Promise((r) => setTimeout(r, 150 * (attempt + 1)));
+    }
+  }
   const head = (await git(root, ["rev-parse", "HEAD"])).trim();
   const untracked = (await git(root, ["ls-files", "--others", "--exclude-standard"]))
     .split("\n")
