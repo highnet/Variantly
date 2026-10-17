@@ -1126,7 +1126,8 @@ header.vy-header-glass {
 :root[data-variant] main > div.mx-auto { row-gap: clamp(7rem, 14vw, 12rem); padding-top: clamp(6rem, 10vw, 9rem); padding-bottom: clamp(5rem, 8vw, 8rem); }
 :root[data-variant] [data-hero-title] { padding-block: clamp(4rem, 9vw, 8rem); }
 :root[data-variant] [data-hero-grid] { padding-block: clamp(3rem, 7vw, 6.5rem); row-gap: 3.5rem; }
-:root[data-variant] main > div section { row-gap: 2.25rem; }
+/* Each section sets its own rhythm (its gap-* class): no blanket row-gap here, it
+   flattened every section, nested ones and the two-panel start card included. */
 
 /* ---- Breathing room ------------------------------------------------------ */
 /* Readable measure and rhythm for body copy. */
