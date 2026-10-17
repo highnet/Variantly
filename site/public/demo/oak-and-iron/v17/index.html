@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Oak &amp; Iron · Handmade Furniture</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <p class="topbar">Grand re-opening &middot; Free delivery in Styria on orders over &euro;&nbsp;500 &middot; Code <strong>OAK2021</strong></p>
+    <nav class="navbar" aria-label="Main">
+      <a class="logo"><span class="dot" aria-hidden="true"></span>Oak &amp; Iron</a>
+      <ul>
+        <li><a aria-current="page">Home</a></li>
+        <li><a>Shop</a></li>
+        <li><a>About Us</a></li>
+        <li><a>Blog</a></li>
+        <li><a>Contact</a></li>
+      </ul>
+      <a class="cart">Cart <span>0</span></a>
+    </nav>
+
+    <main class="bento">
+      <header class="tile hero">
+        <h1>Welcome to Oak &amp; Iron Furniture.</h1>
+        <p class="tagline">Handmade furniture for real homes. Quality you can trust since 2019.</p>
+        <p class="ctas"><a class="btn">Shop now</a> <a class="link">Learn more</a></p>
+      </header>
+
+      <div class="tile lead" aria-label="Lead time">
+        <p class="big">6&ndash;8<small>weeks</small></p>
+        <p>Lead time. Delivered by the person who built it.</p>
+      </div>
+
+      <div class="tile grain" aria-hidden="true"></div>
+
+      <section class="tile f1" aria-labelledby="h1f"><h2 id="h1f">Handmade</h2><p>Every piece is built by hand in our workshop outside Graz.</p></section>
+      <section class="tile f2" aria-labelledby="h2f"><h2 id="h2f">Reclaimed oak</h2><p>We use reclaimed oak and forged steel wherever we can.</p></section>
+      <section class="tile f3" aria-labelledby="h3f"><h2 id="h3f">Personal delivery</h2><p>Delivered by the person who built it. Lead time 6&ndash;8 weeks.</p></section>
+
+      <section id="shop" class="tile shophead" aria-labelledby="s-h">
+        <h2 id="s-h">This month&rsquo;s best sellers</h2>
+        <a class="link">View all products</a>
+      </section>
+
+      <article class="tile item wide">
+        <div class="art" aria-hidden="true"><svg viewBox="0 0 200 100" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="10" y="30" width="180" height="8"/><path d="M30 38 20 90M30 38 40 90M170 38 160 90M170 38 180 90M25 64h10M165 64h10"/></svg></div>
+        <div class="meta">
+          <p class="flag">Sale &middot; &#9733; 5.0 (128)</p>
+          <h3>The Long Table</h3>
+          <p class="desc">2.4 m of reclaimed oak on steel trestles.</p>
+          <p class="buy"><span class="price"><s>&euro;&nbsp;3.490,-</s> &euro;&nbsp;2.890,-</span> <button type="button">Add to cart</button></p>
+        </div>
+      </article>
+      <article class="tile item">
+        <div class="art" aria-hidden="true"><svg viewBox="0 0 200 140" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="100" cy="30" rx="45" ry="9"/><path d="M70 36 55 130M130 36 145 130M100 39v91M62 95h76"/></svg></div>
+        <div class="meta">
+          <p class="flag">Hot &middot; &#9733; 4.0 (64)</p>
+          <h3>Smithy Stool</h3>
+          <p class="desc">Hand-forged legs, oiled seat.</p>
+          <p class="buy"><span class="price">&euro;&nbsp;340,-</span> <button type="button">Add to cart</button></p>
+        </div>
+      </article>
+      <article class="tile item">
+        <div class="art" aria-hidden="true"><svg viewBox="0 0 200 140" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M100 10v120"/><rect x="30" y="30" width="140" height="6"/><rect x="30" y="68" width="140" height="6"/><rect x="30" y="106" width="140" height="6"/></svg></div>
+        <div class="meta">
+          <p class="flag">New &middot; &#9733; 5.0 (12)</p>
+          <h3>Wall Shelf No. 4</h3>
+          <p class="desc">Three shelves, one bracket, no screws visible.</p>
+          <p class="buy"><span class="price">&euro;&nbsp;410,-</span> <button type="button">Add to cart</button></p>
+        </div>
+      </article>
+
+      <section class="tile quote" aria-labelledby="t-h">
+        <h2 id="t-h" class="vh">What our customers say</h2>
+        <blockquote><p>&ldquo;This table didn&rsquo;t just transform my dining room. 10/10 would recommend to anyone.&rdquo;</p><footer>Sarah M. &middot; Verified buyer</footer></blockquote>
+      </section>
+
+      <section class="tile news" aria-labelledby="n-h">
+        <h2 id="n-h">Sign up for our newsletter</h2>
+        <p>News about new products and workshop days. No spam. 10% off your first order.</p>
+        <form id="newsletter">
+          <label for="nl-email">Email address</label>
+          <div class="row">
+            <input id="nl-email" type="email" placeholder="name@example.com" required />
+            <button>Subscribe</button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <footer id="contact" class="foot">
+      <p><strong>Oak &amp; Iron</strong> &middot; Werkstattgasse 4 &middot; 8010 Graz &middot; hello@oak-and-iron.example</p>
+      <p>Home &middot; Shop &middot; About Us &middot; Blog</p>
+      <p class="small">&copy; 2021 Oak &amp; Iron. All rights reserved. Privacy Policy &middot; Terms &amp; Conditions. A fictional shop: demo content for variantly.</p>
+      <p class="small">We use cookies to improve your experience. <button type="button" class="mini">Accept all</button></p>
+    </footer>
+    <script>
+      document.getElementById('newsletter').addEventListener('submit', (e) => {
+        e.preventDefault();
+        e.target.querySelector('button').textContent = 'Thanks!';
+      });
+    </script>
+  </body>
+</html>

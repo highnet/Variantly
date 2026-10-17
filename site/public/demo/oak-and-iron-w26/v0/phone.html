@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Oak &amp; Iron | Premium Handcrafted Furniture ✨</title>
+    <!-- Phone edition for the narrow before/after split: every variant shares
+         ../phone.css, so each band sits at the same height in every design. -->
+    <link rel="stylesheet" href="../phone.css" />
+    <link rel="stylesheet" href="phone.css" />
+  </head>
+  <body>
+    <nav class="band b-head" aria-label="Main">
+      <p class="topbar">🎉 <strong>GRAND RE-OPENING SALE!</strong> Code <u>OAK2021</u> 🎉</p><a class="logo"><span aria-hidden="true">🪵</span> OAK&amp;IRON<sup>™</sup></a>
+    </nav>
+    <header class="band b-hero">
+      <p class="kicker">✨ NEW: AI-Powered Craftsmanship™</p>
+      <h1>Welcome To <span class="grad">Oak &amp; Iron</span> Furniture!</h1>
+      <p class="intro">Handmade furniture for real homes — not just furniture. A lifestyle. Supercharge your living space with next-generation design solutions!</p>
+      <p class="ctas"><a class="btn">SHOP NOW ➜</a> <a class="link">LEARN MORE</a></p>
+    </header>
+    <h2 class="band b-sec">— WHY CHOOSE US —</h2>
+    <div class="band b-feat"><h3>🛠️ Handmade</h3><p>Built by hand in our workshop outside Graz — seamlessly.</p></div>
+    <div class="band b-feat"><h3>🌱 Reclaimed Oak</h3><p>Reclaimed oak and forged steel — sustainability, unlocked.</p></div>
+    <div class="band b-feat"><h3>🚀 Personal Delivery</h3><p>Delivered by the person who built it — effortlessly.</p></div>
+    <h2 class="band b-sec" id="shop">— OUR PRODUCTS —</h2>
+    <article class="band b-item i1">
+      <div class="art" aria-hidden="true"><svg viewBox="0 0 200 100" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="10" y="30" width="180" height="8"/><path d="M30 38 20 90M30 38 40 90M170 38 160 90M170 38 180 90M25 64h10M165 64h10"/></svg></div>
+      <p class="no">SALE</p>
+      <h3>The Long Table</h3>
+      <p class="desc">2.4 m of reclaimed oak on steel trestles.</p>
+      <p class="buy"><span class="price">€ 2.890,-</span> <button type="button">🛒 ADD TO CART</button></p>
+    </article>
+    <article class="band b-item i2">
+      <div class="art" aria-hidden="true"><svg viewBox="0 0 200 140" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="100" cy="30" rx="45" ry="9"/><path d="M70 36 55 130M130 36 145 130M100 39v91M62 95h76"/></svg></div>
+      <p class="no">HOT</p>
+      <h3>Smithy Stool</h3>
+      <p class="desc">Hand-forged legs, oiled seat.</p>
+      <p class="buy"><span class="price">€ 340,-</span> <button type="button">🛒 ADD TO CART</button></p>
+    </article>
+    <article class="band b-item i3">
+      <div class="art" aria-hidden="true"><svg viewBox="0 0 200 140" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M100 10v120"/><rect x="30" y="30" width="140" height="6"/><rect x="30" y="68" width="140" height="6"/><rect x="30" y="106" width="140" height="6"/></svg></div>
+      <p class="no">NEW</p>
+      <h3>Wall Shelf No. 4</h3>
+      <p class="desc">Three shelves, one bracket, no screws visible.</p>
+      <p class="buy"><span class="price">€ 410,-</span> <button type="button">🛒 ADD TO CART</button></p>
+    </article>
+    <h2 class="band b-sec">📬 Newsletter!</h2>
+    <form class="band b-news" id="newsletter">
+      <p>No spam — just vibes. Get 10% OFF your first order!</p>
+      <label for="email">Email address</label>
+      <input id="email" type="email" placeholder="name@example.com" required />
+      <button>SUBSCRIBE 🚀</button>
+    </form>
+    <footer class="band b-foot" id="contact">
+      <p>Werkstattgasse 4 · 8010 Graz<br />hello@oak-and-iron.example</p>
+      <p class="small">© 2021 Oak &amp; Iron. All Rights Reserved. A fictional shop: demo content for variantly.</p>
+      <p class="cookie">🍪 We use cookies to improve your experience. <b>ACCEPT ALL</b></p>
+    </footer>
+    <script>
+      document.getElementById('newsletter').addEventListener('submit', (e) => {
+        e.preventDefault();
+        e.target.querySelector('button').textContent = 'Thanks!';
+      });
+    </script>
+  </body>
+</html>
