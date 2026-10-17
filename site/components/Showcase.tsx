@@ -103,7 +103,11 @@ type ScoreProps = {
   lowerIsBetter?: boolean;
 };
 
-/* One score with its change from the original, green when it improved. */
+/*
+ * One score with its change from the original, green when it improved. A
+ * count where lower is better reads "51 fixed" rather than a minus sign,
+ * so an improvement never looks like a loss.
+ */
 const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
   const diff = value - was;
   const better = lowerIsBetter ? diff < 0 : diff > 0;
@@ -120,8 +124,9 @@ const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
             better ? 'text-ok-on-slate' : 'text-fail-on-slate',
           )}
         >
-          {diff > 0 ? '+' : '−'}
-          {Math.abs(diff)}
+          {lowerIsBetter
+            ? `${Math.abs(diff)} ${better ? 'fixed' : 'new'}`
+            : `${diff > 0 ? '+' : '−'}${Math.abs(diff)}`}
         </span>
       )}
     </span>
@@ -775,7 +780,7 @@ const Showcase = () => {
           <div
             role="group"
             className="flex items-center gap-3 pr-2"
-            aria-label={`Scores against the original: accessibility ${current.a11y}, ${current.axe} axe violations`}
+            aria-label={`Scores against the original: accessibility ${current.a11y} (was ${DEMO_ORIGINAL_SCORES.a11y}), ${current.axe} axe violations (was ${DEMO_ORIGINAL_SCORES.axe})`}
             title="Measured by variantly's axe-core and Lighthouse check, against the original page"
           >
             <Score label="A11y" value={current.a11y} was={DEMO_ORIGINAL_SCORES.a11y} />
