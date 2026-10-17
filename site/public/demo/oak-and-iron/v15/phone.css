@@ -1,0 +1,31 @@
+/* Phone edition: weekend-supplement feature spread, one oxblood ink. */
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Schibsted+Grotesk:wght@500;800&display=swap');
+:root{color-scheme:light;--paper:#f7f3ec;--ink:#5a1418;--ink-2:#6e2a2d;--tint:#ecdfd6;--display:'Bodoni Moda',Georgia,serif;--text:'Newsreader',Georgia,serif}
+html[data-theme="dark"]{color-scheme:dark;--paper:#1c1213;--ink:#f1d9d2;--ink-2:#d9b9b1;--tint:#2c1c1d}
+body{background:var(--paper);color:var(--ink);font:17px/1.5 var(--text)}
+.b-head{align-items:center;text-align:center;gap:4px;border-bottom:3px double var(--ink)}
+.topbar{font-size:13px;font-style:italic}
+.logo{font:700 28px/1 var(--display);color:var(--ink)}
+.logo i,h1 i{font-weight:400}
+.kicker{font-size:13px;font-variant:small-caps;letter-spacing:.12em;border-bottom:1px solid var(--ink);padding-bottom:6px}
+h1{font:400 52px/.95 var(--display);letter-spacing:-.03em}
+.intro{font-size:20px;font-style:italic;line-height:1.4}
+.btn,button{background:var(--ink);color:var(--paper);border:1px solid var(--ink);padding:10px 20px;font:600 15px var(--text);text-decoration:none}
+.link{color:var(--ink);font-style:italic;text-decoration:underline;text-underline-offset:.25em}
+.b-sec{font:400 34px/1 var(--display);letter-spacing:-.02em;border-bottom:1px solid var(--ink)}
+.b-feat{border-bottom:1px solid var(--tint)}
+.b-feat h3{font:600 20px var(--display)}
+.drop::first-letter{float:left;font:400 46px/.8 var(--display);padding:4px 6px 0 0}
+.b-item{border-bottom:1px solid var(--ink)}
+.b-item .art{background:var(--tint);color:var(--ink)}
+.no{font-size:13px;font-variant:small-caps;letter-spacing:.12em}
+.b-item h3{font:600 28px/1.1 var(--display)}
+.desc{font-style:italic;color:var(--ink-2)}
+.price{font-size:20px;font-variant-numeric:lining-nums}
+.b-news input{background:transparent;color:var(--ink);border:0;border-bottom:2px solid var(--ink)}
+.b-news input::placeholder{color:var(--ink-2)}
+.b-news label{font-style:italic}
+.b-foot{text-align:center;border-top:3px double var(--ink)}
+.small{font-size:13px;font-style:italic}
+.kicker,.no,.topbar,.btn,button{font-family:'Schibsted Grotesk',Arial,sans-serif;font-variant:normal;font-style:normal;text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:800}
+.b-feat h3{font-family:'Schibsted Grotesk',Arial,sans-serif;font-weight:800;text-transform:uppercase;font-size:15px;letter-spacing:.06em}

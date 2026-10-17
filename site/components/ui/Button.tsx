@@ -60,6 +60,11 @@ const buttonVariants = cva(
         prompt:
           'min-h-8 rounded-control px-2.5 py-1.5 text-left text-[13px] leading-tight font-semibold whitespace-normal',
         cell: 'h-10 min-w-11 rounded-control px-2 text-[15px] aria-[current=true]:min-w-15 aria-[current=true]:text-2xl',
+        // A cell in a fixed grid of them (twenty redesigns, ten to a row): the
+        // grid sets the width, so the current one lifts and grows its figure
+        // without pushing its neighbours.
+        'cell-grid':
+          'h-9 w-full min-w-0 rounded-control px-0 text-[15px] aria-[current=true]:text-2xl',
         pill: 'h-8 rounded-full px-4 text-[13px] font-semibold',
         grip: 'h-11 rounded-full px-2 text-[10px] gap-1 tracking-[0.08em]',
       },

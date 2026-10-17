@@ -1,0 +1,34 @@
+/* Phone edition: Kinetic type. One variable family, extreme scale, cobalt. */
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&display=swap");
+:root{color-scheme:light;--paper:#f3f2ee;--ink:#0d0d0d;--mute:#45443f;--cobalt:#1d39f0;--on-cobalt:#fff;--field:#fff}
+html[data-theme="dark"]{color-scheme:dark;--paper:#0c0c0e;--ink:#f1f0ec;--mute:#bdbcb6;--cobalt:#7d90ff;--on-cobalt:#0c0c0e;--field:#17171a}
+body{background:var(--paper);color:var(--ink);font:400 16px/1.5 "Bricolage Grotesque",system-ui,sans-serif}
+a{color:var(--cobalt)}
+:focus-visible{outline:3px solid var(--cobalt);outline-offset:2px}
+.b-head{border-bottom:2px solid var(--ink)}
+.logo{font-weight:800;font-size:22px;letter-spacing:-.03em;color:var(--ink)}
+.kicker{font-weight:600;color:var(--cobalt)}
+h1{font-weight:800;line-height:.86;letter-spacing:-.055em}
+h1 span{display:block}
+.l1{font-size:84px;font-variation-settings:"opsz" 96,"wdth" 75;color:var(--cobalt);margin-left:-3px}
+.l2{font-size:30px;font-weight:300;letter-spacing:-.04em;line-height:1.1;padding-left:40px}
+.l3{font-size:52px;font-variation-settings:"opsz" 96,"wdth" 80;text-align:right}
+.intro{color:var(--mute)}
+.btn,button{background:var(--cobalt);color:var(--on-cobalt);border:0;border-radius:0;padding:13px 22px;font:700 16px "Bricolage Grotesque",sans-serif;text-decoration:none}
+.link{font-weight:700}
+.b-sec{font-weight:800;font-size:46px;line-height:.9;letter-spacing:-.05em;font-variation-settings:"opsz" 96,"wdth" 75;border-bottom:2px solid var(--ink)}
+.b-feat{border-bottom:1px solid var(--ink)}
+.b-feat h3{font-weight:800;font-size:28px;letter-spacing:-.04em;line-height:1}
+.b-feat p{color:var(--mute)}
+.b-item{border-bottom:2px solid var(--ink)}
+.b-item .art{color:var(--ink);padding:24px 48px}
+.no{font-weight:600;color:var(--cobalt)}
+.b-item h3{font-weight:800;font-size:40px;line-height:.9;letter-spacing:-.055em;font-variation-settings:"opsz" 96,"wdth" 80}
+.desc{color:var(--mute)}
+.price{font-weight:800;font-size:24px;letter-spacing:-.04em}
+.b-news label{font-weight:700}
+.b-news p{color:var(--mute)}
+.b-news input{background:var(--field);color:var(--ink);border:2px solid var(--ink);border-radius:0;padding:0 14px}
+.b-news input::placeholder{color:var(--mute);opacity:1}
+.b-foot{border-top:2px solid var(--ink);color:var(--mute);font-size:14px}
+.small{font-size:12px}

@@ -1,0 +1,38 @@
+/* Phone edition: Terminal shop. Phosphor green, amber prompts, box-drawn panels. */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=VT323&display=swap");
+:root{color-scheme:dark;--bg:#0a0f0b;--panel:#0f1711;--line:#2f6a43;--text:#b8f5c8;--bright:#54ff8e;--mute:#8fc9a0;--amber:#ffb84d;--on-bright:#04110a}
+html[data-theme="light"]{color-scheme:light;--bg:#f1f4ec;--panel:#fff;--line:#6d8f76;--text:#103a1f;--bright:#0b6a2f;--mute:#355a40;--amber:#8a4d00;--on-bright:#fff}
+body{background:var(--bg);color:var(--text);font:400 14px/1.55 "JetBrains Mono",ui-monospace,monospace;font-variant-ligatures:none}
+a{color:var(--bright)}
+:focus-visible{outline:2px dashed var(--amber);outline-offset:2px}
+.b-head{border-bottom:1px dashed var(--line)}
+.logo{font:400 30px/1 VT323,monospace;color:var(--bright);text-transform:lowercase}
+.logo::before{content:"~/";color:var(--amber)}
+.kicker{color:var(--amber)}
+.kicker::before{content:"oak@iron:~$ "}
+h1{font:400 50px/.95 VT323,monospace;color:var(--bright);text-shadow:0 0 10px rgba(84,255,142,.35)}
+.cursor{display:inline-block;width:.5em;height:.8em;background:var(--bright);margin-left:.12em;vertical-align:-.04em}
+.intro{border:3px double var(--line);padding:12px 14px}
+.btn,button{background:var(--bright);color:var(--on-bright);border:0;border-radius:0;padding:11px 16px;font:700 14px "JetBrains Mono",monospace;text-decoration:none}
+.btn::before,button::before{content:"> "}
+.link::before{content:"--"}
+.b-sec{font:400 34px/1 VT323,monospace;color:var(--bright);border-top:1px dashed var(--line)}
+.b-sec::before{content:"oak@iron:~$ cat";position:absolute;top:22px;left:20px;color:var(--amber);font:400 13px "JetBrains Mono",monospace}
+.b-feat{border:1px solid var(--line);background:var(--panel);margin:0 12px 0;border-bottom:0}
+.b-feat h3{color:var(--amber);font-size:15px}
+.b-feat h3::before{content:"+ ";color:var(--bright)}
+.b-feat p{color:var(--mute)}
+.b-item{border:3px double var(--line);background:var(--panel);margin:0 8px;border-bottom-width:3px}
+.b-item .art{color:var(--bright);margin:0 -20px 10px;padding:28px 44px;border-bottom:1px dashed var(--line)}
+.no{color:var(--amber)}
+.b-item h3{font:400 32px/1 VT323,monospace;color:var(--bright)}
+.desc{color:var(--mute)}
+.price{color:var(--amber);font-weight:700;font-size:17px}
+.b-news label{color:var(--amber)}
+.b-news label::after{content:":"}
+.b-news p{color:var(--mute)}
+.b-news input{background:var(--panel);color:var(--bright);border:1px solid var(--line);border-radius:0;padding:0 12px;caret-color:var(--amber)}
+.b-news input::placeholder{color:var(--mute);opacity:1}
+.b-foot{border-top:1px dashed var(--line);color:var(--mute);font-size:13px}
+.sign{color:var(--amber)}
+.small{font-size:12px}
