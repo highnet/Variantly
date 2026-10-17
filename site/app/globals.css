@@ -664,9 +664,10 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 }
 .vy-grain {
   /* A pre-rendered 128px noise tile (public/grain.png): no live feTurbulence,
-     no blend mode, so the fixed layer rasterises once and never again. */
-  background: url('/grain.png') repeat;
-  background-size: 128px;
+     no blend mode, so the fixed layer rasterises once and never again.
+     Two copies at coprime sizes and offsets so the 128px seam grid never
+     lines up into a visible repeat. */
+  background: url('/grain.png') 0 0 / 128px repeat, url('/grain.png') 61px 37px / 181px repeat;
 }
 
 /* ---- A · Soft Clay: puffy, rounded, centred, glossy blobs ---------------- */
