@@ -49,11 +49,6 @@ const DefList = ({ rows }: DefListProps) => (
  */
 const AgentDoc = () => (
   <div className="agent-doc">
-    <header>
-      <p>
-        variantly · agent view · <a href="#human">Switch to the human view</a>
-      </p>
-    </header>
     <main>
       <h1>variantly: agent quickstart</h1>
       <p>
@@ -109,13 +104,6 @@ const AgentDoc = () => (
       <p>What a person pastes into their assistant to get set up:</p>
       <pre>{PROMPTS.setup}</pre>
     </main>
-    <footer>
-      <p>
-        <a href="/SKILLS.md">SKILLS.md</a> · <a href={REPO_URL}>GitHub</a> ·{' '}
-        <a href="/imprint">Imprint</a> · <a href="/privacy">Privacy</a> ·{' '}
-        <a href="/accessibility">Accessibility</a>
-      </p>
-    </footer>
   </div>
 );
 
