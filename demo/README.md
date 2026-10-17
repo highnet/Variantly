@@ -202,8 +202,7 @@ ten typed directions, for reference).
 
 ### Teaching cards and diagrams
 
-`stage/cards.mjs` draws every explanatory graphic in one flat language (see
-SCRIPT-v4.md, "Graphics"). A scene carries one `card` or one `diagram`:
+`stage/cards.mjs` draws every explanatory graphic in one flat language. A scene carries one `card` or one `diagram`:
 
 | Kind | Example |
 | --- | --- |

@@ -177,7 +177,9 @@ const main = async () => {
       const who = config.mix ? config.mix.map((r) => `${r.count}× ${r.agent}${r.model ? ` (${r.model})` : ''}`).join(', ') : config.agent;
       console.log(`  Generating ${config.count} variants with ${who}…\n`);
     } catch (err) {
-      fail(err instanceof Error ? err.message : String(err));
+      const message = err instanceof Error ? err.message : String(err);
+      fail(message);
+      app.problem(`The run did not start: ${message}`);
     }
   }
   if (values.open && !values['no-open']) openBrowser(app.url);
