@@ -633,6 +633,12 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 :root[data-variant] [data-hero-title] {
   border-bottom: 0;
 }
+/* The hero grid is capped at 1440px; on wider screens its tint carries on to
+   the edges (Soft Clay and TVA keep their framed card). */
+:root[data-variant]:not([data-variant='a'], [data-variant='c']) [data-hero-grid] {
+  box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--hero-bg) var(--hero-alpha, 70%), transparent);
+  clip-path: inset(0 -100vmax);
+}
 :root[data-variant] #hero-title {
   font-family: var(--hero-face, var(--font-martian));
   font-stretch: normal;
