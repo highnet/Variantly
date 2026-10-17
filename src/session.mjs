@@ -15,12 +15,13 @@ import { fileURLToPath } from 'node:url';
 import { createParser } from './agent-output.mjs';
 import { agentById, agentFile } from './agents.mjs';
 import { productFromCode } from './product.mjs';
-import { defaultDirections, extractReview, extractSummary, hasAnswers, productMarkdown, writeBrief, writeReviewBrief } from './brief.mjs';
+import { defaultDirections, extractReview, extractRollout, extractSummary, hasAnswers, productMarkdown, writeBrief, writeReviewBrief, writeRolloutBrief } from './brief.mjs';
 import { auditMarkdown, killAudits, playwrightMcp, runAudit, warmPlaywrightMcp } from './checks.mjs';
 import { stepFrom } from './steps.mjs';
 import * as git from './git.mjs';
 import { LineBuffer, killTree, run, spawnArgs } from './proc.mjs';
 import { ServerPool } from './servers.mjs';
+import { detectRoutes } from './routes.mjs';
 import { adapterById, fill, installFailed, packageRunner, pythonFor } from './stacks.mjs';
 
 const LOCKFILES = ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock', 'bun.lock'];
@@ -71,18 +72,19 @@ const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  * @property {import('./checks.mjs').AuditResult} [audit]  axe-core and Lighthouse scores
  * @property {'running' | 'failed'} [auditState]
  * @property {string} [auditError]
+ * @property {string[]} [exclude]  files variantly placed in the worktree, kept out of its commits
  */
 
 /**
  * @typedef {object} State
  * @property {number} version
- * @property {'setup' | 'generating' | 'ready' | 'finalized'} phase
+ * @property {'setup' | 'generating' | 'ready' | 'rolling-out' | 'finalized'} phase
  * @property {string} runId
  * @property {string} base
  * @property {Config | null} config
  * @property {Variant[]} variants
  * @property {number | null} chosen
- * @property {{ files: string[], conflicts: string[], depsChanged: boolean } | null} result
+ * @property {{ files: string[], conflicts: string[], depsChanged: boolean, rollout?: string, rolloutError?: string } | null} result
  * @property {import('./checks.mjs').AuditResult} [baseline]  the original's scores
  * @property {string} [baselineError]
  */
@@ -139,6 +141,11 @@ export class Session extends EventEmitter {
         v.status = 'failed';
         v.error = 'variantly stopped while this variant was being generated.';
       }
+    }
+    if (this.state.phase === 'rolling-out') {
+      // Interrupted before anything reached their working tree: keep can run again.
+      this.state.phase = 'ready';
+      this.state.chosen = null;
     }
     if (this.state.phase === 'generating') {
       // Back to the board, not the wizard: interrupted designs can be retried there.
@@ -451,7 +458,7 @@ export class Session extends EventEmitter {
       const files = await git.commitAll(wt, `variantly: variant ${v.n} (${v.direction})`, exclude);
       if (!files.length) throw nothingChanged();
       say(`Committed ${files.length} changed file${files.length === 1 ? '' : 's'}.`);
-      await update({ status: 'done', files, summary: extractSummary(output), review: review || undefined, finishedAt: Date.now(), costUsd: run.costUsd, usage: run.usage, credits: run.credits, picked: run.picked });
+      await update({ status: 'done', files, exclude, summary: extractSummary(output), review: review || undefined, finishedAt: Date.now(), costUsd: run.costUsd, usage: run.usage, credits: run.credits, picked: run.picked });
       // Warm the first finished variant so there is something to compare.
       if (this.state.variants.filter((x) => x.status === 'done').length === 1) {
         this.pool.ensure(`v${v.n}`).catch(() => {});
@@ -715,16 +722,21 @@ export class Session extends EventEmitter {
   /**
    * Keep variant n: apply its changes to the user's working tree, then
    * tear everything else down. Variant branches are kept so nothing is lost.
+   * With sitewide (the default), one more agent run first carries the
+   * variant's style from the pages it redesigned to the rest of the site.
    * @param {number} n
+   * @param {{ sitewide?: boolean }} [opts]
    */
-  async finalize(n) {
+  async finalize(n, opts = {}) {
     if (this.state.phase === 'finalized') throw new Error(`A variant was already kept (v${this.state.chosen}). Run \`variantly clean\` to start over.`);
+    if (this.state.phase === 'rolling-out') throw new Error(`Variant ${this.state.chosen} is already being rolled out to the whole site.`);
     const v = this.state.variants.find((x) => x.n === n);
     if (!v || v.status !== 'done') throw new Error(`Variant ${n} isn't finished.`);
     if (this.state.phase === 'generating') {
       for (const other of this.state.variants) await this.cancel(other.n);
     }
     await this.pool.closeAll();
+    const rolled = opts.sitewide === false ? {} : await this.#rollout(v);
     const result = await git.applyBranch(this.repo, this.state.base, this.branchFor(n));
     const depsChanged = result.files.some((f) => /(^|\/)(package\.json|package-lock\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lockb?|composer\.(json|lock)|Gemfile(\.lock)?|go\.(mod|sum)|Cargo\.(toml|lock)|requirements.*\.txt|pyproject\.toml)$/.test(f));
     // The change is already applied: a worktree Windows won't release yet is
@@ -734,9 +746,61 @@ export class Session extends EventEmitter {
     }
     this.state.phase = 'finalized';
     this.state.chosen = n;
-    this.state.result = { files: result.files, conflicts: result.conflicts, depsChanged };
+    this.state.result = { files: result.files, conflicts: result.conflicts, depsChanged, ...rolled };
     await this.save();
     return this.state.result;
+  }
+
+  /**
+   * Restyle the rest of the site in the kept variant's worktree, committed
+   * onto its branch so the keep applies it with the rest. A failed rollout
+   * still keeps the variant: the pages it redesigned are worth having.
+   * @param {Variant} v
+   * @returns {Promise<{ rollout?: string, rolloutError?: string }>}
+   */
+  async #rollout(v) {
+    const config = /** @type {Config} */ (this.state.config);
+    const agent = agentById(config.agent);
+    // The demo agent restyles the global stylesheet, so its look is site-wide already.
+    if (!agent || agent.id === 'demo') return {};
+    const wt = this.worktreeFor(v.n);
+    const appDir = path.join(wt, config.appRel);
+    const done = config.routes.length ? config.routes : ['/'];
+    const pages = detectRoutes(appDir).filter((r) => !done.includes(r));
+    const log = new LineBuffer(2000);
+    /** @type {AgentRunState & { log: LineBuffer }} */
+    const run = { log };
+    const say = (/** @type {string} */ line) => {
+      log.push(line + '\n');
+      this.emit('log', { target: `v${v.n}`, lines: [line] });
+    };
+    this.state.phase = 'rolling-out';
+    this.state.chosen = v.n;
+    await this.save();
+    this.emit('state', this.snapshot());
+    // Whatever is already uncommitted here was placed by variantly, not designed.
+    const exclude = [...new Set([...(v.exclude ?? []), ...(await git.pendingPaths(wt).catch(() => []))])];
+    try {
+      say(`Rolling variant ${v.n} out to the rest of the site${pages.length ? `: ${pages.join(', ')}` : ''}.`);
+      const briefPath = path.join(this.dir, 'briefs', `v${v.n}-rollout.md`);
+      await mkdir(path.dirname(briefPath), { recursive: true });
+      await writeFile(briefPath, writeRolloutBrief({ variant: v.n, agent: agent.id, done, pages, appRel: config.appRel, direction: v.picked || v.direction }));
+      const inv = agent.invocation({ cwd: wt, briefPath, model: config.model || undefined, permissions: config.permissions });
+      inv.file = await agentFile(agent);
+      for (const [file, body] of Object.entries(inv.files ?? {})) {
+        await mkdir(path.dirname(file), { recursive: true });
+        await writeFile(file, body);
+      }
+      const { text } = await this.#runAgent(run, inv, wt, config.agentTimeoutMin, say);
+      // Same exclusions as the variant's own commit: linked and copied files stay out.
+      const files = await git.commitAll(wt, `variantly: roll variant ${v.n} out site-wide`, exclude);
+      say(files.length ? `Rolled out: ${files.length} more file${files.length === 1 ? '' : 's'}.` : 'Rollout changed nothing more.');
+      return { rollout: extractRollout(text) || (files.length ? `Restyled ${files.length} more file${files.length === 1 ? '' : 's'}.` : '') };
+    } catch (err) {
+      const message = err instanceof Error ? err.message.split('\n')[0] : String(err);
+      say(`Rollout failed, keeping the variant as built: ${message}`);
+      return { rolloutError: message };
+    }
   }
 
   /**

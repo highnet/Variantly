@@ -203,6 +203,16 @@ export async function hasChanges(worktree, exclude) {
 }
 
 /**
+ * Paths with uncommitted changes or untracked, relative to the worktree root.
+ * @param {string} worktree
+ * @returns {Promise<string[]>}
+ */
+export async function pendingPaths(worktree) {
+  const out = await git(worktree, ["status", "--porcelain", "--untracked-files=normal", "--no-renames"]);
+  return out.split("\n").filter(Boolean).map((l) => l.slice(3).replace(/^"(.*)"$/, "$1").replace(/\/$/, ""));
+}
+
+/**
  * Commit whatever the agent changed, minus the files variantly placed.
  * @param {string} worktree
  * @param {string} message

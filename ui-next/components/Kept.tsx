@@ -54,6 +54,8 @@ const Kept = () => {
             {v?.audit && <p className="hint data">{scoreText(v.audit, snap.baseline)}</p>}
           </div>
           {r.conflicts.length > 0 && <p className="note bad">Merged with your own edits, with conflicts in {r.conflicts.join(', ')}. Resolve the conflict markers in those files.</p>}
+          {r.rollout && <p className="hint">Rolled out site-wide: {r.rollout}</p>}
+          {r.rolloutError && <p className="note alert">The site-wide rollout failed ({r.rolloutError}), so only the pages this variant redesigned changed.</p>}
           {r.depsChanged && <p className="note alert">This variant changed dependency files. Run your install command.</p>}
           <div>
             <div className="label" style={{ marginBottom: 8 }}>

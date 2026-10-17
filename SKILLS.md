@@ -82,7 +82,8 @@ npx variantly                    # open the wizard for the repo containing .
 npx variantly path/to/app        # ... for another folder
 npx variantly doctor             # check node, git, agents, Impeccable, stack
 npx variantly status             # the current run as JSON
-npx variantly keep 3             # apply variant 3, discard the others' worktrees
+npx variantly keep 3             # restyle the rest of the site in variant 3's style, apply it
+npx variantly keep 3 --no-rollout # apply variant 3 as built, its redesigned pages only
 npx variantly clean              # remove every variantly worktree, branch, state
 npx variantly install-skill      # put the variantly skill where your agents read skills
 ```
@@ -122,8 +123,10 @@ crude fixed restyles, for trying the flow), `--no-open`, `--port <n>`.
    the checks off.
 5. Let the person choose. Never choose for them unless they told you which.
    When they name one: `npx variantly keep <n>`, then stop the background
-   `variantly` process. Their working tree now has that variant's changes,
-   unstaged, for them to review and commit.
+   `variantly` process. `keep` first runs one more agent pass that carries
+   the chosen style to every other page, so it takes a while; the person's
+   working tree then has the whole restyle, unstaged, for them to review and
+   commit.
 6. If `keep` reports dependency changes, run their install command. If it
    reports conflicts, the files contain conflict markers to resolve.
 

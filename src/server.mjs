@@ -171,7 +171,7 @@ export const startApp = async (opts) => {
         session.audit(arg).catch(() => {});
         return { ok: true };
       case 'POST finalize':
-        return session.finalize(n);
+        return session.finalize(n, { sitewide: body.sitewide !== false });
       case 'POST discard':
         return session.discard();
       case 'POST install-impeccable':
@@ -377,7 +377,7 @@ export const normalizeConfig = (body) => {
       keep: str(body.product?.keep).slice(0, 2000),
     },
     brief: str(body.brief).slice(0, 4000),
-    routes: Array.isArray(body.routes) ? body.routes.map(String).filter(Boolean).slice(0, 20) : [],
+    routes: Array.isArray(body.routes) ? body.routes.map(String).filter(Boolean).slice(0, 40) : [],
     extras: Array.isArray(body.extras) ? EXTRAS.map((x) => x.id).filter((id) => body.extras.includes(id)) : [],
     concurrency: num(body.concurrency, 2, 1, 10),
     maxLive: num(body.maxLive, 3, 2, 11),

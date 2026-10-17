@@ -24,6 +24,7 @@ export type UiState = {
   path: string;
   confirming: boolean;
   applying: number | null;
+  sitewide: boolean;
   infoOpen: boolean;
   forceBoard: boolean;
   wantCompare: boolean;
@@ -48,6 +49,7 @@ let state: UiState = {
   path: '/',
   confirming: false,
   applying: null,
+  sitewide: true,
   infoOpen: false,
   forceBoard: false,
   wantCompare: false,

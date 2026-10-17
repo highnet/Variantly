@@ -244,7 +244,8 @@ Then, under the hood:
 variantly [dir]            open the wizard (default: the current directory)
 variantly doctor [dir]     check node, git, agents, Impeccable, detected stack
 variantly status [dir]     the current run as JSON
-variantly keep <n> [dir]   apply variant n; the others stay as branches
+variantly keep <n> [dir]   roll variant n's style out to every page, then apply it;
+                           the others stay as branches (--no-rollout: skip the rollout)
 variantly clean [dir]      remove every worktree, branch and state file
 variantly install-skill    put the variantly skill where your agents read skills
 
