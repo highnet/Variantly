@@ -10,6 +10,7 @@ import { HumanChrome } from '@/components/HumanChrome';
 import { SiteFooter } from '@/components/SiteFooter';
 import { Showcase } from '@/components/Showcase';
 import { Stacks } from '@/components/Stacks';
+import { Trust } from '@/components/Trust';
 import { WithLive } from '@/components/WithLive';
 import { StartChecklist } from '@/components/StartChecklist';
 import { siGithub } from 'simple-icons';
@@ -50,6 +51,7 @@ const Human = () => (
       <DemoVideo />
       <HowItWorks />
       <StartChecklist />
+      <Trust />
       <WithLive />
       <Stacks />
       <FinePrint />
