@@ -87,8 +87,8 @@ Chapter chip, top right throughout, in the app's signature look: the split mark,
 > *(Written after the real take: one short sentence per variant, naming its real direction.)*
 > Switch with the number keys, see them side by side, or check the phone layout.
 
-**7c Proof (4:10–4:30).** **SHOT** Press i: details drawer. Punch-in on axe-core: the original's violation count, then the variant's, marked **fixed**. SeekReel freeze-frame 1.5 s on it. Then a quick glance at the Lighthouse rows and the files-changed list.
-> Every variant is scored on your machine. axe found [N] accessibility issues on the original; this one fixed [M] of them. Lighthouse scores and the changed files are right there too.
+**7c Proof (4:10–4:30).** **SHOT** Press i: details drawer. Punch-in on "Against your original": only the change is shown, e.g. **Accessibility +10 · axe 20 fixed**, never the raw scores. SeekReel freeze-frame 1.5 s on it. Then a quick glance at the files-changed list.
+> Every variant is scored against your original, on your machine. This one: accessibility up [N] points, and [M] axe issues fixed.
 > *(N and M from the real take.)*
 
 ## 8 · Change it (4:30–4:55) *(needs PR #81)*

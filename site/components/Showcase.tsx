@@ -35,6 +35,11 @@ const DRUM = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ&';
 const page = (n: number, phone: boolean) =>
   `/demo/oak-and-iron/v${n}/${phone ? 'phone' : 'index'}.html`;
 const PHONE_QUERY = '(max-width: 639px)';
+
+// The swap wipe: a leaning edge (top ahead, like the divider) crossing the
+// stage from right to left, uncovering the new redesign behind it.
+const SWAP_FROM = 'polygon(125% 0, 125% 0, 125% 100%, 115% 100%)';
+const SWAP_TO = 'polygon(-15% 0, 125% 0, 125% 100%, -25% 100%)';
 const vname = (n: number) => `V${String(n).padStart(2, '0')}`;
 const LONGEST = Math.max(...DEMO_VARIANTS.map((v) => v.direction.length));
 
@@ -114,21 +119,20 @@ const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
   return (
     <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
       <span className="text-steel-on-slate text-[10px] tracking-[0.08em] uppercase">{label}</span>
-      <span data-score className="text-surface text-[15px] font-bold tabular-nums">
-        {value}
-      </span>
-      {diff !== 0 && (
-        <span
-          className={cn(
-            'text-[11px] tabular-nums',
-            better ? 'text-ok-on-slate' : 'text-fail-on-slate',
-          )}
-        >
-          {lowerIsBetter
+      {/* Only the change against the original: nobody reads the new value. */}
+      <span
+        data-score
+        className={cn(
+          'text-[15px] font-bold tabular-nums',
+          diff === 0 ? 'text-surface' : better ? 'text-ok-on-slate' : 'text-fail-on-slate',
+        )}
+      >
+        {diff === 0
+          ? 'same'
+          : lowerIsBetter
             ? `${Math.abs(diff)} ${better ? 'fixed' : 'new'}`
             : `${diff > 0 ? '+' : '−'}${Math.abs(diff)}`}
-        </span>
-      )}
+      </span>
     </span>
   );
 };
@@ -176,6 +180,22 @@ const Showcase = () => {
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const frames = useRef<(HTMLIFrameElement | null)[]>([]);
+  // Each redesign sits in a wrapper the swap wipe clips, apart from the
+  // divider's own clip on the frame.
+  const swaps = useRef<(HTMLDivElement | null)[]>([]);
+  // Swaps waiting on a page that hasn't loaded yet, run from onFrameLoad.
+  const waiting = useRef(new Map<number, () => void>());
+  // The redesign kept fully drawn under the one wiping in. Set while
+  // rendering the new selection, so the old pane never unmounts mid-swap.
+  const [under, setUnder] = useState<number | null>(null);
+  const [was, setWas] = useState(selected);
+  if (was !== selected) {
+    setWas(selected);
+    setUnder(calmMotion() ? null : was);
+    setMounted((m) => (m.has(selected) && m.has(was) ? m : new Set(m).add(selected).add(was)));
+  }
+  const raf = useRef(0);
+  const want = useRef(50);
   const quiet = useRef(0);
   const visible = useRef(true);
 
@@ -303,6 +323,7 @@ const Showcase = () => {
     if (!f || !win || wired.current.has(win.document)) return;
     wired.current.add(win.document);
     loaded.current.add(i);
+    waiting.current.get(i)?.();
     if (loaded.current.has(0) && loaded.current.has(1)) setReady(true);
     // The panes are objects on the counter, not embedded documents.
     win.document.documentElement.style.setProperty('scrollbar-width', 'none');
@@ -323,7 +344,7 @@ const Showcase = () => {
       if (!hoverRef.current || e.pointerType !== 'mouse') return;
       if (stage.current?.dataset.dragging === 'true') return;
       cancelAnimationFrame(anim.current);
-      setPos((e.clientX / f.clientWidth) * 100);
+      queuePos((e.clientX / f.clientWidth) * 100);
     });
     win.addEventListener('pointerdown', takeOver);
     // A click on empty space in either half glides the line there; links,
@@ -356,11 +377,24 @@ const Showcase = () => {
     const el = stage.current;
     if (!el) return;
     el.style.setProperty('--split', `${p}%`);
+    // The grip and the drag band move by transform, in pixels: moving them
+    // with left would lay the stage out again on every frame of a drag.
+    el.style.setProperty('--split-x', `${(el.clientWidth * p) / 100}px`);
     // Labels fade as the divider closes in on them.
     el.style.setProperty('--before-o', String(Math.max(0, Math.min(1, (p - 12) / 10))));
     el.style.setProperty('--after-o', String(Math.max(0, Math.min(1, (88 - p) / 10))));
     grip.current?.setAttribute('aria-valuenow', String(Math.round(p)));
     grip.current?.setAttribute('aria-valuetext', `${Math.round(p)}% original`);
+  };
+
+  /* Pointer events can outpace the screen; paint the latest once a frame. */
+  const queuePos = (p: number) => {
+    want.current = p;
+    if (raf.current) return;
+    raf.current = requestAnimationFrame(() => {
+      raf.current = 0;
+      setPos(want.current);
+    });
   };
 
   /* Only for moves the user does not drive directly: jumps, keys, the hint. */
@@ -395,7 +429,7 @@ const Showcase = () => {
     const follow = hoverRef.current && e.pointerType === 'mouse';
     if (stage.current?.dataset.dragging !== 'true' && !follow) return;
     cancelAnimationFrame(anim.current);
-    setPos(pct(e));
+    queuePos(pct(e));
   };
   const onUp = () => {
     if (stage.current) delete stage.current.dataset.dragging;
@@ -419,6 +453,58 @@ const Showcase = () => {
   const sweepTo = useEffectEvent((to: number, ms: number) => tween(to, ms));
 
   useEffect(() => placeAt(50), []);
+
+  // The pixel position follows the stage's width.
+  useEffect(() => {
+    const el = stage.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => placeAt(pos.current));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  /*
+   * Changing redesign: the new one wipes in over the old behind a leaning
+   * edge, like the concept swap, while the old one stays fully drawn
+   * underneath. (A crossfade let the original show through mid-way and
+   * faded in pages that were still blank.) A page still loading is held
+   * back until it arrives, for a second at most.
+   */
+  useEffect(() => {
+    if (under === null) return;
+    const from = under;
+    const el = swaps.current[selected];
+    if (!el) return;
+    const queue = waiting.current;
+    el.style.clipPath = SWAP_FROM;
+    let wipe: Animation | undefined;
+    let timer = 0;
+    const done = () => setUnder((u) => (u === from ? null : u));
+    const run = () => {
+      queue.delete(selected);
+      clearTimeout(timer);
+      if (wipe) return;
+      el.style.clipPath = '';
+      wipe = el.animate([{ clipPath: SWAP_FROM }, { clipPath: SWAP_TO }], {
+        duration: 680,
+        easing: 'cubic-bezier(0.7, 0, 0.2, 1)',
+      });
+      wipe.onfinish = done;
+    };
+    if (loaded.current.has(selected)) run();
+    else {
+      queue.set(selected, run);
+      timer = window.setTimeout(run, 1000);
+    }
+    return () => {
+      queue.delete(selected);
+      clearTimeout(timer);
+      wipe?.cancel();
+      el.style.clipPath = '';
+    };
+    // Runs per swap: a new selection sets a new pane underneath.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected]);
 
   useEffect(() => {
     hoverRef.current = hover;
@@ -519,7 +605,14 @@ const Showcase = () => {
             <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">
               <strong className="text-surface">One command.</strong> Your own AI assistant redesigns
               your site <strong className="text-surface">several ways</strong>,{' '}
-              <strong className="text-surface">from scratch</strong>: no preset themes. Try each{' '}
+              <strong className="text-surface">from scratch</strong> using{' '}
+              <a
+                href="https://impeccable.style"
+                className="text-surface font-semibold underline decoration-1 underline-offset-2"
+              >
+                Impeccable
+              </a>
+              : the missing design vocabulary for agents. No preset themes. Try each{' '}
               <strong className="text-surface">live</strong>,{' '}
               <strong className="text-surface">keep one</strong>.
             </p>
@@ -625,26 +718,37 @@ const Showcase = () => {
             className="absolute inset-0 size-full border-0 bg-white"
           />
           {DEMO_VARIANTS.filter((v) => v.n === selected || mounted.has(v.n)).map((v) => (
-            <iframe
+            <div
               key={v.n}
               ref={(el) => {
-                frames.current[v.n] = el;
+                swaps.current[v.n] = el;
               }}
-              onLoad={() => onFrameLoad(v.n)}
-              src={demoReady ? page(v.n, phone) : undefined}
-              title={`${vname(v.n)}: ${v.direction}`}
-              aria-hidden={v.n !== selected}
-              tabIndex={v.n === selected ? 0 : -1}
               className={cn(
-                'vy-split-clip absolute inset-0 size-full border-0 transition-opacity duration-1000 ease-in-out',
-                v.n === selected ? 'opacity-100' : 'pointer-events-none opacity-0',
+                'absolute inset-0',
+                v.n === selected
+                  ? 'z-[2]'
+                  : v.n === under
+                    ? 'pointer-events-none z-[1]'
+                    : 'pointer-events-none invisible',
               )}
-            />
+            >
+              <iframe
+                ref={(el) => {
+                  frames.current[v.n] = el;
+                }}
+                onLoad={() => onFrameLoad(v.n)}
+                src={demoReady ? page(v.n, phone) : undefined}
+                title={`${vname(v.n)}: ${v.direction}`}
+                aria-hidden={v.n !== selected}
+                tabIndex={v.n === selected ? 0 : -1}
+                className="vy-split-clip absolute inset-0 size-full border-0"
+              />
+            </div>
           ))}
           {/* The panes stay scrollable; this band either side of the line is
             the drag surface, so nobody has to hit the grip exactly. */}
           <div
-            className="absolute inset-y-0 left-[var(--split)] z-20 w-16 -translate-x-1/2 cursor-ew-resize touch-pan-y group-data-[dragging=true]/stage:inset-x-0 group-data-[dragging=true]/stage:left-0 group-data-[dragging=true]/stage:w-auto group-data-[dragging=true]/stage:translate-x-0"
+            className="absolute inset-y-0 left-0 z-20 w-16 translate-x-[calc(var(--split-x,50vw)-50%)] cursor-ew-resize touch-pan-y group-data-[dragging=true]/stage:inset-x-0 group-data-[dragging=true]/stage:left-0 group-data-[dragging=true]/stage:w-auto group-data-[dragging=true]/stage:translate-x-0"
             onPointerDown={onDown}
             onPointerMove={onMove}
             onPointerUp={onUp}
@@ -707,7 +811,7 @@ const Showcase = () => {
             edge in globals.css (.vy-split-*), so they meet at any height. */}
           <div className="vy-split-shade pointer-events-none absolute inset-0 z-20" />
           <div className="vy-split-line pointer-events-none absolute inset-0 z-20" />
-          <div className="pointer-events-none absolute inset-y-0 left-[var(--split)] z-20 w-0">
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-0 translate-x-[var(--split-x,50vw)]">
             <Button
               ref={grip}
               variant="grip"
@@ -802,7 +906,7 @@ const Showcase = () => {
           <div
             role="group"
             className="flex items-center gap-3 pr-2"
-            aria-label={`Scores against the original: accessibility ${current.a11y} (was ${DEMO_ORIGINAL_SCORES.a11y}), ${current.axe} axe violations (was ${DEMO_ORIGINAL_SCORES.axe})`}
+            aria-label={`Against the original: accessibility ${current.a11y - DEMO_ORIGINAL_SCORES.a11y >= 0 ? 'up' : 'down'} ${Math.abs(current.a11y - DEMO_ORIGINAL_SCORES.a11y)}, ${DEMO_ORIGINAL_SCORES.axe - current.axe} axe violations fixed`}
             title="Measured by variantly's axe-core and Lighthouse check, against the original page"
           >
             <Score label="A11y" value={current.a11y} was={DEMO_ORIGINAL_SCORES.a11y} />
