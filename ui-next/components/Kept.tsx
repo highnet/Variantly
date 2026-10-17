@@ -3,6 +3,7 @@
 import { Fragment, useState } from 'react';
 import { motion } from 'motion/react';
 import { CommandBlock } from './CommandBlock';
+import { PromptCopy } from './PromptCopy';
 import { api } from '@/lib/api';
 import { resetRun } from '@/lib/live';
 import { directionLabel, madeBy, pad, plural, scoreText, usageText, vname } from '@/lib/format';
@@ -15,6 +16,24 @@ const Kept = () => {
   const n = snap.chosen;
   const v = snap.variants.find((x) => x.n === n);
   const r = snap.result ?? { files: [], conflicts: [], depsChanged: false };
+
+  // What the person's own agent needs to carry on: what was kept, where, the
+  // design notes to follow, and what to check. Tool output never counts.
+  const files = r.files.filter((f) => !f.startsWith('.playwright-mcp/'));
+  const who = v ? madeBy(snap, v) : '';
+  const handoff = [
+    `I just kept a redesign of this site, made with variantly. ${n === null ? 'The kept variant' : vname(n)}, "${directionLabel(v?.direction ?? '', v?.picked)}"${who ? ` (made by ${who})` : ''}, is applied to my working tree in ${snap.repo} as uncommitted changes.`,
+    files.includes('DESIGN.md') ? 'Read DESIGN.md first: it describes the visual system this redesign uses. Follow it for anything you change.' : '',
+    files.length ? `Changed files: ${files.join(', ')}.` : '',
+    r.rollout ? `It was already carried to the rest of the site (${r.rollout}).` : r.rolloutError ? 'Only the redesigned pages changed; the rest of the site still has the old style.' : '',
+    'Please:',
+    '1. Review the diff (git diff) for anything broken, missing or off-brand.',
+    '2. Check every page at desktop and phone widths, and fix layout, contrast and accessibility problems, keeping to the design.',
+    '3. Don’t commit. When you’re done, summarise what you changed.',
+    `The other variants are on the branches variantly/${snap.runId}/v1, v2 and so on, if I want to borrow something from one.`,
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   const newRun = async () => {
     try {
@@ -93,6 +112,11 @@ const Kept = () => {
             <p className="hint">
               The other variants stay as git branches named variantly/{snap.runId}/vN until you remove them (see Next).
             </p>
+          </div>
+          <div className="handoff">
+            <h2>Hand off to your agent</h2>
+            <p className="hint">Paste this into Claude Code, Copilot or any agent to review and finish the redesign.</p>
+            <PromptCopy prompt={handoff} />
           </div>
           {r.conflicts.length > 0 && <p className="note bad">Merged with your own edits, with conflicts in {r.conflicts.join(', ')}. Resolve the conflict markers in those files.</p>}
           {r.rollout && (
