@@ -7,7 +7,6 @@ import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime, useSeekTime } from '@/lib/seek';
 import { faceAt, msToNextStep, startDelay, stepAt } from '@/lib/titleTiming';
-import { useSiteStore } from '@/lib/store';
 import { useVariant } from '@/lib/variant';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
@@ -103,10 +102,11 @@ const Letter = ({ char, index, run, solid }: LetterProps) => {
 /*
  * TVA-style title card: "variantly" spelled in nine mismatched typefaces,
  * each letter flickering through variants before it settles. It plays once
- * per concept; it can't be replayed by clicking.
+ * per visit: switching concepts restyles the word in place without replaying.
  */
 export const VariantTitle = () => {
-  const [run, setRun] = useState(0);
+  // One reveal per visit; Letter and Letters3D still take it as their run key.
+  const run = 0;
   // performance.now() when the current reveal started, shared with the 3D word.
   const clock = useRef(0);
   // The 2D word shows first; three.js loads when the browser is idle, and the
@@ -142,12 +142,6 @@ export const VariantTitle = () => {
     const id = setTimeout(go, 1200);
     return () => clearTimeout(id);
   }, [variant]);
-  useEffect(() => {
-    // A new concept gets its own title reveal.
-    return useSiteStore.subscribe((s, prev) => {
-      if (prev.hydrated && s.variant !== prev.variant) setRun((r) => r + 1);
-    });
-  }, []);
   return (
     <div
       data-hero-title
