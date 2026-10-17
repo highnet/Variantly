@@ -1,18 +1,28 @@
 // Outline morphing for the title's letters, shared by the 2D (SVG) and 3D
 // words so both morph identically. The data (public/fonts/3d/morph.json, built
 // by scripts/build-morph.mjs) holds every face's outline of each letter as
-// contours resampled to the same point count. Once per step a letter's track
-// pairs the contours of the face it leaves with those of the face it goes to
-// (outers with outers and holes with holes, by size; a contour with no partner
-// shrinks to, or grows from, a point at its own centre) and turns each pair to
-// line up, so every frame is a plain lerp into preallocated arrays.
+// contours resampled to the same point count, plus, per letter, which faces
+// morph cleanly into which (same contours and holes, no fold or collapse
+// mid-way). Each letter walks a face sequence picked backwards from its final
+// face through those compatible neighbours. Once per step its track pairs the
+// two faces' contours (outers with outers, holes with holes, by size), lines
+// each pair up by shape and splits it into a frame (centre, size) and a
+// normalised shape, so every frame is a plain lerp into preallocated arrays
+// that never folds a contour through itself. A pair that still is not
+// compatible does not point-morph: it pops (the old glyph shrinks away about
+// the letter's centre and the new one grows in).
 import { faceAt, scaleAt, stepCount, type MorphPhase } from '@/lib/titleTiming';
 
 const lowPerf = () =>
   typeof document !== 'undefined' && document.documentElement.dataset.perf === 'low';
 
 type RawGlyph = { a: number; o: number; p: number[]; c: number[][] };
-type RawData = { n: number; faces: { b: number; g: Record<string, RawGlyph> }[] };
+type RawData = {
+  n: number;
+  faces: { b: number; g: Record<string, RawGlyph> }[];
+  // Per letter, per face: the faces that morph cleanly into it, best first.
+  k: Record<string, number[][]>;
+};
 
 type Glyph = {
   // Advance, em.
@@ -25,16 +35,22 @@ type Glyph = {
 export type MorphData = {
   // Points per contour.
   n: number;
+  faces: number;
   // Baseline height per face in a 1em, line-height 1 box, from the bottom (em).
   base: number[];
   glyphs: Record<string, Glyph>[];
   // Most outers and holes any face has, per letter.
   most: Record<string, [number, number]>;
+  // Compatible predecessors per letter and face, and the same as a matrix
+  // (from * faces + to).
+  next: Record<string, number[][]>;
+  ok: Record<string, Uint8Array>;
 };
 
 // Contour points: x from the advance centre, y up from the baseline, em.
 const decode = (raw: RawData): MorphData => {
   const most: Record<string, [number, number]> = {};
+  const faces = raw.faces.length;
   const glyphs = raw.faces.map((f) => {
     const out: Record<string, Glyph> = {};
     for (const [ch, g] of Object.entries(f.g)) {
@@ -57,7 +73,13 @@ const decode = (raw: RawData): MorphData => {
     }
     return out;
   });
-  return { n: raw.n, base: raw.faces.map((f) => f.b / 1000), glyphs, most };
+  const ok: Record<string, Uint8Array> = {};
+  for (const [ch, lists] of Object.entries(raw.k)) {
+    const m = new Uint8Array(faces * faces);
+    lists.forEach((from, to) => from.forEach((f) => (m[f * faces + to] = 1)));
+    ok[ch] = m;
+  }
+  return { n: raw.n, faces, base: raw.faces.map((f) => f.b / 1000), glyphs, most, next: raw.k, ok };
 };
 
 let loading: Promise<MorphData> | null = null;
@@ -70,6 +92,40 @@ export const loadMorph = () =>
     })
     .then(decode));
 
+const hash = (k: number, i: number) => {
+  let x = (Math.imul(k + 1, 2654435761) ^ Math.imul(i + 1, 40503)) >>> 0;
+  x = Math.imul(x ^ (x >>> 15), 0x2c1b3c6d) >>> 0;
+  return (x ^ (x >>> 12)) >>> 0;
+};
+
+// A letter's faces through the reveal (one per step, then its final face),
+// walked backwards from the final face so each face morphs cleanly into the
+// next: picked among the closest compatible faces, never the face just after
+// or the one after that. Deterministic, so a seeked frame is reproducible.
+const sequences = new Map<number, Int16Array>();
+export const faceSequence = (data: MorphData, ch: string, index: number, finalFace: number) => {
+  const key = index * 64 + finalFace;
+  let seq = sequences.get(key);
+  if (seq) return seq;
+  const count = stepCount(index);
+  seq = new Int16Array(count + 1);
+  seq[count] = finalFace;
+  for (let k = count - 1; k >= 0; k--) {
+    const next = seq[k + 1];
+    const after = k + 2 <= count ? seq[k + 2] : -1;
+    const pool = data.next[ch][next].filter((f) => f !== next && f !== after).slice(0, 6);
+    if (pool.length) seq[k] = pool[hash(k, index) % pool.length];
+    else {
+      // Nothing morphs into it: any other face, with a pop.
+      let f = faceAt(k, index, data.faces);
+      if (f === next) f = (f + 1) % data.faces;
+      seq[k] = f;
+    }
+  }
+  sequences.set(key, seq);
+  return seq;
+};
+
 export type MorphTrack = {
   ch: string;
   n: number;
@@ -77,14 +133,21 @@ export type MorphTrack = {
   slots: number;
   outerSlots: number;
   // Contours of the face left (a) and the face reached (b), and the blend.
+  // A morph keeps normalised shapes in a/b and each slot's frame (centre x,
+  // y, size) in fa/fb; a pop keeps both glyphs as they are.
   a: Float32Array;
   b: Float32Array;
+  fa: Float32Array;
+  fb: Float32Array;
   out: Float32Array;
-  // Whether a slot has a contour in either face, and each hole slot's outer.
+  // Whether a slot is drawn, and each hole slot's outer; per face for pops.
   live: Uint8Array;
-  // 0 a matched pair, 1 a contour that vanishes, 2 one that appears.
-  kind: Uint8Array;
   parent: Int16Array;
+  liveA: Uint8Array;
+  liveB: Uint8Array;
+  parentA: Int16Array;
+  parentB: Int16Array;
+  pop: boolean;
   from: number;
   to: number;
   // The reveal steps those faces belong to (sizes follow them).
@@ -103,10 +166,16 @@ export const morphTrack = (data: MorphData, ch: string): MorphTrack => {
     outerSlots: o,
     a: new Float32Array(size),
     b: new Float32Array(size),
+    fa: new Float32Array(slots * 3),
+    fb: new Float32Array(slots * 3),
     out: new Float32Array(size),
     live: new Uint8Array(slots),
-    kind: new Uint8Array(slots),
     parent: new Int16Array(slots),
+    liveA: new Uint8Array(slots),
+    liveB: new Uint8Array(slots),
+    parentA: new Int16Array(slots),
+    parentB: new Int16Array(slots),
+    pop: false,
     from: -1,
     to: -1,
     fromStep: 0,
@@ -114,57 +183,44 @@ export const morphTrack = (data: MorphData, ch: string): MorphTrack => {
   };
 };
 
-const centre = (c: Float32Array, n: number) => {
+// Centre and root-mean-square size of a contour, into frame slot `s`.
+const frame = (c: Float32Array, n: number, f: Float32Array, s: number) => {
   let x = 0;
   let y = 0;
   for (let i = 0; i < n; i++) {
     x += c[i * 2];
     y += c[i * 2 + 1];
   }
-  return [x / n, y / n] as const;
-};
-
-// Root-mean-square distance of a contour's points from (x, y): its size.
-const spread = (c: Float32Array, n: number, x: number, y: number) => {
+  x /= n;
+  y /= n;
   let d = 0;
   for (let i = 0; i < n; i++) d += (c[i * 2] - x) ** 2 + (c[i * 2 + 1] - y) ** 2;
-  return Math.sqrt(d / n) || 1;
+  f[s * 3] = x;
+  f[s * 3 + 1] = y;
+  f[s * 3 + 2] = Math.sqrt(d / n) || 1e-6;
 };
 
-// Copy one contour pair into slot `s`: `ca` as is, `cb` turned to the start
-// point that lines up best with `ca` (both about their own centres).
-const pair = (t: MorphTrack, s: number, ca?: Float32Array, cb?: Float32Array) => {
+// A matched pair into slot `s`: both normalised (about their centres, at
+// unit size), `cb` turned to the start point closest in shape to `ca`'s.
+const pair = (t: MorphTrack, s: number, ca: Float32Array, cb: Float32Array) => {
   const n = t.n;
   const at = s * n * 2;
-  t.live[s] = ca || cb ? 1 : 0;
-  t.kind[s] = ca && cb ? 0 : ca ? 1 : 2;
-  if (!ca && !cb) return;
-  if (!ca || !cb) {
-    // No partner: the contour shrinks to (or grows from) its own centre.
-    const real = (ca ?? cb)!;
-    const [x, y] = centre(real, n);
-    const into = ca ? t.b : t.a;
-    (ca ? t.a : t.b).set(real, at);
-    for (let i = 0; i < n; i++) {
-      into[at + i * 2] = x;
-      into[at + i * 2 + 1] = y;
-    }
-    return;
+  frame(ca, n, t.fa, s);
+  frame(cb, n, t.fb, s);
+  const [ax, ay, ar] = [t.fa[s * 3], t.fa[s * 3 + 1], 1 / t.fa[s * 3 + 2]];
+  const [bx, by, br] = [t.fb[s * 3], t.fb[s * 3 + 1], 1 / t.fb[s * 3 + 2]];
+  for (let i = 0; i < n; i++) {
+    t.a[at + i * 2] = (ca[i * 2] - ax) * ar;
+    t.a[at + i * 2 + 1] = (ca[i * 2 + 1] - ay) * ar;
   }
-  const [ax, ay] = centre(ca, n);
-  const [bx, by] = centre(cb, n);
-  // Compared at the same size, so a small contour lines up with a large one
-  // by shape rather than by its nearest edge (which twists the morph).
-  const ra = 1 / spread(ca, n, ax, ay);
-  const rb = 1 / spread(cb, n, bx, by);
   let best = 0;
   let bestD = Infinity;
   for (let shift = 0; shift < n; shift++) {
     let d = 0;
     for (let i = 0; i < n && d < bestD; i++) {
       const j = ((i + shift) % n) * 2;
-      const dx = (ca[i * 2] - ax) * ra - (cb[j] - bx) * rb;
-      const dy = (ca[i * 2 + 1] - ay) * ra - (cb[j + 1] - by) * rb;
+      const dx = t.a[at + i * 2] - (cb[j] - bx) * br;
+      const dy = t.a[at + i * 2 + 1] - (cb[j + 1] - by) * br;
       d += dx * dx + dy * dy;
     }
     if (d < bestD) {
@@ -172,32 +228,60 @@ const pair = (t: MorphTrack, s: number, ca?: Float32Array, cb?: Float32Array) =>
       best = shift;
     }
   }
-  t.a.set(ca, at);
   for (let i = 0; i < n; i++) {
     const j = ((i + best) % n) * 2;
-    t.b[at + i * 2] = cb[j];
-    t.b[at + i * 2 + 1] = cb[j + 1];
+    t.b[at + i * 2] = (cb[j] - bx) * br;
+    t.b[at + i * 2 + 1] = (cb[j + 1] - by) * br;
   }
 };
 
-// Set a track to morph from face `from` to face `to` (once per step).
+// Set a track to go from face `from` to face `to` (once per step).
 export const planMorph = (data: MorphData, t: MorphTrack, from: number, to: number) => {
   if (t.from === from && t.to === to) return;
   t.from = from;
   t.to = to;
   const ga = data.glyphs[from][t.ch];
   const gb = data.glyphs[to][t.ch];
-  for (let s = 0; s < t.outerSlots; s++) pair(t, s, ga.outers[s], gb.outers[s]);
-  for (let s = 0; s < t.slots - t.outerSlots; s++) {
+  const holeSlots = t.slots - t.outerSlots;
+  t.pop = from !== to && !data.ok[t.ch][from * data.faces + to];
+  if (t.pop) {
+    // Both glyphs as they are, slot by slot.
+    const n2 = t.n * 2;
+    const put = (g: Glyph, into: Float32Array, live: Uint8Array, parent: Int16Array) => {
+      live.fill(0);
+      g.outers.forEach((c, s) => {
+        into.set(c, s * n2);
+        live[s] = 1;
+      });
+      g.holes.forEach((c, s) => {
+        into.set(c, (t.outerSlots + s) * n2);
+        live[t.outerSlots + s] = 1;
+        parent[t.outerSlots + s] = g.parents[s];
+      });
+    };
+    put(ga, t.a, t.liveA, t.parentA);
+    put(gb, t.b, t.liveB, t.parentB);
+    return;
+  }
+  // Compatible faces have the same contours (or this is a hold on one face).
+  t.live.fill(0);
+  for (let s = 0; s < t.outerSlots; s++) {
+    if (!ga.outers[s] || !gb.outers[s]) continue;
+    pair(t, s, ga.outers[s], gb.outers[s]);
+    t.live[s] = 1;
+  }
+  for (let s = 0; s < holeSlots; s++) {
+    if (!ga.holes[s] || !gb.holes[s]) continue;
     const slot = t.outerSlots + s;
     pair(t, slot, ga.holes[s], gb.holes[s]);
-    t.parent[slot] = ga.holes[s] ? ga.parents[s] : (gb.parents[s] ?? 0);
+    t.live[slot] = 1;
+    t.parent[slot] = ga.parents[s];
   }
 };
 
 // Plan a letter's morph for a step of the reveal: from that step's face to
-// the next step's, or to `finalFace` after the last. True when heading into
-// the final face.
+// the next step's (its face sequence ends on `finalFace`). True when heading
+// into the final face.
 export const planStep = (
   data: MorphData,
   t: MorphTrack,
@@ -205,8 +289,8 @@ export const planStep = (
   index: number,
   finalFace: number,
 ) => {
-  const n = data.glyphs.length;
-  const count = stepCount(index);
+  const seq = faceSequence(data, t.ch, index, finalFace);
+  const count = seq.length - 1;
   let from = phase.step;
   let to = from + 1;
   // Low power tier (html[data-perf='low']): half the morphs, each from an even
@@ -216,25 +300,49 @@ export const planStep = (
     to = Math.min(from + 2, count);
     if (phase.step === from && to > from + 1) phase.e = 0;
   }
-  const last = to >= count;
   t.fromStep = from;
   t.toStep = to;
-  planMorph(data, t, faceAt(from, index, n), last ? finalFace : faceAt(to, index, n));
-  return last;
+  planMorph(data, t, seq[from], seq[to]);
+  return to >= count;
+};
+
+// Where a pop's glyphs shrink to and grow from: the letter's middle (em).
+const PIVOT_Y = 0.35;
+const smooth = (u: number) => {
+  const v = Math.min(1, Math.max(0, u));
+  return v * v * (3 - 2 * v);
 };
 
 // Write the outline `e` (0..1) of the way through the planned morph to t.out.
 export const blendMorph = (t: MorphTrack, e: number) => {
-  const { a, b, out } = t;
+  const { a, b, out, fa, fb } = t;
   const len = t.n * 2;
+  if (t.pop) {
+    // The old glyph shrinks away over the middle of the morph, the new one
+    // grows in straight after.
+    const first = e < 0.5;
+    const k = first ? 1 - smooth((e - 0.3) / 0.2) : smooth((e - 0.5) / 0.2);
+    const src = first ? a : b;
+    t.live.set(first ? t.liveA : t.liveB);
+    t.parent.set(first ? t.parentA : t.parentB);
+    const s = Math.max(k, 0.001);
+    for (let i = 0; i < out.length; i += 2) {
+      out[i] = src[i] * s;
+      out[i + 1] = PIVOT_Y + (src[i + 1] - PIVOT_Y) * s;
+    }
+    return;
+  }
   for (let s = 0; s < t.slots; s++) {
     if (!t.live[s]) continue;
-    // A contour with no partner shrinks away in the first half of the morph
-    // or grows in the second, so it never smears across the whole of it.
-    const k = t.kind[s];
-    const u = k === 0 ? e : k === 1 ? Math.min(1, e * 2) : Math.max(0, e * 2 - 1);
-    const eu = k === 0 ? u : u * u * (3 - 2 * u);
-    for (let i = s * len, end = i + len; i < end; i++) out[i] = a[i] + (b[i] - a[i]) * eu;
+    // Frame and shape blend apart: the contour glides and resizes while its
+    // shape flows, instead of its points cutting straight across.
+    const cx = fa[s * 3] + (fb[s * 3] - fa[s * 3]) * e;
+    const cy = fa[s * 3 + 1] + (fb[s * 3 + 1] - fa[s * 3 + 1]) * e;
+    const r = fa[s * 3 + 2] + (fb[s * 3 + 2] - fa[s * 3 + 2]) * e;
+    for (let i = s * len, end = i + len; i < end; i += 2) {
+      out[i] = cx + (a[i] + (b[i] - a[i]) * e) * r;
+      out[i + 1] = cy + (a[i + 1] + (b[i + 1] - a[i + 1]) * e) * r;
+    }
   }
 };
 
