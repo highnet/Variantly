@@ -3,8 +3,15 @@
 // and written as three.js typeface JSON (the facetype.js format) to
 // public/fonts/3d/<index>.json. All of these faces are SIL OFL 1.1 (see
 // public/fonts/3d/LICENSES.txt) except Special Elite (Apache 2.0).
-// Usage (in site/): node scripts/build-3d-fonts.mjs
-import { mkdirSync, writeFileSync } from 'node:fs';
+// The wild display faces (marked with a slug) are not served by next/font:
+// their 2D woff2 is subset here from the very same file to the letters of
+// "variantly" (app/fonts/wild/<slug>.woff2, a few KB each), so the 2D and 3D
+// letters share one outline. Subsetting needs fontTools (pip install fonttools
+// brotli). Their copyright notices are written to public/fonts/3d/WILD-LICENSES.txt.
+// Usage (in site/): NODE_USE_ENV_PROXY=1 node scripts/build-3d-fonts.mjs
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import opentype from 'opentype.js';
@@ -24,7 +31,20 @@ const FACES = [
   ['Rubik Mono One', '400'],
   ['Press Start 2P', '400'],
   ['Righteous', '400'],
+  // Wild display faces, all SIL OFL 1.1.
+  ['Bagel Fat One', '400', 'bagel'],
+  ['Shrikhand', '400', 'shrikhand'],
+  ['Tilt Warp', '400', 'tilt-warp'],
+  ['Climate Crisis', '400', 'climate-crisis'],
+  ['Silkscreen', '700', 'silkscreen'],
+  ['Rye', '400', 'rye'],
+  ['Fascinate', '400', 'fascinate'],
+  ['Rubik Wet Paint', '400', 'wet-paint'],
 ];
+const wildOut = join(process.cwd(), 'app/fonts/wild');
+mkdirSync(wildOut, { recursive: true });
+const tmp = mkdtempSync(join(tmpdir(), 'vy-fonts-'));
+const notices = [];
 
 const out = join(process.cwd(), 'public/fonts/3d');
 mkdirSync(out, { recursive: true });
@@ -62,8 +82,23 @@ const outline = (path) =>
     .filter(Boolean)
     .join(' ');
 
-for (const [i, [family, weight]] of FACES.entries()) {
-  const font = opentype.parse(await ttf(family, weight));
+for (const [i, [family, weight, slug]] of FACES.entries()) {
+  const file = await ttf(family, weight);
+  const font = opentype.parse(file);
+  if (slug) {
+    const src = join(tmp, `${slug}.ttf`);
+    writeFileSync(src, Buffer.from(file));
+    const dest = join(wildOut, `${slug}.woff2`);
+    execFileSync('pyftsubset', [
+      src,
+      '--text=variantly',
+      '--flavor=woff2',
+      `--output-file=${dest}`,
+    ]);
+    notices.push(
+      `${family} (${weight})\n${font.names.copyright?.en ?? ''}\nLicensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).\n`,
+    );
+  }
   const glyphs = {};
   for (const ch of CHARS) {
     const g = font.charToGlyph(ch);
@@ -86,9 +121,10 @@ for (const [i, [family, weight]] of FACES.entries()) {
     cssFontWeight: 'normal',
     cssFontStyle: 'normal',
   };
-  const file = join(out, `${i}.json`);
-  writeFileSync(file, JSON.stringify(json));
+  const target = join(out, `${i}.json`);
+  writeFileSync(target, JSON.stringify(json));
   console.log(
-    `${file}  ${family} ${weight}  ${(JSON.stringify(json).length / 1024).toFixed(1)} KB`,
+    `${target}  ${family} ${weight}  ${(JSON.stringify(json).length / 1024).toFixed(1)} KB`,
   );
 }
+writeFileSync(join(out, 'WILD-LICENSES.txt'), notices.join('\n'));

@@ -866,7 +866,8 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 @keyframes vy-ticker {
   to { transform: translateX(-50%); }
 }
-.vy-letter-locked { animation: vy-lock 0.35s ease-out; }
+/* Same curve as the 3D word's pop (lockPop in lib/titleTiming): ease-out quad. */
+.vy-letter-locked { animation: vy-lock 0.35s cubic-bezier(0.5, 1, 0.89, 1); }
 @media (prefers-reduced-motion: reduce) {
   .vy-title, [data-hero-title]::after { animation: none !important; }
 }
@@ -1432,13 +1433,20 @@ button:not(.vy-fresh):active, a.rounded-chip:active { transform: scale(0.94); tr
   --hero-bg: #130c29; --hero-ink: #f4f0ff; --hero-mute: #b7aee0; --hero-line: #3d2c70; --hero-box: #0b0718;
   --title: #a58bff;
 }
-/* The HTML word stays for screen readers and clicks; the canvas shows it. */
-/* The 3D word has taken over: beats any concept's title animation. */
-/* Handoff, not a crossfade: the 2D word drops out fast and the 3D word fades in
-   just after, so the two (different faces, slightly different positions) never
-   read as a doubled title. */
-.vy-title-solid { opacity: 0 !important; animation: none !important; transition: opacity 0.15s ease-in; }
 .vy-letters3d { pointer-events: none; }
+/* The 3D word has taken over. It sits exactly over the 2D word with the same
+   faces, sizes and colours, so the two crossfade: the 2D glyphs (and their
+   text-shadows, which the 3D word renders as extrusion, offset shadow or glow)
+   fade out while the concept's decorations (Cut & Paste's paper tiles, the
+   Brutal highlighter) stay under the 3D letters. The HTML word stays for screen
+   readers; its parallax and title animations stop so it holds still under the
+   canvas. */
+.vy-title-solid { animation: none !important; translate: none !important; }
+.vy-title-solid .vy-letter > * {
+  color: transparent !important;
+  text-shadow: none !important;
+  transition: color 0.2s ease-in, text-shadow 0.2s ease-in;
+}
 :root[data-variant='g'] main > div h2 { text-transform: none; text-shadow: 0 3px 0 #ff5fa2, 0 6px 0 #22c3ee; }
 :root[data-variant='g'] main > div .bg-surface { border: 0; border-radius: 22px; box-shadow: 0 1px 0 rgb(255 255 255 / 0.8) inset, 0 18px 40px -20px rgb(124 92 255 / 0.55); }
 :root[data-variant='g'] [data-hero-side] { background: var(--hero-box); border-radius: 22px; padding: 22px; box-shadow: 0 18px 40px -20px rgb(124 92 255 / 0.55); }

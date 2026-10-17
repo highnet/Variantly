@@ -6,7 +6,8 @@ import { canWebGL } from '@/lib/glTier';
 import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime, useSeekTime } from '@/lib/seek';
-import { faceAt, msToNextStep, startDelay, stepAt } from '@/lib/titleTiming';
+import { useSiteStore } from '@/lib/store';
+import { faceAt, msToNextStep, scaleAt, startDelay, stepAt } from '@/lib/titleTiming';
 import { useVariant } from '@/lib/variant';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
@@ -19,9 +20,6 @@ const Letters3D = dynamic(() => import('@/components/Letters3D').then((m) => m.L
 const WORD = 'variantly';
 const fontAt = (step: number, index: number) =>
   INTRO_FONTS[faceAt(step, index, INTRO_FONTS.length)];
-// Mismatched sizes while shifting, like the title card's jumping glyphs.
-// Never above 1: a shifting glyph may shrink inside its slot but never spill.
-const scaleAt = (step: number, index: number) => 0.72 + (((step * 13 + index * 29) % 9) / 8) * 0.28;
 
 type LetterProps = {
   char: string;
@@ -67,14 +65,26 @@ const Letter = ({ char, index, run, solid }: LetterProps) => {
   // width, and stays centred, while the shifting glyph swaps faces on top.
   // Wide faces would spill into the neighbours: shrink the glyph to its slot.
   const slot = useRef<HTMLSpanElement>(null);
+  // The 3D word (Letters3D) mirrors this exactly: fit by the glyph's advance,
+  // jump in size about the slot centre.
   const glyph = useRef<HTMLSpanElement>(null);
+  const ink = useRef<HTMLSpanElement>(null);
   useLayoutEffect(() => {
     const g = glyph.current;
     const box = slot.current;
-    if (!g || !box || step === null) return;
-    g.style.transform = 'none';
-    const fit = Math.min(1, box.offsetWidth / Math.max(1, g.scrollWidth));
-    g.style.transform = `scale(${fit * scaleAt(step, index)})`;
+    const text = ink.current;
+    if (!g || !box || !text || step === null) return;
+    const fit = () => {
+      const k = Math.min(1, box.offsetWidth / Math.max(1, text.offsetWidth));
+      g.style.transform = `scale(${k * scaleAt(step, index)})`;
+    };
+    fit();
+    // A face still loading measures with its fallback: fit again once it lands.
+    let live = true;
+    void document.fonts.ready.then(() => live && fit());
+    return () => {
+      live = false;
+    };
   }, [step, index]);
 
   return (
@@ -85,14 +95,18 @@ const Letter = ({ char, index, run, solid }: LetterProps) => {
         live === null && seek === null && 'vy-letter-locked',
       )}
     >
-      <span className={cn(INTRO_FINAL[index], step !== null && 'invisible')}>{char}</span>
+      <span className={cn(INTRO_FINAL[index], step !== null && 'invisible')}>
+        {char}
+        {/* Marks the final glyph's baseline for the 3D word's layout. */}
+        <span data-base className="inline-block h-0 w-0" />
+      </span>
       {step !== null && (
         <span
           ref={glyph}
           aria-hidden="true"
           className={cn('absolute inset-0 flex items-end justify-center', fontAt(step, index))}
         >
-          {char}
+          <span ref={ink}>{char}</span>
         </span>
       )}
     </span>
@@ -101,12 +115,12 @@ const Letter = ({ char, index, run, solid }: LetterProps) => {
 
 /*
  * TVA-style title card: "variantly" spelled in nine mismatched typefaces,
- * each letter flickering through variants before it settles. It plays once
- * per visit: switching concepts restyles the word in place without replaying.
+ * each letter flickering through variants before it settles. It plays on
+ * load and again whenever the concept switches (clicking does not replay).
  */
 export const VariantTitle = () => {
-  // One reveal per visit; Letter and Letters3D still take it as their run key.
-  const run = 0;
+  const [run, setRun] = useState(0);
+  const word = useRef<HTMLDivElement>(null);
   // performance.now() when the current reveal started, shared with the 3D word.
   const clock = useRef(0);
   // The 2D word shows first; three.js loads when the browser is idle, and the
@@ -142,6 +156,14 @@ export const VariantTitle = () => {
     const id = setTimeout(go, 1200);
     return () => clearTimeout(id);
   }, [variant]);
+  useEffect(
+    // A new concept gets its own title reveal.
+    () =>
+      useSiteStore.subscribe((s, prev) => {
+        if (prev.hydrated && s.variant !== prev.variant) setRun((r) => r + 1);
+      }),
+    [],
+  );
   return (
     <div
       data-hero-title
@@ -151,6 +173,7 @@ export const VariantTitle = () => {
       )}
     >
       <div
+        ref={word}
         role="img"
         aria-label="variantly"
         className={cn(
@@ -162,7 +185,9 @@ export const VariantTitle = () => {
           <Letter key={i} char={c} index={i} run={run} solid={solid} />
         ))}
       </div>
-      {want3d && <Letters3D run={run} clock={clock} onReady={onReady} onFail={onFail} />}
+      {want3d && (
+        <Letters3D run={run} clock={clock} title={word} onReady={onReady} onFail={onFail} />
+      )}
     </div>
   );
 };
