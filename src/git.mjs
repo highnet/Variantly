@@ -36,7 +36,30 @@ export async function hasCommits(root) {
  * @returns {Promise<{ base: string, dirty: boolean, untracked: string[] }>}
  */
 export async function snapshotBase(root) {
-  const stash = (await git(root, ["stash", "create", "variantly base"])).trim();
+  // One snapshot per repo at a time: `git stash create` writes the index and
+  // fails quietly (exit 1) when another one holds index.lock. Detect and
+  // generate can ask at once, so queue them, and retry a lock held elsewhere.
+  const prev = snapshots.get(root) ?? Promise.resolve();
+  const next = prev.catch(() => {}).then(() => takeSnapshot(root));
+  snapshots.set(root, next);
+  return next;
+}
+
+/** @type {Map<string, Promise<{ base: string, dirty: boolean, untracked: string[] }>>} */
+const snapshots = new Map();
+
+/** @param {string} root */
+async function takeSnapshot(root) {
+  let stash = "";
+  for (let attempt = 0; ; attempt++) {
+    try {
+      stash = (await git(root, ["stash", "create", "variantly base"])).trim();
+      break;
+    } catch (err) {
+      if (attempt >= 4) throw err;
+      await new Promise((r) => setTimeout(r, 150 * (attempt + 1)));
+    }
+  }
   const head = (await git(root, ["rev-parse", "HEAD"])).trim();
   const untracked = (await git(root, ["ls-files", "--others", "--exclude-standard"]))
     .split("\n")
@@ -179,6 +202,14 @@ async function unlinkShared(worktree) {
 }
 
 /**
+ * Folders agent tooling writes into its cwd; never part of a variant. Excluded
+ * with a glob pathspec, whose leading double star also matches the root; unlike a plain
+ * `:(exclude).playwright-mcp` it does not make `git add` fail when the
+ * project already gitignores the folder.
+ */
+export const TOOL_OUTPUT = [".playwright-mcp"];
+
+/**
  * The pathspec for "what the agent changed": everything but the marker and the
  * excluded paths. `git add` refuses outright (exit 1) when an exclude pathspec
  * names a path .gitignore already ignores, such as a linked node_modules;
@@ -190,7 +221,7 @@ const changeSpec = async (worktree, exclude) => {
   const ignored = rels.length
     ? new Set((await run("git", ["check-ignore", "--", ...rels], { cwd: worktree })).stdout.split("\n").map((s) => s.trim()))
     : new Set();
-  return [".", `:(exclude)${MARKER}`, `:(exclude)**/${MARKER}`, ...rels.filter((p) => !ignored.has(p)).map((p) => `:(exclude)${p}`)];
+  return [".", `:(exclude)${MARKER}`, `:(exclude)**/${MARKER}`, ...TOOL_OUTPUT.map((d) => `:(exclude,glob)**/${d}/**`), ...rels.filter((p) => !ignored.has(p)).map((p) => `:(exclude)${p}`)];
 };
 
 /**
