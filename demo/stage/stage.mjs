@@ -263,7 +263,8 @@ export async function mount(layout, theme = 'light') {
   }
 
   // ---------------------------------------------------------------- captions
-  const cue = captionAt(tl.captions, t);
+  // On by default; `build.mjs --no-captions` renders a picture without them.
+  const cue = tl.burnCaptions === false ? null : captionAt(tl.captions, t);
   if (cue && !scene.cta) document.body.append(el('div', 'caption', `<span>${esc(cue.text)}</span>`));
 
   // ---------------------------------------------------------------- lower thirds

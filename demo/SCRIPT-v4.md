@@ -145,7 +145,7 @@ The real run is ten variants, five at a time, so two waves: about 50–80 min, a
 - The pause beat's five silent seconds are `"rest": 5000`.
 - The chat scene stays `pending` until `record.mjs` has a `chatDone` wait and the runtime has about 10 s to spare. Chapters are numbered over filmed scenes only, so a pending one leaves no gap.
 - After the take, rewrite the walk lines to say what each variant actually did. V08 names and credits the real tradition the agent chose. Add any new name to `pronunciations.json`, then run `npm run voice:dict` to rewrite `pronunciations.pls`.
-- **Captions** are burned into every render by the stage (16:9 and 9:16) and also written to `out/variantly-demo-<theme>.srt` for YouTube.
+- **Captions** are burned into every render by the stage (16:9 and 9:16) and also written to `out/variantly-demo-<theme>.srt` for YouTube. `npm run build:nocaptions` (or `build.mjs wide|vertical --no-captions`) also renders a silent picture without them, `out/variantly-demo-<theme>-nocaptions*.mp4`, for the short cuts; the normal films keep their captions.
 - 9:16: keep everything out of the bottom 20% and the right 120px, where Shorts, Reels and TikTok draw their own interface. No card text under 24px. The corner label sits top left above the picture in 9:16 and bottom right in 16:9, and is drawn over every card and veil.
 - `edit` writes `out/youtube-description-<theme>.txt` with the real chapter times and the commands shown; copy them into `PINNED-COMMENT.md` and the description after the take.
 - Embed the final video on the site: `DEMO_VIDEO_ID_LIGHT` and `DEMO_VIDEO_ID_DARK` in `site/lib/site.ts` are empty until it's uploaded.

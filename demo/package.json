@@ -19,6 +19,7 @@
     "all": "npm run voice && npm run record && npm run voice && npm run edit && npm run build:all",
     "stacks": "node stacks.mjs",
     "build:all": "node --env-file-if-exists=.env build.mjs all",
+    "build:nocaptions": "node --env-file-if-exists=.env build.mjs wide --no-captions && node --env-file-if-exists=.env build.mjs vertical --no-captions",
     "voice:local": "node voice.mjs --voice local",
     "voice:lint": "node voice.mjs --lint",
     "voice:dict": "node --env-file-if-exists=.env voice.mjs --dict",
