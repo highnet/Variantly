@@ -650,7 +650,7 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   border-bottom: 0;
 }
 /* The hero grid is capped at 1440px; on wider screens its tint carries on to
-   the edges (Soft Clay and TVA keep their framed card). */
+   the edges (Soft Clay and Amber Terminal keep their framed card). */
 :root[data-variant]:not([data-variant='a'], [data-variant='c']) [data-hero-grid] {
   box-shadow: 0 0 0 100vmax color-mix(in srgb, var(--hero-bg) var(--hero-alpha, 70%), transparent);
   clip-path: inset(0 -100vmax);
@@ -666,7 +666,7 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 
 /* ---- B · Riso Poster: two-ink overprint, halftone, ticket stub ------------ */
 
-/* ---- C · TVA Terminal: amber CRT, console frames, typewriter ------------- */
+/* ---- C · Amber Terminal: amber CRT, console frames, typewriter ----------- */
 
 /* ---- D · Brutal Zine: hard borders, highlighter, sticker, ticker --------- */
 
@@ -724,7 +724,7 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 
 /* B · Riso Poster: halftone paper, ink underlines, tilted tickets */
 
-/* C · TVA Terminal: case-file sections, ruled paper, form-strip cards */
+/* C · Amber Terminal: ruled paper, console-frame cards */
 
 /* D · Brutal Zine: hard edges, hard shadows, highlighter heads */
 
@@ -1284,7 +1284,7 @@ main > div p { line-height: 1.65; }
   transition: transform 500ms var(--ease-out-expo);
 }
 .vy-loadbar-text { display: none; }
-/* TVA: a printed terminal bar. */
+/* Amber Terminal: a printed terminal bar. */
 /* Candy: a fat, rounded gummy bar with a shine. */
 /* Bauhaus: three primary segments. */
 /* Clay: soft and pillowy. */

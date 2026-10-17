@@ -175,7 +175,7 @@
       "backdropScene": "low-poly landscape rendered through a dither ShaderMaterial (threshold per fragment); orthographic camera orbiting one full turn per 24s",
       "motion": "stepped and quantised; frames hold, then snap",
       "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
-      "risk": "Reads as a retro-game filter or Mac Classic nostalgia; 1-bit text below 12px gets illegible; must stay distinct from c TVA Terminal (no green phosphor, no CRT).",
+      "risk": "Reads as a retro-game filter or Mac Classic nostalgia; 1-bit text below 12px gets illegible; must stay distinct from c Amber Terminal (no green phosphor, no CRT).",
       "sources": [
         "Lucas Pope, Return of the Obra Dinn (2018)",
         "Low-Tech Magazine solar website",
