@@ -102,15 +102,16 @@ const Letter = ({ char, index, run, solid }: LetterProps) => {
 
 /*
  * TVA-style title card: "variantly" spelled in nine mismatched typefaces,
- * each letter flickering through variants before it settles. Click replays.
+ * each letter flickering through variants before it settles. It plays once
+ * per concept; it can't be replayed by clicking.
  */
 export const VariantTitle = () => {
   const [run, setRun] = useState(0);
   // performance.now() when the current reveal started, shared with the 3D word.
   const clock = useRef(0);
   // The 2D word shows first; three.js loads when the browser is idle, and the
-  // 3D word crossfades in over it. The HTML word stays for screen readers, as
-  // the replay target, and as the fallback when WebGL is unavailable.
+  // 3D word crossfades in over it. The HTML word stays for screen readers and
+  // as the fallback when WebGL is unavailable.
   const [want3d, setWant3d] = useState(false);
   const [solid, setSolid] = useState(false);
   const onReady = useCallback(() => setSolid(true), []);
@@ -155,21 +156,18 @@ export const VariantTitle = () => {
         want3d && 'min-h-[clamp(180px,34vw,460px)]',
       )}
     >
-      <button
-        type="button"
+      <div
+        role="img"
         aria-label="variantly"
-        title="Replay"
-        data-keep-cycle
-        onClick={() => setRun((r) => r + 1)}
         className={cn(
-          'vy-title relative z-1 flex cursor-pointer items-end gap-[0.12em] text-[clamp(2.5rem,16vw,11rem)]',
+          'vy-title relative z-1 flex items-end gap-[0.12em] text-[clamp(2.5rem,16vw,11rem)]',
           solid && 'vy-title-solid',
         )}
       >
         {[...WORD].map((c, i) => (
           <Letter key={i} char={c} index={i} run={run} solid={solid} />
         ))}
-      </button>
+      </div>
       {want3d && <Letters3D run={run} clock={clock} onReady={onReady} onFail={onFail} />}
     </div>
   );
