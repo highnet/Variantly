@@ -61,7 +61,8 @@ test('a rollout commits only its own work, and a cancelled one leaves placed fil
   writeFileSync(path.join(wt, 'app.css'), 'body { color: blue }\n');
   writeFileSync(path.join(wt, 'about.css'), 'h1 {}\n');
   await discardChanges(wt, before);
-  assert.equal(readFileSync(path.join(wt, 'app.css'), 'utf8'), 'body {}\n');
+  // Windows git restores with CRLF; compare content, not line endings.
+  assert.equal(readFileSync(path.join(wt, 'app.css'), 'utf8').replace(/\r\n/g, '\n'), 'body {}\n');
   assert.equal(existsSync(path.join(wt, 'about.css')), false);
   assert.equal(existsSync(path.join(wt, '.claude', 'skills', 'impeccable', 'SKILL.md')), true);
   assert.equal(existsSync(path.join(wt, 'node_modules', 'vite', 'index.js')), true);
