@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 
+import { useSeekTime } from '@/lib/seek';
 import { cn } from '@/lib/utils';
 
 const DIGITS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -36,7 +37,9 @@ const RollingNumber = ({ value, className }: RollingNumberProps) => {
     return () => io.disconnect();
   }, []);
 
-  const shown = seen ? value : 0;
+  // Seekreel frames show the final value, wherever the number sits.
+  const seek = useSeekTime();
+  const shown = seen || seek !== null ? value : 0;
   const digits = String(Math.abs(value)).split('').map(Number);
   // Pad the start value so it rolls up through the same slots.
   const target = String(Math.abs(shown)).padStart(digits.length, '0').split('').map(Number);

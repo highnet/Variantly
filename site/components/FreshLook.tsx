@@ -4,6 +4,7 @@ import { RefreshCw } from 'lucide-react';
 import { useRef, type MouseEvent } from 'react';
 
 import { Button } from '@/components/ui/Button';
+import { EASE } from '@/lib/motion';
 import { calmMotion } from '@/lib/prefs';
 import { setVariant, useVariant, VARIANT_KEYS } from '@/lib/variant';
 
@@ -35,7 +36,7 @@ export const burst = (x: number, y: number, sparks = SPARKS) => {
       { transform: 'translate(-50%, -50%) scale(0.2)', opacity: 0.9 },
       { transform: 'translate(-50%, -50%) scale(3.2)', opacity: 0 },
     ],
-    { duration: 480, easing: 'cubic-bezier(0.2, 0.7, 0.3, 1)', fill: 'forwards' },
+    { duration: 480, easing: EASE.outExpo, fill: 'forwards' },
   );
 
   for (let i = 0; i < sparks; i++) {
@@ -68,12 +69,13 @@ export const burst = (x: number, y: number, sparks = SPARKS) => {
       ],
       {
         duration: 900 + Math.random() * 300,
-        easing: 'cubic-bezier(0.15, 0.8, 0.3, 1)',
+        easing: EASE.outExpo,
         fill: 'forwards',
       },
     );
   }
-  window.setTimeout(() => layer.remove(), 640);
+  // After the longest spark lands (1.2s), not mid-flight.
+  window.setTimeout(() => layer.remove(), 1250);
 };
 
 /*
@@ -114,7 +116,7 @@ export const FreshLook = () => {
           { transform: 'rotate(200deg) scale(1.5)', offset: 0.4 },
           { transform: 'rotate(360deg) scale(1)' },
         ],
-        { duration: 640, easing: 'cubic-bezier(0.34, 1.4, 0.5, 1)' },
+        { duration: 640, easing: EASE.spring },
       );
     }
     navigator.vibrate?.(12);
