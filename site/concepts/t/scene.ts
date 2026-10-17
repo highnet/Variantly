@@ -30,10 +30,10 @@ void main() {
     vec2 c = s.xy - uL.xy * (0.25 + lift) * 1.6;
     vec2 r = vec2(s.z, s.z * 0.72) * (1.0 + lift * 0.5);
     float d = length((vP - c) / r);
-    float soft = 0.35 + lift * 1.4;
+    float soft = 0.5 + lift * 1.5;
     a = max(a, (1.0 - smoothstep(1.0 - soft, 1.0 + soft, d)) * (1.0 - lift * 0.9));
     // Contact: a tight dark rim where a resting stone meets the cloth.
-    if (lift < 0.01) a = max(a, (1.0 - smoothstep(0.8, 1.05, length((vP - s.xy) / r))) * 1.2);
+    if (lift < 0.01) a = max(a, (1.0 - smoothstep(0.82, 1.04, length((vP - s.xy) / r))) * 0.9);
   }
   gl_FragColor = vec4(0.16, 0.12, 0.08, a * uOp);
 }`;
@@ -80,7 +80,7 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
       uniforms: {
         uS: { value: uS },
         uL: { value: new THREE.Vector3() },
-        uOp: { value: dark ? 0.6 : 0.42 },
+        uOp: { value: dark ? 0.5 : 0.3 },
       },
       vertexShader:
         'varying vec2 vP; void main(){ vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
