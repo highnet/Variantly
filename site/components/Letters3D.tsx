@@ -8,6 +8,16 @@ import { FontLoader, type Font } from 'three/examples/jsm/loaders/FontLoader.js'
 
 import type { VariantKey } from '@/components/backdrop/variants';
 import { glTier, markFallback } from '@/lib/glTier';
+import {
+  blendMorph,
+  loadMorph,
+  morphPose,
+  morphTrack,
+  planStep,
+  type MorphData,
+  type MorphPose,
+  type MorphTrack,
+} from '@/lib/glyphMorph';
 import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import {
   disposePool,
@@ -17,16 +27,20 @@ import {
   type LetterInk,
   type LetterLook,
 } from '@/lib/letterLook';
+import { morphMesh } from '@/lib/morphMesh';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
-import { faceAt, lockPop, lookAt, scaleAt, stepAt, stepCount } from '@/lib/titleTiming';
+import { lockPop, lookAt, morphAt, type MorphPhase } from '@/lib/titleTiming';
 
 const WORD = 'variantly';
-// The 3D wardrobe is the 2D title's: the same faces in the same order,
-// extruded from typeface JSON built by scripts/build-3d-fonts.mjs (only the
-// letters of "variantly"; licences in public/fonts/3d).
-const FACE_COUNT = INTRO_FONTS.length;
+// The 3D wardrobe is the 2D title's: the same faces in the same order. While
+// shifting, each letter is one morphing mesh (lib/morphMesh) built from the
+// shared outline data (lib/glyphMorph), so it flows from face to face exactly
+// as the 2D SVG letter does; once locked it is the final face extruded from
+// typeface JSON built by scripts/build-3d-fonts.mjs (only the letters of
+// "variantly"; licences in public/fonts/3d).
 const FINAL = INTRO_FINAL.map((c) => INTRO_FONTS.indexOf(c));
+const FINAL_FACES = [...new Set(FINAL)];
 const FOV = 22;
 const TAN = Math.tan((FOV / 2) * (Math.PI / 180));
 // TextGeometry size: scene units per em.
@@ -42,7 +56,13 @@ type Letter = {
   holder: THREE.Object3D;
   mesh: THREE.Mesh;
   extra: THREE.Mesh;
-  face: number;
+  // The locked glyph, and the morphing one used while shifting.
+  final: THREE.BufferGeometry;
+  track: MorphTrack;
+  morph: ReturnType<typeof morphMesh>;
+  // Last morph frame written (step and eased progress), so holds cost nothing.
+  step: number;
+  e: number;
   look: number;
   lockedAt: number;
 };
@@ -74,8 +94,6 @@ const matrixOf = (el: Element) => {
   const t = getComputedStyle(el).transform;
   return t && t !== 'none' ? new DOMMatrixReadOnly(t) : new DOMMatrixReadOnly();
 };
-// Glyph cache key for (letter, face), a number so frames allocate no strings.
-const keyOf = (ch: string, f: number) => ch.charCodeAt(0) * 64 + f;
 
 /*
  * The "variantly" title as extruded letters, a faithful extrusion of the 2D
@@ -100,27 +118,28 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
     let raf = 0;
     const cleanups: (() => void)[] = [];
     const tier = glTier();
+    const html = document.documentElement;
     const phone = tier.coarse || innerWidth < 640;
     const seek = seekTime();
     const still = calmMotion();
-    // Every face of the wardrobe, as 3D outlines and as the 2D webfont: the 3D
-    // word takes over only once it can show exactly what the 2D word shows.
+    // The outlines every face morphs through, and each final face as 3D
+    // outlines and as the 2D webfont: the 3D word takes over only once it can
+    // show exactly what the 2D word shows.
     const loader = new FontLoader();
     const fonts: Font[] = [];
-    const probes = INTRO_FONTS.map((cls) => {
+    let morphData: MorphData | null = null;
+    const probes = FINAL_FACES.map((f) => {
       const p = document.createElement('div');
-      p.className = cls;
+      p.className = INTRO_FONTS[f];
       p.style.cssText =
         'position:absolute;left:0;top:0;visibility:hidden;font-size:100px;line-height:1;white-space:nowrap';
       p.textContent = 'v';
-      const mark = document.createElement('span');
-      mark.style.cssText = 'display:inline-block;width:0;height:0';
-      p.appendChild(mark);
       el.appendChild(p);
-      return { p, mark };
+      return { p };
     });
     const allFonts = Promise.all([
-      ...INTRO_FONTS.map((_, f) =>
+      loadMorph().then((d) => (morphData = d)),
+      ...FINAL_FACES.map((f) =>
         loader.loadAsync(`/fonts/3d/${f}.json`).then((font) => (fonts[f] = font)),
       ),
       // The webfont itself, not its metric-matched local fallback (which may
@@ -134,8 +153,9 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({
-        // The title canvas is small, so MSAA is cheap even on phones.
-        antialias: true,
+        // MSAA, except at 2.5x density and up, where it is invisible but
+        // multiplies the fill cost.
+        antialias: (devicePixelRatio || 1) < 2.5,
         alpha: true,
         // Only seekreel captures need the frame kept after compositing.
         preserveDrawingBuffer: seek !== null,
@@ -147,9 +167,24 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
       onFail();
       return;
     }
-    // Always at the screen's full density (with MSAA): the word stays sharp
-    // while it moves too.
-    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 3));
+    // At the screen's full density: the word stays sharp while it moves.
+    // Phones and the low power tier (html[data-perf='low']) animate at 2x at
+    // most, 30fps, with the shadow map redrawn only when a letter steps,
+    // then repaint once at full density, shadow and all, when the word settles.
+    const fullRatio = Math.min(devicePixelRatio || 1, 3);
+    renderer.setPixelRatio(fullRatio);
+    const light = () => seek === null && (phone || html.dataset.perf === 'low');
+    const ratio = (r: number) => {
+      if (renderer.getPixelRatio() !== r) renderer.setPixelRatio(r);
+    };
+    // One busy WebGL context at a time: the backdrop scene pauses while the
+    // title animates.
+    let busy = false;
+    const setBusy = (b: boolean) => {
+      if (busy === b) return;
+      busy = b;
+      document.dispatchEvent(new CustomEvent('vy:gl-busy', { detail: { busy: b } }));
+    };
     // Neutral tone mapping keeps the candy colours saturated under the studio light.
     renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.toneMappingExposure = 0.9;
@@ -190,7 +225,12 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
     const group = new THREE.Group();
     scene.add(group);
 
-    const paint = () => renderer.render(scene, camera);
+    // A one-off paint (resize, new look): full density, fresh shadow.
+    const paint = () => {
+      ratio(fullRatio);
+      renderer.shadowMap.needsUpdate = true;
+      renderer.render(scene, camera);
+    };
 
     // Pause for real (no idle rAF) when the tab hides or the card leaves the screen.
     let onScreen = true;
@@ -201,6 +241,7 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
       if (visible()) return wake();
       cancelAnimationFrame(raf);
       raf = 0;
+      setBusy(false);
     };
     const io = new IntersectionObserver(([e]) => {
       onScreen = e.isIntersecting;
@@ -234,61 +275,73 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
     }
 
     void allFonts.then(() => {
-      if (disposed) return;
-      // Where each face's baseline sits in a 1em, line-height 1 box (from the
-      // bottom, in em): the 2D shifting glyph is bottom-aligned in its slot.
-      const baseOf = probes.map(
-        ({ p, mark }) =>
-          (p.getBoundingClientRect().bottom - mark.getBoundingClientRect().top) / 100,
-      );
+      if (disposed || !morphData) return;
+      const data = morphData;
       probes.forEach(({ p }) => p.remove());
 
-      // One geometry per (letter, face), built on first use: origin on the
-      // baseline at the centre of the advance (where the 2D glyph centres),
-      // front face at z = 0, outline exactly the 2D glyph's (the bevel is
-      // inset, not grown).
-      const cache = new Map<number, { geo: THREE.BufferGeometry; adv: number }>();
+      // The locked glyph per letter: origin on the baseline at the centre of
+      // the advance (where the 2D glyph centres), front face at z = 0,
+      // outline exactly the 2D glyph's (the bevel is inset, not grown).
       const glyph = (ch: string, f: number) => {
-        const k = keyOf(ch, f);
-        let g = cache.get(k);
-        if (!g) {
-          const font = fonts[f];
-          const geo = new TextGeometry(ch, {
-            font,
-            size: EM,
-            depth: DEPTH,
-            curveSegments: phone ? 5 : 8,
-            bevelEnabled: true,
-            bevelThickness: BEVEL,
-            bevelSize: BEVEL * 0.7,
-            bevelOffset: -BEVEL * 0.7,
-            bevelSegments: phone ? 1 : 3,
-          });
-          const data = font.data as unknown as {
-            resolution: number;
-            glyphs: Record<string, { ha: number }>;
-          };
-          const adv = (data.glyphs[ch].ha / data.resolution) * EM;
-          geo.translate(-adv / 2, 0, -(DEPTH + BEVEL));
-          g = { geo, adv };
-          cache.set(k, g);
-        }
-        return g;
+        const font = fonts[f];
+        const geo = new TextGeometry(ch, {
+          font,
+          size: EM,
+          depth: DEPTH,
+          curveSegments: phone ? 5 : 8,
+          bevelEnabled: true,
+          bevelThickness: BEVEL,
+          bevelSize: BEVEL * 0.7,
+          bevelOffset: -BEVEL * 0.7,
+          bevelSegments: phone ? 1 : 3,
+        });
+        const fd = font.data as unknown as {
+          resolution: number;
+          glyphs: Record<string, { ha: number }>;
+        };
+        const adv = (fd.glyphs[ch].ha / fd.resolution) * EM;
+        geo.translate(-adv / 2, 0, -(DEPTH + BEVEL));
+        return geo;
       };
 
       const letters: Letter[] = [...WORD].map((ch, i) => {
-        const geo = glyph(ch, FINAL[i]).geo;
-        const mesh = new THREE.Mesh(geo);
+        const final = glyph(ch, FINAL[i]);
+        const track = morphTrack(data, ch);
+        const morph = morphMesh(track, {
+          em: EM,
+          depth: DEPTH,
+          bevel: BEVEL,
+          inset: BEVEL * 0.7,
+          stride: phone ? 2 : 1,
+        });
+        const mesh = new THREE.Mesh(final);
         mesh.castShadow = true;
-        const extra = new THREE.Mesh(geo);
+        // The morphing mesh's bound is loose and its caps change: never cull.
+        mesh.frustumCulled = false;
+        const extra = new THREE.Mesh(final);
+        extra.frustumCulled = false;
         extra.renderOrder = -1;
         mesh.add(extra);
         const holder = new THREE.Object3D();
         holder.matrixAutoUpdate = false;
         holder.add(mesh);
         group.add(holder);
-        return { ch, holder, mesh, extra, face: FINAL[i], look: -1, lockedAt: -1 };
+        return {
+          ch,
+          holder,
+          mesh,
+          extra,
+          final,
+          track,
+          morph,
+          step: -1,
+          e: -1,
+          look: -1,
+          lockedAt: -1,
+        };
       });
+      const phase: MorphPhase = { step: 0, e: 0 };
+      const mpose: MorphPose = { k: 1, y: 0 };
 
       // Lay the word out over the 2D one. Card px map to scene units at the
       // z = 0 plane (the front faces): 1em of the 2D type = EM units.
@@ -387,7 +440,6 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
 
       // Dress the letters for the current concept and theme, coloured from the
       // 2D letters; old materials go.
-      const html = document.documentElement;
       let pools: LetterLook[][] = [];
       let shade = letterShadow('g', false);
       const n = poolSize(phone);
@@ -443,49 +495,58 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
       cleanups.push(
         () => mo.disconnect(),
         () => pools.forEach(disposePool),
-        () => cache.forEach((g) => g.geo.dispose()),
+        () =>
+          letters.forEach((l) => {
+            l.final.dispose();
+            l.morph.geo.dispose();
+          }),
         () => backdrop.geometry.dispose(),
       );
 
-      // Set every letter for time t (seconds into the reveal). `budget` caps
-      // how many new extruded glyphs one frame may build (the costly part).
+      // Set every letter for time t (seconds into the reveal).
       let posed = false;
-      const pose = (t: number, budget: number) => {
+      // Whether any letter changed step (or locked) in the last pose.
+      let stepped = false;
+      const pose = (t: number) => {
+        stepped = false;
         letters.forEach((l, i) => {
-          const step = stepAt(t * 1000, i);
-          const live = step === null ? null : Math.max(step, 0);
-          let face = live === null ? FINAL[i] : faceAt(live, i, FACE_COUNT);
-          if (face !== l.face) {
-            const fresh = !cache.has(keyOf(l.ch, face));
-            if (fresh && budget <= 0) face = l.face;
-            else {
-              if (fresh) budget--;
-              l.mesh.geometry = l.extra.geometry = glyph(l.ch, face).geo;
-              l.face = face;
-            }
-          }
-          wear(l, i, lookAt(live, i, n));
+          const live = morphAt(t * 1000, i, phase);
           const s = slots[i];
-          // As the 2D glyph: a shifting one is bottom-aligned in its slot,
-          // shrunk to fit the slot's width and jumps in size about the slot
-          // centre; a locked one sits on its own baseline and pops once.
           let k = 1;
-          let base = s.base;
-          if (live === null) {
-            // Already locked when the 3D word appears (or in a seeked frame):
-            // at rest, like the 2D letter it replaces.
-            if (l.lockedAt < 0) l.lockedAt = posed ? t : t - 1;
+          let y = s.base;
+          if (!live) {
+            // Locked: the final glyph on its own baseline, popping once
+            // (already at rest when the 3D word appears or in a seeked frame).
+            if (l.lockedAt < 0) {
+              l.lockedAt = posed ? t : t - 1;
+              stepped = true;
+            }
+            if (l.mesh.geometry !== l.final) l.mesh.geometry = l.extra.geometry = l.final;
+            l.step = -1;
+            wear(l, i, lookAt(null, i, n));
             k = lockPop(t - l.lockedAt);
+            y = s.base * k;
           } else {
-            // The 2D glyph's advance, in whole px like its offsetWidth.
-            const adv = Math.round(glyph(l.ch, face).adv * unit);
-            k = Math.min(1, s.w / Math.max(1, adv)) * scaleAt(live, i);
-            base = s.h / 2 - baseOf[face] * fontPx;
+            // Shifting: the outline flows from this step's face to the next,
+            // posed exactly as the 2D SVG letter (lib/glyphMorph).
+            const toFinal = planStep(data, l.track, phase, i, FINAL[i]);
+            if (phase.step !== l.step) stepped = true;
+            if (phase.step !== l.step || phase.e !== l.e) {
+              blendMorph(l.track, phase.e);
+              l.morph.update();
+              l.step = phase.step;
+              l.e = phase.e;
+            }
+            if (l.mesh.geometry !== l.morph.geo) l.mesh.geometry = l.extra.geometry = l.morph.geo;
+            wear(l, i, lookAt(phase.step, i, n));
+            morphPose(data, l.track, i, phase.e, toFinal, s.w, s.h, fontPx, s.base, mpose);
+            k = mpose.k;
+            y = mpose.y;
           }
           l.mesh.scale.setScalar(k);
-          l.mesh.position.y = (-base * k) / unit;
+          l.mesh.position.y = -y / unit;
           // A slight sway while shifting that eases out as the letter lands.
-          const calm = live === null ? Math.max(0, 1 - (t - l.lockedAt) / 0.5) : 1;
+          const calm = !live ? Math.max(0, 1 - (t - l.lockedAt) / 0.5) : 1;
           l.mesh.rotation.x = Math.sin(t * 1.1 + i) * 0.05 * calm;
           l.mesh.rotation.y = Math.sin(t * 0.9 + i * 0.8) * 0.06 * calm;
         });
@@ -494,12 +555,30 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
       };
       const now = () => seek ?? (still ? 30 : (performance.now() - clock.current) / 1000);
 
-      const frame = () => {
+      let last = 0;
+      const frame = (stamp = performance.now()) => {
         raf = 0;
+        const lite = light();
+        // 30fps on phones (whatever the display's rate).
+        if (lite && stamp - last < 30) {
+          raf = requestAnimationFrame(frame);
+          return;
+        }
+        last = stamp;
         const t = now();
-        const settled = pose(t, seek === null ? (phone ? 1 : 2) : Infinity);
-        paint();
-        if (seek === null && !still && !settled && visible()) raf = requestAnimationFrame(frame);
+        const settled = pose(t);
+        const going = seek === null && !still && !settled && visible();
+        if (going && lite) {
+          ratio(Math.min(fullRatio, 2));
+          renderer.shadowMap.autoUpdate = false;
+          if (stepped) renderer.shadowMap.needsUpdate = true;
+          renderer.render(scene, camera);
+        } else {
+          renderer.shadowMap.autoUpdate = true;
+          paint();
+        }
+        setBusy(going);
+        if (going) raf = requestAnimationFrame(frame);
       };
       wake = () => {
         if (!raf && seek === null && !still) raf = requestAnimationFrame(frame);
@@ -509,29 +588,8 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
         wake();
       };
 
-      // Before taking over, build (in idle time) every glyph the rest of the
-      // reveal will show, so the 3D word never lags a face behind the 2D one.
-      const upcoming = () => {
-        const t = now() * 1000;
-        const need: [string, number][] = [];
-        [...WORD].forEach((ch, i) => {
-          const from = stepAt(t, i);
-          if (from !== null)
-            for (let k = Math.max(from, 0); k < stepCount(i); k++)
-              need.push([ch, faceAt(k, i, FACE_COUNT)]);
-          need.push([ch, FINAL[i]]);
-        });
-        return need.filter(([ch, f]) => !cache.has(keyOf(ch, f)));
-      };
       const takeOver = () => {
         if (disposed) return;
-        const todo = upcoming();
-        const until = performance.now() + 8;
-        while (todo.length && performance.now() < until) {
-          const [ch, f] = todo.shift()!;
-          glyph(ch, f);
-        }
-        if (todo.length && seek === null) return void idle(takeOver);
         frame();
         el.style.opacity = '1';
         onReady();
@@ -543,6 +601,7 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
     return () => {
       disposed = true;
       cancelAnimationFrame(raf);
+      setBusy(false);
       replay.current = () => {};
       cleanups.forEach((c) => c());
       envMap?.dispose();
@@ -560,6 +619,3 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
     />
   );
 };
-
-const idle = (cb: () => void) =>
-  'requestIdleCallback' in window ? requestIdleCallback(cb, { timeout: 300 }) : setTimeout(cb, 16);
