@@ -1,8 +1,10 @@
 'use client';
 
+import { Clock } from 'lucide-react';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/Button';
+import { cn } from '@/lib/utils';
 
 type Audience = 'human' | 'agent';
 
@@ -96,7 +98,9 @@ const AudienceFork = ({ human, agent, brand, aside, chrome, footer }: AudienceFo
                 aria-selected={(audience ?? 'human') === o.id}
                 aria-controls="audience-panel"
                 onClick={() => choose(o.id)}
+                className={cn(o.id === 'agent' && 'gap-1.5')}
               >
+                {o.id === 'agent' && <Clock aria-hidden="true" className="size-3.5" />}
                 {o.label}
               </Button>
             ))}
