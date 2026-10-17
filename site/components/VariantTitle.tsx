@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import { calmMotion } from '@/lib/prefs';
@@ -9,15 +9,15 @@ import { useSiteStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 const WORD = 'variantly';
-// Timing after the Loki title card: every letter flickers at once, about nine
+// Timing after the Loki title card: every letter flickers at once, about four
 // typefaces a second, then the changes slow and each letter drops into its
 // final face. Letters lock in a loose, uneven order rather than left to right.
-const FLICKER_MS = 110;
-const EASE_OUT = [140, 180, 240, 320, 420, 560];
+const FLICKER_MS = 260;
+const EASE_OUT = [320, 400, 500, 640, 820, 1040];
 // Deterministic per-letter jitter, so a seeked frame is the same every time.
 const jitter = (index: number, salt: number) => ((index * 37 + salt * 11) % 7) / 6;
 const scheduleFor = (index: number) => [
-  ...Array(36 + Math.round(jitter(index, 1) * 6)).fill(FLICKER_MS),
+  ...Array(12 + Math.round(jitter(index, 1) * 4)).fill(FLICKER_MS),
   ...EASE_OUT,
 ];
 const SCHEDULES = [...WORD].map((_, i) => scheduleFor(i));
@@ -70,16 +70,38 @@ const Letter = ({ char, index, run }: LetterProps) => {
   const raw = seek === null ? live : stepAt(seek * 1000, index);
   const step = raw === null || raw === 'idle' ? null : Math.max(raw, 0);
 
+  // The slot is sized by the final face (invisible), so the word keeps the same
+  // width, and stays centred, while the shifting glyph swaps faces on top.
+  // Wide faces would spill into the neighbours: shrink the glyph to its slot.
+  const slot = useRef<HTMLSpanElement>(null);
+  const glyph = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const g = glyph.current;
+    const box = slot.current;
+    if (!g || !box || step === null) return;
+    g.style.transform = 'none';
+    const fit = Math.min(1, box.offsetWidth / Math.max(1, g.scrollWidth));
+    g.style.transform = `scale(${fit * scaleAt(step, index)})`;
+  });
+
   return (
     <span
+      ref={slot}
       className={cn(
-        'vy-letter inline-block leading-none',
-        step === null ? INTRO_FINAL[index] : fontAt(step, index),
+        'vy-letter relative inline-block leading-none',
         live === null && seek === null && 'vy-letter-locked',
       )}
-      style={step === null ? undefined : { transform: `scale(${scaleAt(step, index)})` }}
     >
-      {char}
+      <span className={cn(INTRO_FINAL[index], step !== null && 'invisible')}>{char}</span>
+      {step !== null && (
+        <span
+          ref={glyph}
+          aria-hidden="true"
+          className={cn('absolute inset-0 flex items-end justify-center', fontAt(step, index))}
+        >
+          {char}
+        </span>
+      )}
     </span>
   );
 };
@@ -108,7 +130,7 @@ export const VariantTitle = () => {
         title="Replay"
         data-keep-cycle
         onClick={() => setRun((r) => r + 1)}
-        className="vy-title relative z-1 flex cursor-pointer items-end gap-[0.04em] text-[clamp(3.5rem,13vw,11rem)]"
+        className="vy-title relative z-1 flex cursor-pointer items-end gap-[0.04em] text-[clamp(2.5rem,16vw,11rem)]"
       >
         {[...WORD].map((c, i) => (
           <Letter key={i} char={c} index={i} run={run} />
