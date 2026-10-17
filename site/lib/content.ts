@@ -1,3 +1,4 @@
+import scores from '@/lib/demo-scores.json';
 import { SKILLS_URL } from '@/lib/site';
 
 // Everything on the page that is data, in one place.
@@ -6,33 +7,31 @@ import { SKILLS_URL } from '@/lib/site';
 // agents in parallel, each from a short variantly-style brief (saved next to
 // it as BRIEF.md in public/demo/oak-and-iron/vN). The summaries are edited
 // from each agent's SUMMARY line. The scores are what variantly's
-// axe-core and Lighthouse check measured on each page's home page.
+// axe-core and Lighthouse check measured on each page's home page, read
+// from lib/demo-scores.json (regenerate with `npm run score-demo`).
 
 export type DemoVariant = {
   n: number;
   direction: string;
   summary: string;
   files: string[];
-  /** Lighthouse accessibility, 0–100 */
-  a11y: number;
-  /** elements axe-core flags */
-  axe: number;
 };
 
 /** The original Oak & Iron home page, scored the same way. */
-export const DEMO_ORIGINAL_SCORES = { a11y: 85, axe: 52 };
+export const DEMO_ORIGINAL_SCORES = scores.v0;
 
 const FILES = ['index.html', 'style.css'];
 
-export const DEMO_VARIANTS: DemoVariant[] = [
+/** Lighthouse accessibility (0–100) and axe-core's flagged element count. */
+export type DemoScores = { a11y: number; axe: number };
+
+const DEMO_VARIANT_LIST: DemoVariant[] = [
   {
     n: 1,
     direction: 'Nordic catalogue',
     summary:
       'A printed Scandinavian catalogue: pale birch paper, ink-blue rules and type, numbered sections, product plates with line drawings and dimensions.',
     files: FILES,
-    a11y: 98,
-    axe: 1,
   },
   {
     n: 2,
@@ -40,8 +39,6 @@ export const DEMO_VARIANTS: DemoVariant[] = [
     summary:
       'Japanese folk craft: Shippori Mincho serif, indigo and persimmon on speckled washi paper, vertical accents and a quiet, spacious layout.',
     files: FILES,
-    a11y: 98,
-    axe: 16,
   },
   {
     n: 3,
@@ -49,8 +46,6 @@ export const DEMO_VARIANTS: DemoVariant[] = [
     summary:
       'An 1890s ironmonger’s catalogue on rag paper: double-ruled borders, numbered stock items, dotted price leaders, sepia ink with rust accents.',
     files: FILES,
-    a11y: 98,
-    axe: 1,
   },
   {
     n: 4,
@@ -58,8 +53,6 @@ export const DEMO_VARIANTS: DemoVariant[] = [
     summary:
       'A 1920s Art Deco salon: Limelight and Poiret One display type, brass on deep green, a sunburst, stepped frames and diamond rules.',
     files: FILES,
-    a11y: 98,
-    axe: 1,
   },
   {
     n: 5,
@@ -67,8 +60,6 @@ export const DEMO_VARIANTS: DemoVariant[] = [
     summary:
       'Raw brutalist grid: black rules, square corners, system mono with Archivo Black headings, stark white and black, safety-orange accents.',
     files: FILES,
-    a11y: 98,
-    axe: 2,
   },
   {
     n: 6,
@@ -76,10 +67,14 @@ export const DEMO_VARIANTS: DemoVariant[] = [
     summary:
       'A stapled cream zine page: misregistered pink-and-teal overprint headings, Courier Prime body text, halftone dots and drawn product plates.',
     files: FILES,
-    a11y: 98,
-    axe: 1,
   },
 ];
+
+export const DEMO_VARIANTS: (DemoVariant & DemoScores)[] = DEMO_VARIANT_LIST.map((v) => {
+  const s = (scores as Record<string, DemoScores>)[`v${v.n}`];
+  if (!s) throw new Error(`lib/demo-scores.json has no v${v.n}; run npm run score-demo`);
+  return { ...v, ...s };
+});
 
 export const STEPS: { label: string; title: string; body: string; artifact: string }[] = [
   {
