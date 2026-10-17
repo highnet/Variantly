@@ -70,11 +70,14 @@ export const Delight = () => {
           document.documentElement.classList.add('vy-steps-anim'),
         );
       });
-    const drifting = light
-      ? []
-      : [...document.querySelectorAll<HTMLElement>('.vy-scene, .vy-blobs, .vy-title')];
+    const title = light ? [] : [...document.querySelectorAll<HTMLElement>('.vy-title')];
+    // The backdrop's depth layers (scene, shapes) keep drifting through the
+    // whole page: see "10 · hero parallax" in globals.css.
+    const depth = light ? [] : [...document.querySelectorAll<HTMLElement>('.vy-scene, .vy-blobs')];
+    if (depth.length && !calm) document.documentElement.classList.add('vy-parallax');
     let glass = false;
     let lastY = '';
+    let lastP = '';
     let frame = 0;
     const paint = () => {
       frame = 0;
@@ -98,14 +101,23 @@ export const Delight = () => {
           if (fill >= 1) el.classList.add('vy-step-done');
         });
       }
-      if (!calm && y < innerHeight * 1.5) {
-        // Set on the three drifting layers only: a custom property on <html>
-        // would restyle the whole document on every scroll frame.
+      if (calm) return;
+      // Set on the drifting layers only: a custom property on <html> would
+      // restyle the whole document on every scroll frame.
+      if (y < innerHeight * 1.5) {
         const v = `${y}px`;
         if (v !== lastY) {
           lastY = v;
-          drifting.forEach((el) => el.style.setProperty('--px-y', v));
+          title.forEach((el) => el.style.setProperty('--px-y', v));
         }
+      }
+      // Scroll depth for the backdrop, 0 → 1 over the whole page with no hard
+      // stop: tanh keeps it moving (76% at 2.5 viewports, 96% at 5) and
+      // bounds the travel, so each layer's overscale covers its edges.
+      const p = Math.tanh(y / (innerHeight * 2.5)).toFixed(4);
+      if (p !== lastP) {
+        lastP = p;
+        depth.forEach((el) => el.style.setProperty('--px-p', p));
       }
     };
     // One read-and-write pass per frame, however fast the scroll events come.
@@ -117,6 +129,7 @@ export const Delight = () => {
     stops.push(() => {
       removeEventListener('scroll', onScroll);
       cancelAnimationFrame(frame);
+      document.documentElement.classList.remove('vy-parallax');
     });
     if (light && steps) {
       const root = document.documentElement;

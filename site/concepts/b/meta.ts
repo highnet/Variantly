@@ -6,5 +6,6 @@ export const meta: ConceptMeta = {
   family: 'Print & Type',
   swatch: { light: ['#ff4f9a', '#2f5bff', '#ffe14d'], dark: ['#ff4f9a', '#2f5bff', '#ffe14d'] },
   font: 'var(--font-poster)',
-  grain: 0.28,
+  grain: 0.38,
+  grainChroma: 0.15,
 };
