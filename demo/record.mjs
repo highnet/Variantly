@@ -501,6 +501,8 @@ class Director {
   async act(step) {
     // Steps that only make sense with a real agent (installing Impeccable).
     if (step.realOnly && agent === 'demo') return;
+    // Steps that set the count by hand: a mix sets it with its rows instead.
+    if (step.unlessMix && mix) return;
     const began = Date.now();
     const from = this.now();
     try {
@@ -704,7 +706,8 @@ try {
       for (const view of views) schemes[view.theme] = await view.page.evaluate(() => ({ media: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light', ui: document.documentElement.dataset.theme ?? null }));
     }
     // Hold until the line has been spoken, plus a breath.
-    const hold = start + lineSeconds(scene) + PAD_MS / 1000 - director.now();
+    // `rest`: extra silence after the line (a pause for the viewer).
+    const hold = start + lineSeconds(scene) + (scene.rest ?? 0) / 1000 + PAD_MS / 1000 - director.now();
     if (hold > 0) await director.page.waitForTimeout(hold * 1000);
     else if (!scene.timelapse && hold < -1) {
       director.warnings.push(`${scene.id}: actions ran ${(-hold).toFixed(1)}s past the narration (dead air)`);
