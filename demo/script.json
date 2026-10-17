@@ -1,6 +1,7 @@
 {
   "site": "../examples/tallyboard",
   "agent": "claude",
+  "mix": "claude:2,gemini:2",
   "keep": 2,
   "scenes": [
     {
@@ -125,7 +126,7 @@
         "title": "Setup"
       },
       "step": "Setup",
-      "text": "Setup finds your app and how to run it, checks your agent, and flags anything in the way. Each variant runs your dev command on its own port, and the agent may only edit files, in its own copy of your project.",
+      "text": "Setup finds your app and how to run it, checks your agent, and flags anything in the way. You can mix agents too: here, two variants from Claude Code and two from Gemini, for more variety. Each variant runs your dev command on its own port, and the agent may only edit files, in its own copy of your project.",
       "actions": [
         {
           "spotlight": "text=/app found/",
@@ -139,6 +140,19 @@
         },
         {
           "click": "text=Use a different app or agent"
+        },
+        {
+          "spotlight": ".mix",
+          "ms": 2600,
+          "pad": 30,
+          "point": true,
+          "callout": "Two from Claude Code, two from Gemini. Each row can pick its own model."
+        },
+        {
+          "spotlight": "text=/Hide who made each variant/",
+          "ms": 1400,
+          "pad": 20,
+          "optional": true
         },
         {
           "spotlight": "text=Dev command",
@@ -313,6 +327,14 @@
       "text": "The board shows every variant live. Here's one agent at work. It reads your site, lets Impeccable choose a direction, and builds it. Then it checks its variant in a real browser, at desktop and phone width, and fixes what it sees. A second pass critiques and audits it, without changing the direction.",
       "actions": [
         {
+          "spotlight": "text=/×2/",
+          "ms": 1800,
+          "pad": 24,
+          "point": true,
+          "optional": true,
+          "callout": "Spend adds up per agent."
+        },
+        {
           "spotlight": "role=columnheader[name=\"Direction\"]",
           "ms": 1500,
           "pad": 30
@@ -399,7 +421,7 @@
       "id": "walk",
       "step": "Compare",
       "afterTake": true,
-      "text": "Each variant went its own way. Switch with the number keys, see them side by side, or check the phone layout.",
+      "text": "Each variant went its own way, and the tag says which agent made it. Switch with the number keys, see them side by side, or check the phone layout.",
       "actions": [
         {
           "key": "2"
