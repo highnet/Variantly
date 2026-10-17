@@ -2,6 +2,7 @@ import { Plus } from 'lucide-react';
 
 import { CommandCopy } from '@/components/CommandCopy';
 import { LogoMark } from '@/components/LogoMark';
+import { RunnerPicker } from '@/components/RunnerPicker';
 import { Typography } from '@/components/ui/Typography';
 import { AGENT_LOGOS, STACK_LOGOS } from '@/lib/logos';
 
@@ -60,6 +61,7 @@ const Stacks = () => (
           variantly finds the one you have. Each variant ={' '}
           <strong className="text-ink">one session</strong>.
         </Typography>
+        <RunnerPicker className="mt-1" />
       </div>
       <ul className="m-0 grid list-none auto-rows-fr gap-2 p-0">
         {AGENT_LOGOS.map((a) => (

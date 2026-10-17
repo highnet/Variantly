@@ -11,6 +11,8 @@ import { Stacks } from '@/components/Stacks';
 import { WithLive } from '@/components/WithLive';
 import { StartChecklist } from '@/components/StartChecklist';
 import { siGithub } from 'simple-icons';
+import { Backdrop } from '@/components/backdrop/Backdrop';
+import { VariantSwitcher } from '@/components/VariantSwitcher';
 
 import { REPO_URL } from '@/lib/site';
 
@@ -57,6 +59,7 @@ const Human = () => (
 
 const Page = () => (
   <>
+    <Backdrop />
     <AudienceFork
       brand={<Brand />}
       aside={
@@ -69,6 +72,7 @@ const Page = () => (
       agent={<AgentQuickstart />}
     />
     <SiteFooter />
+    <VariantSwitcher />
   </>
 );
 
