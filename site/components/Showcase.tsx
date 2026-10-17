@@ -15,6 +15,7 @@ import { CommandCopy } from '@/components/CommandCopy';
 import { FreshLook } from '@/components/FreshLook';
 import { PageSkeleton } from '@/components/PageSkeleton';
 import { PromptCopy } from '@/components/PromptCopy';
+import { RollingNumber } from '@/components/RollingNumber';
 import { RunnerPicker } from '@/components/RunnerPicker';
 import { VariantTitle } from '@/components/VariantTitle';
 import { Button } from '@/components/ui/Button';
@@ -122,17 +123,23 @@ const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
       <span className="text-steel-on-slate text-[10px] tracking-[0.08em] uppercase">{label}</span>
       {/* Only the change against the original: nobody reads the new value. */}
       <span
-        data-score
         className={cn(
           'text-[15px] font-bold tabular-nums',
           diff === 0 ? 'text-surface' : better ? 'text-ok-on-slate' : 'text-fail-on-slate',
         )}
       >
-        {diff === 0
-          ? 'same'
-          : lowerIsBetter
-            ? `${Math.abs(diff)} ${better ? 'fixed' : 'new'}`
-            : `${diff > 0 ? '+' : '−'}${Math.abs(diff)}`}
+        {diff === 0 ? (
+          'same'
+        ) : lowerIsBetter ? (
+          <>
+            <RollingNumber value={diff} /> {better ? 'fixed' : 'new'}
+          </>
+        ) : (
+          <>
+            {diff > 0 ? '+' : '−'}
+            <RollingNumber value={diff} />
+          </>
+        )}
       </span>
     </span>
   );
