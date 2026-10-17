@@ -664,6 +664,19 @@ async function openView(theme, mirror) {
       window.fetch = (input, init = {}) => {
         const url = new URL(typeof input === 'string' ? input : input.url, location.href);
         const method = (init.method ?? (typeof input === 'string' ? 'GET' : input.method) ?? 'GET').toUpperCase();
+        // The kept screen's "Open your site" goes through too, so both themes
+        // show the same local URL in the hand-off prompt. The light page asks
+        // first; until its server pool exists this call can fail, so retry.
+        if (url.origin === location.origin && url.pathname === '/api/open-site' && method === 'POST') {
+          return (async () => {
+            await new Promise((r) => setTimeout(r, 1500));
+            for (let i = 0; ; i++) {
+              const res = await real(input, init);
+              if (res.ok || i >= 20) return res;
+              await new Promise((r) => setTimeout(r, 500));
+            }
+          })();
+        }
         if (url.origin === location.origin && url.pathname.startsWith('/api/') && method !== 'GET' && !url.pathname.startsWith('/api/ensure/')) {
           return Promise.resolve(new Response('{"ok":true}', { status: 200, headers: { 'content-type': 'application/json' } }));
         }
@@ -672,6 +685,11 @@ async function openView(theme, mirror) {
     });
   }
   const page = await context.newPage();
+  // A tab the app opens ("Open your site" on the kept screen) is never
+  // filmed: give the recorded page the focus back so its frames keep coming.
+  context.on('page', (opened) => {
+    if (opened !== page) setTimeout(() => page.bringToFront().catch(() => {}), 300);
+  });
   const capture = await startScreencast(page, at('video', theme, 'frames'), { width: WIDTH, height: HEIGHT });
   const view = { theme, context, page, capture, t0: Date.now(), errors: [] };
   page.on('pageerror', (e) => view.errors.push(String(e)));
@@ -688,6 +706,8 @@ const director = new Director(views, {
   app,
   site: pathToFileURL(path.join(SITE, 'index.html')).href,
   about: pathToFileURL(path.join(SITE, 'about.html')).href,
+  // The website beat films the live site (or a local build: DEMO_WEB_URL).
+  web: process.env.DEMO_WEB_URL || 'https://variantly.style',
   keep: String(film.keep ?? 1),
 });
 const scenes = [];
