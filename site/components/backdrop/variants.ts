@@ -100,7 +100,7 @@ export const VARIANTS: Record<VariantKey, Variant> = {
     },
     sharp: true,
     blur: 0,
-    grain: 0.06,
+    grain: 0,
   },
   f: {
     name: 'Cut & Paste',

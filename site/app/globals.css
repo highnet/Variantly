@@ -662,13 +662,6 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 .vy-title {
   color: var(--title, var(--alert));
 }
-.vy-grain {
-  /* A pre-rendered 128px noise tile (public/grain.png): no live feTurbulence,
-     no blend mode, so the fixed layer rasterises once and never again. */
-  background: url('/grain.png') repeat;
-  background-size: 128px;
-}
-
 /* ---- A · Soft Clay: puffy, rounded, centred, glossy blobs ---------------- */
 :root[data-variant='a'] {
   --panel: #fff3ea; --surface: #fffaf6; --rule: #f1d3c2; --steel: #7a5a50; --ink: #2a1630;
@@ -1007,7 +1000,7 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   :root[data-variant='a'] [data-hero-grid] { border-radius: 24px; margin-inline: 12px; }
   .vy-switcher { bottom: 12px; }
   /* Line-based scenes cross the stacked copy on phones; keep them faint. */
-  :root[data-variant='c']:not([data-scrolled]) .vy-scene,
+  :root[data-variant='c']:not([data-scrolled]) .vy-scene { opacity: 0.35; }
 }
 
 /* Until the reveal starts, keep the title hidden rather than flash the final word. */
@@ -1408,10 +1401,29 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   text-shadow: none !important;
   opacity: 0.55;
 }
+/* The filled copy sits in an overflow-hidden window that slides up from
+   below while the copy slides the other way, so the glyph stays put and only
+   transforms change: compositor work, no repaint per scroll frame. */
+.vy-step-clip { overflow: hidden; pointer-events: none; }
+.vy-step-clip,
 .vy-step-fill {
-  clip-path: inset(calc((1 - var(--fill, 1)) * 100%) 0 0 0);
-  transition: clip-path 160ms linear;
+  transform: translateY(calc((1 - var(--fill, 1)) * var(--fill-dir, 1) * 100%));
+  transition: transform 160ms linear;
 }
+/* Desktop scrubs these every scroll frame: keep them on their own layers. */
+:root:not(.vy-steps-touch) .vy-steps .vy-step-clip,
+:root:not(.vy-steps-touch) .vy-steps .vy-step-fill { will-change: transform; }
+.vy-step-fill { --fill-dir: -1; display: block; }
+.vy-steps > li { --fill: 0; }
+/* Touch: no scrubbing. Each numeral fills in one short transition as its
+   step lights up (Delight sets no per-frame --fill there). */
+:root.vy-steps-touch .vy-steps > li.vy-step-on { --fill: 1; }
+:root.vy-steps-touch .vy-step-clip,
+:root.vy-steps-touch .vy-step-fill { transition: transform var(--dur-base) var(--ease-out-expo); }
+/* Until the first frame after mount, set the fill without animating, so a
+   numeral never drains from its no-JS full state before filling. */
+:root.vy-steps-touch:not(.vy-steps-anim) .vy-step-clip,
+:root.vy-steps-touch:not(.vy-steps-anim) .vy-step-fill { transition: none; }
 .vy-steps > li.vy-step-done .vy-step-num { animation: vy-step-pop 620ms var(--ease-spring-pop); }
 @keyframes vy-step-pop {
   35% { transform: scale(1.16) rotate(-5deg); }
@@ -1444,7 +1456,8 @@ header.vy-header-glass {
   .vy-steps > li .vy-step-num, .vy-sheen::after { animation: none !important; }
 }
 :root[data-seek] .vy-title, :root[data-seek] .vy-scene, :root[data-seek] .vy-blobs { translate: none !important; }
-:root[data-seek] .vy-steps > li { opacity: 1; }
+:root[data-seek] .vy-steps > li,
+:root[data-motion='calm'] .vy-steps > li { opacity: 1; --fill: 1; }
 
 /* ---- G · Candy 3D: extruded glossy letters, pastel candy ground ---------- */
 :root[data-variant='g'] {
@@ -1574,8 +1587,6 @@ main > div p { line-height: 1.65; }
 :root[data-variant='f'][data-theme='dark'] { --art-1: #c9a43a; --art-2: #ff5a4f; --art-3: #4a6cf0; --art-tape: #e8dcb5; --art-shadow: #000; }
 :root[data-variant='g'] { --art-1: #ff5fa2; --art-2: #22c3ee; --art-3: #a78bfa; --art-deep: #9d2a74; }
 :root[data-variant='g'][data-theme='dark'] { --art-1: #ff4f9a; --art-2: #22d3ee; --art-3: #8b5cf6; --art-deep: #2e0a40; }
-/* Bauhaus is flat: no grain. */
-:root[data-variant='e'] .vy-grain { display: none; }
 
 /* Riso paper fibre. */
 .vy-art-fibre {
@@ -1699,3 +1710,43 @@ main > div p { line-height: 1.65; }
   transition: transform 0.9s var(--ease-spring) var(--roll-delay, 0ms);
 }
 :root[data-motion='calm'] .vy-roll-strip { transition: none; }
+@media (hover: none) and (pointer: coarse) {
+  /* Phones: numbers roll once, short, with a plain clip instead of a mask
+     that would repaint as the strip moves. */
+  .vy-roll-slot { mask-image: none; }
+  .vy-roll-strip { transition-duration: 450ms; transition-timing-function: var(--ease-out-expo); }
+}
+
+/* ---- Scroll entrances (ScrollReveal) -------------------------------------- */
+/* Only hidden once <html> has .vy-reveal-ready (set after hydration), so the
+   page reads fine without JS. Transform and opacity only; the shared
+   observer flips .vy-rv-in as each enters the viewport. */
+[data-rv='head'] { --rv-from: translateY(24px); }
+[data-rv='lead'] { --rv-from: translateY(16px); --rv-delay: 120ms; }
+[data-rv='card'] { --rv-from: translateY(40px) scale(0.97); --rv-ease: var(--ease-spring); }
+[data-rv='fig'] { --rv-from: scale(0.6) rotate(-8deg); --rv-ease: var(--ease-spring-pop); --rv-delay: 100ms; }
+[data-rv='list'] { --rv-from: translateY(24px) scale(0.96); --rv-ease: var(--ease-spring); }
+:root.vy-reveal-ready .vy-rv:not(.vy-rv-list, .vy-rv-in),
+:root.vy-reveal-ready .vy-rv-list:not(.vy-rv-in) > * {
+  opacity: 0;
+  transform: var(--rv-from);
+}
+:root.vy-reveal-ready .vy-rv-in:not(.vy-rv-list),
+:root.vy-reveal-ready .vy-rv-list.vy-rv-in > * {
+  transition:
+    opacity var(--dur-base) var(--ease-out-expo) var(--rv-delay, 0ms),
+    transform var(--dur-slow) var(--rv-ease, var(--ease-out-expo)) var(--rv-delay, 0ms);
+}
+/* Lists that draw dividers as a background hold it back until items land. */
+:root.vy-reveal-ready .vy-rv-list { background-color: transparent !important; }
+.vy-rv-list > :nth-child(2) { --rv-delay: 45ms; }
+.vy-rv-list > :nth-child(3) { --rv-delay: 90ms; }
+.vy-rv-list > :nth-child(4) { --rv-delay: 135ms; }
+.vy-rv-list > :nth-child(5) { --rv-delay: 180ms; }
+.vy-rv-list > :nth-child(6) { --rv-delay: 225ms; }
+.vy-rv-list > :nth-child(7) { --rv-delay: 270ms; }
+.vy-rv-list > :nth-child(n + 8) { --rv-delay: 315ms; }
+@media (prefers-reduced-motion: reduce) {
+  :root.vy-reveal-ready .vy-rv,
+  :root.vy-reveal-ready .vy-rv-list > * { opacity: 1 !important; transform: none !important; }
+}
