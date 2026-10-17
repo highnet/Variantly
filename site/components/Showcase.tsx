@@ -13,12 +13,14 @@ import {
 
 import { CommandCopy } from '@/components/CommandCopy';
 import { FreshLook } from '@/components/FreshLook';
+import { GlossaryTip } from '@/components/GlossaryTip';
 import { PageSkeleton } from '@/components/PageSkeleton';
 import { PromptCopy } from '@/components/PromptCopy';
 import { RollingNumber } from '@/components/RollingNumber';
 import { RunnerPicker } from '@/components/RunnerPicker';
 import { VariantTitle } from '@/components/VariantTitle';
 import { Button } from '@/components/ui/Button';
+import { Tip, TipCommand } from '@/components/ui/Tip';
 import { Typography } from '@/components/ui/Typography';
 import { markLoaded } from '@/lib/loadProgress';
 import { EASE } from '@/lib/motion';
@@ -622,8 +624,14 @@ const Showcase = () => {
               Your website needs <FreshLook />
             </Typography>
             <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">
-              <strong className="text-surface">One command.</strong> Your own AI assistant redesigns
-              your site <strong className="text-surface">several ways</strong>,{' '}
+              <strong className="text-surface">
+                <Tip label="One command." title="The whole setup is one line" interactive>
+                  <TipCommand command="npx variantly" className="my-1" />
+                  Run it in your site&apos;s folder.
+                </Tip>
+              </strong>{' '}
+              Your own AI assistant redesigns your site{' '}
+              <strong className="text-surface">several ways</strong>,{' '}
               <strong className="text-surface">from scratch</strong> using{' '}
               <a
                 href="https://impeccable.style"
@@ -632,8 +640,14 @@ const Showcase = () => {
                 Impeccable
               </a>
               : the missing design vocabulary for agents. No preset themes. Try each{' '}
-              <strong className="text-surface">live</strong>,{' '}
-              <strong className="text-surface">keep one</strong>.
+              <strong className="text-surface">
+                <GlossaryTip term="live" />
+              </strong>
+              ,{' '}
+              <strong className="text-surface">
+                <GlossaryTip term="keep" />
+              </strong>
+              .
             </p>
           </div>
 
@@ -702,8 +716,8 @@ const Showcase = () => {
               </div>
               <p className="text-steel-on-slate m-0 text-[13px] leading-snug">
                 A made-up shop, redesigned <strong className="text-surface">six ways</strong> by
-                Claude Code. <strong className="text-surface">Drag the line</strong> or pick a
-                number.
+                <GlossaryTip term="claude-code" />.{' '}
+                <strong className="text-surface">Drag the line</strong> or pick a number.
               </p>
             </div>
           </div>

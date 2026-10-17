@@ -1,31 +1,61 @@
-import { Fragment } from 'react';
+import { Fragment, type ReactNode } from 'react';
+
+import { GlossaryTip } from '@/components/GlossaryTip';
+import { isGlossaryKey } from '@/lib/glossary';
+
+// [Words](https://url) or {{term}} / {{term|words shown}}.
+const TOKEN = /\[([^\]]+)\]\((https?:[^)]+)\)|\{\{([a-z-]+)(?:\|([^}]+))?\}\}/g;
+
+type InlineProps = {
+  text: string;
+};
 
 /*
- * Renders copy with **key words** marked: the marked parts become <strong>
- * in ink, so a skimming eye lands on them first. [Words](https://url)
- * become a link to that third-party site.
+ * [Words](https://url) become a link to that third-party site; {{term}}
+ * becomes a glossary tip (lib/glossary.ts).
  */
-const Inline = ({ text }: { text: string }) => (
-  <>
-    {text.split(/\[([^\]]+)\]\((https?:[^)]+)\)/g).map((part, i, all) =>
-      i % 3 === 1 ? (
+const Inline = ({ text }: InlineProps) => {
+  const out: ReactNode[] = [];
+  let at = 0;
+  for (const m of text.matchAll(TOKEN)) {
+    if (m.index > at) out.push(<Fragment key={at}>{text.slice(at, m.index)}</Fragment>);
+    const [, words, href, term, shown] = m;
+    if (href) {
+      out.push(
         <a
-          key={i}
-          href={all[i + 1]}
+          key={m.index}
+          href={href}
           target="_blank"
           rel="noreferrer"
           className="underline underline-offset-2"
         >
-          {part}
-        </a>
-      ) : i % 3 === 2 ? null : (
-        <Fragment key={i}>{part}</Fragment>
-      ),
-    )}
-  </>
-);
+          {words}
+        </a>,
+      );
+    } else if (isGlossaryKey(term)) {
+      out.push(
+        <GlossaryTip key={m.index} term={term}>
+          {shown}
+        </GlossaryTip>,
+      );
+    } else {
+      out.push(<Fragment key={m.index}>{shown ?? term}</Fragment>);
+    }
+    at = m.index + m[0].length;
+  }
+  if (at < text.length) out.push(<Fragment key={at}>{text.slice(at)}</Fragment>);
+  return <>{out}</>;
+};
 
-const Rich = ({ text }: { text: string }) => (
+type RichProps = {
+  text: string;
+};
+
+/*
+ * Renders copy with **key words** marked: the marked parts become <strong>
+ * in ink, so a skimming eye lands on them first.
+ */
+const Rich = ({ text }: RichProps) => (
   <>
     {text.split(/\*\*(.+?)\*\*/g).map((part, i) =>
       i % 2 ? (

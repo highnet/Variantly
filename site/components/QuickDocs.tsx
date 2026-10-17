@@ -1,4 +1,5 @@
 import { CommandCopy } from '@/components/CommandCopy';
+import { GlossaryTip } from '@/components/GlossaryTip';
 import { Typography } from '@/components/ui/Typography';
 import { cn } from '@/lib/utils';
 
@@ -39,7 +40,8 @@ const QuickDocs = ({ className }: QuickDocsProps) => (
         Quick docs
       </Typography>
       <Typography variant="small" color="steel">
-        Every command runs in your site&apos;s folder. Add a path to run it somewhere else.
+        Every command runs in your site&apos;s folder. Add a path to run it somewhere else, or{' '}
+        <GlossaryTip term="flags" /> to change what it does.
       </Typography>
     </div>
     <div className="grid max-w-[920px] gap-10">
