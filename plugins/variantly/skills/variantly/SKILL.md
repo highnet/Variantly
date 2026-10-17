@@ -31,7 +31,10 @@ or `cursor` (Cursor CLI).
    `audit`, against the original's `baseline`; quote them if asked.
 4. The user chooses by looking. When they name a number, run
    `npx variantly keep <n>`, stop the background process, and tell them the
-   changes are unstaged in their working tree for review.
+   changes are unstaged in their working tree for review. `keep` first runs
+   one more agent pass that rolls the chosen style out to every other page
+   (several minutes, one more session on their account); `--no-rollout`
+   applies only the pages the variants redesigned.
 
 Never pick a variant for the user. Each variant is a full agent session on
 their account, plus a review session unless `--no-review`; say so before

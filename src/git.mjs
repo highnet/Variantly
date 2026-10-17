@@ -213,6 +213,18 @@ export async function pendingPaths(worktree) {
 }
 
 /**
+ * Throw away uncommitted work in a worktree, except the given paths (the
+ * files variantly placed there, which must survive).
+ * @param {string} worktree
+ * @param {string[]} keep  paths relative to the worktree root
+ */
+export async function discardChanges(worktree, keep) {
+  const spec = await changeSpec(worktree, keep);
+  await git(worktree, ["checkout", "--", ...spec]).catch(() => {});
+  await git(worktree, ["clean", "-fdq", "--", ...spec]);
+}
+
+/**
  * Commit whatever the agent changed, minus the files variantly placed.
  * @param {string} worktree
  * @param {string} message

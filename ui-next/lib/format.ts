@@ -53,7 +53,7 @@ export const elapsed = (v: Variant, now = Date.now()) => (v.startedAt && v.statu
 export const compactTokens = (n: number) => (n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}k` : String(n));
 
 /** One variant's spend, as its agent reported it: dollars, credits, or tokens. */
-export const usageText = (v: Variant) => {
+export const usageText = (v: Pick<Variant, 'usage' | 'credits' | 'costUsd'>) => {
   const parts: string[] = [];
   if (v.usage) parts.push(`${compactTokens(v.usage.inputTokens + v.usage.outputTokens)} tok`);
   if (typeof v.credits === 'number') parts.push(`${v.credits} premium requests`);

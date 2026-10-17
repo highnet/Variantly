@@ -9,14 +9,16 @@ import { Compare } from './Compare';
 import { Mark } from './Icon';
 import { Kept } from './Kept';
 import { Prefs } from './Prefs';
+import { Rolling } from './Rolling';
 import { setState, useStore, type UiState } from '@/lib/store';
 
-type View = 'loading' | 'checkin' | 'board' | 'compare' | 'kept' | 'stopped';
+type View = 'loading' | 'checkin' | 'board' | 'compare' | 'rolling' | 'kept' | 'stopped';
 
 const pickView = (s: UiState): View => {
   if (s.stopped) return 'stopped';
   if (!s.snap) return 'loading';
   if (s.snap.phase === 'finalized') return 'kept';
+  if (s.snap.phase === 'rolling-out') return 'rolling';
   if (s.snap.phase === 'setup') return 'checkin';
   const anyDone = s.snap.variants.some((v) => v.status === 'done');
   if (s.forceBoard || (!anyDone && !s.wantCompare)) return 'board';
@@ -84,6 +86,7 @@ const Shell = () => {
         {view === 'checkin' && <Checkin />}
         {view === 'board' && <Board />}
         {view === 'compare' && <Compare />}
+        {view === 'rolling' && <Rolling />}
         {view === 'kept' && <Kept />}
       </main>
       <aside id="help" className="help" hidden={!helpOpen}>

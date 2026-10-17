@@ -262,7 +262,7 @@ const clean = async (repo) => {
 const status = async (repo) => {
   const { Session } = await import('../src/session.mjs');
   const session = new Session({ repo });
-  const state = await session.load();
+  const state = await session.load({ inspect: true });
   const { config, ...rest } = state;
   console.log(
     JSON.stringify(
