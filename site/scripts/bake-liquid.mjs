@@ -12,8 +12,8 @@
 //
 // The result is written as one tiny SVG sprite per numeral to
 // public/liquid/step-<n>.svg: FRAMES tiles side by side, the liquid body in
-// the top row; the bottom row holds the meniscus line (a stroke along the
-// surface) and a soft glow fading down from it. The page uses it as a mask-image on a copy of the numeral, so
+// the top row and the meniscus line (a thin stroke along the surface) in the
+// bottom row. The page uses it as a mask-image on a copy of the numeral, so
 // the colour comes from the theme and the real glyph (in whatever face a
 // concept uses) clips the liquid. Vector frames stay crisp at any DPR and are
 // a few kB gzipped.
@@ -231,7 +231,7 @@ const simulate = ({ w, h, ink }, seed) => {
 
 const r = (v) => Math.round(v);
 
-/** One SVG: liquid bodies in the top row, meniscus line and glow in the bottom row. */
+/** One SVG: liquid bodies in the top row, meniscus lines in the bottom row. */
 const sprite = ({ frames, hu }) => {
   const H = r(hu);
   const xs = Array.from({ length: COLS }, (_, i) => ((i + 0.5) / COLS) * TILE);
@@ -253,10 +253,8 @@ const sprite = ({ frames, hu }) => {
     return `${d}L${ox + TILE},${r(ys[COLS - 1] + oy)}`;
   };
   const stroke = r(TILE * 0.035);
-  const band = r(hu * 0.16); // depth of the light just under the surface
   const body = [];
   const lines = [];
-  const glows = [];
   frames.forEach((ys, f) => {
     const ox = f * TILE;
     if (f === 0) return; // empty
@@ -267,18 +265,11 @@ const sprite = ({ frames, hu }) => {
     body.push(`${line(ys, ox, 0)}V${H}H${ox}Z`);
     if (f < FRAMES - 1) {
       lines.push(line(ys, ox, H + stroke / 2));
-      // A soft glow that fades from the surface down: the liquid reads lighter
-      // near its meniscus and deepens below. Each band is its own path so the
-      // one shared gradient spans that frame's band (objectBoundingBox).
-      const floor = r(Math.max(...ys) + H + band);
-      glows.push(`<path d="${line(ys, ox, H)}V${floor}H${ox}Z"/>`);
     }
   });
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${FRAMES * TILE} ${2 * H}" preserveAspectRatio="none">` +
     `<path d="${body.join('')}"/>` +
-    `<linearGradient id="g" x2="0" y2="1"><stop stop-opacity=".45"/><stop offset="1" stop-opacity="0"/></linearGradient>` +
-    `<g fill="url(#g)">${glows.join('')}</g>` +
     `<path d="${lines.join('')}" fill="none" stroke="#000" stroke-width="${stroke}"/>` +
     `</svg>`
   );

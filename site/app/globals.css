@@ -1410,7 +1410,8 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 }
 .vy-step-liq { pointer-events: none; }
 /* Depth and grain inside the liquid only: a copy of the numeral painted with
-   a static grain tile over a gradient that deepens toward the bottom, clipped
+   a static grain tile over a gradient, lighter at the top and deeper toward
+   the bottom, clipped
    to the glyph (and to the liquid by the same mask as the fill). Neutral
    black and white over the theme's fill colour, so every concept keeps its
    own ink. The tile is a 2 kB bake (scripts/bake-liquid.mjs); switch to the
@@ -1419,7 +1420,7 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   --liq-grain: url('/liquid/grain.png');
   background:
     var(--grain-tile, var(--liq-grain)) 0 0 / 40px 40px,
-    linear-gradient(to bottom, rgb(0 0 0 / 0) 25%, rgb(0 0 0 / 0.32));
+    linear-gradient(to bottom, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0) 30%, rgb(0 0 0 / 0) 45%, rgb(0 0 0 / 0.32));
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
