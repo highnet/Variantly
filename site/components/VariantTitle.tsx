@@ -6,14 +6,14 @@ import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime, useSeekTime } from '@/lib/seek';
 import { Letters3D } from '@/components/Letters3D';
-import { startDelay, stepAt } from '@/lib/titleTiming';
+import { faceAt, startDelay, stepAt } from '@/lib/titleTiming';
 import { useSiteStore } from '@/lib/store';
 import { useVariant } from '@/lib/variant';
 import { cn } from '@/lib/utils';
 
 const WORD = 'variantly';
 const fontAt = (step: number, index: number) =>
-  INTRO_FONTS[(step * 5 + index * 3 + ((step * 7 + index * 13) % 4)) % INTRO_FONTS.length];
+  INTRO_FONTS[faceAt(step, index, INTRO_FONTS.length)];
 // Mismatched sizes while shifting, like the title card's jumping glyphs.
 // Never above 1: a shifting glyph may shrink inside its slot but never spill.
 const scaleAt = (step: number, index: number) => 0.72 + (((step * 13 + index * 29) % 9) / 8) * 0.28;

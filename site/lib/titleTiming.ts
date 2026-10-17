@@ -27,3 +27,23 @@ export const stepAt = (ms: number, index: number) => {
   }
   return null;
 };
+
+// Deterministic face for a letter at a step, spread across all n faces (an
+// integer hash) and never the same face two steps running, so a seeked frame
+// is reproducible and every flicker visibly changes.
+const hashFace = (step: number, index: number, n: number) => {
+  let x = (Math.imul(step + 1, 73856093) ^ Math.imul(index + 1, 19349663)) >>> 0;
+  x = Math.imul(x ^ (x >>> 13), 0x5bd1e995) >>> 0;
+  return ((x ^ (x >>> 15)) >>> 0) % n;
+};
+export const faceAt = (step: number, index: number, n: number) => {
+  // Walk the short sequence so each step is compared with the face actually shown before it.
+  let prev = -1;
+  let f = 0;
+  for (let k = 0; k <= step; k++) {
+    f = hashFace(k, index, n);
+    if (f === prev) f = (f + 1) % n;
+    prev = f;
+  }
+  return f;
+};

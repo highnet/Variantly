@@ -8,7 +8,7 @@ import { FontLoader, type Font } from 'three/examples/jsm/loaders/FontLoader.js'
 
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
-import { stepAt } from '@/lib/titleTiming';
+import { faceAt, stepAt } from '@/lib/titleTiming';
 
 const WORD = 'variantly';
 // Space between letter slots, wide enough that tilts, bevels and the lock-in
@@ -30,8 +30,6 @@ const FACES = [
 // Final lockup: deliberately mismatched, like the 2D card.
 const FINAL = [3, 0, 2, 4, 1, 0, 3, 2, 1];
 const COLOURS = ['#ff2d87', '#6a3dff', '#00b4e6', '#ff9a00', '#13c27a'];
-const faceAt = (step: number, i: number) =>
-  (step * 5 + i * 3 + ((step * 7 + i * 13) % 4)) % FACES.length;
 // Never above 1, so a shifting glyph stays inside its slot.
 const scaleAt = (step: number, i: number) => 0.72 + (((step * 13 + i * 29) % 9) / 8) * 0.28;
 
@@ -154,7 +152,7 @@ export const Letters3D = ({ run }: Letters3DProps) => {
           const t = seek ?? (still ? 30 : (performance.now() - t0) / 1000);
           letters.forEach((l, i) => {
             const step = stepAt(t * 1000, i);
-            const face = step === null ? FINAL[i] : faceAt(Math.max(step, 0), i);
+            const face = step === null ? FINAL[i] : faceAt(Math.max(step, 0), i, FACES.length);
             if (face !== l.face) {
               l.mesh.geometry = glyph(l.ch, face).geo;
               l.face = face;
