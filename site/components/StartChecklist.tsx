@@ -17,7 +17,7 @@ const ALL_PROMPTS = [
 const StartChecklist = () => (
   <section
     aria-labelledby="start-title"
-    className="rounded-pass border-rule bg-surface grid overflow-hidden border lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]"
+    className="rounded-pass border-rule bg-surface grid w-full max-w-[880px] overflow-hidden border"
   >
     <div className="grid content-start gap-10 p-6 sm:p-10 lg:p-14">
       <div className="grid gap-3">
@@ -64,7 +64,7 @@ const StartChecklist = () => (
           In your <strong className="text-surface">site&apos;s folder</strong>, paste:
         </Typography>
         <RunnerPicker tone="slate" />
-        <CommandCopy command="npx variantly" tone="slate" />
+        <CommandCopy command="npx variantly" tone="slate" className="max-w-xl" />
         <NodeHint tone="slate" />
       </div>
 
@@ -76,22 +76,22 @@ const StartChecklist = () => (
           Paste this into your AI assistant. It <strong className="text-surface">sets up</strong>{' '}
           and <strong className="text-surface">hands you the link</strong>.
         </Typography>
-        <PromptCopy prompt={PROMPTS.setup} tone="slate" label="Copy setup prompt" />
+        <PromptCopy chip prompt={PROMPTS.setup} tone="slate" label="Copy setup prompt" />
       </div>
 
-      <div className="border-slate-line grid gap-8 border-t pt-10 sm:grid-cols-2">
+      <div className="border-slate-line grid gap-10 border-t pt-10">
         <div className="grid content-start justify-items-start gap-3">
           <Typography variant="small" color="steel-on-slate">
             <strong className="text-surface">Just looking?</strong> Ready-made variants, no AI:
           </Typography>
-          <CommandCopy command="npx variantly --demo" tone="slate" size="sm" className="w-full" />
+          <CommandCopy command="npx variantly --demo" tone="slate" className="w-full max-w-xl" />
           <PromptCopy chip prompt={PROMPTS.demo} tone="slate" label="Or copy as a prompt" />
         </div>
         <div className="grid content-start justify-items-start gap-3">
           <Typography variant="small" color="steel-on-slate">
             <strong className="text-surface">Stuck?</strong> This names what&apos;s missing:
           </Typography>
-          <CommandCopy command="npx variantly doctor" tone="slate" size="sm" className="w-full" />
+          <CommandCopy command="npx variantly doctor" tone="slate" className="w-full max-w-xl" />
           <PromptCopy chip prompt={PROMPTS.doctor} tone="slate" label="Or copy as a prompt" />
         </div>
       </div>

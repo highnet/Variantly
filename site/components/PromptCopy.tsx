@@ -16,7 +16,7 @@ type PromptCopyProps = {
   preview?: boolean;
   /** A single primary button instead of the prompt card. */
   accent?: boolean;
-  /** A quiet one-line chip instead of the prompt card; the prompt shows on hover. */
+  /** A quiet copy button with the prompt's full text under it, instead of the card. */
   chip?: boolean;
   className?: string;
 };
@@ -109,26 +109,41 @@ const PromptCopy = ({
   );
 
   if (chip) {
+    // The exact words sit right under the button, never only in a tooltip:
+    // nobody should paste a prompt into their assistant without reading it.
     return (
-      <Button
-        variant={slate ? 'prompt-slate' : 'prompt'}
-        size="prompt"
-        onClick={copy}
-        title={prompt}
-        className={cn('w-fit gap-1.5', className)}
-      >
-        {copied ? (
-          <Check aria-hidden="true" className="animate-pop" />
-        ) : (
-          <Copy aria-hidden="true" />
-        )}
-        <span className="grid [grid-template-areas:'x'] *:[grid-area:x]">
-          <span className={cn(copied && 'invisible')}>{label}</span>
-          <span aria-hidden={!copied} className={cn(!copied && 'invisible')}>
-            Copied
+      <div className={cn('grid justify-items-start gap-2.5', className)}>
+        <Button
+          variant={slate ? 'prompt-slate' : 'prompt'}
+          size="prompt"
+          onClick={copy}
+          className="w-fit gap-1.5"
+        >
+          {copied ? (
+            <Check aria-hidden="true" className="animate-pop" />
+          ) : (
+            <Copy aria-hidden="true" />
+          )}
+          <span className="grid [grid-template-areas:'x'] *:[grid-area:x]">
+            <span className={cn(copied && 'invisible')}>{label}</span>
+            <span aria-hidden={!copied} className={cn(!copied && 'invisible')}>
+              Copied
+            </span>
           </span>
+        </Button>
+        <blockquote
+          className={cn(
+            'm-0 max-w-[62ch] border-l pl-3.5 text-[14px] leading-relaxed',
+            slate ? 'border-slate-line text-steel-on-slate' : 'border-rule text-steel',
+          )}
+        >
+          <span className="sr-only">Prompt: </span>
+          {prompt}
+        </blockquote>
+        <span className="sr-only" role="status">
+          {copied ? 'Copied to clipboard' : ''}
         </span>
-      </Button>
+      </div>
     );
   }
 

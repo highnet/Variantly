@@ -1,4 +1,6 @@
+import { CommandCopy } from '@/components/CommandCopy';
 import { Typography } from '@/components/ui/Typography';
+import { cn } from '@/lib/utils';
 
 export const COMMANDS = [
   ['npx variantly', 'Open the wizard in the current folder.'],
@@ -21,9 +23,17 @@ export const FLAGS = [
   ['--no-open', 'don’t open a browser'],
 ] as const;
 
+type QuickDocsProps = {
+  className?: string;
+};
+
 /* A compact command reference: every command and flag on one screen. */
-const QuickDocs = () => (
-  <section id="docs" aria-labelledby="docs-title" className="grid scroll-mt-28 gap-10">
+const QuickDocs = ({ className }: QuickDocsProps) => (
+  <section
+    id="docs"
+    aria-labelledby="docs-title"
+    className={cn('grid scroll-mt-28 gap-10', className)}
+  >
     <div className="grid gap-3">
       <Typography variant="headline" as="h2" id="docs-title">
         Quick docs
@@ -32,17 +42,15 @@ const QuickDocs = () => (
         Every command runs in your site&apos;s folder. Add a path to run it somewhere else.
       </Typography>
     </div>
-    <div className="grid max-w-[920px] gap-8">
-      <dl className="border-rule m-0 grid border-t">
+    <div className="grid max-w-[920px] gap-10">
+      <dl className="m-0 grid gap-7">
         {COMMANDS.map(([cmd, what]) => (
-          <div
-            key={cmd}
-            className="border-rule grid gap-1.5 border-b py-4 sm:grid-cols-[minmax(0,18rem)_minmax(0,1fr)] sm:gap-8"
-          >
-            <dt>
-              <code className="condensed font-mono text-sm font-semibold">{cmd}</code>
+          <div key={cmd} className="grid gap-2.5">
+            {/* The command is the term; its description reads first. */}
+            <dt className="order-2">
+              <CommandCopy command={cmd} size="sm" accent className="max-w-xl" />
             </dt>
-            <dd className="text-steel m-0 text-[15px] leading-snug">{what}</dd>
+            <dd className="text-steel order-1 m-0 text-[15px] leading-snug">{what}</dd>
           </div>
         ))}
       </dl>

@@ -87,13 +87,13 @@ export const agentShort: Record<string, string> = { claude: 'Claude', codex: 'Co
 export const agentLabel = (agent: string, model?: string) => `${agentShort[agent] ?? agent}${model ? ` · ${model}` : ''}`;
 
 /**
- * Who made a variant, for runs that mix agents. Empty for one-agent runs,
- * and while a blind run is still choosing.
+ * Who made a variant: agent and model, always (one agent or a mix). Empty
+ * only while a blind run is still choosing.
  */
 export const madeBy = (snap: Pick<Snapshot, 'config' | 'phase'> | null | undefined, v: Pick<Variant, 'agent' | 'model'>) => {
   const c = snap?.config;
-  if (!c?.mix?.length || (c.blind && snap?.phase !== 'finalized')) return '';
-  return agentLabel(v.agent ?? c.agent, v.model ?? c.model);
+  if (!c || (c.blind && snap?.phase !== 'finalized')) return '';
+  return agentLabel(v.agent ?? c.agent, (v.model ?? c.model) || 'default model');
 };
 
 /**
@@ -108,4 +108,22 @@ export const errorHeadline = (error: string) => {
     .filter(Boolean)
     .at(-1);
   return last ?? head.split('\n')[0];
+};
+
+/** The board's direction cell: the label once there is one, else what is happening instead. */
+export const boardDirection = (v: Pick<Variant, 'direction' | 'picked' | 'status'>): { text: string; pending: boolean } => {
+  if ((v.direction && v.direction.trim()) || v.picked) return { text: directionLabel(v.direction, v.picked), pending: false };
+  if (v.status === 'queued') return { text: 'Waiting for a free slot', pending: true };
+  if (LIVE.includes(v.status)) return { text: 'Choosing a direction…', pending: true };
+  return { text: directionLabel(v.direction, v.picked), pending: false };
+};
+
+/** One short, status-aware progress label for the board. */
+export const progressLabel = (v: Variant): string => {
+  if (v.status === 'done') return 'Ready';
+  if (v.status === 'queued') return 'Scheduled';
+  if (v.status === 'failed') return v.error ? `Failed: ${errorHeadline(v.error)}` : 'Failed';
+  if (v.status === 'cancelled') return `Cancelled at ${STEPS[Math.max(0, stepAt(v))]}`;
+  if (v.status === 'reviewing') return 'Reviewing';
+  return STEPS[Math.max(0, stepAt(v))];
 };

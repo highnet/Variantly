@@ -11,13 +11,10 @@ import { AGENT_LOGOS, STACK_LOGOS } from '@/lib/logos';
  * glance, with the one fact under each that matters.
  */
 const Stacks = () => (
-  <section
-    aria-labelledby="stacks-title"
-    className="grid gap-x-20 gap-y-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-[auto_1fr]"
-  >
+  <section aria-labelledby="stacks-title" className="grid gap-24">
     {/* Both columns share the section's rows, so the two headings and the two
         panels line up whatever the copy length. */}
-    <div className="grid gap-10 lg:row-span-2 lg:grid-rows-subgrid">
+    <div className="grid gap-10">
       <div className="grid max-w-[52ch] content-start gap-3">
         <Typography variant="headline" as="h2" id="stacks-title">
           Works with your site
@@ -50,8 +47,8 @@ const Stacks = () => (
       </ul>
     </div>
 
-    <div className="mt-10 grid gap-10 lg:row-span-2 lg:mt-0 lg:grid-rows-subgrid">
-      <div className="grid content-start gap-3">
+    <div className="mt-16 grid gap-10">
+      <div className="grid max-w-[60ch] content-start gap-3">
         <Typography variant="headline" as="h2">
           Uses your own AI
         </Typography>
@@ -63,7 +60,7 @@ const Stacks = () => (
         </Typography>
         <RunnerPicker className="mt-2" />
       </div>
-      <ul className="m-0 grid list-none content-start gap-7 p-0">
+      <ul className="m-0 grid max-w-xl list-none content-start gap-7 p-0">
         {AGENT_LOGOS.map((a) => (
           <li key={a.name} className="grid gap-2.5">
             <div className="flex items-center gap-2.5">

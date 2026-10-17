@@ -70,6 +70,7 @@ export const createSiteRunner = (repo, getConfig) => {
 };
 
 /** The OS file-manager command for a folder: only the path is passed, as one argument. */
+/** @param {string} dir @param {NodeJS.Platform} [platform] */
 export const folderOpener = (dir, platform = process.platform) => {
   if (platform === 'win32') return { cmd: 'explorer.exe', args: [dir] };
   if (platform === 'darwin') return { cmd: 'open', args: [dir] };

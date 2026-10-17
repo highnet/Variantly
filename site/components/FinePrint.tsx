@@ -11,14 +11,14 @@ import { REPO_URL } from '@/lib/site';
  * checks before running it on their project.
  */
 const FinePrint = () => (
-  <section aria-labelledby="faq-title" className="grid gap-28">
+  <section aria-labelledby="faq-title" className="grid gap-10">
     <div className="grid gap-10">
       <Typography variant="headline" as="h2" id="faq-title">
         Common questions
       </Typography>
-      <dl className="m-0 grid max-w-[1100px] gap-x-20 gap-y-10 md:grid-cols-2">
+      <dl className="m-0 grid max-w-[64ch] gap-10">
         {FAQ.map((f) => (
-          <div key={f.q} className="grid max-w-[52ch] content-start gap-2.5">
+          <div key={f.q} className="grid content-start gap-2.5">
             <dt className="text-[18px] font-semibold">{f.q}</dt>
             <dd className="text-steel m-0 text-[16px] leading-relaxed">
               <Rich text={f.a} />
@@ -28,7 +28,7 @@ const FinePrint = () => (
       </dl>
     </div>
 
-    <QuickDocs />
+    <QuickDocs className="mt-16" />
 
     <footer className="border-rule text-steel flex flex-wrap items-center justify-between gap-4 border-t pt-6 text-sm">
       <span className="max-w-[90ch] leading-relaxed">

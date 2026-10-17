@@ -4698,11 +4698,34 @@ body::before {
   }
 }
 
-/* The step stage on the board, centred above the log while a variant works. */
-.board-stage {
+/* The picked variant's panel: step stage on the left while it works, the
+   live log filling the rest. Stacks on narrow screens. */
+.board-detail {
   display: grid;
-  place-items: center;
-  padding: 8px 0 16px;
+  gap: 16px;
+  min-height: 0;
+}
+
+.board-detail:has(> .board-stage) {
+  grid-template-columns: minmax(300px, 400px) minmax(0, 1fr);
+}
+
+.board-detail > * {
+  min-height: 0;
+}
+
+.board-stage {
+  overflow: auto;
+}
+
+.board-stage .progress-card {
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .board-detail:has(> .board-stage) {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Progress card, polished: a dark glass card in both themes, hairline
@@ -4821,4 +4844,63 @@ body::before {
   padding: 0;
   background: none;
   border-radius: 0;
+}
+
+/* Stage text inside the dark card: read as light, not ink. */
+.progress-card .step-stage {
+  --ink: #f2effc;
+  color: rgb(255 255 255 / 0.82);
+}
+
+.progress-card .step-stage .stg-kicker {
+  color: rgb(255 255 255 / 0.5);
+}
+
+/* ---- Board declutter: one progress column, quieter cells ---- */
+.board .step-cell {
+  min-width: 150px;
+}
+.board .progress-cell {
+  gap: 6px;
+  max-width: 220px;
+}
+.board .progress-cell .now-label {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: clip;
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.board .progress-cell .working-bars {
+  display: inline-flex;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.board .progress-cell[data-s='failed'] .now-label {
+  color: var(--fail-on-slate);
+}
+.board .progress-cell:is([data-s='scheduled'], [data-s='cancelled']) .now-label {
+  color: var(--steel-on-slate);
+}
+.board .progress-cell.unseen .now-label {
+  color: var(--alert);
+}
+.board .dir .dir-label {
+  display: block;
+}
+.board .dir .dir-label.muted {
+  color: var(--steel-on-slate);
+  font-style: italic;
+}
+.progress-card.compact .progress-now {
+  margin-top: 4px;
+}
+
+/* Side by side: label each pane too (who made it, which direction). */
+.stage[data-mode='side'] ~ .tags {
+  display: flex;
 }

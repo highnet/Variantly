@@ -78,13 +78,10 @@ test('a variant never commits Playwright MCP output', async (t) => {
   t.after(() => rmSync(root, { recursive: true, force: true }));
   await addWorktree(repo, wt, 'variantly/t/v1', 'HEAD');
   mkdirSync(path.join(wt, '.playwright-mcp'));
-  writeFileSync(path.join(wt, '.playwright-mcp', 'page-1.yml'), 'x
-');
+  writeFileSync(path.join(wt, '.playwright-mcp', 'page-1.yml'), 'x\n');
   mkdirSync(path.join(wt, 'site', '.playwright-mcp'), { recursive: true });
-  writeFileSync(path.join(wt, 'site', '.playwright-mcp', 'console.log'), 'x
-');
-  writeFileSync(path.join(wt, 'app.css'), 'body { color: red }
-');
+  writeFileSync(path.join(wt, 'site', '.playwright-mcp', 'console.log'), 'x\n');
+  writeFileSync(path.join(wt, 'app.css'), 'body { color: red }\n');
   assert.deepEqual(await commitAll(wt, 'variant', []), ['app.css']);
   await removeWorktree(repo, wt);
 });
