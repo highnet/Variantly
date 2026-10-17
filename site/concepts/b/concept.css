@@ -1,0 +1,59 @@
+:root[data-variant='b'] {
+  --panel: #f6f1e4; --surface: #fffdf6; --rule: #d9cfb6; --steel: #5a5446; --ink: #1b1a3a;
+  --alert: #ff4f9a; --alert-hover: #ff77b2;
+  --hero-bg: #f6f1e4; --hero-ink: #1b1a3a; --hero-mute: #5a5446; --hero-line: #1b1a3a; --hero-box: #fffdf6;
+  --hero-face: var(--font-poster); --title: #ff4f9a; --hero-alpha: 40%;
+}
+:root[data-variant='b'][data-theme='dark'] {
+  --panel: #12122a; --surface: #1b1b3a; --rule: #2f2f5c; --steel: #b7b3d6; --ink: #f6f1e4;
+  --hero-bg: #16163a; --hero-ink: #f6f1e4; --hero-mute: #b7b3d6; --hero-line: #f6f1e4; --hero-box: #0d0d22;
+}
+:root[data-variant='b'] [data-hero-title] {
+  background-image: radial-gradient(color-mix(in srgb, var(--hero-ink) 18%, transparent) 1.2px, transparent 1.4px);
+  background-size: 9px 9px;
+}
+:root[data-variant='b'] .vy-title {
+  transform: rotate(-3deg);
+  text-shadow: 7px 5px 0 rgb(47 91 255 / 0.85);
+  mix-blend-mode: multiply;
+}
+:root[data-variant='b'][data-theme='dark'] .vy-title { mix-blend-mode: screen; }
+:root[data-variant='b'] #hero-title {
+  font-size: clamp(3rem, 6vw, 6rem);
+  line-height: 0.92;
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+:root[data-variant='b'] [data-hero-side] {
+  border: 2px dashed var(--hero-line);
+  padding: 22px;
+  transform: rotate(1.5deg);
+  background: var(--hero-box);
+}
+:root[data-variant='b'] body {
+  background-image: radial-gradient(color-mix(in srgb, var(--ink) 9%, transparent) 1px, transparent 1.3px);
+  background-size: 8px 8px;
+}
+:root[data-variant='b'] main > div h2 {
+  text-transform: none;
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
+  text-decoration: underline 6px #ff4f9a;
+  text-underline-offset: 8px;
+}
+:root[data-variant='b'] main > div .bg-surface { border: 2px dashed var(--ink); border-radius: 4px; }
+:root[data-variant='b'] main > div .grid > .bg-surface:nth-child(odd) { transform: rotate(-0.6deg); }
+:root[data-variant='b'] main > div .grid > .bg-surface:nth-child(even) { transform: rotate(0.6deg); }
+:root[data-variant='b'] main > div .figure:not(h3) { color: #ff4f9a; text-shadow: 4px 3px 0 rgb(47 91 255 / 0.8); }
+.vy-swatch-b { background: linear-gradient(135deg, #ff4f9a 50%, #2f5bff 50%); }
+@media (max-width: 639px) {
+:root[data-variant='b'] [data-hero-side] { transform: none; }
+}
+:root[data-variant='b'] { --flap-bg: #ff4f9a; --flap-ink: #fffdf6; }
+:root[data-variant='b'] .flap-cell { border-radius: 2px; box-shadow: 0.08em 0.06em 0 rgb(47 91 255 / 0.85); }
+:root[data-variant='b'] { --board-bg: #1b1a3a; --board-raised: #2a2858; --board-line: #3c3a72; --board-mute: #c9c5ea; --board-text: #fffdf6; --board-deep: #0e0d22; --board-ok: #ff4f9a; }
+:root[data-variant='b'] .on-slate [aria-pressed='true'] { color: #ffffff; }
+:root[data-variant='b'] { --blob-o: 0.6; }
+:root[data-variant='b'] { --art-1: #ff4f9a; --art-2: #2f5bff; --art-ink: #2a2440; }
+:root[data-variant='b'][data-theme='dark'] { --art-1: #ff5fa8; --art-2: #5b7dff; --art-ink: #f5efe0; }
+:root[data-variant='b'] .vy-loadbar { height: 5px; }
+:root[data-variant='b'] .vy-loadbar-fill { background: radial-gradient(circle, var(--art-1) 45%, transparent 50%) 0 0 / 5px 5px; }

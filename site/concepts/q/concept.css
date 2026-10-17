@@ -1,0 +1,20 @@
+/* q · Sticker Bomb: placeholder tokens from the roll's palette. */
+:root[data-variant='q'] {
+  --panel: color-mix(in srgb, #f7f7f2 94%, #111111); --surface: #f7f7f2; --rule: color-mix(in srgb, #111111 18%, #f7f7f2); --steel: color-mix(in srgb, #111111 66%, #f7f7f2); --ink: #111111;
+  --alert: #ff3ea5; --alert-hover: color-mix(in srgb, #ff3ea5 85%, #f7f7f2); --on-alert: #ffffff;
+  --hero-bg: #f7f7f2; --hero-ink: #111111; --hero-mute: color-mix(in srgb, #111111 66%, #f7f7f2); --hero-line: color-mix(in srgb, #111111 22%, #f7f7f2); --hero-box: color-mix(in srgb, #f7f7f2 96%, #111111);
+  --title: #ff3ea5;
+  --flap-bg: #ff3ea5; --flap-ink: #ffffff;
+  --art-1: #ff3ea5; --art-2: #00c2ff; --art-3: #c4f000; --art-ink: #111111; --art-shadow: #111111;
+  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
+  --board-bg: #121212; --board-raised: color-mix(in srgb, #121212 88%, #fafafa); --board-line: color-mix(in srgb, #121212 70%, #fafafa);
+  --board-mute: color-mix(in srgb, #fafafa 72%, #121212); --board-text: #fafafa; --board-deep: color-mix(in srgb, #121212 80%, #000); --board-ok: #ff3ea5;
+}
+:root[data-variant='q'][data-theme='dark'] {
+  --panel: color-mix(in srgb, #121212 94%, #fafafa); --surface: #121212; --rule: color-mix(in srgb, #fafafa 18%, #121212); --steel: color-mix(in srgb, #fafafa 66%, #121212); --ink: #fafafa;
+  --alert: #ff3ea5; --alert-hover: color-mix(in srgb, #ff3ea5 85%, #121212); --on-alert: #ffffff;
+  --hero-bg: #121212; --hero-ink: #fafafa; --hero-mute: color-mix(in srgb, #fafafa 66%, #121212); --hero-line: color-mix(in srgb, #fafafa 22%, #121212); --hero-box: color-mix(in srgb, #121212 96%, #fafafa);
+  --title: #ff3ea5;
+  --flap-bg: #ff3ea5; --flap-ink: #ffffff;
+  --art-1: #ff3ea5; --art-2: #00c2ff; --art-3: #c4f000; --art-ink: #fafafa; --art-shadow: #fafafa;
+}
