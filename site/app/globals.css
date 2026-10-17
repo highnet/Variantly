@@ -1465,7 +1465,7 @@ header.vy-header-glass {
   text-shadow: none !important;
   transition: color 0.2s ease-in, text-shadow 0.2s ease-in;
 }
-:root[data-variant='g'] main > div h2 { text-transform: none; text-shadow: 0 3px 0 #ff5fa2, 0 6px 0 #22c3ee; }
+:root[data-variant='g'] main > div h2 { text-transform: none; text-shadow: 0 2px 0 color-mix(in srgb, currentColor 55%, #1a1033); }
 :root[data-variant='g'] main > div .bg-surface { border: 0; border-radius: 22px; box-shadow: 0 1px 0 rgb(255 255 255 / 0.8) inset, 0 18px 40px -20px rgb(124 92 255 / 0.55); }
 :root[data-variant='g'] [data-hero-side] { background: var(--hero-box); border-radius: 22px; padding: 22px; box-shadow: 0 18px 40px -20px rgb(124 92 255 / 0.55); }
 :root[data-variant='g'] .flap-cell:nth-child(5n + 1) { --flap-bg: #ff5fa2; }
