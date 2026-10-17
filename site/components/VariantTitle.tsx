@@ -59,6 +59,8 @@ const Letter = ({ char, index, run }: LetterProps) => {
     const tick = () => {
       const step = stepAt(performance.now() - t0, index);
       setLive(step === null ? null : Math.max(step, 0));
+      // The first glyph to move reveals the title (hidden by VARIANT_BOOT).
+      document.documentElement.removeAttribute('data-intro');
       if (step !== null) timer = window.setTimeout(tick, 30);
     };
     timer = window.setTimeout(tick, startDelay(index));

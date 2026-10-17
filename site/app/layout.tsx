@@ -6,6 +6,7 @@ import { StoreHydrator } from '@/components/StoreHydrator';
 import { Toaster } from '@/components/Toaster';
 import { HERO_FONT_VARS } from '@/lib/introFonts';
 import { cn } from '@/lib/utils';
+import { VARIANT_BOOT } from '@/lib/variantBoot';
 import { PREFS_BOOT } from '@/lib/prefs';
 import { REPO_URL, SITE_URL } from '@/lib/site';
 
@@ -94,6 +95,7 @@ const RootLayout = ({ children }: RootLayoutProps) => (
     <head>
       {/* Theme and reading aids before first paint, so nothing flashes. */}
       <script dangerouslySetInnerHTML={{ __html: PREFS_BOOT }} />
+      <script dangerouslySetInnerHTML={{ __html: VARIANT_BOOT }} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}

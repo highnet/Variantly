@@ -4,6 +4,7 @@ import { animate, motion, useMotionValue, useTransform } from 'motion/react';
 import { useEffect, useState } from 'react';
 
 import { calmMotion } from '@/lib/prefs';
+import { cn } from '@/lib/utils';
 import { holdFrame, seekTime } from '@/lib/seek';
 
 import { GlField } from './GlField';
@@ -29,7 +30,15 @@ const SHARP = [
   'M14,90 C14,40 30,12 50,12 C70,12 86,40 86,90 C70,90 60,90 50,90 C40,90 28,90 14,90Z',
 ];
 
-const Blob = ({ color, i, sharp }: { color: string; i: number; sharp?: boolean }) => {
+type BlobProps = { ramp: [string, string, string]; i: number; sharp?: boolean; id: string };
+
+/*
+ * One morph shape painted as a grainy gradient (css-tricks.com/grainy-gradients):
+ * a radial ramp (warm core, mid, cool edge fading out) is softened, then run
+ * through fractal noise that scatters its pixels, so the colour dithers into
+ * grain instead of banding.
+ */
+const Blob = ({ ramp, i, sharp, id }: BlobProps) => {
   const p = useMotionValue(0);
   const d = useTransform(
     p,
@@ -62,18 +71,36 @@ const Blob = ({ color, i, sharp }: { color: string; i: number; sharp?: boolean }
   return (
     <motion.svg
       viewBox="0 0 100 100"
-      className={`absolute ${pos}`}
+      className={cn('absolute overflow-visible', pos)}
       animate={seekTime() !== null || calmMotion() ? undefined : { rotate: [0, 18, 0] }}
       transition={{ duration: 30 + i * 6, repeat: Infinity, ease: 'easeInOut' }}
     >
-      <motion.path d={d} fill={color} filter={`url(#vy-grain-${i})`} />
       <defs>
-        <filter id={`vy-grain-${i}`} x="-10%" y="-10%" width="120%" height="120%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed={i + 3} />
-          <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.4 1.1" />
-          <feComposite in="SourceGraphic" operator="in" />
+        <radialGradient id={`${id}-fill`} cx="45%" cy="40%" r="60%">
+          <stop offset="0" stopColor={ramp[0]} />
+          <stop offset="0.45" stopColor={ramp[1]} />
+          <stop offset="0.82" stopColor={ramp[2]} stopOpacity="0.9" />
+          <stop offset="1" stopColor={ramp[2]} stopOpacity="0" />
+        </radialGradient>
+        <filter id={`${id}-grain`} x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation={sharp ? 0 : 2.4} result="soft" />
+          <feTurbulence
+            type="fractalNoise"
+            baseFrequency="1.15"
+            numOctaves="2"
+            seed={i + 3}
+            result="noise"
+          />
+          <feDisplacementMap
+            in="soft"
+            in2="noise"
+            scale={sharp ? 5 : 14}
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
         </filter>
       </defs>
+      <motion.path d={d} fill={`url(#${id}-fill)`} filter={`url(#${id}-grain)`} />
     </motion.svg>
   );
 };
@@ -127,8 +154,14 @@ export const Backdrop = () => {
     >
       {v.blobs && (
         <div className="vy-blobs absolute inset-0" style={{ filter: `blur(${v.blur}px)` }}>
-          {v.blobs[theme].map((c, i) => (
-            <Blob key={c + i} color={c} i={i} sharp={v.sharp} />
+          {v.blobs[theme].map((ramp, i) => (
+            <Blob
+              key={key + theme + i}
+              id={`vy-${key}-${theme}-${i}`}
+              ramp={ramp}
+              i={i}
+              sharp={v.sharp}
+            />
           ))}
         </div>
       )}
