@@ -351,4 +351,4 @@ export const Letters3D = ({ run, clock, onReady, onFail }: Letters3DProps) => {
 };
 
 const requestIdleCallbackSafe = (cb: () => void) =>
-  'requestIdleCallback' in window ? requestIdleCallback(cb) : setTimeout(cb, 200);
+  'requestIdleCallback' in window ? requestIdleCallback(cb, { timeout: 800 }) : setTimeout(cb, 200);
