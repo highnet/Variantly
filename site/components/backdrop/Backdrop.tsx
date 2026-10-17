@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
+import { markLoaded } from '@/lib/loadProgress';
+import { calmMotion } from '@/lib/prefs';
 import { holdFrame, seekTime } from '@/lib/seek';
 
 import dynamic from 'next/dynamic';
@@ -40,6 +42,10 @@ export const Backdrop = () => {
   useEffect(() => {
     if (key) document.documentElement.dataset.variant = key;
   }, [key]);
+  // Reduced motion never loads the scene, so there is nothing to wait for.
+  useEffect(() => {
+    if (calmMotion() && seekTime() === null) markLoaded('scene');
+  }, []);
   useEffect(() => {
     const html = document.documentElement;
     if (seekTime() !== null) {

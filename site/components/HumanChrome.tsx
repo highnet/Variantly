@@ -2,6 +2,8 @@
 
 import dynamic from 'next/dynamic';
 
+import { LoadBar } from '@/components/LoadBar';
+
 /*
  * The human view's decoration: the three.js backdrop, the concept switcher
  * dock, scroll reveals and the small delights. Loaded on demand, so the agent
@@ -24,6 +26,7 @@ const Delight = dynamic(() => import('@/components/Delight').then((m) => m.Delig
 
 const HumanChrome = () => (
   <>
+    <LoadBar />
     <Backdrop />
     <VariantSwitcher />
     <ScrollReveal />

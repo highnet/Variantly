@@ -1574,15 +1574,74 @@ main > div p { line-height: 1.65; }
     linear-gradient(color-mix(in srgb, var(--art-ink) 8%, transparent) 2px, transparent 2px) 0 0 / 12vmin 12vmin,
     linear-gradient(90deg, color-mix(in srgb, var(--art-ink) 8%, transparent) 2px, transparent 2px) 0 0 / 12vmin 12vmin;
 }
-/* Desktop only: a slow transform-only drift (composited, never repainted). */
-@media (min-width: 640px) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .vy-art-float { will-change: transform; animation: vy-art-drift 32s ease-in-out infinite alternate; }
-  .vy-art-float-1 { animation-duration: 40s; animation-direction: alternate-reverse; }
-  .vy-art-float-2 { animation-duration: 26s; }
-  .vy-art-sweep { will-change: transform; animation: vy-art-spin 8s linear infinite; }
+/* A seamless 24s loop for every concept: each layer's keyframes start and end
+   on the same transform, and every period divides 24s (24, 12, 8), so the
+   whole scene returns to its exact start state. Transform only: the layers
+   are composited, never repainted. Paused past the hero; static for reduced
+   motion and seek renders (see :root[data-seek] above). */
+.vy-art-float { will-change: transform; animation: vy-art-orbit 24s ease-in-out infinite; }
+.vy-art-float-1 { animation-name: vy-art-orbit-b; animation-duration: 12s; }
+.vy-art-float-2 { animation-name: vy-art-bob; animation-duration: 8s; }
+.vy-art-sweep { will-change: transform; animation: vy-art-spin 8s linear infinite; }
+:root[data-scrolled] .vy-art-float, :root[data-scrolled] .vy-art-sweep { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .vy-art-float, .vy-art-sweep { animation: none; } }
+@keyframes vy-art-orbit {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(1.2vmax, 0.8vmax) rotate(3deg); }
+  50% { transform: translate(0, 1.6vmax) rotate(0deg); }
+  75% { transform: translate(-1.2vmax, 0.8vmax) rotate(-3deg); }
 }
-@keyframes vy-art-drift {
-  from { transform: translate(0, 0) rotate(0deg); }
-  to { transform: translate(2vmax, 3vmax) rotate(10deg); }
+@keyframes vy-art-orbit-b {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(-1vmax, 1.2vmax) rotate(-4deg); }
 }
-@keyframes vy-art-spin { to { transform: rotate(1turn); } }
+@keyframes vy-art-bob {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-1.2vmax) scale(1.03); }
+}
+@keyframes vy-art-spin { from { transform: rotate(0turn); } to { transform: rotate(1turn); } }
+
+/* ---- Load bar (LoadBar.tsx): heavy visuals streaming in, per concept ------ */
+.vy-loadbar {
+  position: fixed; inset: 0 0 auto; z-index: 60; height: 3px; pointer-events: none;
+  transition: opacity 400ms ease 300ms;
+}
+.vy-loadbar-done { opacity: 0; }
+.vy-loadbar-fill {
+  position: absolute; inset: 0; background: var(--alert);
+  transform-origin: left; transform: scaleX(max(0.06, var(--p)));
+  transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.vy-loadbar-text { display: none; }
+/* TVA: a printed terminal bar. */
+:root[data-variant='c'] .vy-loadbar { height: auto; inset: auto auto 12px 12px; }
+:root[data-variant='c'] .vy-loadbar-fill { display: none; }
+:root[data-variant='c'] .vy-loadbar-text {
+  display: block; font: 600 12px/1 var(--font-martian), monospace; color: var(--art-1);
+  background: var(--panel); padding: 6px 8px; border: 1px solid var(--rule);
+}
+/* Candy: a fat, rounded gummy bar with a shine. */
+:root[data-variant='g'] .vy-loadbar { height: 8px; inset: 6px 12px auto; }
+:root[data-variant='g'] .vy-loadbar-fill {
+  border-radius: 99px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.7), transparent 45%), linear-gradient(90deg, var(--art-1), var(--art-3), var(--art-2));
+}
+/* Bauhaus: three primary segments. */
+:root[data-variant='e'] .vy-loadbar { height: 6px; }
+:root[data-variant='e'] .vy-loadbar-fill {
+  background: linear-gradient(90deg, var(--art-1) 0 33.3%, var(--art-3) 33.3% 66.6%, var(--art-2) 66.6%);
+}
+/* Clay: soft and pillowy. */
+:root[data-variant='a'] .vy-loadbar { height: 6px; inset: 6px 12px auto; }
+:root[data-variant='a'] .vy-loadbar-fill { border-radius: 99px; background: linear-gradient(90deg, var(--art-1), var(--art-2), var(--art-3)); }
+/* Riso: halftone-dotted ink. */
+:root[data-variant='b'] .vy-loadbar { height: 5px; }
+:root[data-variant='b'] .vy-loadbar-fill { background: radial-gradient(circle, var(--art-1) 45%, transparent 50%) 0 0 / 5px 5px; }
+/* Zine: a stark black-and-acid bar. */
+:root[data-variant='d'] .vy-loadbar { height: 6px; }
+:root[data-variant='d'] .vy-loadbar-fill { background: repeating-linear-gradient(-45deg, var(--art-ink) 0 6px, var(--art-1) 6px 12px); }
+/* Cut & Paste: a strip of tape. */
+:root[data-variant='f'] .vy-loadbar { height: 10px; inset: 4px 10px auto; rotate: -0.6deg; }
+:root[data-variant='f'] .vy-loadbar-fill { background: color-mix(in srgb, var(--art-tape) 80%, var(--art-1)); opacity: 0.85; }
+@media (prefers-reduced-motion: reduce) { .vy-loadbar, .vy-loadbar-fill { transition: none; } }
+:root[data-audience='agent'] .vy-loadbar { display: none; }

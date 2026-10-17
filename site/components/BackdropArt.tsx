@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
  * SVG shapes, gradients and patterns, no SVG filters and no blend modes, so a
  * phone rasterises the layer a single time and scrolling only composites it.
  * Colours come from --art-* tokens in globals.css, set per concept and theme.
- * Desktop adds a slow, transform-only drift (see .vy-art-float).
+ * Every concept loops seamlessly over 24s, transform only (see .vy-art-float).
  */
 
 type PieceProps = {
