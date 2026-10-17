@@ -1,216 +1,287 @@
-# 13 new concepts (h–t)
+# 13 new concepts (h–t), Winter 2026-27 re-roll
 
-Impeccable direction roll (`concept-seed --scope direction --mode persuade`, seed:1c22451124ce250d). Five dealt challengers were fused into concepts h–l. The torn-flyer challenger was declined because it duplicates f Cut & Paste (kept: concepts already viewed persist as a record). m–t are grounded directions. Each was raised by a donor (lines below). Constraints: filter-free backgrounds, seamless 24s loops, a three.js scene, a letterLook material family. Previously dropped: Synth Sunset (not re-proposed).
+Impeccable direction roll (`concept-seed --scope direction --mode persuade`, seed:347c81f99c52957b). The owner pinned the brief, and a pinned brief beats the roll. Two parts: the Winter 2026-27 trend forecast (ten trends, with its season palette and the key line "human-made texture meets digital surrealism"), and the most popular contemporary graphic and web styles that a 2025-26 NYU, Parsons or SVA design class would study. All 13 are grounded directions. The four dealt challengers were fused, then declined: the silkscreen loft and the jet-age ticket wallet are historical, the risograph system duplicates b, and the particle-detector display is not a design style. Their disciplines are kept as named raises. Constraints: filter-free backgrounds, seamless 24s loops, a three.js scene, a letterLook material family, and Google Fonts OFL display faces.
 
-## h — Pixel Metropolis
+Two v1 concepts were kept in reworked form: **h Pixel Metropolis → Dither Machine** and **j Night Cockpit → Instrument OS**. The other 11 are new.
 
-*Every variant is a building in one crisp isometric pixel city; the site is a block you can zoom into.*
+## Families (renamed)
 
-- **Lineage:** eBoy pixoramas: isometric RGB pixel cities on one hard grid
-- **Palette light:** #f4f1e8 #16161d #ff2e4c #1fb6ff #ffd23f
-- **Palette dark:** #0d0d1a #f4f1e8 #ff2e4c #1fb6ff #7cff4f
-- **Materials:** integer-scaled pixel blocks, zero anti-aliasing; deliberate 2-colour dithering; isometric 2:1 tile grid
-- **Type:** Silkscreen for UI labels, Pixelify Sans for the title; title built as stacked isometric pixel blocks
-- **Background:** isometric tile field (repeating-linear-gradient diamonds) with pixel cars sliding along 2:1 streets in steps(); 24s loop = one street length
-- **3D title (letterLook):** voxel bricks: flat-shaded MeshLambert cubes per letter-pixel, no smoothing, primary RGB faces
-- **three.js scene:** InstancedMesh voxel city block under an orthographic iso camera; cranes and blinking windows stepping on a 24s cycle
-- **Motion:** stepped, frame-quantised (steps(n)), never eased; zoom in whole multiples
-- **Risk:** Turns into retro-game nostalgia costume ('level up' copy) instead of a city grammar; pixel text is unreadable below 12px.
-- **Raise (challenger-datamatics):** Only integer scales and one grid unit for everything, chrome included; no half pixels.
-- **Raise (own):** One hidden joke per block at deeper zoom, never in body copy.
+- **Print & Type:** b, d, e, f, o, q, r
+- **Hand & Material:** a, k, p, s, t
+- **Screen & Signal:** c, h, j
+- **Light & Illusion:** g, i, l, m, n
 
-## i — Data Sublime
+## Trend coverage
 
-*Variants as frequencies: a strobing field of hairline bars where the design is the signal and everything else is data.*
+- **1 Tactile imperfection:** h, k, p
+- **2 Surrealism & reality distortion:** i, m
+- **3 Cinematic drama:** n
+- **4 Maximalist collage:** q
+- **5 Retro-tech nostalgia:** h, j
+- **6 Expressive typography:** k, l, o, r
+- **7 Warm eclecticism / modern nostalgia:** j, s
+- **8 Neo-folk & cultural craft:** p
+- **9 Sensory 3D & material fantasy:** i, l, m
+- **10 Quiet organic minimalism:** t
+- **Human-made texture meets digital surrealism:** h, k, m, p, s, t
 
-- **Lineage:** Ryoji Ikeda datamatics: barcode fields, sine lattices, pure black and white
-- **Palette light:** #ffffff #000000 #000000 #ffffff
-- **Palette dark:** #000000 #ffffff #ffffff #000000
-- **Materials:** hairline barcode bars; monospace numerics at data density; full-frame inversion
-- **Type:** Space Mono / JetBrains Mono only; title as a barcode wordmark: 'variantly' above its own bar encoding
-- **Background:** vertical repeating-linear-gradient bar fields at three widths drifting at coprime speeds whose LCM is 24s; one SVG sine path scrolling via stroke-dashoffset
-- **3D title (letterLook):** binary: unlit MeshBasic pure white/black faces with hairline EdgesGeometry, no shading
-- **three.js scene:** LineSegments lattice forming a sine surface plus a point-cloud barcode wall; rare 1-frame invert
-- **Motion:** strobe and snap; 1-frame cuts, otherwise dead still
-- **Risk:** Collapses into TVA Terminal if any colour creeps in; strobing must respect reduced-motion and stay under 3 flashes/s.
-- **Raise (challenger-instruments):** Every number on screen is a real value (variant count, port, ms), never decorative noise.
+## h — Dither Machine  ·  Screen & Signal
 
-## j — Night Cockpit
+*Every variant is printed through one 1-bit dither on toothy paper: two inks, a pixel grid, and tone made entirely of pattern, with a digital light sweeping across it.*
 
-*Your variants are six instruments you trust through cloud; one glowing needle tells you which to keep.*
+- **Trends:** 5 Retro-tech nostalgia; 1 Tactile imperfection; texture-meets-surreal
+- **Texture × surreal pairing:** paper-tooth print grain + a digital light sweep through the dither
+- **Origin:** reworked from v1 h Pixel Metropolis (kept the integer-grid discipline, dropped the eBoy city costume)
+- **Lineage:** 1-bit / bitmap revival: Bayer and Atkinson dithering as a contemporary image language (Obra Dinn, Low-Tech Magazine's solar site, Playdate)
+- **Palette light:** #efe7d6 #1b1915 #1b1915 #b5482a
+- **Palette dark:** #0e0e0e #e9e2cf #e9e2cf #d0623f
+- **Materials:** ordered Bayer 4x4 dither tiles; pre-baked paper tooth tile under the ink; one rust accent pixel colour
+- **Type:** Silkscreen for the title (dithered fill) with contemporary Space Grotesk UI; all sizes are integer multiples of the 8px cell
+- **Background:** four pre-baked Bayer threshold tiles stacked as a gradient field; a tonal light sweeps across by stepping background-position in steps(48) over 24s
+- **3D title (letterLook):** dithered voxel: unlit MeshBasic with a 2-tone ordered-dither shader on lit faces, nearest-filtered
+- **three.js scene:** low-poly landscape rendered through a dither ShaderMaterial (threshold per fragment); orthographic camera orbiting one full turn per 24s
+- **Motion:** stepped and quantised; frames hold, then snap
+- **Risk:** Reads as a retro-game filter or Mac Classic nostalgia; 1-bit text below 12px gets illegible; must stay distinct from c TVA Terminal (no green phosphor, no CRT).
+- **Sources:** Lucas Pope, Return of the Obra Dinn (2018); Low-Tech Magazine solar website; Panic, Playdate console UI; Surma, 'Ditherpunk' (2021)
+- **Raise (challenger-silkscreen-loft):** Variation is real: every variant swatch is the same image re-dithered with a different threshold, never decorative noise.
 
-- **Lineage:** the six-pack of a light aircraft at night: luminous gauges in a black panel
-- **Palette light:** #e9e6df #1d1f22 #ff8a1f #9fd8c9 #5a5f66
-- **Palette dark:** #07090b #d9f7ee #ff8a1f #3fe0b5 #2a2f35
-- **Materials:** matte black crackle panel; radium-lume numerals; brushed bezels with screw heads
-- **Type:** B612 / B612 Mono (cockpit faces) for UI, title in Saira Stencil One with lume fill
-- **Background:** grid of circular gauge faces (conic-gradient tick rings) with needles on 24s looped keyframes; attitude ball tilting
-- **3D title (letterLook):** lume and bezel: emissive mint numerals on satin black MeshStandard body with a thin metallic bevel
-- **three.js scene:** attitude-indicator sphere (sky/ground halves) gently banking inside a ring of tick marks
-- **Motion:** damped, overshooting needles (spring); slow banking
-- **Risk:** Skeuomorphic dashboard cliche that reads as a fake analytics panel.
-- **Raise (challenger-tensegrity):** Each needle is honest: it points at real state (current variant, load progress).
+## i — Liquid Glass  ·  Light & Illusion
 
-## k — Tension Rig
+*Variants sit under one sheet of liquid glass that bends and lenses whatever is behind it; choosing is looking through.*
 
-*Opposed forces held in balance: the page is a rigid structure that visibly breathes, the way variants pull against the original.*
+- **Trends:** 9 Sensory 3D & material fantasy; 2 Surrealism & reality distortion
+- **Origin:** new
+- **Lineage:** Apple's 2025 Liquid Glass UI (WWDC25): refractive, lensing glass controls floating over content
+- **Palette light:** #eef2f6 #0b0c10 #5b8db8 #ffffff #b8c3d1
+- **Palette dark:** #05070b #f2f5f9 #8fb4e6 #1b1e27 #3a3f4c
+- **Materials:** refractive glass slabs with specular rims; content-coloured caustics; soft pill controls
+- **Type:** Inter Tight variable for the title, Instrument Sans for UI
+- **Background:** large soft colour fields (radial-gradients) drifting under glass-rim highlights drawn with conic-gradients on a closed 24s path, no backdrop-filter
+- **3D title (letterLook):** glass: MeshPhysicalMaterial transmission 1, thickness 0.6, ior 1.45, light iridescence, thin specular bevel
+- **three.js scene:** rounded glass capsules merging and separating over a glacial gradient plane, refracting it; 24s cycle
+- **Motion:** fluid, elastic, spring-settled; glass stretches toward the pointer
+- **Risk:** Becomes a dated glassmorphism card or an Apple knock-off; text on glass fails contrast fast.
+- **Sources:** Apple, Liquid Glass (WWDC 2025); Apple Human Interface Guidelines, Materials (2025); Brand New coverage of the iOS 26 redesign
+- **Raise (challenger-detector-display):** One physical rule everywhere: everything refracts the same way, controls included.
 
-- **Lineage:** Kenneth Snelson tensegrity: carbon rods held by red cord
-- **Palette light:** #efeeea #141414 #e02a1b #8a8a86
-- **Palette dark:** #121212 #ededea #ff3b2a #4a4a48
-- **Materials:** matte carbon rods; taut red cord; machined aluminium end caps
-- **Type:** Big Shoulders Display for the title (letters as rods with cord crossings), Archivo Narrow for UI
-- **Background:** SVG rods and red cords forming a tensegrity prism, nodes moving on a closed 24s breathing path
-- **3D title (letterLook):** strut and cord: anodised black metal rods with red TubeGeometry wrapped between glyph nodes
-- **three.js scene:** 3-strut tensegrity column (CylinderGeometry + red TubeGeometry) that inhales and lengthens on a sine
-- **Motion:** slow inhale/exhale, tension-held; nothing ever falls
-- **Risk:** Reads as a generic architecture-firm diagram; red on grey can look corporate.
-- **Raise (challenger-pixel):** One structural unit (rod length) scales all spacing, the way the pixel does.
+## j — Instrument OS  ·  Screen & Signal
 
-## l — Event Horizon
+*variantly as a beautiful little device: each variant is a preset on a hardware synth, dialled with knobs and read off a dot-matrix display.*
 
-*Choosing is a threshold: variants orbit a dark centre and the one you keep crosses the horizon.*
+- **Trends:** 5 Retro-tech nostalgia; 7 Warm eclecticism / modern nostalgia
+- **Origin:** reworked from v1 j Night Cockpit (kept honest, state-driven readouts; dropped aviation skeuomorphism)
+- **Lineage:** retro-futurist hardware UI: Teenage Engineering OP-1, Nothing's dot-matrix glyph UI, Braun via Dieter Rams
+- **Palette light:** #e9e6df #161514 #c4462a #9a978f #3c6e71
+- **Palette dark:** #111111 #efebe3 #e0583a #3a3936 #5a9a9d
+- **Materials:** matte anodised aluminium; dot-matrix LED readouts; coloured rubber knobs and keycaps
+- **Type:** Doto (dot-matrix) for the title and readouts, Space Grotesk for UI
+- **Background:** grid of dot-matrix cells (radial-gradient dots) with a level-meter waveform scrolling by background-position over 24s; knob ticks rotate on looped keyframes
+- **3D title (letterLook):** machined: brushed-aluminium MeshStandard bodies with rust and grey rubber inset keys
+- **three.js scene:** exploded-view hardware unit: knobs, keys and screen parts floating apart and reassembling on a 24s loop
+- **Motion:** tactile and clicky; detents, snaps, short springs
+- **Risk:** Product-render cosplay of Teenage Engineering or Nothing; knobs as UI can frustrate on touch.
+- **Sources:** Teenage Engineering, OP-1 field and TP-7; Nothing, Phone glyph interface; Dieter Rams / Braun ET66; Doto typeface (Google Fonts, 2024)
+- **Raise (challenger-ticket-wallet):** Every state stamps itself on the device: active preset, loading and kept are visible, nothing disappears.
 
-- **Lineage:** accretion-disk imagery (EHT image, Interstellar's Gargantua)
-- **Palette light:** #f6efe4 #1a120b #ff9a3c #b33a1a #ffe2b0
-- **Palette dark:** #000000 #ffe7c4 #ff9a3c #c2410c #3b1d0b
-- **Materials:** incandescent plasma rings; lensed photon ring; absolute black void
-- **Type:** Unbounded for the title, warped around the ring on a curved text path; Syne for UI
-- **Background:** concentric conic + radial gradient rings rotating at differing speeds (24s LCM) around a pure black disc, with a skewed duplicate ring for the lensed arc
-- **3D title (letterLook):** plasma: emissive orange-gold MeshPhysical with sheen, fading to black at glyph cores
-- **three.js scene:** RingGeometry disk with additive orbiting particles around a black sphere, top arc tilted for lensing
-- **Motion:** slow orbit, time-dilated: outer rings fast, inner slow
-- **Risk:** Space wallpaper; the glow drifts into AI-startup purple-orange cliche.
-- **Raise (challenger-datamatics):** Total commitment to black: the void is true #000 and takes real area.
+## k — Ink & Stitch  ·  Hand & Material
 
-## m — Cyanotype Plan
+*Every variant is a swatch-book page of torn ivory paper, brushed ink and rust running stitches, and the stitches lift off the page and hover in 3D.*
 
-*Each variant is a sun-printed plan of your page: white line on Prussian blue, exposed, washed and pinned.*
+- **Trends:** 1 Tactile imperfection; 6 Expressive typography (handwritten); texture-meets-surreal
+- **Texture × surreal pairing:** real hand stitching + stitches levitating off the page
+- **Origin:** new
+- **Lineage:** tactile imperfection: raw cotton paper, dry-brush ink and visible machine stitching, the handmade-mark revival
+- **Palette light:** #f3ecdf #1d1a17 #a8432a #c9962e #7d8b86
+- **Palette dark:** #15120f #efe6d6 #d0623f #d8a640 #4b5a56
+- **Materials:** deckle-edged cotton paper; dry-brush ink strokes; running-stitch thread
+- **Type:** Caveat Brush for the title (brushed), Newsreader for UI
+- **Background:** pre-scanned paper-fibre tile under SVG brushstroke paths revealed by stroke-dashoffset, stitch dashes travelling along seams; 24s loop
+- **3D title (letterLook):** thread-bound: matte paper-white MeshStandard glyphs sewn with rust TubeGeometry stitches piercing the faces
+- **three.js scene:** a paper sheet with a slow vertex wave whose stitches detach, hover as floating thread loops, then re-sew; 24s
+- **Motion:** hand-paced: strokes draw at uneven speed, stitches pull taut
+- **Risk:** Etsy craft-fair cliche; scanned textures look fake if the repeat is visible.
+- **Sources:** It's Nice That, handmade-mark trend coverage (2025); Kenya Hara / Nippon Design Center paper work; Pentagram hand-lettered identities; Winter 2026-27 tactile-imperfection forecast
+- **Raise (challenger-silkscreen-loft):** Imperfection is editioned: each variant gets its own stitch path, never random jitter.
 
-- **Lineage:** sun-printed cyanotypes and architects' diazo blueprints
-- **Palette light:** #e8eef3 #0f2c5c #1d4e9e #f7f4ea #c58b2a
-- **Palette dark:** #0b2149 #e8f0fb #7fb2ff #13306a #e0b25a
-- **Materials:** Prussian-blue cotton rag; white chalk linework; brass drafting pins
-- **Type:** Rubik Mono One for the title with construction lines and dimension arrows; IBM Plex Mono for labels
-- **Background:** drafting grid (repeating-linear-gradient) with dimension lines drawing on via stroke-dashoffset and a T-square sweep; 24s
-- **3D title (letterLook):** blueprint enamel: deep blue matte with white emissive edge lines (wireframe overlay)
-- **three.js scene:** white wireframe architectural massing (EdgesGeometry) slowly orbiting in blue fog
-- **Motion:** drafted: lines draw, then hold; measured easing
-- **Risk:** Generic 'blueprint' tech trope; white-on-blue body copy is tiring to read.
-- **Raise (challenger-instruments):** Annotations are real: dimensions label actual layout widths.
+## l — Inflated Chrome  ·  Light & Illusion
 
-## n — Delft Tile
+*The word is a balloon of liquid chrome: puffy, warped letters reflecting an acid-green wireframe world, with tiny technical captions.*
 
-*Variants as hand-painted tiles: a wall of cobalt-on-white squares, each telling one version of the story.*
+- **Trends:** 6 Expressive typography; 9 Sensory 3D & material fantasy
+- **Origin:** new (absorbs the contemporary-list acid / chrome-type style)
+- **Lineage:** inflated and liquid-chrome display type from the acid-graphics and Y2K poster revival
+- **Palette light:** #e6e6e6 #0a0a0a #c6ff00 #9b9b9b #8fb4e6
+- **Palette dark:** #050505 #eaeaea #c6ff00 #4a4a4a #8fb4e6
+- **Materials:** inflated liquid chrome; acid-green vector wireframes; micro technical captions
+- **Type:** Syne ExtraBold for the title (inflated in 3D), Major Mono Display for captions
+- **Background:** perspective wireframe grid (repeating-linear-gradient on a rotateX plane) scrolling toward the viewer, starburst glints rotating; 24s loop
+- **3D title (letterLook):** chrome: MeshStandard metalness 1, roughness 0.05, mirrored environment, inflated (pillowed) extrusions
+- **three.js scene:** the pillowed chrome wordmark and floating starbursts orbiting over a green wireframe terrain
+- **Motion:** bouncy inflation, glints on a 120bpm grid
+- **Risk:** Cheap 2000s screensaver chrome; overlaps g Candy 3D if it goes candy-coloured (it stays mirror-silver only).
+- **Sources:** Acid Graphics (Are.na / Instagram movement); Hassan Rahim / 12:01 Studio chrome work; Warp Records reissue sleeves; Brand New, chrome/inflated type trend notes
+- **Raise (challenger-detector-display):** Captions carry real data (port, variant count, build ms) like a detector printout.
 
-- **Lineage:** Delftware tin-glaze tiles and Portuguese azulejos
-- **Palette light:** #f7f5ef #1b2a6b #2f4fb5 #d9dde9 #a26b2c
-- **Palette dark:** #0e1530 #eef1fb #6f8ff0 #1e2a5c #c8955a
-- **Materials:** crackled tin glaze; cobalt brushwork; grout lines
-- **Type:** Fraunces (soft, wonky) for the title in brushed cobalt with corner-ornament frames; Cormorant for UI
-- **Background:** tile grid whose corner ornaments (radial-gradient quarter circles) join into continuous motifs; a tile-flip wave crosses the wall in 24s
-- **3D title (letterLook):** glazed ceramic: clearcoat white MeshPhysical with a cobalt-painted face map and slight wobble normals
-- **three.js scene:** curved wall of tiles flipping in a travelling wave
-- **Motion:** gentle, rhythmic tile flips
-- **Risk:** Souvenir-shop kitsch; drifts toward Soft Clay if the glaze is too soft.
-- **Raise (challenger-pixel):** The tile is the only grid unit; everything snaps to it.
+## m — Uncanny Mirror  ·  Light & Illusion
 
-## o — Herbarium Sheet
+*A cold dream room: a rough plaster wordmark stands on an endless mirror floor, and its reflection shows a different variant than the object.*
 
-*Each variant is a pressed specimen taped to acid-free card with its label: collected, named, compared.*
+- **Trends:** 2 Surrealism & reality distortion; 9 Sensory 3D & material fantasy; texture-meets-surreal
+- **Texture × surreal pairing:** rough plaster object + a lying digital reflection
+- **Origin:** new
+- **Lineage:** surrealism and reality distortion: Magritte reread through Erik Johansson and Alex Prager, impossible scale and dreamlike light
+- **Palette light:** #e7ecf1 #1f2229 #6f8fb8 #a7a9b4 #7a63b8
+- **Palette dark:** #0d0f14 #e3e8ef #8fb4e6 #3c3f4a #9a82e0
+- **Materials:** chalky plaster; glacial mirror floor; violet dream haze (gradient, no blur)
+- **Type:** Italiana for the title, Manrope for UI
+- **Background:** horizon split: sky gradient above, mirrored duplicate below with shifted hue; a giant moon disc slides along the horizon on a 24s loop
+- **3D title (letterLook):** plaster cast: rough matte white MeshStandard with hairline cracks; the Reflector copy is recoloured as another variant
+- **three.js scene:** oversized plaster letters and a tiny doorway on a Reflector floor; the reflection runs a beat out of sync
+- **Motion:** slow and dreamlike; object and reflection slightly out of time
+- **Risk:** Surreal stock-art cliche (floating rocks, desert doors); the trick reads as a bug if it isn't clearly intentional.
+- **Sources:** Erik Johansson, photo-surrealism; Alex Prager, staged film stills; René Magritte, La reproduction interdite (1937); Winter 2026-27 surrealism forecast
+- **Raise (challenger-detector-display):** Break one physical rule only: reflections lie, everything else obeys.
 
-- **Lineage:** Victorian herbarium sheets: pressed specimens, gummed tape, archival labels
-- **Palette light:** #f1ece0 #2b2a22 #5c7a3a #b5523b #d8cfb8
-- **Palette dark:** #1a1c16 #ece6d6 #9cbf6e #e07a5f #33362b
-- **Materials:** acid-free cotton card; gummed linen tape; foxing spots; pressed leaf silhouettes
-- **Type:** Playfair Display italic for the title with a typed accession label in Courier Prime
-- **Background:** pressed-leaf silhouettes (clip-path shapes) swaying slightly, tape strips, and a slow light sweep across the card; 24s
-- **3D title (letterLook):** pressed paper: rough MeshStandard card with leaf-vein relief and taped corners
-- **three.js scene:** a few flat leaf planes drifting and turning as if under a lifting glass
-- **Motion:** quiet, slow drift; long holds
-- **Risk:** Wedding-stationery / cottagecore costume; may be too quiet for a tool site.
-- **Raise (challenger-datamatics):** Labels carry real fields (variant id, date, model) in strict tabular form.
+## n — Noir Velvet  ·  Light & Illusion
 
-## p — Urushi Lacquer
+*variantly as an opening title: one spotlight on oxblood velvet, venetian-blind shadows sweeping across a high-contrast Didone wordmark.*
 
-*Deep layered black and vermilion lacquer: the variant you keep is polished until it reflects you.*
+- **Trends:** 3 Cinematic drama
+- **Origin:** new
+- **Lineage:** cinematic drama: film-noir shadow, theatrical spotlight and velvet, as in A24 titles and Saul Bass sequences
+- **Palette light:** #efe7dc #140d0c #6e1420 #c79a5b #3a2e2b
+- **Palette dark:** #080506 #f1e6d8 #9b1c2c #d4a96a #231a19
+- **Materials:** crushed velvet; hard spotlight pool; venetian-blind shadow bars
+- **Type:** Bodoni Moda for the title, Cormorant Garamond small caps for credits
+- **Background:** velvet fold gradients with a radial spotlight pool and diagonal blind-shadow bars sweeping across on a 24s loop; pre-baked film-grain tile
+- **3D title (letterLook):** velvet lacquer: MeshPhysical sheen 1 with oxblood sheenColor and a gold rim bevel
+- **three.js scene:** a curtain opening on a stage, one shadow-mapped SpotLight casting blind shadows across the title
+- **Motion:** slow, theatrical curtain timing; one dramatic cut per change
+- **Risk:** Hollywood cliche, too dark; red-on-black text can fail contrast.
+- **Sources:** A24 film title design; Saul Bass title sequences; The Third Man (1949) cinematography; Winter 2026-27 cinematic-drama forecast
+- **Raise (own):** Light is the layout: only the spotlit area holds readable text.
 
-- **Lineage:** Japanese urushi lacquerware with maki-e gold
-- **Palette light:** #f3ede4 #1a0f0c #b4231a #c9a24a #3b1a14
-- **Palette dark:** #0a0606 #f2e6d4 #d0352a #d8b25a #2a1210
-- **Materials:** mirror-polished black lacquer; vermilion layer showing through wear; sprinkled gold maki-e
-- **Type:** Shippori Mincho B1 for the title with a gold-dust stroke; Zen Kaku Gothic New for UI
-- **Background:** layered vermilion/black bands with a slow specular streak (linear-gradient sweep) and drifting gold flecks; 24s
-- **3D title (letterLook):** lacquer: MeshPhysical clearcoat 1, roughness 0.05, black and vermilion, gold flake sparkle
-- **three.js scene:** a lacquer bowl reflecting an environment map, with a slow highlight orbit
-- **Motion:** slow, weighty, reflective glints
-- **Risk:** Orientalist pastiche; must avoid fake-Japanese copy and stay led by the material.
-- **Raise (challenger-tensegrity):** Restraint of means: two colours plus gold, nothing else.
+## o — Swiss Punk  ·  Print & Type
 
-## q — Transit Wayfinding
+*A typographic poster that won't sit still: one enormous grotesk word, a visible hard grid, and oxblood rules cutting across it.*
 
-*Every variant is a line on one map; you ride to a station and keep the stop you like.*
+- **Trends:** 6 Expressive typography; contemporary list: Swiss punk / new grotesk
+- **Origin:** new
+- **Lineage:** Swiss punk / new grotesk editorial: Weingart's broken grid reread by Experimental Jetset, Studio Dumbar and Order
+- **Palette light:** #f1eee8 #151412 #8c1c13 #bdb8ae
+- **Palette dark:** #0d0d0c #f1eee8 #c0392b #3a3835
+- **Materials:** oversized grotesk set solid; cutting rules; visible modular grid
+- **Type:** Archivo (variable width/weight) for the title at poster scale, IBM Plex Mono for captions
+- **Background:** hairline 12-column grid with red bars sliding across columns and giant cropped numerals translating on a 24s loop
+- **3D title (letterLook):** enamel sign: flat matte oxblood and black MeshStandard with crisp chamfers
+- **three.js scene:** monumental extruded letters rotating as slabs on a grid floor, cropping each other
+- **Motion:** abrupt, sliding, editorial cuts
+- **Risk:** A design-student homage poster; the broken grid hurts dense reading. Distinct from e Bauhaus (geometry, primaries) by being type-only.
+- **Sources:** Experimental Jetset, Stedelijk Museum identity; Studio Dumbar, Dutch identities; Order (NYC), editorial systems; Wolfgang Weingart, Typography (2000)
+- **Raise (challenger-silkscreen-loft):** Grid density courage: show the grid lines, never hide the structure.
 
-- **Lineage:** Vignelli's NYC subway diagram and Kinneir/Calvert station signage
-- **Palette light:** #ffffff #111111 #ee352e #0039a6 #00933c #fccc0a
-- **Palette dark:** #121314 #f5f5f5 #ff4b42 #4a7dff #22c55e #fccc0a
-- **Materials:** enamel signage panels; route bullets; 45-degree line geometry
-- **Type:** Overpass (Highway Gothic heir) for the title on a black sign band with coloured route bullets; Inter Tight for UI
-- **Background:** 45/90-degree coloured lines (SVG paths) with train dots running along them via offset-path; 24s round trip
-- **3D title (letterLook):** enamel sign: glossy painted steel, white vinyl-cut letters, coloured disc bullets
-- **three.js scene:** 3D tube map: coloured TubeGeometry lines with small cars moving along the curves
-- **Motion:** punctual, linear, constant speed
-- **Risk:** Overlaps Bauhaus primaries; a generic 'map metaphor'.
-- **Raise (challenger-instruments):** Stations are real: each stop is an actual variant or step.
+## p — Tenango Thread  ·  Hand & Material
 
-## r — Stained Glass
+*Variants as embroidered panels: flat single-colour animals and flowers in dense satin stitch on white cotton, credited to the craft, with threads that drift as if weightless.*
 
-*Variants as panes in one window; light passes through the one you choose.*
+- **Trends:** 8 Neo-folk & cultural craft; 1 Tactile imperfection; texture-meets-surreal
+- **Texture × surreal pairing:** real satin stitch + threads floating weightless
+- **Origin:** new
+- **Lineage:** neo-folk and cultural craft: Tenango embroidery by Otomí (Hñähñu) artisans of Tenango de Doria, Hidalgo, Mexico
+- **Palette light:** #fbf8f2 #1d1b1a #c2263a #1b8a7f #e08a3c
+- **Palette dark:** #14110f #f6f1e8 #ef476f #2ec4b6 #ffb563
+- **Materials:** satin-stitch thread fields; white cotton manta; one colour per motif
+- **Type:** Grandstander for the title (stitched outline), Work Sans for UI
+- **Background:** symmetric motif panel from SVG stitch-direction hatching; motifs breathe and a thread line runs round the border, 24s loop
+- **3D title (letterLook):** embroidered: MeshStandard with anisotropic thread normal map, glossy satin
+- **three.js scene:** an embroidered cloth panel whose birds and deer gently lift off and settle back, loose threads swaying in zero gravity
+- **Motion:** gentle, folkloric, small sway
+- **Risk:** Appropriation or generic 'Mexican' decoration; it must credit Tenango de Doria artisans by name, use real motif grammar and avoid pastiche.
+- **Sources:** Tenango de Doria embroidery cooperatives, Hidalgo; Museo de Arte Popular, Mexico City; Carla Fernández, design with Mexican artisans; It's Nice That, neo-folk coverage (2025)
+- **Raise (challenger-ticket-wallet):** Provenance on the surface: a credit line names the craft origin and stays visible.
 
-- **Lineage:** Gothic and Tiffany leaded glass
-- **Palette light:** #f5f1ea #1b1a1f #1f5fbf #c0262d #e6a81b #2e8b57
-- **Palette dark:** #0c0b10 #efeaf7 #4f8ff0 #ff4a52 #ffc23a #3fbf7f
-- **Materials:** leaded came lines; seeded cathedral glass; sunlight caustics
-- **Type:** Cinzel Decorative for the title as leaded glyphs (thick black came around jewel fills); Alegreya for UI
-- **Background:** field of clip-path polygon panes; a light band sweeps across, changing pane brightness; 24s
-- **3D title (letterLook):** glass: MeshPhysical transmission 0.9 with thickness, jewel tints and a black came outline
-- **three.js scene:** rotating rose-window disc of transparent coloured shards with a moving light
-- **Motion:** slow luminous sweep, like the sun moving
-- **Risk:** Ecclesiastical heaviness; transmission materials cost a lot of GPU.
-- **Raise (challenger-pixel):** Came lines share one stroke width everywhere, UI borders included.
+## q — Sticker Bomb  ·  Print & Type
 
-## s — Survey Contour
+*Variants arrive as stickers slapped on one device lid: holographic, die-cut, overlapping, yet the wordmark stays clear on a clean white sticker.*
 
-*Variants as terrain: contour lines show how far each one climbs from the original.*
+- **Trends:** 4 Maximalist collage
+- **Origin:** new
+- **Lineage:** digital maximalism: sticker-bombed laptop lids and Gen-Z brand identities, clashing patterns kept readable
+- **Palette light:** #f7f7f2 #111111 #ff3ea5 #00c2ff #c4f000
+- **Palette dark:** #121212 #fafafa #ff3ea5 #00c2ff #c4f000
+- **Materials:** vinyl die-cut stickers with white kiss-cut borders; holographic foil; clashing checker and flame patterns
+- **Type:** Rubik Mono One for the title sticker, Bricolage Grotesque for UI
+- **Background:** dense sticker tiles (CSS shapes and gradients) on brushed aluminium, a few peeling and re-sticking on a 24s loop
+- **3D title (letterLook):** vinyl: glossy MeshPhysical clearcoat, iridescence on holo stickers, white border extrusions
+- **three.js scene:** a laptop lid where stickers drop in, slap flat with a bounce, and one peels its corner; 24s
+- **Motion:** slap, bounce, peel
+- **Risk:** Chaos with no hierarchy. Differs from f Cut & Paste by being glossy digital vinyl on a device, not paper collage.
+- **Sources:** MSCHF drops and packaging; Collins, Spotify Wrapped maximalism; Sticker culture (Redbubble, laptop lids); Winter 2026-27 maximalist-collage forecast
+- **Raise (own):** One clean zone: the title sticker and CTA are never overlapped.
 
-- **Lineage:** Ordnance Survey / USGS topographic maps
-- **Palette light:** #f4efe2 #2a2620 #b0602c #3a7d5c #4f86b8
-- **Palette dark:** #13161a #ebe4d2 #e08a4f #5fbf8a #7fb0e0
-- **Materials:** map paper; brown contour ink; hachures and spot heights
-- **Type:** Barlow Condensed for the title as raised terrain with contours following the letterforms; Spectral for text
-- **Background:** nested contour rings (repeating-radial-gradient) offset into hills, with a survey line and pin marching across; 24s
-- **3D title (letterLook):** terraced relief: one extruded layer per contour, sand-to-green banding
-- **three.js scene:** PlaneGeometry heightfield with contour-line shading in a slow flyover
-- **Motion:** steady drift, a surveyor's patience
-- **Risk:** Generic hiking app; contour noise can muddy text contrast.
-- **Raise (challenger-datamatics):** Spot heights are true numbers (e.g. diff size per variant).
+## r — Kinetic Type  ·  Print & Type
 
-## t — Terrazzo Floor
+*The wordmark is the whole show: 'variantly' stretches, compresses and morphs through its axes, one shape per variant.*
 
-*Variants as chips set in one poured floor; polishing reveals the composition.*
+- **Trends:** 6 Expressive typography; contemporary list: kinetic / variable type
+- **Origin:** new
+- **Lineage:** kinetic and variable typography: type as motion, from DIA Studio to variable-font identities
+- **Palette light:** #efece6 #0f0f0f #3c6e71 #8c1c13
+- **Palette dark:** #0b0b0b #efece6 #5a9a9d #c0392b
+- **Materials:** variable-width letterforms; type-on-path and tiled type; flat ink and two signal colours
+- **Type:** Anybody (variable width 50-150, weight 100-900) for display, Fragment Mono for UI
+- **Background:** rows of the word sliding in alternating directions, font-variation-settings animated through wdth and wght on a 24s loop
+- **3D title (letterLook):** elastic letter: flat MeshStandard with morph targets between condensed and expanded extrusions
+- **three.js scene:** a ribbon of extruded type wrapped round a rotating cylinder, letters stretching as they pass the front
+- **Motion:** rhythmic, typographic, beat-synced
+- **Risk:** A motion-reel gimmick that makes reading impossible; heavy variable animation can jank on low-end devices.
+- **Sources:** DIA Studio (Mitch Paone) kinetic identities; Pentagram / Order variable-type identities; Google Fonts Knowledge, variable fonts; SVA MFA Design motion-type coursework
+- **Raise (challenger-silkscreen-loft):** One subject in many editions: the same word reshaped per variant, never new imagery.
 
-- **Lineage:** Venetian terrazzo and Memphis-era terrazzo laminates
-- **Palette light:** #f2ede6 #2a2422 #e2725b #5b8c85 #f0b84a #9aa6c9
-- **Palette dark:** #1c1a19 #efe9e1 #ff8a70 #7fbfb6 #ffc95e #aab6dd
-- **Materials:** polished cementitious matrix; marble and glass chips; brass divider strips
-- **Type:** Bricolage Grotesque for the title with a chip-flecked fill; DM Serif Display for accents
-- **Background:** scattered clip-path chips drifting in place, plus a polish highlight sweep; 24s
-- **3D title (letterLook):** polished stone: MeshPhysical roughness 0.25 matrix with embedded chip colours
-- **three.js scene:** instanced flat chips tumbling slowly above a polished plane
-- **Motion:** settled, slow, slightly playful
-- **Risk:** Instagram-cafe decor; overlaps Candy 3D's playfulness.
-- **Raise (challenger-tensegrity):** Brass strips impose structure: a strict division grid under the play.
+## s — Lived-in Den  ·  Hand & Material
+
+*A warm listening room: walnut shelves of objects from different decades, an amber lamp, the variants as records you slide out, and one object quietly floating.*
+
+- **Trends:** 7 Warm eclecticism / modern nostalgia; texture-meets-surreal
+- **Texture × surreal pairing:** real wood grain + one object hovering against gravity
+- **Origin:** new
+- **Lineage:** warm eclecticism / modern nostalgia: walnut, mixed-era objects and amber lamps, as in record-bar and hospitality interiors
+- **Palette light:** #f4ead9 #2a1d15 #a0522d #5b8a86 #d9a441
+- **Palette dark:** #1a120c #f2e4cc #c8693a #6fa39e #e6b450
+- **Materials:** oiled walnut grain; amber lamplight; boucle and brass
+- **Type:** Fraunces (soft, wonky axis) for the title, DM Sans for UI
+- **Background:** wood-grain gradient bands with an amber glow pool; record sleeves slide along a shelf by translateX, 24s loop
+- **3D title (letterLook):** walnut: MeshStandard wood map with clearcoat and brass inlay edges
+- **three.js scene:** a shelf vignette (lamp, records, plant, vintage phone) where one object levitates slightly while the lamp light breathes
+- **Motion:** unhurried, warm, slide-and-settle
+- **Risk:** Pinterest mid-century cliche; too cosy for a developer tool.
+- **Sources:** Studio Ashby interiors; Japanese listening bars (JBS Tokyo); Kinfolk magazine; Winter 2026-27 warm-eclecticism forecast
+- **Raise (own):** Mixed eras, one light: everything is lit by the same amber source.
+
+## t — Stone & Linen  ·  Hand & Material
+
+*Almost nothing: a linen field, one soft stone silhouette and the word, with a window shadow drifting across as if the sun is moving.*
+
+- **Trends:** 10 Quiet organic minimalism; texture-meets-surreal
+- **Texture × surreal pairing:** linen and stone + an impossible floating pebble
+- **Origin:** new
+- **Lineage:** quiet organic minimalism: natural materials, soft silhouettes and negative space (Aesop, Studio Mumbai, Japandi)
+- **Palette light:** #efe9df #2b2824 #7d8f86 #b9a48a #d8d1c4
+- **Palette dark:** #171512 #ece5d8 #9aaa9b #7e6c58 #2a2622
+- **Materials:** washed linen weave; honed limestone; soft window light
+- **Type:** Cormorant for the title (light weight), Karla for UI
+- **Background:** linen weave tile with a large soft window-shadow shape moving across the page and one pebble silhouette; 24s loop
+- **3D title (letterLook):** honed stone: rough MeshStandard limestone with soft micro-normals
+- **three.js scene:** pebbles on a linen plane under a slowly turning light that casts a window shadow; one pebble floats a few millimetres up
+- **Motion:** barely moving; only the light travels
+- **Risk:** Reads as empty or an Aesop knock-off; too little for a tool that sells variety.
+- **Sources:** Aesop store design; Studio Mumbai; Kinfolk / Japandi interiors; Winter 2026-27 quiet-organic forecast
+- **Raise (own):** Negative space is measured: two-thirds of the viewport stays empty around the wordmark.
 
 ## Switcher at 20
 
-Twenty swatches overflow the current row of 7 chips, so the switcher should become a two-level picker grouped into families (Print & Paper: b, d, f, m, o; Material & Craft: a, n, p, r, t; Screen & Signal: c, h, i, j; Structure & Space: e, k, l, q, s; plus g). On desktop: a compact trigger showing the current concept's swatch, letter and name. It opens a popover grid, 4-5 columns with one family per column. Each tile is a 3-colour chip plus the name in that concept's own display face, so you preview the world before you click. Keep keyboard order a to t, roving arrow-key focus, and [ / ] (and the existing shortcuts) to step through all 20 without opening the grid. On mobile: the trigger becomes a bottom sheet with a horizontal snap-scroll strip of large tiles under family tabs, plus prev/next buttons at 44px or more. Persist the choice, deep-link with ?v=<id>, and offer a 'shuffle' tile so 20 concepts read as abundance, not a long menu.
+Twenty concepts overflow the 7-chip row, so the switcher becomes a two-level picker grouped into four renamed families that fit the Winter 2026-27 set better than the v1 ones: Print & Type: b, d, e, f, o, q, r; Hand & Material: a, k, p, s, t; Screen & Signal: c, h, j; Light & Illusion: g, i, l, m, n. Desktop: a compact trigger (current swatch, letter, name) opens a 4-column popover, one family per column; each tile is a 3-colour chip plus the name set in that concept's display face. Keyboard order stays a to t with roving arrow focus and [ / ] stepping through all 20 without opening the grid. Mobile: bottom sheet with family tabs over a snap-scroll strip of large tiles and 44px prev/next. Persist the choice, deep-link with ?v=<id>, and include a 'shuffle' tile.
+
+## v1 roll, superseded
+
+The first roll (seed:1c22451124ce250d) leaned historical and craft-based. This roll replaces it: Pixel Metropolis, Data Sublime, Night Cockpit, Tension Rig, Event Horizon, Cyanotype Plan, Delft Tile, Herbarium Sheet, Urushi Lacquer, Transit Wayfinding, Stained Glass, Survey Contour, Terrazzo Floor.
