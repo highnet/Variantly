@@ -51,9 +51,15 @@ export const Delight = () => {
         const r = steps.getBoundingClientRect();
         const p = Math.min(1, Math.max(0, (innerHeight * 0.75 - r.top) / r.height));
         steps.style.setProperty('--steps-p', p.toFixed(3));
-        [...steps.children].forEach((li, i, all) =>
-          li.classList.toggle('vy-step-on', p >= (i + 0.4) / all.length),
-        );
+        [...steps.children].forEach((li, i, all) => {
+          const el = li as HTMLElement;
+          // Each numeral fills over its own stretch of the progress line.
+          const fill = calm ? 1 : Math.min(1, Math.max(0, (p * all.length - i) / 0.7));
+          el.style.setProperty('--fill', fill.toFixed(3));
+          el.classList.toggle('vy-step-on', p >= (i + 0.4) / all.length);
+          // The pop plays once, the first time a numeral is full.
+          if (fill >= 1) el.classList.add('vy-step-done');
+        });
       }
       if (!calm && scrollY < innerHeight * 1.5) {
         // Set on the three drifting layers only: a custom property on <html>
