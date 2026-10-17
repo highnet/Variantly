@@ -1,10 +1,11 @@
 'use client';
 
-import { animate, inView } from 'motion';
+import { inView } from 'motion';
 import { useEffect } from 'react';
 
 import { burst } from '@/components/FreshLook';
 import { animateHeight, revealText, stillMotion } from '@/lib/disclose';
+import { EASE } from '@/lib/motion';
 import { calmMotion } from '@/lib/prefs';
 import { seekTime } from '@/lib/seek';
 import { useSiteStore } from '@/lib/store';
@@ -30,7 +31,8 @@ const favicon = () => {
  * scroll it (5), scores count up (7), the hero parallaxes (10), commands type
  * themselves out (11), <details> spring open and shut (12), the demo divider
  * peeks to show it drags (13), the favicon follows the concept (16) and the
- * header frosts once scrolled (17). Motion-heavy parts skip reduced motion.
+ * header frosts once scrolled (17). Motion-heavy parts skip calm/reduced
+ * motion and seekreel frames.
  */
 export const Delight = () => {
   useEffect(() => {
@@ -45,7 +47,9 @@ export const Delight = () => {
     // 17 · glass header, 5 · steps progress, 10 · hero parallax
     const steps = document.querySelector<HTMLElement>('main > div ol');
     steps?.classList.add('vy-steps');
-    const onScroll = () => {
+    let frame = 0;
+    const paint = () => {
+      frame = 0;
       header?.classList.toggle('vy-header-glass', scrollY > 24);
       if (steps) {
         const r = steps.getBoundingClientRect();
@@ -70,9 +74,16 @@ export const Delight = () => {
           .forEach((el) => el.style.setProperty('--px-y', y));
       }
     };
-    onScroll();
+    // One read-and-write pass per frame, however fast the scroll events come.
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(paint);
+    };
+    paint();
     addEventListener('scroll', onScroll, { passive: true });
-    stops.push(() => removeEventListener('scroll', onScroll));
+    stops.push(() => {
+      removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(frame);
+    });
 
     // 4 · copy pop + burst
     const onClick = (e: MouseEvent) => {
@@ -88,7 +99,7 @@ export const Delight = () => {
           { transform: 'scale(1.2) rotate(-6deg)', offset: 0.4 },
           { transform: 'none' },
         ],
-        { duration: 420, easing: 'cubic-bezier(0.34, 1.6, 0.5, 1)' },
+        { duration: 420, easing: EASE.springPop },
       );
     };
     document.addEventListener('click', onClick);
@@ -127,58 +138,53 @@ export const Delight = () => {
 
     // 7 · scores roll up: see RollingNumber
 
-    // 11 · commands below the fold type themselves out once
+    // 11 · commands below the fold type themselves out once. The text stays
+    // React's: the untyped tail is hidden with a CSS highlight (no DOM
+    // mutation), so a runner switch mid-typing simply shows the new command.
+    const typing = typeof Highlight === 'function' && 'highlights' in CSS;
+    const untyped = typing ? new Highlight() : null;
+    if (untyped) CSS.highlights.set('vy-untyped', untyped);
     document
       .querySelectorAll<HTMLElement>('main > div [data-slot="command-copy"] code')
       .forEach((el) => {
+        const text = el.firstChild;
         // Skip ones on screen already, and ones in the hidden agent view.
-        if (!el.offsetParent || el.getBoundingClientRect().top < innerHeight) return;
-        const full = el.textContent ?? '';
-        el.style.minHeight = `${el.offsetHeight}px`;
-        el.textContent = '';
-        el.classList.add('vy-typing');
+        if (!untyped || !(text instanceof Text) || !el.offsetParent) return;
+        if (el.getBoundingClientRect().top < innerHeight) return;
+        const full = text.length;
+        const range = new Range();
+        range.setStart(text, 0);
+        range.setEnd(text, full);
+        untyped.add(range);
+        let timer = 0;
+        const finish = () => {
+          clearTimeout(timer);
+          untyped.delete(range);
+        };
+        stops.push(finish);
         stops.push(
           inView(el, () => {
             let i = 0;
             const tick = () => {
-              // React may have re-rendered the text (runner switch): stop typing.
-              if (!el.classList.contains('vy-typing')) return;
-              el.textContent = full.slice(0, ++i);
-              if (i < full.length) setTimeout(tick, 28 + Math.random() * 30);
-              else setTimeout(() => el.classList.remove('vy-typing'), 600);
+              // React re-rendered the text (runner switch): show it all.
+              if (el.firstChild !== text || text.length !== full) return finish();
+              range.setStart(text, ++i);
+              if (i < full) timer = window.setTimeout(tick, 28 + Math.random() * 30);
+              else finish();
             };
-            setTimeout(tick, 200);
+            timer = window.setTimeout(tick, 200);
           }),
         );
-        const restore = useSiteStore.subscribe((s, prev) => {
-          if (s.runner !== prev.runner) el.classList.remove('vy-typing');
-        });
-        stops.push(restore);
+        stops.push(
+          useSiteStore.subscribe((s, prev) => {
+            if (s.runner !== prev.runner) finish();
+          }),
+        );
       });
+    if (untyped) stops.push(() => CSS.highlights.delete('vy-untyped'));
 
-    // 13 · the before/after divider peeks once when the demo shows
-    const stage = document.getElementById('demo-stage');
-    if (stage) {
-      stops.push(
-        inView(
-          stage,
-          () => {
-            const grip = document.querySelector<HTMLElement>(
-              '[aria-label="Before and after divider"]',
-            );
-            const start = Number(grip?.getAttribute('aria-valuenow') ?? 50);
-            animate(0, 1, {
-              duration: 1.4,
-              ease: 'easeInOut',
-              onUpdate: (t) =>
-                stage.style.setProperty('--split', `${start - Math.sin(t * Math.PI * 2) * 12}%`),
-              onComplete: () => stage.style.setProperty('--split', `${start}%`),
-            });
-          },
-          { amount: 0.5 },
-        ),
-      );
-    }
+    // 13 · the demo divider's one-time peek lives in Showcase (sweepTo), so
+    // it plays once and moves the grip with the line.
 
     return () => stops.forEach((s) => s());
   }, []);
