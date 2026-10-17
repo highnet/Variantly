@@ -1,15 +1,15 @@
 // Shared reveal timing for the 2D and 3D title cards.
 const WORD = 'variantly';
 
-// Timing after the Loki title card: every letter flickers at once, about four
-// typefaces a second, then the changes slow and each letter drops into its
+// Timing after the Loki title card: every letter flickers at once, a little over
+// two typefaces a second, then the changes slow and each letter drops into its
 // final face. Letters lock in a loose, uneven order rather than left to right.
-const FLICKER_MS = 260;
-const EASE_OUT = [320, 400, 500, 640, 820, 1040];
+const FLICKER_MS = 440;
+const EASE_OUT = [520, 640, 780, 960, 1180, 1440];
 // Deterministic per-letter jitter, so a seeked frame is the same every time.
 const jitter = (index: number, salt: number) => ((index * 37 + salt * 11) % 7) / 6;
 const scheduleFor = (index: number) => [
-  ...Array(12 + Math.round(jitter(index, 1) * 4)).fill(FLICKER_MS),
+  ...Array(8 + Math.round(jitter(index, 1) * 3)).fill(FLICKER_MS),
   ...EASE_OUT,
 ];
 const SCHEDULES = [...WORD].map((_, i) => scheduleFor(i));
