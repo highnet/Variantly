@@ -17,7 +17,7 @@ import { ProgressCard } from './Progress';
 import { PageSkeleton } from './Skeleton';
 import { api } from '@/lib/api';
 import { fetchLog } from '@/lib/live';
-import { LIVE, STATUS, directionLabel, isPickable, pad, plural, scoreText, vname, vsBase } from '@/lib/format';
+import { LIVE, STATUS, directionLabel, isPickable, pad, plural, scoreText, vname, vsBase, axeVsBase } from '@/lib/format';
 import { getState, seen, serverOf, setState, toast, useStore, type UiState } from '@/lib/store';
 import type { Audit, ServerState, Variant } from '@/lib/types';
 
@@ -102,24 +102,24 @@ const ScorePanel = ({ v }: ScorePanelProps) => {
   const base = v ? snap?.baseline : undefined;
   const failed = v ? v.auditState === 'failed' && v.auditError : snap?.baselineError;
   const running = v ? v.auditState === 'running' : !a && !failed;
-  const rows: [string, number, number | undefined][] = a
+  const rows: [string, number, number | undefined, typeof vsBase][] = a
     ? [
-        ['Accessibility', a.lighthouse.accessibility, base?.lighthouse.accessibility],
-        ['Performance', a.lighthouse.performance, base?.lighthouse.performance],
-        ['Best practices', a.lighthouse.bestPractices, base?.lighthouse.bestPractices],
-        ['SEO', a.lighthouse.seo, base?.lighthouse.seo],
-        ['axe violations', a.axe.total, base?.axe.total],
+        ['Accessibility', a.lighthouse.accessibility, base?.lighthouse.accessibility, vsBase],
+        ['Performance', a.lighthouse.performance, base?.lighthouse.performance, vsBase],
+        ['Best practices', a.lighthouse.bestPractices, base?.lighthouse.bestPractices, vsBase],
+        ['SEO', a.lighthouse.seo, base?.lighthouse.seo, vsBase],
+        [base ? 'axe issues' : 'axe violations', a.axe.total, base?.axe.total, axeVsBase],
       ]
     : [];
   return (
     <div className="scores-panel">
-      <div className="label">Scores · axe-core and Lighthouse</div>
+      <div className="label">{base ? 'Against your original · axe-core and Lighthouse' : 'Scores · axe-core and Lighthouse'}</div>
       {a ? (
         <dl className="scores-grid">
-          {rows.map(([k, n, b]) => (
+          {rows.map(([k, n, b, show]) => (
             <div key={k} style={{ display: 'contents' }}>
               <dt>{k}</dt>
-              <dd className="data">{vsBase(n, b)}</dd>
+              <dd className="data">{show(n, b)}</dd>
             </div>
           ))}
         </dl>
