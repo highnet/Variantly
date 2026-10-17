@@ -64,7 +64,7 @@ const StartChecklist = () => (
           In your <strong className="text-surface">site&apos;s folder</strong>, paste:
         </Typography>
         <RunnerPicker tone="slate" />
-        <CommandCopy command="npx variantly" tone="slate" className="max-w-xl" />
+        <CommandCopy command="npx variantly" tone="slate" className="w-fit max-w-full" />
         <NodeHint tone="slate" />
       </div>
 
@@ -84,14 +84,14 @@ const StartChecklist = () => (
           <Typography variant="small" color="steel-on-slate">
             <strong className="text-surface">Just looking?</strong> Ready-made variants, no AI:
           </Typography>
-          <CommandCopy command="npx variantly --demo" tone="slate" className="w-full max-w-xl" />
+          <CommandCopy command="npx variantly --demo" tone="slate" className="w-fit max-w-full" />
           <PromptCopy chip prompt={PROMPTS.demo} tone="slate" label="Or copy as a prompt" />
         </div>
         <div className="grid content-start justify-items-start gap-3">
           <Typography variant="small" color="steel-on-slate">
             <strong className="text-surface">Stuck?</strong> This names what&apos;s missing:
           </Typography>
-          <CommandCopy command="npx variantly doctor" tone="slate" className="w-full max-w-xl" />
+          <CommandCopy command="npx variantly doctor" tone="slate" className="w-fit max-w-full" />
           <PromptCopy chip prompt={PROMPTS.doctor} tone="slate" label="Or copy as a prompt" />
         </div>
       </div>

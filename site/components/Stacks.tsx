@@ -60,14 +60,14 @@ const Stacks = () => (
         </Typography>
         <RunnerPicker className="mt-2" />
       </div>
-      <ul className="m-0 grid max-w-xl list-none content-start gap-7 p-0">
+      <ul className="m-0 grid list-none content-start gap-7 p-0">
         {AGENT_LOGOS.map((a) => (
           <li key={a.name} className="grid gap-2.5">
             <div className="flex items-center gap-2.5">
               <LogoMark title={a.title} path={a.path} className="text-ink size-5 shrink-0" />
               <span className="text-[14px] font-semibold">{a.name}</span>
             </div>
-            <CommandCopy command={a.install} size="sm" accent />
+            <CommandCopy command={a.install} size="sm" className="w-fit max-w-full min-w-64" />
           </li>
         ))}
       </ul>

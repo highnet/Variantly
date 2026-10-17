@@ -4904,3 +4904,8 @@ body::before {
 .stage[data-mode='side'] ~ .tags {
   display: flex;
 }
+
+/* Who made each pane stays readable while the rest of the chrome recedes. */
+.compare.tucked .tags {
+  opacity: 0.92;
+}

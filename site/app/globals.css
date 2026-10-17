@@ -983,6 +983,8 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 :root[data-variant='e'] main > div li:nth-child(3n) .figure:not(h3) { color: #ffc300; }
 
 /* ---- Concept switcher dock ---------------------------------------------- */
+/* The dock is fixed to the bottom; the footer leaves room so it never sits under it. */
+:root[data-variant] .site-footer { padding-bottom: 6.5rem; }
 .vy-switcher {
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   border: 1px solid var(--rule);

@@ -432,6 +432,14 @@ const Compare = () => {
   const variantTarget = sel === 'original' ? (lastVariant.current ? `v${lastVariant.current}` : '') : sel ? `v${sel}` : '';
   let effMode = sel === 'original' ? 'single' : mode;
   if (building && effMode === 'slider') effMode = 'side';
+  // Side by side: the panes scroll together, so the original drops its bar
+  // and the two don't sit back to back in the middle.
+  const hideBeforeBar = effMode === 'side';
+  const barState = useRef(hideBeforeBar);
+  barState.current = hideBeforeBar;
+  useEffect(() => {
+    frames.before.current?.contentWindow?.postMessage({ variantly: true, type: 'scrollbar', hidden: hideBeforeBar }, '*');
+  }, [hideBeforeBar, frames.before]);
 
   const want: Record<Side, string> = {
     before: effMode !== 'single' || sel === 'original' ? 'original' : '',
@@ -500,6 +508,7 @@ const Compare = () => {
       const side = (['before', 'after'] as Side[]).find((k) => frames[k].current?.contentWindow === e.source);
       if (!side) return;
       const other = frames[side === 'before' ? 'after' : 'before'].current;
+      if (msg.type === 'ready' && side === 'before') frames.before.current?.contentWindow?.postMessage({ variantly: true, type: 'scrollbar', hidden: barState.current }, '*');
       if ((msg.type === 'nav' || msg.type === 'ready') && msg.path && msg.path !== getState().path) {
         shown.current[side].path = msg.path;
         setState({ path: msg.path });
