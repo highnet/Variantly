@@ -10,8 +10,8 @@ import { cn } from '@/lib/utils';
 
 const WORD = 'variantly';
 // Per-letter frame delays: fast flicker, then an ease-out into the lockup.
-const SCHEDULE = [...Array(18).fill(160), 200, 260, 340, 440, 560, 720];
-const startDelay = (index: number) => 300 + index * 220;
+const SCHEDULE = [...Array(10).fill(300), 380, 480, 600, 760, 960];
+const startDelay = (index: number) => 400 + index * 350;
 // Deterministic jitter, so a seeked frame is the same picture every time.
 const fontAt = (step: number, index: number) =>
   INTRO_FONTS[(step * 5 + index * 3 + ((step * 7 + index * 13) % 4)) % INTRO_FONTS.length];
