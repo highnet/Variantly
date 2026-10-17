@@ -119,21 +119,7 @@ export const Delight = () => {
 
     if (calm) return () => stops.forEach((s) => s());
 
-    // 7 · scores count up the first time they show
-    document.querySelectorAll<HTMLElement>('[data-score]').forEach((el) => {
-      stops.push(
-        inView(el, () => {
-          // Scores read as a change ("+10", "20 fixed"): count the number, keep the rest.
-          const [, pre = '', num, post = ''] = /^(\D*)(\d+)(.*)$/.exec(el.textContent ?? '') ?? [];
-          if (!num) return;
-          animate(0, Number(num), {
-            duration: 1.1,
-            ease: [0.16, 1, 0.3, 1],
-            onUpdate: (v) => (el.textContent = `${pre}${Math.round(v)}${post}`),
-          });
-        }),
-      );
-    });
+    // 7 · scores roll up: see RollingNumber
 
     // 11 · commands below the fold type themselves out once
     document

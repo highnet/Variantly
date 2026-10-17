@@ -1648,3 +1648,19 @@ main > div p { line-height: 1.65; }
 :root[data-variant='f'] .vy-loadbar-fill { background: color-mix(in srgb, var(--art-tape) 80%, var(--art-1)); opacity: 0.85; }
 @media (prefers-reduced-motion: reduce) { .vy-loadbar, .vy-loadbar-fill { transition: none; } }
 :root[data-audience='agent'] .vy-loadbar { display: none; }
+
+/* ---- Rolling score digits (RollingNumber) --------------------------------- */
+.vy-roll-slot {
+  display: inline-block;
+  height: 1lh;
+  overflow: hidden;
+  /* A soft fade at the slot edges so digits roll in rather than clip. */
+  mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent);
+}
+.vy-roll-strip {
+  display: flex;
+  flex-direction: column;
+  transform: translateY(calc(var(--roll-d) * -1lh));
+  transition: transform 0.9s cubic-bezier(0.2, 1.35, 0.35, 1) var(--roll-delay, 0ms);
+}
+:root[data-motion='calm'] .vy-roll-strip { transition: none; }
