@@ -8,27 +8,24 @@ import { FontLoader, type Font } from 'three/examples/jsm/loaders/FontLoader.js'
 
 import type { VariantKey } from '@/components/backdrop/variants';
 import { glTier, markFallback } from '@/lib/glTier';
-import { letterLook } from '@/lib/letterLook';
+import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
+import { disposePool, lookPool, type LetterLook } from '@/lib/letterLook';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
 import { faceAt, stepAt } from '@/lib/titleTiming';
 
 const WORD = 'variantly';
-// The 3D wardrobe: sans, serif, script-ish and mono faces (three.js examples;
-// licences beside them in public/fonts).
-const FACES = [
-  'helvetiker_bold',
-  'optimer_bold',
-  'gentilis_bold',
-  'droid_serif_bold',
-  'droid_sans_mono_regular',
-  'helvetiker_regular',
-  'optimer_regular',
-  'gentilis_regular',
-  'droid_serif_regular',
-];
-// Final lockup: deliberately mismatched, like the 2D card.
-const FINAL = [3, 0, 2, 4, 1, 0, 3, 2, 1];
+// The 3D wardrobe is the 2D title's: the same Google faces in the same
+// order, extruded from typeface JSON built by scripts/build-3d-fonts.mjs
+// (only the letters of "variantly"; licences in public/fonts/3d).
+const FACE_COUNT = INTRO_FONTS.length;
+// The 3D lockup matches the 2D one letter for letter.
+const FINAL = INTRO_FINAL.map((c) => INTRO_FONTS.indexOf(c));
+// The lockup is mismatched in surface too; neighbours never share a look.
+const finalLook = (i: number, n: number) => (i * 5 + 1) % n;
+// Surface per flicker step: the same deterministic hash as the faces (on a
+// shifted index), so seeked frames are reproducible.
+const lookAt = (step: number, i: number, n: number) => faceAt(step, i + 11, n);
 // Never above 1, so a shifting glyph stays inside its slot.
 const scaleAt = (step: number, i: number) => 0.72 + (((step * 13 + i * 29) % 9) / 8) * 0.28;
 const FOV = 22;
@@ -39,6 +36,7 @@ type Letter = {
   mesh: THREE.Mesh;
   extra: THREE.Mesh;
   face: number;
+  look: number;
   lockedAt: number;
 };
 
@@ -54,7 +52,8 @@ type Letters3DProps = {
  * The "variantly" title as extruded letters with the same reveal as the 2D
  * card: every letter shape-shifts through the 3D wardrobe, then locks into a
  * mismatched lockup. Each concept dresses the letters in its own surface
- * shader (lib/letterLook), swapped in place when the concept or theme changes.
+ * shader pool (lib/letterLook): each flicker step is a face and a surface, and
+ * the lockup is mismatched in both. Pools swap in place on concept/theme change.
  * The loop renders only while letters move and the card is visible; the
  * desktop cursor tilt is a CSS transform, so a settled word draws no frames.
  */
@@ -78,7 +77,7 @@ export const Letters3D = ({ run, clock, onReady, onFail }: Letters3DProps) => {
     const loader = new FontLoader();
     const fonts: (Font | undefined)[] = [];
     const load = (f: number) =>
-      loader.loadAsync(`/fonts/${FACES[f]}.typeface.json`).then((font) => (fonts[f] = font));
+      loader.loadAsync(`/fonts/3d/${f}.json`).then((font) => (fonts[f] = font));
     // The lock-in faces first; the rest of the wardrobe trickles in after.
     const finals = [...new Set(FINAL)];
     const lockIn = Promise.all(finals.map(load));
@@ -102,10 +101,10 @@ export const Letters3D = ({ run, clock, onReady, onFail }: Letters3DProps) => {
     renderer.toneMappingExposure = 0.9;
     el.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
-    // The studio environment only lights the candy clear-coat; it is built
-    // the first time that concept is shown.
+    // The studio environment only lights three's PBR looks (candy, foil); it
+    // is built the first time a pool needs it.
     let envMap: THREE.Texture | null = null;
-    const lightForCandy = () => {
+    const lightStudio = () => {
       if (envMap) return;
       const pmrem = new THREE.PMREMGenerator(renderer);
       envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -179,7 +178,7 @@ export const Letters3D = ({ run, clock, onReady, onFail }: Letters3DProps) => {
 
     void lockIn.then(() => {
       if (disposed) return;
-      const rest = FACES.map((_, f) => f).filter((f) => !finals.includes(f));
+      const rest = [...Array(FACE_COUNT).keys()].filter((f) => !finals.includes(f));
       const next = () => {
         const f = rest.shift();
         if (f !== undefined && !disposed) void load(f).then(() => requestIdleCallbackSafe(next));
@@ -230,23 +229,37 @@ export const Letters3D = ({ run, clock, onReady, onFail }: Letters3DProps) => {
         mesh.position.x = x + widths[i] / 2;
         x += widths[i] + gap;
         group.add(mesh);
-        return { ch, mesh, extra, face: FINAL[i], lockedAt: -1 };
+        return { ch, mesh, extra, face: FINAL[i], look: -1, lockedAt: -1 };
       });
 
       // Dress the letters for the current concept and theme; old materials go.
       const html = document.documentElement;
+      let pool: LetterLook[] = [];
+      const wear = (l: Letter, k: number) => {
+        if (l.look === k) return;
+        const look = pool[k];
+        l.look = k;
+        l.mesh.material = look.body;
+        l.extra.visible = !!look.extra;
+        if (look.extra) l.extra.material = look.extra;
+        l.extra.position.set(...look.offset);
+      };
       const dress = () => {
         const variant = (html.dataset.variant ?? 'g') as VariantKey;
         const dark = html.dataset.theme === 'dark';
-        if (variant === 'g') lightForCandy();
+        disposePool(pool);
+        pool = lookPool(variant, dark, phone);
+        if (pool.some((l) => l.env)) lightStudio();
+        // Warm every look's shader now, so swapping looks mid-flicker never
+        // compiles: wear them across the letters, compile, then settle.
         letters.forEach((l, i) => {
-          (l.mesh.material as THREE.Material).dispose();
-          (l.extra.material as THREE.Material).dispose();
-          const look = letterLook(variant, dark, phone, i);
-          l.mesh.material = look.body;
-          l.extra.visible = !!look.extra;
-          if (look.extra) l.extra.material = look.extra;
-          l.extra.position.set(...look.offset);
+          l.look = -1;
+          wear(l, i % pool.length);
+        });
+        renderer.compile(scene, camera);
+        letters.forEach((l, i) => {
+          l.look = -1;
+          wear(l, l.lockedAt >= 0 ? finalLook(i, pool.length) : lookAt(0, i, pool.length));
         });
         paint();
       };
@@ -255,6 +268,7 @@ export const Letters3D = ({ run, clock, onReady, onFail }: Letters3DProps) => {
       mo.observe(html, { attributes: true, attributeFilter: ['data-variant', 'data-theme'] });
       cleanups.push(
         () => mo.disconnect(),
+        () => disposePool(pool),
         () => cache.forEach((g) => g.geo.dispose()),
       );
 
@@ -266,8 +280,7 @@ export const Letters3D = ({ run, clock, onReady, onFail }: Letters3DProps) => {
         let budget = seek === null ? (phone ? 1 : 2) : Infinity;
         letters.forEach((l, i) => {
           const step = stepAt(t * 1000, i);
-          let face =
-            step === null ? FINAL[i] : ready(faceAt(Math.max(step, 0), i, FACES.length), i);
+          let face = step === null ? FINAL[i] : ready(faceAt(Math.max(step, 0), i, FACE_COUNT), i);
           if (face !== l.face) {
             const fresh = !cache.has(`${l.ch}${face}`);
             if (fresh && budget <= 0) face = l.face;
@@ -277,6 +290,10 @@ export const Letters3D = ({ run, clock, onReady, onFail }: Letters3DProps) => {
               l.face = face;
             }
           }
+          wear(
+            l,
+            step === null ? finalLook(i, pool.length) : lookAt(Math.max(step, 0), i, pool.length),
+          );
           // Shifting glyphs jump in size and shrink to their slot; locked ones pop once.
           const fit = Math.min(1, widths[i] / Math.max(0.1, glyph(l.ch, face).w));
           let s = step === null ? 1 : fit * scaleAt(Math.max(step, 0), i);
