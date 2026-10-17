@@ -3854,3 +3854,109 @@ button.wiz-hit:hover .wiz-name {
 .view-skeleton > .sk-row .sk {
   background-image: linear-gradient(100deg, var(--rule) 30%, var(--surface) 50%, var(--rule) 70%);
 }
+
+/* =========================================================================
+ * Signature: the calm, single look that ties the local app to variantly.style.
+ * A soft violet accent, a grainy-gradient ground, roomy rounded cards without
+ * hard frames, pill actions that squash on press. Layered on top of Gate
+ * Board, so every component keeps working; tokens carry most of it.
+ * ========================================================================= */
+:root {
+  --ink: #17142a;
+  --steel: #5e5878; /* 5.9:1 on panel */
+  --placeholder: #8a849f;
+  --rule: #e2ddf0;
+  --panel: #f5f3fa;
+  --surface: #ffffff;
+  --drawer: #f1eef9;
+  --hover-tint: #f4f1fb;
+  --alert: #6d4aff;
+  --alert-hover: #8366ff;
+  --alert-ink: #ffffff;
+  --alert-wash: #efeaff;
+  --alert-wash-ink: #3b2a8c;
+  --slate: #1d1838;
+  --slate-2: #2a2450;
+  --slate-line: #3b3466;
+  --steel-on-slate: #c3bde0;
+  --r: 18px;
+  --r-sm: 12px;
+  --lift: 0 1px 0 rgb(255 255 255 / 0.9) inset, 0 24px 48px -28px rgb(60 40 140 / 0.35);
+  accent-color: var(--alert);
+}
+:root[data-theme='dark'] {
+  --ink: #f2effc;
+  --steel: #b3acd2;
+  --placeholder: #8c86a8;
+  --rule: #2f2a4a;
+  --panel: #100d1e;
+  --surface: #191530;
+  --drawer: #15112a;
+  --hover-tint: #201a3b;
+  --alert: #9a82ff;
+  --alert-hover: #b09dff;
+  --alert-ink: #0f0b22;
+  --alert-wash: #241c4a;
+  --alert-wash-ink: #ded5ff;
+  --slate: #0c0a18;
+  --slate-2: #1a1533;
+  --slate-line: #2f2a4a;
+  --lift: 0 1px 0 rgb(255 255 255 / 0.04) inset, 0 24px 48px -28px rgb(0 0 0 / 0.8);
+}
+/* Grainy-gradient ground: two soft blooms, dithered by fractal noise. */
+body {
+  background:
+    radial-gradient(60vw 50vh at 12% 8%, color-mix(in srgb, var(--alert) 16%, transparent), transparent 70%),
+    radial-gradient(50vw 45vh at 92% 18%, color-mix(in srgb, #ff6fae 12%, transparent), transparent 70%),
+    var(--panel);
+  background-attachment: fixed;
+}
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.18;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* Header: frosted, no hard rule. */
+.bar {
+  background: color-mix(in srgb, var(--panel) 70%, transparent);
+  backdrop-filter: blur(14px) saturate(1.4);
+  border-bottom-color: color-mix(in srgb, var(--rule) 60%, transparent);
+}
+.wordmark .mark { width: 24px; height: 24px; border-radius: 7px; }
+/* Cards: soft surfaces, no frames. */
+.wizard-card,
+.progress-card,
+.wait-card {
+  border-color: transparent;
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(10px);
+}
+.wiz-stepper { background: transparent; border-bottom: 0; padding-top: 26px; }
+.wiz-item.now .wiz-dot circle { fill: var(--alert); stroke: var(--alert); }
+.wiz-item.now .wiz-num { color: var(--alert-ink); }
+/* Actions: pills that squash on press. */
+.btn { border-radius: 999px; transition: background 150ms var(--ease), transform 120ms var(--ease), box-shadow 150ms var(--ease); }
+.btn:active:not([disabled]) { transform: scale(0.95); }
+.btn.primary { box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--alert) 70%, transparent); }
+.btn.primary:hover:not([disabled]) { transform: translateY(-1px); }
+/* Choices and fields: rounded, quiet until picked. */
+.pick { border-radius: 14px; border-color: var(--rule); transition: background 150ms var(--ease), border-color 150ms var(--ease), transform 120ms var(--ease); }
+.pick:active { transform: scale(0.97); }
+.pick:has(input:checked) { background: var(--alert); border-color: var(--alert); color: var(--alert-ink); }
+:is(input[type='text'], input:not([type]), textarea, select) { border-radius: 14px; border-color: var(--rule); }
+:is(input[type='text'], input:not([type]), textarea, select):focus-visible {
+  outline: 0;
+  border-color: var(--alert);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--alert) 22%, transparent);
+}
+:focus-visible { outline-color: var(--alert); }
+/* Calmer type: headings stay in Martian Mono but drop the shout. */
+.title { letter-spacing: -0.01em; }
+.wizard-card h2 { text-transform: none; letter-spacing: -0.01em; }
+:root[data-theme='dark'] .pick:has(input:checked) { background: var(--alert); border-color: var(--alert); color: var(--alert-ink); }
