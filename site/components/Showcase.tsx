@@ -135,6 +135,29 @@ const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
  */
 const Showcase = () => {
   const [selected, setSelected] = useState(1);
+  // Each redesign is a full page with its own fonts; mount only the ones seen
+  // so far, plus the next one in the cycle once the browser is idle, instead
+  // of all six at load (that was ~60 font files on a phone).
+  const [mounted, setMounted] = useState<Set<number>>(() => new Set([1]));
+  // The demo pages start loading once the page is idle after load: off the
+  // first paint, and done before anyone scrolls down to them.
+  const [demoReady, setDemoReady] = useState(false);
+  useEffect(() => {
+    const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1200));
+    const go = () => idle(() => setDemoReady(true), { timeout: 2500 });
+    if (document.readyState === 'complete') go();
+    else window.addEventListener('load', go, { once: true });
+    return () => window.removeEventListener('load', go);
+  }, []);
+  useEffect(() => {
+    const next = (selected % DEMO_VARIANTS.length) + 1;
+    const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1500));
+    // Keep the ones already seen (for the crossfade back) and warm the next.
+    const id = idle(() =>
+      setMounted((m) => (m.has(selected) && m.has(next) ? m : new Set(m).add(selected).add(next))),
+    );
+    return () => (window.cancelIdleCallback ?? window.clearTimeout)(id as number);
+  }, [selected]);
   const [auto, setAuto] = useState(true);
   const [ready, setReady] = useState(false);
   const [hover, setHover] = useState(false);
@@ -592,22 +615,21 @@ const Showcase = () => {
               frames.current[0] = el;
             }}
             onLoad={() => onFrameLoad(0)}
-            src={page(0, phone)}
+            src={demoReady ? page(0, phone) : undefined}
             title="Oak & Iron as it was: the original"
             className="absolute inset-0 size-full border-0 bg-white"
           />
-          {DEMO_VARIANTS.map((v) => (
+          {DEMO_VARIANTS.filter((v) => v.n === selected || mounted.has(v.n)).map((v) => (
             <iframe
               key={v.n}
               ref={(el) => {
                 frames.current[v.n] = el;
               }}
               onLoad={() => onFrameLoad(v.n)}
-              src={page(v.n, phone)}
+              src={demoReady ? page(v.n, phone) : undefined}
               title={`${vname(v.n)}: ${v.direction}`}
               aria-hidden={v.n !== selected}
               tabIndex={v.n === selected ? 0 : -1}
-              loading={v.n === 1 ? 'eager' : 'lazy'}
               className={cn(
                 'vy-split-clip absolute inset-0 size-full border-0 transition-opacity duration-1000 ease-in-out',
                 v.n === selected ? 'opacity-100' : 'pointer-events-none opacity-0',

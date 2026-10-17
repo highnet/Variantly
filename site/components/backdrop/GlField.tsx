@@ -20,11 +20,12 @@ export const GlField = ({ scene: kind, colors }: GlFieldProps) => {
     const el = host.current;
     if (!el) return;
     const renderer = new THREE.WebGLRenderer({
-      antialias: true,
+      // Phones: no MSAA and 1x pixels; the grain hides the difference.
+      antialias: innerWidth >= 640,
       alpha: true,
       preserveDrawingBuffer: true,
     });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+    renderer.setPixelRatio(innerWidth < 640 ? 1 : Math.min(devicePixelRatio, 1.5));
     el.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
     const { camera, update } = SCENES[kind](scene, key.split(','));
@@ -52,7 +53,22 @@ export const GlField = ({ scene: kind, colors }: GlFieldProps) => {
     const still = seek !== null || calmMotion();
     let raf = 0;
     const t0 = performance.now();
+    const html = document.documentElement;
+    // Phones draw the slow-moving scene at 30fps: half the GPU and battery.
+    const everyOther = innerWidth < 640;
+    let odd = false;
     const tick = () => {
+      odd = !odd;
+      if (everyOther && odd && !still) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      // Hidden tab, or scrolled past the hero where the scene is a faint wash:
+      // keep the loop alive but skip the GPU work.
+      if (!still && (document.hidden || html.hasAttribute('data-scrolled'))) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
       ease += (px * 0.3 - ease) * 0.04;
       update(seek ?? (still ? 6 : (performance.now() - t0) / 1000), ease);
       renderer.render(scene, camera);

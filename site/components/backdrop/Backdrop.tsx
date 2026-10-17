@@ -7,10 +7,13 @@ import { calmMotion } from '@/lib/prefs';
 import { cn } from '@/lib/utils';
 import { holdFrame, seekTime } from '@/lib/seek';
 
-import { GlField } from './GlField';
+import dynamic from 'next/dynamic';
 import { useVariant } from '@/lib/variant';
 
 import { VARIANTS } from './variants';
+
+// three.js stays out of the first load: the scene arrives after the page is up.
+const GlField = dynamic(() => import('./GlField').then((m) => m.GlField), { ssr: false });
 
 // Each blob morphs through these outlines; all share one command structure so
 // the path string interpolates point for point.
@@ -54,7 +57,9 @@ const Blob = ({ ramp, i, sharp, id }: BlobProps) => {
       p.set(x <= 3 ? x : 3 * (4 - x));
       return;
     }
-    if (calmMotion()) return;
+    // Phones: no path morph. Each morph frame re-runs the lighting and grain
+    // filter; a still shape is filtered once and only its rotation animates.
+    if (calmMotion() || innerWidth < 640) return;
     const c = animate(p, [0, 1, 2, 3, 0], {
       duration: 14 + i * 4,
       repeat: Infinity,

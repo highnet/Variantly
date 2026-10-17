@@ -47,3 +47,15 @@ export const faceAt = (step: number, index: number, n: number) => {
   }
   return f;
 };
+
+// Milliseconds until a letter's next face change, `ms` after the reveal
+// starts (so a letter wakes once per change instead of polling).
+export const msToNextStep = (ms: number, index: number) => {
+  let at = ms - startDelay(index);
+  if (at < 0) return -at;
+  for (const d of SCHEDULES[index]) {
+    at -= d;
+    if (at < 0) return -at;
+  }
+  return 0;
+};
