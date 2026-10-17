@@ -41,6 +41,18 @@ const FACES = [
   ['Rye', '400', 'rye'],
   ['Fascinate', '400', 'fascinate'],
   ['Rubik Wet Paint', '400', 'wet-paint'],
+  ['Big Shoulders Stencil', '900', 'stencil'],
+  ['Krona One', '400', 'krona'],
+  ['Unbounded', '900', 'unbounded'],
+  ['Bodoni Moda', '900', 'bodoni'],
+  ['Alfa Slab One', '400', 'alfa-slab'],
+  ['Kaushan Script', '400', 'kaushan'],
+  ['Baloo 2', '800', 'baloo'],
+  ['Londrina Outline', '400', 'londrina-outline'],
+  ['Fraunces', '900', 'fraunces'],
+  ['Knewave', '400', 'knewave'],
+  ['Black Ops One', '400', 'black-ops'],
+  ['Syne', '800', 'syne'],
 ];
 const wildOut = join(process.cwd(), 'app/fonts/wild');
 mkdirSync(wildOut, { recursive: true });

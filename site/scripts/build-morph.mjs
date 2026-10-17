@@ -12,7 +12,7 @@
 // aligned once per step. Also, per letter, which faces morph cleanly into
 // which (see below), for the runtime's face sequences.
 // Usage (in site/): node scripts/build-morph.mjs
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
@@ -21,7 +21,9 @@ import clip from 'polygon-clipping';
 const N = 72;
 const CHARS = [...new Set('variantly')];
 const dir = join(process.cwd(), 'public/fonts/3d');
-const FACE_COUNT = 20;
+// Every face build-3d-fonts.mjs wrote (0.json, 1.json, ...).
+let FACE_COUNT = 0;
+while (existsSync(join(dir, `${FACE_COUNT}.json`))) FACE_COUNT++;
 
 // facetype.js outline to polylines (font units, y up), curves finely flattened.
 const flatten = (o) => {
@@ -258,9 +260,22 @@ const segs = (c) =>
   ]);
 // Crossing segment pairs within and between contours (some faces overlap
 // their own contours already, so a morph may not add crossings, not none).
-const folds = (contours) => {
+// Every `stride`-th point (phones draw the 3D letters at half detail).
+const decimate = (c, stride) => {
+  if (stride === 1) return c;
+  const m = Math.floor(N / stride);
+  const out = new Float64Array(N * 2);
+  // Repeat each kept point so the segment helpers (N points) still apply.
+  for (let i = 0; i < N; i++) {
+    const k = Math.min(m - 1, Math.floor(i / stride)) * stride;
+    out[i * 2] = c[k * 2];
+    out[i * 2 + 1] = c[k * 2 + 1];
+  }
+  return out;
+};
+const folds = (contours, stride = 1) => {
   let n = 0;
-  const all = contours.map(segs);
+  const all = contours.map((c) => segs(decimate(c, stride)));
   for (let u = 0; u < all.length; u++)
     for (let v = u; v < all.length; v++)
       for (let i = 0; i < N; i++)
@@ -354,6 +369,7 @@ const typical = (px, ch) =>
   NEUTRAL.reduce((n, f) => n + iou(px, refs.find((r) => r.ch === ch && r.f === f).px), 0) /
   NEUTRAL.length;
 
+const SAMPLES = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.05, 1.1];
 const k = {};
 const MIN_NEAR = 0.62;
 const MIN_MID = 0.5;
@@ -391,13 +407,19 @@ for (const ch of CHARS) {
           const r = fa[2] + (fb[2] - fa[2]) * e;
           return na.map((v, i) => (i % 2 ? cy : cx) + (v + (nb[i] - v) * e) * r);
         });
-      const crossEnds = Math.max(folds(contours[a]), folds(contours[b]));
-      const frames = [0.25, 0.5, 0.75].map(at);
-      const geometryOk = frames.every(
-        (mid) =>
+      // Every tenth of the way, and past the end by up to the spring's
+      // overshoot (SPRING_PEAK in lib/titleTiming.ts, about 0.095): at full
+      // detail and at the phones' half detail, nothing may fold or collapse.
+      const crossEnds = [1, 2].map((st) => Math.max(folds(contours[a], st), folds(contours[b], st)));
+      const geometryOk = SAMPLES.every((e) => {
+        const mid = at(e);
+        return (
           !mid.some((c, s) => Math.abs(flatArea(c)) < 0.6 * pairs[s].area) &&
-          folds(mid) <= crossEnds,
-      );
+          folds(mid, 1) <= crossEnds[0] &&
+          folds(mid, 2) <= crossEnds[1]
+        );
+      });
+      const frames = [0.25, 0.5, 0.75].map(at);
       if (!geometryOk) continue;
       geometric++;
       const [q1, mid, q3] = frames.map(raster);

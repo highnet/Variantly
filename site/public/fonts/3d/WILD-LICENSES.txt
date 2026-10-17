@@ -52,3 +52,51 @@ Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfo
 Rubik Wet Paint (400)
 Copyright 2020 The Rubik Filtered Project Authors (https://github.com/NaN-xyz/Rubik-Filtered)
 Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Big Shoulders Stencil (900)
+Copyright 2019 The Big Shoulders Project Authors (https://github.com/xotypeco/big_shoulders)
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Krona One (400)
+Copyright (c) 2011, Sorkin Type Co (www.sorkintype.com) with Reserved Font Name "Krona".
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Unbounded (900)
+Copyright 2022 The Unbounded Project Authors (https://github.com/googlefonts/unbounded)
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Bodoni Moda (900)
+Copyright 2020 The Bodoni Moda Project Authors (https://github.com/indestructible-type/Bodoni)
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Alfa Slab One (400)
+Copyright 2016 The Alfa Slab One Project Authors (http://www.jmsole.cl | info@jmsole.cl), with Reserved Font Name "Alfa Slab".
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Kaushan Script (400)
+Copyright (c) 2011, Pablo Impallari (www.impallari.com|impallari@gmail.com),Copyright (c) 2011, Igino Marini. (www.ikern.com|mail@iginomarini.com),with Reserved Font Name Kaushan Script.
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Baloo 2 (800)
+Copyright 2019 The Baloo 2 Project Authors (https://github.com/EkType/Baloo2)
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Londrina Outline (400)
+Copyright 2011 The Londrina Outline Authors (https://github.com/marcelommp/Londrina-Typeface), with Reserved Font Name "Londrina Outline"
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Fraunces (900)
+Copyright 2020 The Fraunces Project Authors (github.com/undercasetype/Fraunces)
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Knewave (400)
+Copyright (c) 2011 by Tyler Finck. All rights reserved.
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Black Ops One (400)
+Copyright 2022 The PinyonScript Project Authors (https://github.com/SorkinType/Black-Ops)
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Syne (800)
+Copyright 2019 The Syne Project Authors (https://gitlab.com/bonjour-monde/fonderie/syne-typeface)
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
