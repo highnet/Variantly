@@ -335,7 +335,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Can it break my site?',
-    a: 'Not while you compare: designs are made in **separate git worktrees**, outside your folder. Keep applies one design to your files as an **unstaged change for you to review**; if it is wrong, undo it with git. See [what it does to your repo](#trust).',
+    a: 'Not while you compare: designs are made in **separate git worktrees**, outside your folder. Keep applies one design to your files as an **unstaged change for you to review**; if it is wrong, undo it with git. See [what it does to your repo](/safety).',
   },
   {
     q: 'What if I don’t like any of them?',
