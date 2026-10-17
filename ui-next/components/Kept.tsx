@@ -12,6 +12,7 @@ import { setState, toast, useStore } from '@/lib/store';
 const Kept = () => {
   const snap = useStore((s) => s.snap);
   const [starting, setStarting] = useState(false);
+  const [siteUrl, setSiteUrl] = useState('');
   if (!snap) return null;
   const n = snap.chosen;
   const v = snap.variants.find((x) => x.n === n);
@@ -26,6 +27,9 @@ const Kept = () => {
     files.includes('DESIGN.md') ? 'Read DESIGN.md first: it describes the visual system this redesign uses. Follow it for anything you change.' : '',
     files.length ? `Changed files: ${files.join(', ')}.` : '',
     r.rollout ? `It was already carried to the rest of the site (${r.rollout}).` : r.rolloutError ? 'Only the redesigned pages changed; the rest of the site still has the old style.' : '',
+    siteUrl
+      ? `The site is running locally at ${siteUrl}; use it to check your changes in a browser.`
+      : 'The site isn’t running yet: start it with your dev command (or the “Open your site” button in variantly) and check your changes in a browser.',
     'Please:',
     '1. Review the diff (git diff) for anything broken, missing or off-brand.',
     '2. Check every page at desktop and phone widths, and fix layout, contrast and accessibility problems, keeping to the design.',
@@ -51,6 +55,7 @@ const Kept = () => {
     setStarting(true);
     try {
       const { url } = await api<{ url: string }>('POST', 'open-site', {});
+      setSiteUrl(url);
       if (tab) tab.location.href = url;
       else window.open(url, '_blank', 'noopener');
       toast('Your site is running', { body: url });
