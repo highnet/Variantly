@@ -187,6 +187,10 @@ export const AGENTS = [
           ? ["--allow-all"]
           : [
               "--allow-all-tools",
+              // Path checks also scan shell arguments: the Impeccable launcher's
+              // `--target /` (a route) reads as the drive root and is denied
+              // under --no-ask-user. Tool denies and URL checks still apply.
+              "--allow-all-paths",
               "--deny-tool=shell(git push)",
               "--deny-tool=shell(git commit)",
               "--deny-tool=shell(rm)",
