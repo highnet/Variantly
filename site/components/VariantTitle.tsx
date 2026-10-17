@@ -130,7 +130,7 @@ export const VariantTitle = () => {
         title="Replay"
         data-keep-cycle
         onClick={() => setRun((r) => r + 1)}
-        className="vy-title relative z-1 flex cursor-pointer items-end gap-[0.04em] text-[clamp(3.5rem,13vw,11rem)]"
+        className="vy-title relative z-1 flex cursor-pointer items-end gap-[0.04em] text-[clamp(2.5rem,16vw,11rem)]"
       >
         {[...WORD].map((c, i) => (
           <Letter key={i} char={c} index={i} run={run} />
