@@ -397,7 +397,7 @@ export const VariantSwitcher = () => {
             'vy-switcher-pop fixed z-50',
             phone
               ? 'inset-x-0 bottom-0 rounded-t-2xl px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]'
-              : 'bottom-20 left-1/2 w-[min(64rem,calc(100vw-2rem))] -translate-x-1/2 rounded-2xl p-4',
+              : 'bottom-20 left-1/2 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 rounded-2xl p-4',
           )}
         >
           <div className="mb-3 flex items-center justify-between gap-3">
@@ -481,7 +481,8 @@ export const VariantSwitcher = () => {
               aria-labelledby={titleId}
               onKeyDown={onGridKey}
               className="grid gap-4"
-              style={{ gridTemplateColumns: `repeat(${GROUPS.length}, minmax(0, 1fr))` }}
+              // Columns hug their concepts, so a short list is a compact panel.
+              style={{ gridTemplateColumns: `repeat(${GROUPS.length}, minmax(8rem, max-content))` }}
             >
               {GROUPS.map((g, i) => (
                 <div key={g.family} role="group" aria-labelledby={`vy-fam-${i}`}>
