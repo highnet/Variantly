@@ -16,11 +16,9 @@ const KINDS: [selector: string, kind: string][] = [
   ],
   // Big figures pop. Step numerals are left out: they have their own fill
   // and pop (Delight), and their list item already enters.
-  ['main > div .figure:not(h3, .vy-step-num *)', 'fig'],
+  ['main > div .figure:not(h3, .vy-step-num *, :is(ol, ul, dl) *)', 'fig'],
 ];
 const GROUPS = 'main > div ol, main > div ul, main > div dl';
-// Reveal a quarter screen early, so a fast scroll never lands on a blank.
-const AHEAD = '0px 0px 25% 0px';
 // Longest entrance (slow duration plus the deepest cascade delay), after
 // which the reveal classes come off and the stylesheet is in sole charge.
 const SETTLE_MS = 1100;
@@ -29,8 +27,7 @@ const SETTLE_MS = 1100;
  * Site-wide scroll entrances, CSS-only (see .vy-rv in globals.css). Elements
  * below the fold at load are tagged, and <html> gets .vy-reveal-ready, which
  * is what hides them, so content is never hidden without JS. One shared
- * IntersectionObserver flips each to .vy-rv-in a quarter screen before it
- * arrives; a transform/opacity transition on the motion tokens does the
+ * IntersectionObserver flips each to .vy-rv-in as its first pixel enters; a transform/opacity transition on the motion tokens does the
  * rest. Touch devices, low-power and calm motion get no entrances at all:
  * everything simply stays visible.
  */
@@ -63,7 +60,7 @@ export const ScrollReveal = () => {
           }, SETTLE_MS + 400);
         });
       },
-      { rootMargin: AHEAD },
+      { rootMargin: '0px', threshold: 0 },
     );
 
     all.forEach(([el, kind]) => {

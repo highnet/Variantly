@@ -23,6 +23,7 @@ import { Typography } from '@/components/ui/Typography';
 import { markLoaded } from '@/lib/loadProgress';
 import { EASE } from '@/lib/motion';
 import { applyPrefsToFrame, calmMotion, PREFS_EVENT, readPrefs, type Prefs } from '@/lib/prefs';
+import { whenIdle } from '@/lib/scrollIdle';
 import { DEMO_ORIGINAL_SCORES, DEMO_VARIANTS, PROMPTS } from '@/lib/content';
 import { INSTALL } from '@/lib/site';
 import { cn } from '@/lib/utils';
@@ -63,6 +64,9 @@ const FlapCell = ({ target, index }: FlapCellProps) => {
   useEffect(() => {
     const reduce = calmMotion();
     let timer = 0;
+    let idle = () => {};
+    // Each flip waits for the page to be still: nothing flips under a scroll.
+    const next = (ms: number) => (timer = window.setTimeout(() => (idle = whenIdle(step)), ms));
     const step = () => {
       if (reduce || showing.current === target) {
         showing.current = target;
@@ -72,10 +76,13 @@ const FlapCell = ({ target, index }: FlapCellProps) => {
       const at = Math.max(0, DRUM.indexOf(showing.current));
       showing.current = DRUM[(at + 1) % DRUM.length];
       setShown(showing.current);
-      timer = window.setTimeout(step, STEP_MS);
+      next(STEP_MS);
     };
-    timer = window.setTimeout(step, index * STAGGER_MS);
-    return () => window.clearTimeout(timer);
+    next(index * STAGGER_MS);
+    return () => {
+      window.clearTimeout(timer);
+      idle();
+    };
   }, [target, index]);
 
   return (

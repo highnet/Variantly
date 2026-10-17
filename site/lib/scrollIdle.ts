@@ -3,8 +3,7 @@
  * text animates under an active scroll gesture, so motion that can wait
  * waits until the scroll has been still for IDLE_MS, and touch devices
  * mostly skip it. One shared passive listener, started on first use; while
- * a scroll is under way <html> carries data-scrolling (CSS pauses the
- * split-flap and similar effects on it).
+ * a scroll is under way <html> carries data-scrolling.
  */
 
 const IDLE_MS = 120;
@@ -36,7 +35,9 @@ const onScroll = () => {
 const start = () => {
   if (started) return;
   started = true;
-  addEventListener('scroll', onScroll, { passive: true });
+  // Wheel and touchmove arrive a frame before the scroll they cause, so
+  // nothing starts in the gap between the gesture and its first scroll.
+  ['scroll', 'wheel', 'touchmove'].forEach((t) => addEventListener(t, onScroll, { passive: true }));
 };
 
 /** Whether a scroll gesture is under way right now. */
@@ -67,7 +68,11 @@ export const onScrollStart = (fn: () => void) => {
 export const touchUI = () =>
   typeof window !== 'undefined' && matchMedia('(hover: none) and (pointer: coarse)').matches;
 
-/** The page asked for less work: low-power mode or calm motion. */
+/**
+ * The page asked for less work: low-power mode or calm motion. Nothing sets
+ * data-perf yet (a low-power detector is being added separately); until
+ * then this follows calm motion only.
+ */
 export const lowPerf = () => {
   if (typeof document === 'undefined') return false;
   const d = document.documentElement.dataset;

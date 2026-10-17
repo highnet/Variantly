@@ -47,12 +47,29 @@ export const Delight = () => {
 
     // 17 · glass header, 5 · steps progress, 10 · hero parallax
     const steps = document.querySelector<HTMLElement>('main > div ol');
-    steps?.classList.add('vy-steps');
     const items = steps ? ([...steps.children] as HTMLElement[]) : [];
     // Touch and low-power: no per-frame scrubbing and no parallax. The steps
     // light up (and their numerals fill in one CSS transition) from an
     // observer, applied once the scroll settles.
     const light = touchUI() || lowPerf();
+    if (light && steps) {
+      // Steps already in the lit zone at mount start lit, set in the same
+      // frame as the classes that enable the fill, so nothing drains and
+      // refills. One rect read pass, then writes.
+      const lit = items.map((el) => el.getBoundingClientRect().top < innerHeight * 0.75);
+      items.forEach((el, i) => lit[i] && el.classList.add('vy-step-on', 'vy-step-done'));
+      steps.style.setProperty('--steps-p', (lit.filter(Boolean).length / items.length).toFixed(3));
+      document.documentElement.classList.add('vy-steps-touch');
+    }
+    steps?.classList.add('vy-steps');
+    // Fill transitions switch on only after the mount state has painted.
+    let armed = 0;
+    if (light && steps)
+      armed = requestAnimationFrame(() => {
+        armed = requestAnimationFrame(() =>
+          document.documentElement.classList.add('vy-steps-anim'),
+        );
+      });
     const drifting = light
       ? []
       : [...document.querySelectorAll<HTMLElement>('.vy-scene, .vy-blobs, .vy-title')];
@@ -103,7 +120,6 @@ export const Delight = () => {
     });
     if (light && steps) {
       const root = document.documentElement;
-      root.classList.add('vy-steps-touch');
       const on = new Set<Element>();
       let pending: () => void = () => {};
       const apply = () => {
@@ -127,7 +143,8 @@ export const Delight = () => {
       stops.push(() => {
         io.disconnect();
         pending();
-        root.classList.remove('vy-steps-touch');
+        cancelAnimationFrame(armed);
+        root.classList.remove('vy-steps-touch', 'vy-steps-anim');
       });
     }
 
@@ -207,28 +224,36 @@ export const Delight = () => {
         range.setEnd(text, full);
         untyped.add(range);
         let timer = 0;
+        let cancelIdle = () => {};
         const finish = () => {
           clearTimeout(timer);
+          cancelIdle();
           typingNow.delete(finish);
           untyped.delete(range);
         };
         stops.push(finish);
         stops.push(
           inView(el, () => {
-            // Scrolled into view mid-gesture: just show it, never blank.
-            if (scrolling()) return finish();
-            typingNow.add(finish);
-            let i = 0;
-            const tick = () => {
-              // React re-rendered the text (runner switch): show it all.
-              if (el.firstChild !== text || text.length !== full) return finish();
-              range.setStart(text, ++i);
-              if (i < full) timer = window.setTimeout(tick, 28 + Math.random() * 30);
-              else finish();
-            };
-            timer = window.setTimeout(tick, 200);
+            // Scrolled in mid-gesture: type once the page is still, if the
+            // command is still on screen; otherwise just show it.
+            if (scrolling()) cancelIdle = whenIdle(start);
+            else start();
           }),
         );
+        const start = () => {
+          const r = el.getBoundingClientRect();
+          if (r.bottom < 0 || r.top > innerHeight) return finish();
+          typingNow.add(finish);
+          let i = 0;
+          const tick = () => {
+            // React re-rendered the text (runner switch): show it all.
+            if (el.firstChild !== text || text.length !== full) return finish();
+            range.setStart(text, ++i);
+            if (i < full) timer = window.setTimeout(tick, 28 + Math.random() * 30);
+            else finish();
+          };
+          timer = window.setTimeout(tick, 200);
+        };
         stops.push(
           useSiteStore.subscribe((s, prev) => {
             if (s.runner !== prev.runner) finish();
