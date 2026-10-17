@@ -1,5 +1,5 @@
 import scores from '@/lib/demo-scores.json';
-import { SKILLS_URL } from '@/lib/site';
+import { SITE_URL, SKILLS_URL } from '@/lib/site';
 
 // Everything on the page that is data, in one place.
 //
@@ -124,6 +124,8 @@ export const PROMPTS = {
   doctor:
     "Run `npx variantly doctor` in this folder. For each line it marks ✗, tell me in plain words what's missing and fix it, asking me before installing anything. Run it again until nothing is marked ✗.",
   demo: 'Run `npx variantly --demo` in this folder and give me the link it prints. It shows ready-made designs without using any AI credits.',
+  docs: `variantly's docs for AI agents are at ${SKILLS_URL} and ${SITE_URL}/llms.txt. Read both before you do anything. Use them to answer my questions about variantly and to run its commands for me in this folder, explaining each one in a sentence before you run it. Start with \`npx variantly doctor\` and tell me in plain words what it found.`,
+  walkthrough: `I'm a total beginner and I've never used a terminal. I want to try variantly (${SITE_URL}) on my website: it redesigns the site when I run \`npx variantly\` in my website's folder. Walk me through it one small step at a time. First ask whether I'm on Mac or Windows and which code editor I have (if none, help me install VS Code). For each step, say in one plain sentence what it does, tell me exactly what to click or type, then stop and wait until I say "done" or paste what I see. If I paste an error, explain it simply and how to fix it. The steps: open my website's folder in the editor, open a terminal there, check Node.js is 20.11 or newer with \`node --version\` (and help me install it if not), then run \`npx variantly\` and open the link it prints. If my site is already running in a terminal, have me open a second one and leave the first alone.`,
 };
 
 export const CHECKLIST: { id: string; need: string; how: string; prompt: string }[] = [
