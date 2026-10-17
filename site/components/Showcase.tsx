@@ -866,7 +866,7 @@ const Showcase = () => {
                   Try the comparison below
                 </a>{' '}
                 or{' '}
-                <a href="#trust" className="text-surface underline underline-offset-2">
+                <a href="/safety" className="text-surface underline underline-offset-2">
                   see what it does to your repo
                 </a>
                 .

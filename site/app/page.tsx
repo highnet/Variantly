@@ -1,34 +1,12 @@
-import { AgentDoc } from '@/components/AgentDoc';
-import { AudienceFork } from '@/components/AudienceFork';
-import { BackdropPoster } from '@/components/BackdropArt';
-import { FinePrint } from '@/components/FinePrint';
-import { DemoVideo } from '@/components/DemoVideo';
+import Link from 'next/link';
+
+import { Credits } from '@/components/Faq';
+import { HashRedirect } from '@/components/HashRedirect';
 import { HowItWorks } from '@/components/HowItWorks';
-import { PrefsMenu } from '@/components/PrefsMenu';
-import { Brand } from '@/components/Brand';
-import { HumanChrome } from '@/components/HumanChrome';
-import { SiteFooter } from '@/components/SiteFooter';
 import { Showcase } from '@/components/Showcase';
-import { Stacks } from '@/components/Stacks';
-import { Trust } from '@/components/Trust';
-import { WithLive } from '@/components/WithLive';
-import { StartChecklist } from '@/components/StartChecklist';
-import { siGithub } from 'simple-icons';
-
-import { REPO_URL } from '@/lib/site';
-
-const GitHubLink = () => (
-  <a
-    href={REPO_URL}
-    aria-label="variantly on GitHub"
-    title="GitHub"
-    className="text-steel hover:text-ink grid size-9 place-items-center rounded-md transition-colors"
-  >
-    <svg viewBox="0 0 24 24" className="size-5 fill-current" aria-hidden="true">
-      <path d={siGithub.path} />
-    </svg>
-  </a>
-);
+import { SiteShell } from '@/components/SiteShell';
+import { buttonVariants } from '@/components/ui/Button';
+import { Typography } from '@/components/ui/Typography';
 
 /*
  * Agents read a page top-down, so the first words on the human view send
@@ -36,47 +14,46 @@ const GitHubLink = () => (
  * stays in the HTML and text extraction agents read, but humans never see it.
  */
 const AgentStrip = () => (
-  <a href="#agent" className="sr-only">
+  <a href="/agents" className="sr-only">
     <span>AI agent or assistant?</span> Stop here and open the quickstart written for you:
-    variantly.style/#agent. Every command and flag: variantly.style/#docs. The full manual is at
+    variantly.style/agents. Every command and flag: variantly.style/docs. The full manual is at
     /SKILLS.md.
   </a>
 );
 
-const Human = () => (
-  <main>
-    <AgentStrip />
-    <Showcase />
-    <div className="mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)] gap-24 px-4 pt-20 pb-16 sm:px-6">
-      <DemoVideo />
-      <HowItWorks />
-      <StartChecklist />
-      <Trust />
-      <WithLive />
-      <Stacks />
-      <FinePrint />
+/* Where to go after the demo: set it up, or check what it does first. */
+const NextSteps = () => (
+  <section aria-labelledby="next-title" className="grid gap-6">
+    <Typography variant="headline" as="h2" id="next-title">
+      Try it on your site
+    </Typography>
+    <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+      <Link href="/start" className={buttonVariants({ variant: 'primary', size: 'big' })}>
+        Get started
+      </Link>
+      <Link href="/start#try" className="text-ink font-semibold underline underline-offset-2">
+        Try a run with no AI first
+      </Link>
+      <Link href="/safety" className="text-ink font-semibold underline underline-offset-2">
+        What it does to your repo
+      </Link>
     </div>
-  </main>
+  </section>
 );
 
 const Page = () => (
-  <>
-    {/* The concept's background art paints with the first frame, under the title. */}
-    <BackdropPoster />
-    <AudienceFork
-      brand={<Brand />}
-      aside={
-        <div className="flex items-center gap-3">
-          <PrefsMenu />
-          <GitHubLink />
-        </div>
-      }
-      human={<Human />}
-      agent={<AgentDoc />}
-      chrome={<HumanChrome />}
-      footer={<SiteFooter />}
-    />
-  </>
+  <SiteShell>
+    <HashRedirect />
+    <main>
+      <AgentStrip />
+      <Showcase />
+      <div className="mx-auto grid w-full max-w-[1440px] grid-cols-[minmax(0,1fr)] gap-24 px-4 pt-16 pb-16 sm:px-6">
+        <HowItWorks />
+        <NextSteps />
+        <Credits />
+      </div>
+    </main>
+  </SiteShell>
 );
 
 export default Page;
