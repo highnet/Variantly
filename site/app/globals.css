@@ -1278,3 +1278,40 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-new(root) { animation: none; }
 }
+
+/* ---- Boards: every slate surface follows the concept --------------------- */
+/* The original design draws dark "board" surfaces with the slate tokens
+   (prefs menu, toasts, the checklist's run panel, the demo video, command
+   boxes). Each concept supplies a board palette; the hero and footer keep
+   their own mapping above, which is more specific. */
+:root[data-variant] {
+  --slate: var(--board-bg);
+  --slate-raised: var(--board-raised);
+  --slate-line: var(--board-line);
+  --steel-on-slate: var(--board-mute);
+  --ok-on-slate: var(--board-ok);
+}
+:root[data-variant] .on-slate {
+  --surface: var(--board-text);
+  --ink: var(--board-deep);
+  --steel: var(--board-mute);
+  --rule: var(--board-line);
+}
+:root[data-variant='a'] { --board-bg: #2a1630; --board-raised: #3a2242; --board-line: #553363; --board-mute: #d9b8c4; --board-text: #fff1ea; --board-deep: #1a0e1e; --board-ok: #ff7a59; }
+:root[data-variant='b'] { --board-bg: #1b1a3a; --board-raised: #2a2858; --board-line: #3c3a72; --board-mute: #c9c5ea; --board-text: #fffdf6; --board-deep: #0e0d22; --board-ok: #ff4f9a; }
+:root[data-variant='c'] { --board-bg: #1d2a28; --board-raised: #263836; --board-line: #3b524e; --board-mute: #b9c9c2; --board-text: #f4efdc; --board-deep: #0f1716; --board-ok: #3fb6a8; }
+:root[data-variant='c'][data-theme='dark'] { --board-bg: #1c140a; --board-raised: #2a1e0e; --board-line: #4a3512; --board-mute: #c9a66b; --board-text: #ffcf70; --board-deep: #0c0803; --board-ok: #ffb000; }
+:root[data-variant='d'] { --board-bg: #0a0a0a; --board-raised: #1c1c1c; --board-line: #3a3a3a; --board-mute: #b5b5a8; --board-text: #f2f2ec; --board-deep: #000000; --board-ok: #c6ff00; }
+:root[data-variant='e'] { --board-bg: #1d4ed8; --board-raised: #2b5ee8; --board-line: #6a8ff2; --board-mute: #dbe4ff; --board-text: #ffffff; --board-deep: #0f2a80; --board-ok: #ffc300; }
+:root[data-variant='e'][data-theme='dark'] { --board-bg: #1a3fae; --board-raised: #2450c8; --board-line: #4f74e0; }
+:root[data-variant='f'] { --board-bg: #1b1b1b; --board-raised: #2b2b2b; --board-line: #474747; --board-mute: #cfc6b3; --board-text: #fbf7ee; --board-deep: #000000; --board-ok: #e5322d; }
+/* Toggle chips on a board use the accent; keep their label dark enough. */
+:root[data-variant='f'] .on-slate [aria-pressed='true'],
+:root[data-variant='b'] .on-slate [aria-pressed='true'] { color: #ffffff; }
+/* Boards nested in the hero (its command box) stay on the hero palette. */
+:root[data-variant] section.on-slate .on-slate {
+  --surface: var(--hero-ink);
+  --ink: var(--hero-box);
+  --steel: var(--hero-mute);
+  --rule: var(--hero-line);
+}
