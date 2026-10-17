@@ -466,7 +466,7 @@
     {
       "id": "scores",
       "step": "Compare",
-      "text": "Every variant is scored on your machine. axe-core counts the accessibility issues it fixed against your original, and Lighthouse scores and the changed files are right there too.",
+      "text": "Every variant is scored against your original, on your machine: how many points accessibility gained, and how many axe issues it fixed.",
       "actions": [
         {
           "key": "{{keep}}"
@@ -481,7 +481,7 @@
           "wait": 600
         },
         {
-          "spotlight": "text=/Scores · axe-core/",
+          "spotlight": "text=/axe-core and Lighthouse/",
           "ms": 2400,
           "pad": 120
         },

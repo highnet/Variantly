@@ -68,11 +68,17 @@ export const usageTitle = (v: Variant) =>
       ? `${v.credits} premium request${v.credits === 1 ? '' : 's'} (Copilot reports no tokens)`
       : 'No usage reported yet';
 
-/** "92 (+7)" against the original, when both were scored. */
+/** Against the original only the change matters: "+7", "−3", "same". Without one, the score itself. */
 export const vsBase = (n: number | undefined, base?: number) =>
-  typeof n !== 'number' ? '–' : typeof base === 'number' && base !== n ? `${n} (${n > base ? '+' : ''}${n - base})` : String(n);
+  typeof n !== 'number' ? '–' : typeof base !== 'number' ? String(n) : n === base ? 'same' : `${n > base ? '+' : '−'}${Math.abs(n - base)}`;
+
+/** axe violations against the original: "20 fixed", "2 new", "none fixed". Without one, the count. */
+export const axeVsBase = (n: number | undefined, base?: number) =>
+  typeof n !== 'number' ? '–' : typeof base !== 'number' ? String(n) : n < base ? `${base - n} fixed` : n > base ? `${n - base} new` : 'none fixed';
 
 export const scoreText = (a: Audit, base?: Audit) =>
-  `A11y ${vsBase(a.lighthouse.accessibility, base?.lighthouse.accessibility)} · Perf ${vsBase(a.lighthouse.performance, base?.lighthouse.performance)} · axe ${a.axe.total}${base ? ` (was ${base.axe.total})` : ''}`;
+  base
+    ? `A11y ${vsBase(a.lighthouse.accessibility, base.lighthouse.accessibility)} · Perf ${vsBase(a.lighthouse.performance, base.lighthouse.performance)} · axe ${axeVsBase(a.axe.total, base.axe.total)}`
+    : `A11y ${a.lighthouse.accessibility} · Perf ${a.lighthouse.performance} · axe ${a.axe.total}`;
 
 export const agentShort: Record<string, string> = { claude: 'Claude', codex: 'Codex', copilot: 'Copilot', gemini: 'Gemini', cursor: 'Cursor', demo: 'Demo' };
