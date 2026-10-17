@@ -2,11 +2,13 @@
 // for the whole reveal, rewritten in place from a MorphTrack's blended outline
 // (lib/glyphMorph). Every contour slot has the same point count in every
 // face, so the vertex layout and the side walls' triangles never change; only
-// the caps are re-triangulated (earcut) when the outline moves. Shaped like
+// the caps are re-triangulated (earcut) when the outline moves. (A
+// triangulation fixed per face pair was tried: its sliver triangles flip
+// mid-morph in all but ~1% of pairs, so earcut's own small per-call
+// allocations stay; every buffer here is allocated once.) Shaped like
 // the TextGeometry it hands over to at the lock: front face at z = 0, a
 // chamfer from the outline inset by `inset` at the front out to the exact
-// outline, the sides, and the same chamfer at the back. Nothing is allocated
-// per frame beyond earcut's own index list.
+// outline, the sides, and the same chamfer at the back.
 import * as THREE from 'three';
 import { Earcut } from 'three/src/extras/Earcut.js';
 

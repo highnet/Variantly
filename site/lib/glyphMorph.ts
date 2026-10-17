@@ -13,9 +13,6 @@
 // the letter's centre and the new one grows in).
 import { faceAt, scaleAt, stepCount, type MorphPhase } from '@/lib/titleTiming';
 
-const lowPerf = () =>
-  typeof document !== 'undefined' && document.documentElement.dataset.perf === 'low';
-
 type RawGlyph = { a: number; o: number; p: number[]; c: number[][] };
 type RawData = {
   n: number;
@@ -98,29 +95,79 @@ const hash = (k: number, i: number) => {
   return (x ^ (x >>> 12)) >>> 0;
 };
 
-// A letter's faces through the reveal (one per step, then its final face),
-// walked backwards from the final face so each face morphs cleanly into the
-// next: picked among the closest compatible faces, never the face just after
-// or the one after that. Deterministic, so a seeked frame is reproducible.
+// A chain of `len` morphs ending on `last`, every link compatible: found by a
+// depth-first search backwards from `last` (candidates in order of
+// legibility, turned by a hash so letters differ), never repeating the face
+// just after or the one after that. Some final faces sit in a small island of
+// faces that only morph among themselves (Rye's t, Pacifico's l), or have no
+// compatible neighbour at all (Great Vibes' r): then only the last link, into
+// the final face, pops, and the rest of the chain morphs.
+const chain = (data: MorphData, ch: string, index: number, len: number, last: number) => {
+  const out = new Int16Array(len + 1);
+  out[len] = last;
+  const preds = data.next[ch];
+  // Faces with the most compatible neighbours first: where a pop lands.
+  const hubs = preds
+    .map((p, f) => [f, p.length] as const)
+    .filter(([, n]) => n)
+    .sort((x, y) => y[1] - x[1])
+    .map(([f]) => f);
+  let popLast = false;
+  const options = (k: number) => {
+    const next = out[k + 1];
+    const after = k + 2 <= len ? out[k + 2] : -1;
+    const list =
+      popLast && k === len - 1
+        ? hubs.filter((f) => f !== next)
+        : preds[next].filter((f) => f !== next && f !== after && preds[f].length);
+    const top = list.slice(0, 6);
+    const turn = hash(k, index) % Math.max(1, top.length);
+    return [...top.slice(turn), ...top.slice(0, turn), ...list.slice(6)];
+  };
+  let tries = 0;
+  const walk = (k: number): boolean => {
+    if (k < 0) return true;
+    if (++tries > 3000) return false;
+    for (const f of options(k)) {
+      out[k] = f;
+      if (walk(k - 1)) return true;
+    }
+    return false;
+  };
+  if (walk(len - 1)) return out;
+  popLast = true;
+  tries = 0;
+  if (walk(len - 1)) return out;
+  // No compatible chain at all (not the case for the shipped faces): pops.
+  for (let k = len - 1; k >= 0; k--) {
+    const f = faceAt(k, index, data.faces);
+    out[k] = f === out[k + 1] ? (f + 1) % data.faces : f;
+  }
+  return out;
+};
+
+// A letter's faces through the reveal: one per step, then its final face.
+// The low power tier morphs only from even steps to the step two on, so it
+// gets its own chain over those steps (odd steps repeat the even face).
+// Deterministic, so a seeked frame is reproducible.
 const sequences = new Map<number, Int16Array>();
-export const faceSequence = (data: MorphData, ch: string, index: number, finalFace: number) => {
-  const key = index * 64 + finalFace;
+export const faceSequence = (
+  data: MorphData,
+  ch: string,
+  index: number,
+  finalFace: number,
+  low = false,
+) => {
+  const key = (index * 64 + finalFace) * 2 + (low ? 1 : 0);
   let seq = sequences.get(key);
   if (seq) return seq;
   const count = stepCount(index);
-  seq = new Int16Array(count + 1);
-  seq[count] = finalFace;
-  for (let k = count - 1; k >= 0; k--) {
-    const next = seq[k + 1];
-    const after = k + 2 <= count ? seq[k + 2] : -1;
-    const pool = data.next[ch][next].filter((f) => f !== next && f !== after).slice(0, 6);
-    if (pool.length) seq[k] = pool[hash(k, index) % pool.length];
-    else {
-      // Nothing morphs into it: any other face, with a pop.
-      let f = faceAt(k, index, data.faces);
-      if (f === next) f = (f + 1) % data.faces;
-      seq[k] = f;
-    }
+  if (!low) seq = chain(data, ch, index, count, finalFace);
+  else {
+    const half = Math.ceil(count / 2);
+    const c = chain(data, ch, index, half, finalFace);
+    seq = new Int16Array(count + 1);
+    for (let s = 0; s <= count; s++) seq[s] = s === count ? finalFace : c[Math.floor(s / 2)];
   }
   sequences.set(key, seq);
   return seq;
@@ -288,14 +335,16 @@ export const planStep = (
   phase: MorphPhase,
   index: number,
   finalFace: number,
+  // The low power tier, fixed for the whole reveal by the caller.
+  low: boolean,
 ) => {
-  const seq = faceSequence(data, t.ch, index, finalFace);
+  const seq = faceSequence(data, t.ch, index, finalFace, low);
   const count = seq.length - 1;
   let from = phase.step;
   let to = from + 1;
   // Low power tier (html[data-perf='low']): half the morphs, each from an even
   // step's face to the one two steps on, flowing through the odd step.
-  if (lowPerf()) {
+  if (low) {
     from -= from % 2;
     to = Math.min(from + 2, count);
     if (phase.step === from && to > from + 1) phase.e = 0;
@@ -321,11 +370,12 @@ export const blendMorph = (t: MorphTrack, e: number) => {
     // The old glyph shrinks away over the middle of the morph, the new one
     // grows in straight after.
     const first = e < 0.5;
+    // Never below 55%: the glyph swaps at that size, no blank frame.
     const k = first ? 1 - smooth((e - 0.3) / 0.2) : smooth((e - 0.5) / 0.2);
     const src = first ? a : b;
     t.live.set(first ? t.liveA : t.liveB);
     t.parent.set(first ? t.parentA : t.parentB);
-    const s = Math.max(k, 0.001);
+    const s = 0.55 + 0.45 * k;
     for (let i = 0; i < out.length; i += 2) {
       out[i] = src[i] * s;
       out[i + 1] = PIVOT_Y + (src[i + 1] - PIVOT_Y) * s;

@@ -273,44 +273,151 @@ const folds = (contours) => {
 const monoton = [...Array(FACE_COUNT).keys()].find(
   (f) => JSON.parse(readFileSync(join(dir, `${f}.json`), 'utf8')).familyName === 'Monoton',
 );
+// Legibility: each outline rasterised (nonzero fill) to a G x G grid, fitted
+// by its bounding box, so shapes compare by form. A morph frame must overlap
+// the nearer endpoint well (IoU) and still read as its own letter: its best
+// match among every face's endpoints of every letter must be this letter.
+const G = 32;
+const raster = (contours) => {
+  let x0 = Infinity;
+  let y0 = Infinity;
+  let x1 = -Infinity;
+  let y1 = -Infinity;
+  for (const c of contours)
+    for (let i = 0; i < c.length; i += 2) {
+      x0 = Math.min(x0, c[i]);
+      x1 = Math.max(x1, c[i]);
+      y0 = Math.min(y0, c[i + 1]);
+      y1 = Math.max(y1, c[i + 1]);
+    }
+  const size = Math.max(x1 - x0, y1 - y0) || 1;
+  const ox = x0 - (size - (x1 - x0)) / 2;
+  const oy = y0 - (size - (y1 - y0)) / 2;
+  const px = new Uint8Array(G * G);
+  const xs = [];
+  for (let row = 0; row < G; row++) {
+    const y = oy + ((row + 0.5) / G) * size;
+    xs.length = 0;
+    for (const c of contours)
+      for (let i = 0; i < N; i++) {
+        const ax = c[i * 2];
+        const ay = c[i * 2 + 1];
+        const bx = c[((i + 1) % N) * 2];
+        const by = c[((i + 1) % N) * 2 + 1];
+        if (ay > y !== by > y) xs.push([ax + ((y - ay) * (bx - ax)) / (by - ay), by > ay ? 1 : -1]);
+      }
+    xs.sort((p, q) => p[0] - q[0]);
+    let w = 0;
+    for (let j = 0; j < xs.length - 1; j++) {
+      w += xs[j][1];
+      if (!w) continue;
+      const from = Math.max(0, Math.ceil(((xs[j][0] - ox) / size) * G - 0.5));
+      const to = Math.min(G - 1, Math.floor(((xs[j + 1][0] - ox) / size) * G - 0.5));
+      for (let col = from; col <= to; col++) px[row * G + col] = 1;
+    }
+  }
+  return px;
+};
+const iou = (p, q) => {
+  let both = 0;
+  let any = 0;
+  for (let i = 0; i < p.length; i++) {
+    both += p[i] & q[i];
+    any += p[i] | q[i];
+  }
+  return any ? both / any : 0;
+};
+const refs = [];
+for (const ch of CHARS)
+  for (let f = 0; f < FACE_COUNT; f++)
+    if (f !== monoton) refs.push({ ch, f, px: raster(faces[f].g[ch].c.map(decodeC)) });
+const readsAs = (px) => {
+  let best = null;
+  let bestS = -1;
+  for (const r of refs) {
+    const s = iou(px, r.px);
+    if (s > bestS) {
+      bestS = s;
+      best = r.ch;
+    }
+  }
+  return best;
+};
+
+// How much an outline looks like this letter in plain, neutral faces (Abril
+// Fatface, Orbitron, Bungee, Rubik Mono One, Righteous, Tilt Warp): the mean
+// IoU with them. A morph frame may not look less like its letter than the
+// less typical of its two endpoints does (90% of it), which rules out frames
+// that drift into another glyph (a v that reads as a trident, an r as a t).
+const NEUTRAL = [1, 6, 8, 9, 11, 14];
+const typical = (px, ch) =>
+  NEUTRAL.reduce((n, f) => n + iou(px, refs.find((r) => r.ch === ch && r.f === f).px), 0) /
+  NEUTRAL.length;
+
 const k = {};
+const MIN_NEAR = 0.62;
+const MIN_MID = 0.5;
+const MIN_TYPICAL = 0.56;
+// Final faces per letter of "variantly" (INTRO_FINAL in lib/introFonts.ts).
+const FINALS = [2, 12, 3, 0, 13, 8, 17, 4, 14];
 for (const ch of CHARS) {
   const contours = faces.map((f) => f.g[ch].c.map(decodeC));
+  const ends = contours.map((cs, f) => (f === monoton ? null : raster(cs)));
   const shape = (f) => [faces[f].g[ch].o, faces[f].g[ch].p.length];
   const lists = Array.from({ length: FACE_COUNT }, () => []);
+  let geometric = 0;
+  // Faces whose own glyph is far from the letter's usual form (Rubik Mono
+  // One's l is an L, the pixel faces' v a stepped cup) stay out of the morph
+  // wardrobe for that letter, unless it is a final face.
+  const atypical = ends.map((px, f) => px && !FINALS.includes(f) && typical(px, ch) < MIN_TYPICAL);
   for (let a = 0; a < FACE_COUNT; a++)
     for (let b = 0; b < FACE_COUNT; b++) {
-      if (a === b || a === monoton || b === monoton) continue;
+      if (a === b || a === monoton || b === monoton || atypical[a] || atypical[b]) continue;
       const [oa, ha] = shape(a);
       const [ob, hb] = shape(b);
       if (oa !== ob || ha !== hb) continue;
-      let score = 0;
       const pairs = contours[a].map((ca, s) => {
         const cb = contours[b][s];
         const fa = frameOf(ca);
         const fb = frameOf(cb);
         const na = norm(ca, fa);
-        const [nb, d] = align(na, norm(cb, fb));
-        score += d;
+        const [nb] = align(na, norm(cb, fb));
         return { fa, fb, na, nb, area: (Math.abs(flatArea(ca)) + Math.abs(flatArea(cb))) / 2 };
       });
-      const ends = Math.max(folds(contours[a]), folds(contours[b]));
-      const clean = [0.25, 0.5, 0.75].every((e) => {
-        const mid = pairs.map(({ fa, fb, na, nb }) => {
+      const at = (e) =>
+        pairs.map(({ fa, fb, na, nb }) => {
           const cx = fa[0] + (fb[0] - fa[0]) * e;
           const cy = fa[1] + (fb[1] - fa[1]) * e;
           const r = fa[2] + (fb[2] - fa[2]) * e;
           return na.map((v, i) => (i % 2 ? cy : cx) + (v + (nb[i] - v) * e) * r);
         });
-        if (mid.some((c, s) => Math.abs(flatArea(c)) < 0.6 * pairs[s].area)) return false;
-        return folds(mid) <= ends;
-      });
-      if (clean) lists[b].push([a, score / pairs.length]);
+      const crossEnds = Math.max(folds(contours[a]), folds(contours[b]));
+      const frames = [0.25, 0.5, 0.75].map(at);
+      const geometryOk = frames.every(
+        (mid) =>
+          !mid.some((c, s) => Math.abs(flatArea(c)) < 0.6 * pairs[s].area) &&
+          folds(mid) <= crossEnds,
+      );
+      if (!geometryOk) continue;
+      geometric++;
+      const [q1, mid, q3] = frames.map(raster);
+      const near1 = iou(q1, ends[a]);
+      const near3 = iou(q3, ends[b]);
+      const nearMid = Math.max(iou(mid, ends[a]), iou(mid, ends[b]));
+      const floor = 0.9 * Math.min(typical(ends[a], ch), typical(ends[b], ch));
+      const legible =
+        [q1, mid, q3].every((px) => typical(px, ch) >= floor) &&
+        near1 >= MIN_NEAR &&
+        near3 >= MIN_NEAR &&
+        nearMid >= MIN_MID &&
+        [q1, mid, q3].every((px) => readsAs(px) === ch);
+      if (legible) lists[b].push([a, Math.min(near1, near3, nearMid)]);
     }
-  k[ch] = lists.map((l) => l.sort((p, q) => p[1] - q[1]).map(([f]) => f));
+  // Most legible first.
+  k[ch] = lists.map((l) => l.sort((p, q) => q[1] - p[1]).map(([f]) => f));
   const pairsOk = lists.reduce((n, l) => n + l.length, 0);
   console.log(
-    `${ch}: ${pairsOk} clean pairs; faces nothing morphs into: ${
+    `${ch}: atypical ${atypical.flatMap((x, f) => (x ? [f] : [])).join(',')}; ${geometric} clean, ${pairsOk} legible pairs; faces nothing morphs into: ${
       k[ch].flatMap((l, f) => (l.length || f === monoton ? [] : [f])).join(',') || 'none'
     }`,
   );

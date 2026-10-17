@@ -1,12 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { canWebGL } from '@/lib/glTier';
 import {
   blendMorph,
   loadMorph,
-  morphPath,
   morphPose,
   morphTrack,
   planStep,
@@ -44,7 +43,8 @@ const releaseMorphed = () =>
   void loadMorph()
     .catch(() => null)
     .then(() => releaseFrame('title'));
-const SVG = 'http://www.w3.org/2000/svg';
+// How long a reveal waits for the outlines before it plays without morphing.
+const MORPH_WAIT = 1200;
 
 // One rAF for every morphing 2D letter: each registers a painter while it shifts.
 const painters = new Set<(now: number) => void>();
@@ -61,8 +61,8 @@ const addPainter = (p: (now: number) => void) => {
   };
 };
 
-// The letter's CSS text-shadow as SVG layers (text-shadow does not reach SVG
-// paths), bottom layer first.
+// The letter's CSS text-shadow as canvas shadow layers (text-shadow does not
+// reach a drawn glyph), bottom layer first.
 const shadowLayers = (el: Element) => {
   const ts = getComputedStyle(el).textShadow;
   if (!ts || ts === 'none') return [];
@@ -71,7 +71,7 @@ const shadowLayers = (el: Element) => {
     .map((part) => {
       const color =
         part.match(/(?:rgba?|hsla?|oklch|oklab|lab|lch|color)\([^)]*\)|#[0-9a-f]+/i)?.[0] ??
-        'currentColor';
+        'transparent';
       const [x = 0, y = 0, blur = 0] = (part.replace(color, '').match(/-?[\d.]+(?=px)/g) ?? []).map(
         Number,
       );
@@ -85,19 +85,24 @@ type LetterProps = {
   index: number;
   run: number;
   solid: boolean;
-  // Outline data: once loaded, a shifting letter morphs as an SVG path.
+  // Whether this run's reveal may start (its outlines are in, or given up on).
+  go: boolean;
+  // Outline data for this run (null: the reveal swaps fonts instead), and
+  // the low power tier, both fixed for the run.
   morph: MorphData | null;
+  low: boolean;
+  variant: string | null;
 };
 
 /* One letter that shape-shifts through the font wardrobe, then locks in. */
-const Letter = ({ char, index, run, solid, morph }: LetterProps) => {
+const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProps) => {
   // 'idle' = resting on the final face, a number = flickering, null = just locked.
   const [live, setLive] = useState<number | null | 'idle'>('idle');
   // performance.now() when this letter's reveal started.
   const t0 = useRef(0);
 
   useEffect(() => {
-    if (seekTime() !== null || calmMotion()) return;
+    if (seekTime() !== null || calmMotion() || !go) return;
     // The 3D word does its own reveal: the hidden HTML letters stay still
     // instead of re-rendering and re-measuring every step.
     if (solid) {
@@ -118,7 +123,7 @@ const Letter = ({ char, index, run, solid, morph }: LetterProps) => {
     };
     timer = window.setTimeout(tick, startDelay(index));
     return () => clearTimeout(timer);
-  }, [index, run, solid]);
+  }, [index, run, solid, go]);
 
   // seekreel frames derive the step from ?t instead of the clock.
   const seek = useSeekTime();
@@ -151,48 +156,50 @@ const Letter = ({ char, index, run, solid, morph }: LetterProps) => {
     };
   }, [step, index, morph]);
 
-  // Morphing: the shifting glyph is an SVG path lerped between the outlines
-  // of this step's face and the next, posed exactly as the font glyph was.
-  const svg = useRef<SVGSVGElement>(null);
-  const id = useId();
+  // Morphing: the shifting glyph is drawn on a canvas, lerped between the
+  // outlines of this step's face and the next and posed exactly as the font
+  // glyph was. Numbers only per frame: no path strings, no garbage.
+  const canvas = useRef<HTMLCanvasElement>(null);
   const shifting = step !== null;
   useLayoutEffect(() => {
-    const el = svg.current;
+    const el = canvas.current;
     const box = slot.current;
-    if (!morph || !shifting || !el || !box) return;
+    const ctx = el?.getContext('2d');
+    if (!morph || !shifting || !el || !box || !ctx) return;
     const track = morphTrack(morph, char);
     const phase: MorphPhase = { step: 0, e: 0 };
     const pose: MorphPose = { k: 1, y: 0 };
-    const g = document.createElementNS(SVG, 'g');
-    g.id = id;
-    const path = document.createElementNS(SVG, 'path');
-    g.appendChild(path);
-    // The concept's text-shadow, as offset (and blurred) copies underneath.
-    for (const l of shadowLayers(box)) {
-      const use = document.createElementNS(SVG, 'use');
-      use.setAttribute('href', `#${id}`);
-      use.setAttribute('x', String(l.x));
-      use.setAttribute('y', String(l.y));
-      use.setAttribute('fill', l.color);
-      if (l.blur) use.style.filter = `blur(${l.blur / 2}px)`;
-      el.appendChild(use);
-    }
-    el.appendChild(g);
+    const shadows = shadowLayers(box);
+    const dpr = Math.min(devicePixelRatio || 1, 3);
     let w = 0;
     let h = 0;
+    let pad = 0;
     let fontPx = 16;
     let finalBase = 0;
+    let color = '';
+    // Layout reads, once per step and on resize, never per frame.
     const measure = () => {
       w = box.offsetWidth;
       h = box.offsetHeight;
-      fontPx = parseFloat(getComputedStyle(box).fontSize) || 16;
+      const css = getComputedStyle(box);
+      fontPx = parseFloat(css.fontSize) || 16;
+      color = css.color;
       const mark = box.querySelector<HTMLElement>('[data-base]');
       finalBase = (mark?.offsetTop ?? h) - h / 2;
+      // Room around the slot for a glyph wider than it and its shadows.
+      pad = Math.ceil(fontPx * 0.6);
+      el.style.left = el.style.top = `${-pad}px`;
+      el.style.width = `${w + pad * 2}px`;
+      el.style.height = `${h + pad * 2}px`;
+      el.width = Math.round((w + pad * 2) * dpr);
+      el.height = Math.round((h + pad * 2) * dpr);
     };
     measure();
     let lastStep = -1;
     let lastE = -1;
-    const paint = (now: number) => {
+    let lastFrom = -1;
+    let lastTo = -1;
+    const paint = (now: number, force = false) => {
       const seekAt = seekTime();
       const ms = seekAt === null ? now - t0.current : seekAt * 1000;
       // Past the lock (React swaps in the final letter next): hold the end.
@@ -200,30 +207,61 @@ const Letter = ({ char, index, run, solid, morph }: LetterProps) => {
         phase.step = Math.max(lastStep, 0);
         phase.e = 1;
       }
-      if (phase.step === lastStep && phase.e === lastE) return;
+      const toFinal = planStep(morph, track, phase, index, FINAL[index], low);
+      if (
+        !force &&
+        phase.step === lastStep &&
+        phase.e === lastE &&
+        track.from === lastFrom &&
+        track.to === lastTo
+      )
+        return;
       lastStep = phase.step;
       lastE = phase.e;
-      const toFinal = planStep(morph, track, phase, index, FINAL[index]);
+      lastFrom = track.from;
+      lastTo = track.to;
       blendMorph(track, phase.e);
-      path.setAttribute('d', morphPath(track));
       morphPose(morph, track, index, phase.e, toFinal, w, h, fontPx, finalBase, pose);
-      const k = (fontPx * pose.k) / 1000;
-      g.setAttribute('transform', `translate(${w / 2} ${h / 2 + pose.y}) scale(${k})`);
+      const k = fontPx * pose.k;
+      const ox = pad + w / 2;
+      const oy = pad + h / 2 + pose.y;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w + pad * 2, h + pad * 2);
+      ctx.beginPath();
+      const out = track.out;
+      const n = track.n;
+      for (let s = 0; s < track.slots; s++) {
+        if (!track.live[s]) continue;
+        const at = s * n * 2;
+        ctx.moveTo(ox + out[at] * k, oy - out[at + 1] * k);
+        for (let i = 1; i < n; i++)
+          ctx.lineTo(ox + out[at + i * 2] * k, oy - out[at + i * 2 + 1] * k);
+        ctx.closePath();
+      }
+      ctx.fillStyle = color;
+      for (const l of shadows) {
+        ctx.shadowColor = l.color;
+        ctx.shadowOffsetX = l.x * dpr;
+        ctx.shadowOffsetY = l.y * dpr;
+        ctx.shadowBlur = l.blur * dpr;
+        ctx.fill();
+      }
+      ctx.shadowColor = 'transparent';
+      ctx.fill();
     };
     const resize = () => {
       measure();
-      lastE = -1;
-      paint(performance.now());
+      paint(performance.now(), true);
     };
-    paint(performance.now());
+    paint(performance.now(), true);
     addEventListener('resize', resize);
     const stop = seekTime() === null ? addPainter(paint) : () => {};
     return () => {
       stop();
       removeEventListener('resize', resize);
-      el.replaceChildren();
     };
-  }, [morph, shifting, char, index, id]);
+    // A new run or concept restyles the letter: measure and draw afresh.
+  }, [morph, shifting, char, index, low, run, variant]);
 
   return (
     <span
@@ -239,12 +277,7 @@ const Letter = ({ char, index, run, solid, morph }: LetterProps) => {
         <span data-base className="inline-block h-0 w-0" />
       </span>
       {step !== null && morph && (
-        <svg
-          ref={svg}
-          aria-hidden="true"
-          fill="currentColor"
-          className="absolute inset-0 h-full w-full overflow-visible"
-        />
+        <canvas ref={canvas} aria-hidden="true" className="pointer-events-none absolute" />
       )}
       {step !== null && !morph && (
         <span
@@ -281,22 +314,28 @@ export const VariantTitle = () => {
     if (seekTime() !== null) releaseMorphed();
   }, []);
   const variant = useVariant();
-  useEffect(() => {
-    clock.current = performance.now();
-  }, [run]);
-  // The outlines the letters morph between (reduced motion shows the final
-  // lockup, so it never needs them).
-  const [morph, setMorph] = useState<MorphData | null>(null);
+  // Each reveal starts once its outlines are in (preloaded, at most
+  // MORPH_WAIT ms), or plays the font-swapping reveal throughout: it never
+  // changes mode mid-run. The low power tier is read once, here. Reduced
+  // motion shows the final lockup and never fetches the outlines.
+  const [stage, setStage] = useState<{ run: number; morph: MorphData | null; low: boolean }>();
   useEffect(() => {
     if (calmMotion()) return;
     let live = true;
-    loadMorph()
-      .then((m) => live && setMorph(m))
-      .catch(() => {});
+    const seek = seekTime() !== null;
+    const wait = new Promise<null>((done) => setTimeout(() => done(null), MORPH_WAIT));
+    const data = loadMorph().catch(() => null);
+    void (seek ? data : Promise.race([data, wait])).then((morph) => {
+      if (!live) return;
+      clock.current = performance.now();
+      const low = !seek && document.documentElement.dataset.perf === 'low';
+      setStage({ run, morph, low });
+    });
     return () => {
       live = false;
     };
-  }, []);
+  }, [run]);
+  const go = stage?.run === run;
   useEffect(() => {
     if (!variant) return;
     if (!canWebGL()) {
@@ -341,11 +380,28 @@ export const VariantTitle = () => {
         )}
       >
         {[...WORD].map((c, i) => (
-          <Letter key={i} char={c} index={i} run={run} solid={solid} morph={morph} />
+          <Letter
+            key={i}
+            char={c}
+            index={i}
+            run={run}
+            solid={solid}
+            go={go}
+            morph={go ? stage.morph : null}
+            low={go && stage.low}
+            variant={variant}
+          />
         ))}
       </div>
       {want3d && (
-        <Letters3D run={run} clock={clock} title={word} onReady={onReady} onFail={onFail} />
+        <Letters3D
+          run={stage?.run ?? -1}
+          low={!!stage?.low}
+          clock={clock}
+          title={word}
+          onReady={onReady}
+          onFail={onFail}
+        />
       )}
     </div>
   );

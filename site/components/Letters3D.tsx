@@ -58,8 +58,9 @@ type Letter = {
   extra: THREE.Mesh;
   // The locked glyph, and the morphing one used while shifting.
   final: THREE.BufferGeometry;
-  track: MorphTrack;
-  morph: ReturnType<typeof morphMesh>;
+  // Null with reduced motion (the word only ever shows its final glyphs).
+  track: MorphTrack | null;
+  morph: ReturnType<typeof morphMesh> | null;
   // Last morph frame written (step and eased progress), so holds cost nothing.
   step: number;
   e: number;
@@ -80,7 +81,10 @@ type Slot = {
 };
 
 type Letters3DProps = {
+  // The current reveal (-1 before the first one starts).
   run: number;
+  // The low power tier, read once when that reveal started.
+  low: boolean;
   // performance.now() when the current reveal started, shared with the 2D title.
   clock: RefObject<number>;
   // The 2D word: the 3D word is laid out over it, letter for letter.
@@ -104,11 +108,15 @@ const matrixOf = (el: Element) => {
  * concept's shadow on a backdrop just behind them. The loop renders only while
  * letters move and the card is visible; a settled word draws no frames.
  */
-export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps) => {
+export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3DProps) => {
   const host = useRef<HTMLDivElement>(null);
   const replay = useRef(() => {});
 
-  useEffect(() => replay.current(), [run]);
+  const lowRef = useRef(low);
+  useEffect(() => {
+    lowRef.current = low;
+    replay.current();
+  }, [run, low]);
 
   useEffect(() => {
     const el = host.current;
@@ -138,7 +146,8 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
       return { p };
     });
     const allFonts = Promise.all([
-      loadMorph().then((d) => (morphData = d)),
+      // Reduced motion never morphs: no outlines to fetch.
+      still ? null : loadMorph().then((d) => (morphData = d)),
       ...FINAL_FACES.map((f) =>
         loader.loadAsync(`/fonts/3d/${f}.json`).then((font) => (fonts[f] = font)),
       ),
@@ -173,7 +182,7 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
     // then repaint once at full density, shadow and all, when the word settles.
     const fullRatio = Math.min(devicePixelRatio || 1, 3);
     renderer.setPixelRatio(fullRatio);
-    const light = () => seek === null && (phone || html.dataset.perf === 'low');
+    const light = () => seek === null && (phone || lowRef.current);
     const ratio = (r: number) => {
       if (renderer.getPixelRatio() !== r) renderer.setPixelRatio(r);
     };
@@ -274,8 +283,15 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
       cleanups.push(() => removeEventListener('pointermove', move));
     }
 
+    // A failed load hands the title back to the 2D word.
+    const fail = () => {
+      if (disposed) return;
+      probes.forEach(({ p }) => p.remove());
+      onFail();
+    };
+    allFonts.catch(fail);
     void allFonts.then(() => {
-      if (disposed || !morphData) return;
+      if (disposed) return;
       const data = morphData;
       probes.forEach(({ p }) => p.remove());
 
@@ -306,14 +322,16 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
 
       const letters: Letter[] = [...WORD].map((ch, i) => {
         const final = glyph(ch, FINAL[i]);
-        const track = morphTrack(data, ch);
-        const morph = morphMesh(track, {
-          em: EM,
-          depth: DEPTH,
-          bevel: BEVEL,
-          inset: BEVEL * 0.7,
-          stride: phone ? 2 : 1,
-        });
+        const track = data && morphTrack(data, ch);
+        const morph =
+          track &&
+          morphMesh(track, {
+            em: EM,
+            depth: DEPTH,
+            bevel: BEVEL,
+            inset: BEVEL * 0.7,
+            stride: phone ? 2 : 1,
+          });
         const mesh = new THREE.Mesh(final);
         mesh.castShadow = true;
         // The morphing mesh's bound is loose and its caps change: never cull.
@@ -498,7 +516,7 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
         () =>
           letters.forEach((l) => {
             l.final.dispose();
-            l.morph.geo.dispose();
+            l.morph?.geo.dispose();
           }),
         () => backdrop.geometry.dispose(),
       );
@@ -514,7 +532,7 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
           const s = slots[i];
           let k = 1;
           let y = s.base;
-          if (!live) {
+          if (!live || !data || !l.track || !l.morph) {
             // Locked: the final glyph on its own baseline, popping once
             // (already at rest when the 3D word appears or in a seeked frame).
             if (l.lockedAt < 0) {
@@ -529,8 +547,10 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
           } else {
             // Shifting: the outline flows from this step's face to the next,
             // posed exactly as the 2D SVG letter (lib/glyphMorph).
-            const toFinal = planStep(data, l.track, phase, i, FINAL[i]);
-            if (phase.step !== l.step) stepped = true;
+            const toFinal = planStep(data, l.track, phase, i, FINAL[i], lowRef.current);
+            // Phones redraw the shadow map only now and then: at each step,
+            // and midway through its morph.
+            if (phase.step !== l.step || (l.e < 0.5 && phase.e >= 0.5)) stepped = true;
             if (phase.step !== l.step || phase.e !== l.e) {
               blendMorph(l.track, phase.e);
               l.morph.update();
@@ -546,7 +566,7 @@ export const Letters3D = ({ run, clock, title, onReady, onFail }: Letters3DProps
           l.mesh.scale.setScalar(k);
           l.mesh.position.y = -y / unit;
           // A slight sway while shifting that eases out as the letter lands.
-          const calm = !live ? Math.max(0, 1 - (t - l.lockedAt) / 0.5) : 1;
+          const calm = l.step < 0 ? Math.max(0, 1 - (t - l.lockedAt) / 0.5) : 1;
           l.mesh.rotation.x = Math.sin(t * 1.1 + i) * 0.05 * calm;
           l.mesh.rotation.y = Math.sin(t * 0.9 + i * 0.8) * 0.06 * calm;
         });
