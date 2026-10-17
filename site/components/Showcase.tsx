@@ -715,7 +715,7 @@ const Showcase = () => {
           <PageSkeleton
             className={cn(
               'z-10',
-              ready && 'pointer-events-none opacity-0 [&_.skeleton]:animate-none',
+              ready && 'pointer-events-none opacity-0 [&_.skeleton]:animate-none!',
             )}
           />
           {auto && ready && (
