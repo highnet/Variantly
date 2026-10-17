@@ -508,6 +508,15 @@ const DesignsStep = ({ d, f }: StepBodyProps) => {
             />
           ))}
         </div>
+        {routes.length > 1 && (
+          <button
+            className="btn outline small"
+            type="button"
+            onClick={() => updateForm({ routes: routes.every((r) => f.routes.includes(r)) ? ['/'] : routes })}
+          >
+            {routes.every((r) => f.routes.includes(r)) ? 'Just the home page' : `All ${routes.length} pages`}
+          </button>
+        )}
         <input
           className="input"
           aria-label="Add a page"
@@ -523,7 +532,7 @@ const DesignsStep = ({ d, f }: StepBodyProps) => {
             setAdding('');
           }}
         />
-        <p className="hint">Just the home page is fastest. Each extra page adds time to every variant.</p>
+        <p className="hint">Just the home page is fastest; each extra page adds time to every variant. Whichever you pick, keeping a variant restyles the rest of the site to match.</p>
       </fieldset>
       <fieldset className="field picks">
         <legend className="label">Extras (optional)</legend>

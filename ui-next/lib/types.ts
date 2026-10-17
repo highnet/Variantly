@@ -45,13 +45,13 @@ export type ServerState = { id: string; state: 'ready' | 'starting' | 'sleeping'
 
 export type Snapshot = {
   repo: string;
-  phase: 'setup' | 'generating' | 'ready' | 'finalized';
+  phase: 'setup' | 'generating' | 'ready' | 'rolling-out' | 'finalized';
   runId?: string;
   config?: Form & { agent: string; audit?: boolean };
   variants: Variant[];
   servers?: ServerState[];
   chosen: number | null;
-  result: { files: string[]; conflicts: string[]; depsChanged: boolean } | null;
+  result: { files: string[]; conflicts: string[]; depsChanged: boolean; rollout?: string; rolloutError?: string } | null;
   baseline?: Audit;
   baselineError?: string;
 };

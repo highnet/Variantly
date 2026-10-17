@@ -192,7 +192,7 @@ const render = () => {
   document.body.dataset.view = view;
   const main = $('#view');
   $('#project').textContent = S.snap?.repo ?? '';
-  const phase = { setup: '', generating: 'Generating', ready: 'Ready to compare', finalized: 'Kept' }[S.snap?.phase] ?? '';
+  const phase = { setup: '', generating: 'Generating', ready: 'Ready to compare', 'rolling-out': 'Rolling out site-wide', finalized: 'Kept' }[S.snap?.phase] ?? '';
   $('#phase').textContent = phase;
 
   if (view !== S.view) {
@@ -1674,7 +1674,7 @@ const keep = async (n) => {
   S.applying = n;
   renderDock();
   try {
-    await api('POST', `finalize/${n}`, {});
+    await api('POST', `finalize/${n}`, { sitewide: true });
   } catch (err) {
     toast(err.message, true);
     S.confirming = false;

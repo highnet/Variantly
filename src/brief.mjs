@@ -142,6 +142,13 @@ Use the **Impeccable** skill for all of the design work
 
 Shared layout, header, footer and global styles may change so these pages
 work; leave the content of other pages alone.
+
+Build the look so the rest of the site can inherit it. If this variant is
+kept, the same style is rolled out to every other page, so put it where
+those pages already read from: design tokens (CSS custom properties or the
+theme config), the global stylesheet, the shared layout and the shared
+components (buttons, cards, forms, nav). Avoid styles scoped only to these
+pages when a shared token or component would do.
 ${also}
 ${b.brief ? `What the owner asked for, in their words:\n\n> ${b.brief.replace(/\n/g, '\n> ')}\n` : ''}
 ## The project
@@ -238,6 +245,76 @@ ${verifyRule(r.previewUrl).replace(/^7\./, '6.')}
 End your final message with one line that starts with \`REVIEW:\` and says,
 in under 30 words, what you found and fixed.
 `;
+};
+
+/**
+ * @typedef {object} RolloutInput
+ * @property {number} variant
+ * @property {string} [agent]
+ * @property {string[]} done     the pages the variant already redesigned
+ * @property {string[]} pages    the site's other pages, as far as variantly can tell
+ * @property {string} appRel
+ * @property {string} direction  the world the variant built, for the agent's bearings
+ */
+
+/**
+ * After a variant is kept: carry its style from the pages it redesigned to
+ * the rest of the site, so keeping it restyles the whole site, not one page.
+ * @param {RolloutInput} r
+ */
+export const writeRolloutBrief = (r) => {
+  const call = skillCall(r.agent);
+  const list = (/** @type {string[]} */ xs) => xs.map((x) => '`' + x + '`').join(', ');
+  const done = r.done.length ? r.done : ['/'];
+  const where = r.appRel ? `The app lives in \`${r.appRel}/\` inside this repository.` : 'The app lives at the root of this repository.';
+  const pages = r.pages.length
+    ? `These are the other pages variantly found: ${list(r.pages)}. The list may be incomplete: find every page, template and view the app renders and restyle all of them.`
+    : 'variantly could not list the other pages for this stack: find every page, template and view the app renders and restyle all of them.';
+  return `<!-- variantly ${JSON.stringify({ rollout: true, variant: r.variant, appRel: r.appRel })} -->
+# variantly rollout: variant ${r.variant}
+
+This working directory holds the redesign the owner chose (variant ${r.variant}${r.direction ? `, ${r.direction}` : ''}).
+It restyled ${list(done)}. The owner kept it, so now **the whole site** must
+wear the same style. Use the **Impeccable** skill (\`${call}\`; load it before you start). ${where}
+
+## Task
+
+1. Read DESIGN.md and the pages already redesigned (${list(done)}). They are
+   the reference: the tokens, type, colour, spacing, components and motion.
+2. ${pages}
+3. Apply the same visual world to every one of them, including error pages,
+   empty states, forms, auth and account pages, and anything behind a layout
+   the redesigned pages don't share.
+4. Move one-off styles onto the shared tokens and components where you can,
+   so the next page added inherits the look too.
+
+## Rules
+
+1. This run is **non-interactive**. Never ask a question or wait for an answer.
+2. **Do not redesign.** No new direction, palette or type choices: extend the
+   one that exists. Leave the already-redesigned pages as they are unless a
+   shared change needs them to follow.
+3. Change presentation, not behaviour. Keep every route, every piece of copy
+   and data, every form field and handler.
+4. Do not install packages, touch lockfiles, start servers, commit or push.
+5. Stay inside this working directory.
+6. Verify by reading your code; run the project's type check or linter if it is quick.
+7. Update DESIGN.md if you add a token or a rule.
+
+## When you are done
+
+End your final message with one line that starts with \`ROLLOUT:\` and says,
+in under 30 words, which pages you restyled.
+`;
+};
+
+/**
+ * The ROLLOUT line from the rollout pass.
+ * @param {string} text
+ */
+export const extractRollout = (text) => {
+  const last = [...text.matchAll(/ROLLOUT:\s*(.+)/g)].at(-1)?.[1]?.trim() ?? '';
+  return last.replace(/[*_`]+/g, '').replace(/\\n.*$/, '').slice(0, 240);
 };
 
 /**

@@ -24,6 +24,7 @@ export type UiState = {
   path: string;
   confirming: boolean;
   applying: number | null;
+  sitewide: boolean;
   infoOpen: boolean;
   chatOpen: boolean;
   /** Agent output streaming into chat turns that are still running, by turn id. */
@@ -51,6 +52,7 @@ let state: UiState = {
   path: '/',
   confirming: false,
   applying: null,
+  sitewide: true,
   infoOpen: false,
   chatOpen: false,
   chatLive: {},

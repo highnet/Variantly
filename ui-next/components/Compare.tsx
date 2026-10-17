@@ -221,6 +221,7 @@ const Dock = () => {
   const path = useStore((s) => s.path);
   const confirming = useStore((s) => s.confirming);
   const applying = useStore((s) => s.applying);
+  const sitewide = useStore((s) => s.sitewide);
   const infoOpen = useStore((s) => s.infoOpen);
   const chatOpen = useStore((s) => s.chatOpen);
   const [draft, setDraft] = useState(path);
@@ -238,7 +239,7 @@ const Dock = () => {
   const keep = async (n: number) => {
     setState({ applying: n });
     try {
-      await api('POST', `finalize/${n}`, {});
+      await api('POST', `finalize/${n}`, { sitewide });
       setState({ confirming: false });
     } catch (err) {
       toast((err as Error).message, true);
@@ -265,12 +266,15 @@ const Dock = () => {
         >
           <span>
             Apply <strong>{vname(chosen.n)}</strong> ({directionLabel(chosen.direction, chosen.picked)}) to your working tree? <span className="muted">{plural(chosen.files.length, 'file')}. The others stay as branches.</span>
+            <label className="muted" style={{ display: 'block', marginTop: 6 }}>
+              <input type="checkbox" checked={sitewide} disabled={Boolean(applying)} onChange={(e) => setState({ sitewide: e.target.checked })} /> Restyle the rest of the site to match (one more agent run)
+            </label>
           </span>
           <button className="btn outline small" type="button" disabled={Boolean(applying)} onClick={() => setState({ confirming: false })}>
             Cancel
           </button>
           <button ref={apply} className="btn primary" type="button" disabled={Boolean(applying)} onClick={() => keep(chosen.n)}>
-            {applying ? 'Applying…' : `Apply ${vname(chosen.n)}`}
+            {applying ? (sitewide ? 'Rolling out…' : 'Applying…') : `Apply ${vname(chosen.n)}`}
           </button>
         </div>
       </nav>
