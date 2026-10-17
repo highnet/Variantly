@@ -1088,3 +1088,8 @@
   :root[data-variant='c']:not([data-scrolled]) .vy-scene,
   :root[data-variant='f']:not([data-scrolled]) .vy-scene { opacity: 0.35; }
 }
+
+/* Until the reveal starts, keep the title hidden rather than flash the final word. */
+:root[data-intro] .vy-title {
+  visibility: hidden;
+}
