@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, ChevronUp, Shuffle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronUp, Shuffle, X } from 'lucide-react';
 import {
   useCallback,
   useEffect,
@@ -344,7 +344,7 @@ export const VariantSwitcher = () => {
           aria-expanded={open}
           aria-controls={open ? 'vy-concept-picker' : undefined}
           onClick={() => (open ? close() : openPicker())}
-          className="min-w-0 gap-2 px-3"
+          className="h-11 min-w-0 gap-2 px-3"
         >
           <Chip meta={meta} />
           <span className="font-mono text-[10px] opacity-60">{current.toUpperCase()}</span>
@@ -381,6 +381,17 @@ export const VariantSwitcher = () => {
               e.preventDefault();
               close();
             }
+            // The phone sheet is modal: Tab wraps inside it.
+            if (e.key === 'Tab' && phone && panel.current) {
+              const f = [
+                ...panel.current.querySelectorAll<HTMLElement>('button:not([tabindex="-1"])'),
+              ];
+              const edge = e.shiftKey ? f[0] : f[f.length - 1];
+              if (document.activeElement === edge) {
+                e.preventDefault();
+                (e.shiftKey ? f[f.length - 1] : f[0])?.focus();
+              }
+            }
           }}
           className={cn(
             'vy-switcher-pop fixed z-50',
@@ -401,6 +412,17 @@ export const VariantSwitcher = () => {
               <kbd className="vy-kbd">]</kbd>
             </span>
             {!phone && shuffle}
+            {phone && (
+              <Button
+                variant="concept"
+                size="touch"
+                aria-label="Close"
+                onClick={() => close()}
+                className="-my-2 -mr-2 ml-auto"
+              >
+                <X />
+              </Button>
+            )}
           </div>
 
           {phone ? (
@@ -425,7 +447,7 @@ export const VariantSwitcher = () => {
                       setTab(i);
                       setActive(g.concepts[0].id as ConceptId);
                     }}
-                    className="aria-selected:bg-ink aria-selected:text-surface shrink-0"
+                    className="aria-selected:bg-ink aria-selected:text-surface h-10 shrink-0"
                   >
                     {g.family}
                   </Button>
