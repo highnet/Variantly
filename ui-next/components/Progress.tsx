@@ -10,6 +10,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import clsx from 'clsx';
 import { LIVE, STEPS, clock, directionLabel, elapsedMs, stepAt, stepState, vname } from '@/lib/format';
 import type { Variant } from '@/lib/types';
+import { StepStage } from './StepStage';
 
 const SPRING = { type: 'spring', stiffness: 180, damping: 18 } as const;
 
@@ -135,6 +136,7 @@ const ProgressCard = ({ v, last }: ProgressCardProps) => {
           <Segments v={v} size="large" />
           {celebrate && !reduce && <Burst />}
         </div>
+        {LIVE.includes(v.status) && at >= 0 && <StepStage v={v} at={at} />}
         <p className="progress-now">
           <AnimatePresence mode="wait" initial={false}>
             <motion.span key={done ? 'd' : at} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
@@ -147,7 +149,7 @@ const ProgressCard = ({ v, last }: ProgressCardProps) => {
           {STEPS.map((s, i) => {
             const st = stepState(v, i);
             return (
-              <li key={s} className={st}>
+              <li key={s} className={clsx(st, st === 'now' && 'shimmer')}>
                 <Check on={st === 'done' || done} />
                 <span>{s}</span>
               </li>
