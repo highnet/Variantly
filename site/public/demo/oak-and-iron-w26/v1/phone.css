@@ -1,0 +1,35 @@
+/* Phone edition: Tactile imperfection, the hand-bound workshop ledger. */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..800,100,1;1,9..144,300..800,100,1&family=Kalam:wght@400;700&family=Newsreader:opsz,wght@6..72,400&display=swap');
+:root{color-scheme:light;--paper:#f3ead8;--paper-2:#ebdfc6;--ink:#1d1a16;--text:#2e2922;--mute:#5e5446;--rust:#a23f1e;--rust-ink:#8c3417;--ochre:#b98a2c;--on-rust:#fbf4e6;--field:#fbf6ea}
+html[data-theme='dark']{color-scheme:dark;--paper:#1f1b16;--paper-2:#29231c;--ink:#f1e6d0;--text:#e6dac2;--mute:#b7a88e;--rust:#e07a52;--rust-ink:#f09670;--ochre:#d8ad55;--on-rust:#1f1b16;--field:#15120e}
+body{color:var(--text);font:400 17px/1.55 Newsreader,Georgia,serif;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .12 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),var(--paper);background-blend-mode:multiply,normal}
+h1,h2,h3,.logo{font-family:Fraunces,Georgia,serif;font-variation-settings:'SOFT' 100,'WONK' 1;color:var(--ink)}
+.hand,.kicker{font-family:Kalam,cursive;color:var(--rust-ink);font-weight:400}
+.b-head{border-bottom:2px dashed var(--rust)}
+.logo{font-weight:700;font-size:24px}
+.kicker{font-size:19px;transform:rotate(-2deg);transform-origin:left}
+.b-hero h1{font-size:46px;line-height:1;font-weight:600;letter-spacing:-.02em}
+.b-hero h1 em{font-weight:400;color:var(--rust-ink)}
+.b-hero::after{content:'';position:absolute;right:-30px;bottom:30px;width:120px;height:150px;transform:rotate(8deg);border-radius:4px 8px 4px 12px;background:repeating-radial-gradient(ellipse 140% 40% at 30% 120%,transparent 0 7px,rgba(70,40,15,.22) 7px 9px,transparent 9px 15px),linear-gradient(160deg,#c79a5e,#7b522a);opacity:.9}
+.intro{color:var(--mute);max-width:30ch}
+.btn,button{position:relative;background:var(--rust);color:var(--on-rust);border:0;padding:13px 22px;font:500 16px Fraunces,serif;text-decoration:none;border-radius:3px 14px 4px 12px/12px 4px 14px 3px}
+.btn::after,button::after{content:'';position:absolute;inset:4px;border:1.5px dashed color-mix(in srgb,var(--on-rust) 70%,transparent);border-radius:inherit;pointer-events:none}
+.link{font-family:Kalam,cursive;font-size:18px;color:var(--ink);text-decoration-color:var(--rust);text-underline-offset:5px}
+:focus-visible{outline:2px dashed var(--rust);outline-offset:3px}
+.b-sec{font-size:30px;font-weight:500;line-height:1.05}
+.b-sec .hand{display:block;font-size:18px}
+.b-feat{margin:0 16px;background:var(--paper-2);outline:2px dashed var(--rust);outline-offset:-8px;border-bottom:10px solid var(--paper)}
+.b-feat h3{font-size:24px;font-weight:600}
+.b-feat p{color:var(--mute);font-size:16px}
+.b-item{margin:0 14px;background:var(--field);border-bottom:22px solid var(--paper);box-shadow:0 10px 16px -14px rgba(60,35,10,.5)}
+.b-item .art{background:var(--paper-2);color:var(--ink);margin:12px 0;padding:28px}
+.no{position:absolute;top:26px;left:22px;font:700 18px Kalam,cursive;color:var(--rust-ink);border:2px solid var(--rust);padding:0 8px;transform:rotate(-8deg);background:var(--field)}
+.b-item h3{font-size:26px;font-weight:600}
+.desc{color:var(--mute)}
+.price{font:600 22px Fraunces,serif;color:var(--ink)}
+.b-news{margin:0 14px;background:var(--paper-2);outline:2px dashed var(--rust);outline-offset:-10px;padding:0 26px}
+.b-news p{color:var(--mute)}
+.b-news label{font:400 17px Kalam,cursive;color:var(--ink)}
+.b-news input{background:var(--field);color:var(--text);border:0;border-bottom:2.5px solid var(--ink);padding:0 12px}
+.b-foot{border-top:2px dashed var(--rust);color:var(--mute);font-size:15px}
+.small{font-size:13px}
