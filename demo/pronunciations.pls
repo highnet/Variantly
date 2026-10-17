@@ -222,10 +222,6 @@
     <alias>REE-zoh</alias>
   </lexeme>
   <lexeme>
-    <grapheme>TVA</grapheme>
-    <alias>T V A</alias>
-  </lexeme>
-  <lexeme>
     <grapheme>Noir</grapheme>
     <alias>nwahr</alias>
   </lexeme>
