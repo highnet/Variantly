@@ -1,20 +1,279 @@
-/* r · Kinetic Type: placeholder tokens from the roll's palette. */
+/* r · Kinetic Type: one word, many widths. Flat ink, a teal and a signal red. */
 :root[data-variant='r'] {
-  --panel: color-mix(in srgb, #efece6 94%, #0f0f0f); --surface: #efece6; --rule: color-mix(in srgb, #0f0f0f 18%, #efece6); --steel: color-mix(in srgb, #0f0f0f 66%, #efece6); --ink: #0f0f0f;
-  --alert: #3c6e71; --alert-hover: color-mix(in srgb, #3c6e71 85%, #efece6); --on-alert: #ffffff;
-  --hero-bg: #efece6; --hero-ink: #0f0f0f; --hero-mute: color-mix(in srgb, #0f0f0f 66%, #efece6); --hero-line: color-mix(in srgb, #0f0f0f 22%, #efece6); --hero-box: color-mix(in srgb, #efece6 96%, #0f0f0f);
-  --title: #3c6e71;
-  --flap-bg: #3c6e71; --flap-ink: #ffffff;
-  --art-1: #3c6e71; --art-2: #8c1c13; --art-3: #8c1c13; --art-ink: #0f0f0f; --art-shadow: #0f0f0f;
-  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
-  --board-bg: #0b0b0b; --board-raised: color-mix(in srgb, #0b0b0b 88%, #efece6); --board-line: color-mix(in srgb, #0b0b0b 70%, #efece6);
-  --board-mute: color-mix(in srgb, #efece6 72%, #0b0b0b); --board-text: #efece6; --board-deep: color-mix(in srgb, #0b0b0b 80%, #000); --board-ok: #5a9a9d;
+  --panel: #e6e2da;
+  --surface: #f7f5f0;
+  --rule: #cbc5b9;
+  --steel: #4b4943;
+  --ink: #0f0f0f;
+  --alert: #8c1c13;
+  --alert-hover: #a8261b;
+  --on-alert: #ffffff;
+  --hero-bg: #efece6;
+  --hero-ink: #0f0f0f;
+  --hero-mute: #4b4943;
+  --hero-line: #cbc5b9;
+  --hero-box: #f7f5f0;
+  --hero-face: var(--font-anybody);
+  --title: #0f0f0f;
+  --hero-alpha: 72%;
+  --flap-bg: #0f0f0f;
+  --flap-ink: #efece6;
+  --blob-o: 1;
+  --board-bg: #0f0f0f;
+  --board-raised: #1d1d1d;
+  --board-line: #353535;
+  --board-mute: #bdb8ae;
+  --board-text: #efece6;
+  --board-deep: #000000;
+  --board-ok: #5a9a9d;
+  --art-1: #0f0f0f;
+  --art-2: #3c6e71;
+  --art-3: #8c1c13;
+  --r-side: #3c6e71;
 }
 :root[data-variant='r'][data-theme='dark'] {
-  --panel: color-mix(in srgb, #0b0b0b 94%, #efece6); --surface: #0b0b0b; --rule: color-mix(in srgb, #efece6 18%, #0b0b0b); --steel: color-mix(in srgb, #efece6 66%, #0b0b0b); --ink: #efece6;
-  --alert: #5a9a9d; --alert-hover: color-mix(in srgb, #5a9a9d 85%, #0b0b0b); --on-alert: #ffffff;
-  --hero-bg: #0b0b0b; --hero-ink: #efece6; --hero-mute: color-mix(in srgb, #efece6 66%, #0b0b0b); --hero-line: color-mix(in srgb, #efece6 22%, #0b0b0b); --hero-box: color-mix(in srgb, #0b0b0b 96%, #efece6);
-  --title: #5a9a9d;
-  --flap-bg: #5a9a9d; --flap-ink: #ffffff;
-  --art-1: #5a9a9d; --art-2: #c0392b; --art-3: #c0392b; --art-ink: #efece6; --art-shadow: #efece6;
+  --panel: #0b0b0b;
+  --surface: #151515;
+  --rule: #2e2e2e;
+  --steel: #b3afa6;
+  --ink: #efece6;
+  --alert: #c0392b;
+  --alert-hover: #d4473a;
+  --on-alert: #ffffff;
+  --hero-bg: #0b0b0b;
+  --hero-ink: #efece6;
+  --hero-mute: #b3afa6;
+  --hero-line: #2e2e2e;
+  --hero-box: #121212;
+  --title: #efece6;
+  --hero-alpha: 74%;
+  --art-1: #efece6;
+  --art-2: #5a9a9d;
+  --art-3: #c0392b;
+  --r-side: #5a9a9d;
+}
+/* The wordmark, one edition: every letter set at its own width, volume kept
+   (wide letters squat, narrow ones stand tall), all on one baseline. */
+:root[data-variant='r'] .vy-title {
+  text-shadow:
+    0 3px 0 var(--r-side),
+    0 6px 0 var(--r-side);
+}
+:root[data-variant='r'] .vy-letter:nth-child(5) {
+  color: var(--art-3);
+}
+:root[data-variant='r'] .vy-letter:nth-child(odd) {
+  margin-inline: 0.07em;
+}
+:root[data-variant='r'] .vy-letter:nth-child(1) {
+  transform: translateY(0.06em) scale(1.32, 0.88);
+}
+:root[data-variant='r'] .vy-letter:nth-child(2) {
+  transform: translateY(-0.06em) scale(0.8, 1.12);
+  margin-inline: -0.04em;
+}
+:root[data-variant='r'] .vy-letter:nth-child(3) {
+  transform: translateY(0.04em) scale(1.18, 0.92);
+}
+:root[data-variant='r'] .vy-letter:nth-child(4) {
+  transform: translateY(-0.05em) scale(0.84, 1.1);
+  margin-inline: -0.03em;
+}
+:root[data-variant='r'] .vy-letter:nth-child(5) {
+  transform: translateY(0.06em) scale(1.3, 0.88);
+}
+:root[data-variant='r'] .vy-letter:nth-child(6) {
+  transform: translateY(-0.07em) scale(0.76, 1.14);
+  margin-inline: -0.05em;
+}
+:root[data-variant='r'] .vy-letter:nth-child(8) {
+  transform: translateY(-0.04em) scale(0.84, 1.08);
+  margin-inline: -0.03em;
+}
+:root[data-variant='r'] .vy-letter:nth-child(9) {
+  transform: translateY(0.05em) scale(1.28, 0.9);
+}
+/* ...and then the whole word breathes on the beat: stretch, rebound, squeeze. */
+:root[data-variant='r'] .vy-letters3d canvas {
+  transform-origin: 50% 62%;
+  animation: vy-r-beat 12s cubic-bezier(0.2, 0.9, 0.2, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-variant='r'] .vy-letters3d canvas {
+    animation: none;
+  }
+}
+:root[data-variant='r'][data-perf='low'] .vy-letters3d canvas,
+:root[data-variant='r'][data-scrolled] .vy-letters3d canvas {
+  animation-play-state: paused;
+}
+@keyframes vy-r-beat {
+  0%,
+  18%,
+  46%,
+  64%,
+  100% {
+    transform: none;
+  }
+  6% {
+    transform: scale(1.07, 0.93);
+  }
+  11% {
+    transform: scale(0.98, 1.02);
+  }
+  52% {
+    transform: scale(0.9, 1.08);
+  }
+  57% {
+    transform: scale(1.02, 0.99);
+  }
+}
+:root[data-variant='r'] [data-hero-title] {
+  border-bottom: 1px solid var(--hero-line);
+}
+:root[data-variant='r'] #hero-title {
+  font-weight: 300;
+  font-stretch: 150%;
+  font-size: clamp(2.1rem, 4.2vw, 4.2rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+:root[data-variant='r'] #hero-title .vy-fresh {
+  font-weight: 900;
+  font-stretch: 50%;
+  letter-spacing: -0.01em;
+  color: var(--alert);
+  text-decoration-color: var(--alert);
+}
+:root[data-variant='r'] [data-hero-side] {
+  border-left: 1px solid var(--hero-line);
+  padding-left: 32px;
+}
+:root[data-variant='r'] main > div h2 {
+  font-weight: 900;
+  font-stretch: 58%;
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  line-height: 0.92;
+}
+:root[data-variant='r'] main > div .bg-surface {
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  box-shadow: none;
+}
+:root[data-variant='r'] main > div .figure:not(h3) {
+  font-family: var(--font-anybody);
+  font-weight: 900;
+  font-stretch: 50%;
+  color: var(--alert);
+}
+:root[data-variant='r'] .flap-cell {
+  border-radius: 0;
+}
+:root[data-variant='r'] .flap-cell:nth-child(4n + 2) {
+  --flap-bg: var(--art-3);
+  --flap-ink: #ffffff;
+}
+.vy-swatch-r {
+  background: linear-gradient(90deg, #0f0f0f 0 40%, #3c6e71 40% 70%, #8c1c13 70%);
+}
+:root[data-variant='r'] .vy-loadbar {
+  height: 4px;
+}
+:root[data-variant='r'] .vy-loadbar-fill {
+  background: var(--art-3);
+}
+@media (max-width: 1023px) {
+  :root[data-variant='r'] [data-hero-side] {
+    border-left: 0;
+    padding-left: 0;
+  }
+}
+/* Backdrop: rows of the word, each a fixed width and weight, ticking along on
+   the beat in alternating directions. Six identical words per row, so a
+   1/6 shift is one word: the loop's end frame is its start frame. */
+.vy-r-rows {
+  display: grid;
+  align-content: space-between;
+  font-family: var(--font-anybody);
+  font-size: 13vh;
+  line-height: 0.86;
+}
+.vy-r-row {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: vy-r-tick 24s cubic-bezier(0.75, 0, 0.2, 1) infinite;
+  color: transparent;
+  -webkit-text-stroke: 1px color-mix(in srgb, var(--art-1) 30%, transparent);
+}
+.vy-r-row > span {
+  padding-right: 0.35em;
+}
+.vy-r-row:nth-child(even) {
+  animation-direction: reverse;
+  margin-left: -1.5em;
+}
+.vy-r-row:nth-child(1) {
+  font-stretch: 50%;
+  font-weight: 900;
+}
+.vy-r-row:nth-child(2) {
+  font-stretch: 150%;
+  font-weight: 200;
+}
+.vy-r-row:nth-child(3) {
+  font-stretch: 80%;
+  font-weight: 800;
+  color: var(--art-2);
+  opacity: 0.16;
+  -webkit-text-stroke: 0;
+}
+.vy-r-row:nth-child(4) {
+  font-stretch: 120%;
+  font-weight: 500;
+}
+.vy-r-row:nth-child(5) {
+  font-stretch: 60%;
+  font-weight: 300;
+}
+.vy-r-row:nth-child(6) {
+  font-stretch: 140%;
+  font-weight: 900;
+  color: var(--art-3);
+  opacity: 0.13;
+  -webkit-text-stroke: 0;
+}
+.vy-r-row:nth-child(7) {
+  font-stretch: 95%;
+  font-weight: 100;
+}
+:root[data-scrolled] .vy-r-row {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce), (pointer: coarse) {
+  .vy-r-row {
+    animation: none;
+  }
+}
+@keyframes vy-r-tick {
+  0%,
+  21% {
+    transform: none;
+  }
+  25%,
+  46% {
+    transform: translateX(-4.1667%);
+  }
+  50%,
+  71% {
+    transform: translateX(-8.3333%);
+  }
+  75%,
+  96% {
+    transform: translateX(-12.5%);
+  }
+  100% {
+    transform: translateX(-16.6667%);
+  }
 }

@@ -1,6 +1,10 @@
 import {
   Abril_Fatface,
+  Anybody,
+  Cormorant,
+  Fraunces,
   Archivo_Black,
+  Bricolage_Grotesque,
   Fredoka,
   Jost,
   Bungee,
@@ -78,7 +82,30 @@ const archivo = Archivo_Black({
   variable: '--font-brutal',
 });
 
-export const HERO_FONT_VARS = [abril, elite, orbitron, fredoka, jost, archivo, rubik]
+// Concepts q, r, s, t: Sticker Bomb, Kinetic Type (width and weight axes),
+// Lived-in Den (soft, wonky), Stone & Linen.
+const bricolage = Bricolage_Grotesque({
+  subsets: ['latin'],
+  axes: ['wdth', 'opsz'],
+  preload: false,
+  variable: '--font-bricolage',
+});
+const anybody = Anybody({
+  subsets: ['latin'],
+  axes: ['wdth'],
+  preload: false,
+  variable: '--font-anybody',
+});
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  axes: ['SOFT', 'WONK', 'opsz'],
+  preload: false,
+  variable: '--font-fraunces',
+});
+const cormorant = Cormorant({ subsets: ['latin'], preload: false, variable: '--font-cormorant' });
+const qrst = [bricolage, anybody, fraunces, cormorant];
+
+export const HERO_FONT_VARS = [abril, elite, orbitron, fredoka, jost, archivo, rubik, ...qrst]
   .map((f) => f.variable)
   .join(' ');
 
