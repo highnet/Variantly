@@ -32,8 +32,9 @@ const here = dirname(fileURLToPath(import.meta.url));
 const site = join(here, '..');
 const out = join(site, 'public/liquid');
 
-// Must match LIQUID_FRAMES in components/HowItWorks.tsx.
-export const FRAMES = 48;
+// Must match LIQUID_FRAMES in components/Delight.tsx and the 4800% / 47 /
+// steps(48) in the liquid rules of app/globals.css.
+const FRAMES = 48;
 const DIGITS = ['1', '2', '3'];
 const PX = 400; // render size of the glyph for the container mask
 const TILE = 200; // sprite units per tile width
@@ -50,7 +51,7 @@ const loadPlaywright = () => {
 };
 
 // Seeded noise so a re-bake gives the same frames.
-const rng = (seed) => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32);
+const rng = (seed) => () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32;
 
 /** Renders each digit exactly as the page lays out the fill copy; returns alpha masks. */
 const glyphMasks = async () => {
@@ -273,6 +274,8 @@ DIGITS.forEach((d, i) => {
   writeFileSync(join(out, `step-${d}.svg`), svg);
   const gz = gzipSync(svg).length;
   total += gz;
-  console.log(`step-${d}.svg: ${(svg.length / 1024).toFixed(1)} kB, ${(gz / 1024).toFixed(1)} kB gzipped`);
+  console.log(
+    `step-${d}.svg: ${(svg.length / 1024).toFixed(1)} kB, ${(gz / 1024).toFixed(1)} kB gzipped`,
+  );
 });
 console.log(`all numerals: ${(total / 1024).toFixed(1)} kB gzipped`);
