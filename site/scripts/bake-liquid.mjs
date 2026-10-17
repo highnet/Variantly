@@ -12,8 +12,8 @@
 //
 // The result is written as one tiny SVG sprite per numeral to
 // public/liquid/step-<n>.svg: FRAMES tiles side by side, the liquid body in
-// the top row and the meniscus line (a stroke along the surface) in the
-// bottom row. The page uses it as a mask-image on a copy of the numeral, so
+// the top row; the bottom row holds the meniscus line (a stroke along the
+// surface) and a soft glow fading down from it. The page uses it as a mask-image on a copy of the numeral, so
 // the colour comes from the theme and the real glyph (in whatever face a
 // concept uses) clips the liquid. Vector frames stay crisp at any DPR and are
 // a few kB gzipped.
@@ -26,7 +26,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { gzipSync } from 'node:zlib';
+import { deflateSync, gzipSync } from 'node:zlib';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const site = join(here, '..');
@@ -231,23 +231,32 @@ const simulate = ({ w, h, ink }, seed) => {
 
 const r = (v) => Math.round(v);
 
-/** One SVG: liquid bodies in the top row, meniscus lines in the bottom row. */
+/** One SVG: liquid bodies in the top row, meniscus line and glow in the bottom row. */
 const sprite = ({ frames, hu }) => {
   const H = r(hu);
   const xs = Array.from({ length: COLS }, (_, i) => ((i + 0.5) / COLS) * TILE);
   const line = (ys, ox, oy) => {
-    // Smooth with quadratic midpoints so the surface reads as liquid, not a polyline.
-    let d = `M${ox},${r(ys[0] + oy)}`;
+    // Smooth with quadratic midpoints so the surface reads as liquid, not a
+    // polyline. Relative, rounded coordinates keep the sprite small.
+    let px = ox;
+    let py = r(ys[0] + oy);
+    let d = `M${px},${py}`;
     for (let i = 0; i < COLS - 1; i++) {
-      const mx = (xs[i] + xs[i + 1]) / 2;
-      const my = (ys[i] + ys[i + 1]) / 2;
-      d += `Q${r(ox + xs[i])},${r(ys[i] + oy)} ${r(ox + mx)},${r(my + oy)}`;
+      const cx = r(ox + xs[i]);
+      const cy = r(ys[i] + oy);
+      const ex = r(ox + (xs[i] + xs[i + 1]) / 2);
+      const ey = r((ys[i] + ys[i + 1]) / 2 + oy);
+      d += `q${cx - px},${cy - py} ${ex - px},${ey - py}`;
+      px = ex;
+      py = ey;
     }
     return `${d}L${ox + TILE},${r(ys[COLS - 1] + oy)}`;
   };
   const stroke = r(TILE * 0.035);
+  const band = r(hu * 0.16); // depth of the light just under the surface
   const body = [];
   const lines = [];
+  const glows = [];
   frames.forEach((ys, f) => {
     const ox = f * TILE;
     if (f === 0) return; // empty
@@ -256,14 +265,73 @@ const sprite = ({ frames, hu }) => {
       return;
     }
     body.push(`${line(ys, ox, 0)}V${H}H${ox}Z`);
-    if (f < FRAMES - 1) lines.push(line(ys, ox, H + stroke / 2));
+    if (f < FRAMES - 1) {
+      lines.push(line(ys, ox, H + stroke / 2));
+      // A soft glow that fades from the surface down: the liquid reads lighter
+      // near its meniscus and deepens below. Each band is its own path so the
+      // one shared gradient spans that frame's band (objectBoundingBox).
+      const floor = r(Math.max(...ys) + H + band);
+      glows.push(`<path d="${line(ys, ox, H)}V${floor}H${ox}Z"/>`);
+    }
   });
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${FRAMES * TILE} ${2 * H}" preserveAspectRatio="none">` +
     `<path d="${body.join('')}"/>` +
+    `<linearGradient id="g" x2="0" y2="1"><stop stop-opacity=".45"/><stop offset="1" stop-opacity="0"/></linearGradient>` +
+    `<g fill="url(#g)">${glows.join('')}</g>` +
     `<path d="${lines.join('')}" fill="none" stroke="#000" stroke-width="${stroke}"/>` +
     `</svg>`
   );
+};
+
+/*
+ * A tiny static grain tile for the liquid (public/liquid/grain.png, 64×64
+ * grey+alpha, sparse light and dark specks). Stand-in until the shared grain
+ * token (--grain-tile, feat/grain-plus) lands on main; then the liquid's
+ * tone layer in globals.css should switch to that and this can go.
+ */
+const grainTile = () => {
+  const N = 64;
+  const rand = rng(42);
+  const raw = Buffer.alloc(N * (1 + N * 2));
+  for (let y = 0; y < N; y++) {
+    raw[y * (1 + N * 2)] = 0; // filter: none
+    for (let x = 0; x < N; x++) {
+      const o = y * (1 + N * 2) + 1 + x * 2;
+      const v = rand();
+      raw[o] = rand() < 0.5 ? 0 : 255;
+      raw[o + 1] = v < 0.5 ? 0 : v < 0.78 ? 38 : v < 0.94 ? 72 : 105;
+    }
+  }
+  const crcTable = Array.from({ length: 256 }, (_, n) => {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    return c >>> 0;
+  });
+  const crc = (buf) => {
+    let c = 0xffffffff;
+    for (const b of buf) c = crcTable[(c ^ b) & 0xff] ^ (c >>> 8);
+    return (c ^ 0xffffffff) >>> 0;
+  };
+  const chunk = (type, data) => {
+    const len = Buffer.alloc(4);
+    len.writeUInt32BE(data.length);
+    const body = Buffer.concat([Buffer.from(type), data]);
+    const sum = Buffer.alloc(4);
+    sum.writeUInt32BE(crc(body));
+    return Buffer.concat([len, body, sum]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(N, 0);
+  ihdr.writeUInt32BE(N, 4);
+  ihdr[8] = 8; // bit depth
+  ihdr[9] = 4; // grey + alpha
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', ihdr),
+    chunk('IDAT', deflateSync(raw, { level: 9 })),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
 };
 
 const masks = await glyphMasks();
@@ -279,3 +347,6 @@ DIGITS.forEach((d, i) => {
   );
 });
 console.log(`all numerals: ${(total / 1024).toFixed(1)} kB gzipped`);
+const grain = grainTile();
+writeFileSync(join(out, 'grain.png'), grain);
+console.log(`grain.png: ${(grain.length / 1024).toFixed(1)} kB`);

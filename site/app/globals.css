@@ -1409,11 +1409,29 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   opacity: 0.55;
 }
 .vy-step-liq { pointer-events: none; }
+/* Depth and grain inside the liquid only: a copy of the numeral painted with
+   a static grain tile over a gradient that deepens toward the bottom, clipped
+   to the glyph (and to the liquid by the same mask as the fill). Neutral
+   black and white over the theme's fill colour, so every concept keeps its
+   own ink. The tile is a 2 kB bake (scripts/bake-liquid.mjs); switch to the
+   shared --grain-tile token once it lands on main. */
+.vy-step-tone {
+  --liq-grain: url('/liquid/grain.png');
+  background:
+    var(--grain-tile, var(--liq-grain)) 0 0 / 40px 40px,
+    linear-gradient(to bottom, rgb(0 0 0 / 0) 25%, rgb(0 0 0 / 0.32));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none !important;
+  opacity: var(--liq-tone-o, 0.8);
+}
+:root[data-theme='dark'] .vy-step-tone { --liq-tone-o: 0.6; }
 .vy-step-line {
   display: none;
   -webkit-text-fill-color: #fff;
   text-shadow: none !important;
-  opacity: 0.5;
+  opacity: 0.6;
 }
 .vy-steps > li { --frame: 0; }
 /* Masks load once the steps come near the viewport (Delight adds .vy-liquid);
@@ -1422,7 +1440,7 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 .vy-steps.vy-liquid > li:nth-child(1) { --liq: url('/liquid/step-1.svg'); }
 .vy-steps.vy-liquid > li:nth-child(2) { --liq: url('/liquid/step-2.svg'); }
 .vy-steps.vy-liquid > li:nth-child(3) { --liq: url('/liquid/step-3.svg'); }
-.vy-steps.vy-liquid > li:not(.vy-step-full) :is(.vy-step-fill, .vy-step-line) {
+.vy-steps.vy-liquid > li:not(.vy-step-full) :is(.vy-step-fill, .vy-step-tone, .vy-step-line) {
   -webkit-mask: var(--liq) no-repeat;
   mask: var(--liq) no-repeat;
   -webkit-mask-size: 4800% 200%;
@@ -1434,7 +1452,7 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 /* Touch: no scrubbing. A numeral pours in one stepped run through the frames
    once its step lights up and the scroll has settled; it pauses while a
    scroll is under way. */
-:root.vy-steps-touch .vy-steps.vy-liquid > li.vy-step-on:not(.vy-step-full) .vy-step-fill {
+:root.vy-steps-touch .vy-steps.vy-liquid > li.vy-step-on:not(.vy-step-full) :is(.vy-step-fill, .vy-step-tone) {
   animation: vy-liq-pour 1.5s steps(48, jump-none) forwards;
 }
 :root.vy-steps-touch .vy-steps.vy-liquid > li.vy-step-on:not(.vy-step-full) .vy-step-line {
@@ -1481,7 +1499,7 @@ header.vy-header-glass {
   .vy-steps > li .vy-step-num, .vy-sheen::after { animation: none !important; }
   /* A still frame at the target level: a lit numeral is simply full. */
   .vy-steps > li.vy-step-on .vy-step-liq { opacity: 1 !important; }
-  .vy-steps > li.vy-step-on .vy-step-fill { mask: none !important; -webkit-mask: none !important; }
+  .vy-steps > li.vy-step-on :is(.vy-step-fill, .vy-step-tone) { mask: none !important; -webkit-mask: none !important; }
   .vy-steps > li.vy-step-on .vy-step-line { display: none !important; }
 }
 :root[data-seek] .vy-title, :root[data-seek] .vy-scene, :root[data-seek] .vy-blobs { translate: none !important; }
@@ -1492,7 +1510,7 @@ header.vy-header-glass {
 :root:is([data-seek], [data-motion='calm']) .vy-steps > li,
 :root[data-perf='low'] .vy-steps > li.vy-step-on {
   & .vy-step-liq { opacity: 1 !important; }
-  & :is(.vy-step-fill, .vy-step-line) {
+  & :is(.vy-step-fill, .vy-step-tone, .vy-step-line) {
     animation: none !important;
     -webkit-mask: none !important;
     mask: none !important;
