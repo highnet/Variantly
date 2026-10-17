@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.5.0](https://github.com/highnet/Variantly/compare/variantly-v0.4.0...variantly-v0.5.0) (2026-10-17)
+
+
+### Features
+
+* chat with the agent about a variant ([#81](https://github.com/highnet/Variantly/issues/81)) ([25df0eb](https://github.com/highnet/Variantly/commit/25df0eb952d421fb7fb6163a3215f53b0a07bbfa))
+* keeping a variant restyles the whole site, not just the redesigned pages ([#80](https://github.com/highnet/Variantly/issues/80)) ([46a76b4](https://github.com/highnet/Variantly/commit/46a76b4ef90cd1202b225e205969b5ac72f48259))
+* rollout screen with live log, spend and cancel; status no longer misreports a live run ([#84](https://github.com/highnet/Variantly/issues/84)) ([3e83f81](https://github.com/highnet/Variantly/commit/3e83f813361e28bcd044e8ed3fc1e109a4e24ebf))
+* **site:** plain agent page and springy show-more disclosures ([#87](https://github.com/highnet/Variantly/issues/87)) ([699ec2b](https://github.com/highnet/Variantly/commit/699ec2b1212a0eef42847cc1b8b77b79b8f69d2f))
+* support Gemini CLI, Cursor CLI and OpenRouter ([#71](https://github.com/highnet/Variantly/issues/71)) ([3cdf85c](https://github.com/highnet/Variantly/commit/3cdf85c2a5d2658ffcefde9ac90e5486ecf6ebe3))
+* **ui:** animated step stage in the wizard progress card ([#86](https://github.com/highnet/Variantly/issues/86)) ([89e5d75](https://github.com/highnet/Variantly/commit/89e5d753ee74944c5828c83484be07242c90d6c6))
+* **ui:** signature look for the local app ([#79](https://github.com/highnet/Variantly/issues/79)) ([82b43f1](https://github.com/highnet/Variantly/commit/82b43f1ea2f432b2828ae7ef8f902e66a41a7630))
+
+
+### Bug Fixes
+
+* **site:** show axe drops as "fixed" and keep demo scores current ([#82](https://github.com/highnet/Variantly/issues/82)) ([43d51c8](https://github.com/highnet/Variantly/commit/43d51c8b119d15e7665aaaa40b79c1b5c2face26))
+* smooth before/after transitions; scores show only the change ([#88](https://github.com/highnet/Variantly/issues/88)) ([8eeabad](https://github.com/highnet/Variantly/commit/8eeabad46dccc158d860a05791ec3199c072b218))
+
 ## [0.4.0](https://github.com/highnet/Variantly/compare/variantly-v0.3.0...variantly-v0.4.0) (2026-10-16)
 
 
