@@ -5,8 +5,18 @@
  * public/demo/oak-and-iron:
  *
  *   npm run score-demo
+ *
+ * With --check it writes nothing and exits 1 when the file is out of date
+ * (CI runs it this way whenever a demo page changes).
  */
-import { createReadStream, existsSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import {
+  createReadStream,
+  existsSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import http from 'node:http';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -54,5 +64,16 @@ try {
 } finally {
   server.close();
 }
-writeFileSync(out, `${JSON.stringify(scores, null, 2)}\n`);
-console.log(`Wrote ${path.relative(process.cwd(), out)}`);
+const json = `${JSON.stringify(scores, null, 2)}\n`;
+if (process.argv.includes('--check')) {
+  if (!existsSync(out) || readFileSync(out, 'utf8') !== json) {
+    console.error(
+      'lib/demo-scores.json is out of date. Run `npm run score-demo` in site/ and commit the result.',
+    );
+    process.exit(1);
+  }
+  console.log('lib/demo-scores.json is up to date.');
+} else {
+  writeFileSync(out, json);
+  console.log(`Wrote ${path.relative(process.cwd(), out)}`);
+}
