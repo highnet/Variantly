@@ -100,7 +100,7 @@ export const toast = (title: string, opts: boolean | { body?: string; tone?: Toa
   setState((s) => ({ toasts: [...s.toasts.slice(-2), item] }));
   // Reduced motion switches the life-line animation off, so time it here instead.
   if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
-    setTimeout(() => dismissToast(item.id), 3200);
+    setTimeout(() => dismissToast(item.id), item.tone === 'error' ? 7000 : 3200);
   }
 };
 

@@ -89,7 +89,15 @@ export const startApp = async (opts) => {
     const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
     for (const res of clients) res.write(payload);
   };
-  session.on('state', (s) => send('state', s));
+  // A problem from before any page was open (a `--yes` run that failed to
+  // start): live events would reach no one, so it is held and replayed to
+  // each page that connects until a run starts.
+  /** @type {string | null} */
+  let pending = null;
+  session.on('state', (s) => {
+    if (s.phase !== 'setup') pending = null;
+    send('state', s);
+  });
   session.on('server', (s) => send('server', s));
   session.on('log', (l) => send('log', l));
   session.on('chat', (c) => send('chat', c));
@@ -137,6 +145,7 @@ export const startApp = async (opts) => {
       connection: 'keep-alive',
     });
     res.write(`event: state\ndata: ${JSON.stringify(session.snapshot())}\n\n`);
+    if (pending) res.write(`event: problem\ndata: ${JSON.stringify({ message: pending })}\n\n`);
     clients.add(res);
     const ping = setInterval(() => res.write(': ping\n\n'), 20_000);
     req.on('close', () => {
@@ -279,6 +288,11 @@ export const startApp = async (opts) => {
     url: `http://localhost:${port}`,
     port,
     session,
+    /** Report a problem to the page now and to any page opened later, until a run starts. */
+    problem: (/** @type {string} */ message) => {
+      pending = message;
+      send('problem', { message });
+    },
     close: async () => {
       for (const c of clients) c.end();
       await site.close().catch(() => {});

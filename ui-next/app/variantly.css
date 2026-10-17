@@ -2354,6 +2354,11 @@ body[data-view='compare'] .help {
   animation: toast-life 3200ms linear forwards;
 }
 
+/* Errors carry a reason worth reading, so they stay longer (as before toasts stacked). */
+.toast-error .toast-life {
+  animation-duration: 7000ms;
+}
+
 .toast-info .toast-life {
   background: color-mix(in srgb, var(--surface) 60%, transparent);
 }
