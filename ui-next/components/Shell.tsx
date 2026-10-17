@@ -6,6 +6,7 @@ import { Board } from './Board';
 import { ViewSkeleton } from './Skeleton';
 import { Checkin } from './Checkin';
 import { Compare } from './Compare';
+import { Mark } from './Icon';
 import { Kept } from './Kept';
 import { Prefs } from './Prefs';
 import { setState, useStore, type UiState } from '@/lib/store';
@@ -61,19 +62,9 @@ const Shell = () => {
       </a>
       <header className="bar">
         <a className="wordmark" href="/" aria-label="variantly home">
-          {/* The site's mark: an angled before/after divider splitting a plain page from its redesign. */}
-          <svg className="mark" viewBox="0 0 32 32" aria-hidden="true">
-            <rect width="32" height="32" rx="8" fill="#121216" />
-            <path d="M19.5 0H24a8 8 0 0 1 8 8v16a8 8 0 0 1-8 8h-11.5Z" fill="var(--alert)" />
-            <rect x="5" y="9" width="8" height="2" rx="1" fill="#fff" opacity=".7" />
-            <rect x="5" y="14" width="6" height="2" rx="1" fill="#fff" opacity=".7" />
-            <rect x="5" y="19" width="7.5" height="2" rx="1" fill="#fff" opacity=".7" />
-            <rect x="20" y="7" width="7" height="7" rx="1.5" fill="#121216" />
-            <rect x="18" y="17" width="9" height="2.5" rx="1.25" fill="#121216" />
-            <rect x="16.5" y="22" width="8" height="2.5" rx="1.25" fill="#121216" />
-            <path d="M19.5 0 12.5 32" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" />
-            <circle cx="16" cy="16" r="3.2" fill="#fff" stroke="#121216" strokeWidth="1.4" />
-          </svg>
+          <span className="mark">
+            <Mark />
+          </span>
           variantly
         </a>
         <span className="bar-project">{repo}</span>

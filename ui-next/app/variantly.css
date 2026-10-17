@@ -3927,7 +3927,7 @@ body::before {
   backdrop-filter: blur(14px) saturate(1.4);
   border-bottom-color: color-mix(in srgb, var(--rule) 60%, transparent);
 }
-.wordmark .mark { width: 24px; height: 24px; border-radius: 7px; }
+.wordmark .mark { display: inline-grid; } .wordmark .mark svg { width: 24px; height: 24px; }
 /* Cards: soft surfaces, no frames. */
 .wizard-card,
 .progress-card,
@@ -3960,3 +3960,10 @@ body::before {
 .title { letter-spacing: -0.01em; }
 .wizard-card h2 { text-transform: none; letter-spacing: -0.01em; }
 :root[data-theme='dark'] .pick:has(input:checked) { background: var(--alert); border-color: var(--alert); color: var(--alert-ink); }
+/* The accessibility menu takes the signature accent instead of the old green. */
+.prefs-motion button[aria-pressed='true'] { background: var(--alert); color: #ffffff; }
+:root[data-theme='dark'] .prefs-motion button[aria-pressed='true'] { color: var(--alert-ink); }
+.prefs-aid:has(input:checked) { border-color: var(--alert); }
+.prefs-aid input { accent-color: var(--alert); }
+.prefs-menu { border-radius: 18px; }
+.prefs-aid { border-radius: 14px; }
