@@ -6,6 +6,7 @@ import { Board } from './Board';
 import { ViewSkeleton } from './Skeleton';
 import { Checkin } from './Checkin';
 import { Compare } from './Compare';
+import { Mark } from './Icon';
 import { Kept } from './Kept';
 import { Prefs } from './Prefs';
 import { setState, useStore, type UiState } from '@/lib/store';
@@ -61,12 +62,9 @@ const Shell = () => {
       </a>
       <header className="bar">
         <a className="wordmark" href="/" aria-label="variantly home">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="3" y="4" width="4" height="16" />
-            <rect x="9" y="4" width="2" height="16" />
-            <rect x="13" y="4" width="4" height="16" />
-            <rect x="19" y="4" width="2" height="16" />
-          </svg>
+          <span className="mark">
+            <Mark />
+          </span>
           variantly
         </a>
         <span className="bar-project">{repo}</span>

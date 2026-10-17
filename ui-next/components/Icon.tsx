@@ -29,13 +29,19 @@ const Icon = ({ name }: IconProps) => (
   </svg>
 );
 
-/** variantly's barcode mark. */
+/** variantly's mark: an angled before/after divider splitting a plain page from its redesign. */
 const Mark = () => (
-  <svg viewBox="0 0 24 24" aria-hidden="true">
-    <rect x={3} y={4} width={4} height={16} fill="currentColor" />
-    <rect x={9} y={4} width={2} height={16} fill="currentColor" />
-    <rect x={13} y={4} width={4} height={16} fill="currentColor" />
-    <rect x={19} y={4} width={2} height={16} fill="currentColor" />
+  <svg viewBox="0 0 32 32" aria-hidden="true">
+    <rect width="32" height="32" rx="8" fill="#121216" />
+    <path d="M19.5 0H24a8 8 0 0 1 8 8v16a8 8 0 0 1-8 8h-11.5Z" fill="var(--alert)" />
+    <rect x="5" y="9" width="8" height="2" rx="1" fill="#fff" opacity=".7" />
+    <rect x="5" y="14" width="6" height="2" rx="1" fill="#fff" opacity=".7" />
+    <rect x="5" y="19" width="7.5" height="2" rx="1" fill="#fff" opacity=".7" />
+    <rect x="20" y="7" width="7" height="7" rx="1.5" fill="#121216" />
+    <rect x="18" y="17" width="9" height="2.5" rx="1.25" fill="#121216" />
+    <rect x="16.5" y="22" width="8" height="2.5" rx="1.25" fill="#121216" />
+    <path d="M19.5 0 12.5 32" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" />
+    <circle cx="16" cy="16" r="3.2" fill="#fff" stroke="#121216" strokeWidth="1.4" />
   </svg>
 );
 
