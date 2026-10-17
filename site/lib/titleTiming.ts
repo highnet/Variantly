@@ -1,15 +1,15 @@
 // Shared reveal timing for the 2D and 3D title cards.
 const WORD = 'variantly';
 
-// Timing after the Loki title card: every letter flickers at once, a little over
-// two typefaces a second, then the changes slow and each letter drops into its
-// final face. Letters lock in a loose, uneven order rather than left to right.
-const FLICKER_MS = 440;
-const EASE_OUT = [520, 640, 780, 960, 1180, 1440];
+// Timing after the Loki title card, kept short: each letter tries a few faces,
+// the changes slow, and it drops into its final face. Letters lock in a loose,
+// uneven order rather than left to right.
+const FLICKER_MS = 520;
+const EASE_OUT = [700, 1000];
 // Deterministic per-letter jitter, so a seeked frame is the same every time.
 const jitter = (index: number, salt: number) => ((index * 37 + salt * 11) % 7) / 6;
 const scheduleFor = (index: number) => [
-  ...Array(8 + Math.round(jitter(index, 1) * 3)).fill(FLICKER_MS),
+  ...Array(2 + Math.round(jitter(index, 1) * 2)).fill(FLICKER_MS),
   ...EASE_OUT,
 ];
 const SCHEDULES = [...WORD].map((_, i) => scheduleFor(i));
@@ -72,7 +72,7 @@ export const lookAt = (step: number | null, index: number, n: number) =>
 // shared by the 2D and 3D words. Never above 1: a shifting glyph may shrink
 // inside its slot but never spill.
 export const scaleAt = (step: number, index: number) =>
-  0.72 + (((step * 13 + index * 29) % 9) / 8) * 0.28;
+  0.9 + (((step * 13 + index * 29) % 9) / 8) * 0.1;
 
 // The lock-in pop (vy-lock in globals.css for the 2D word): 1.12x easing back
 // to 1 over 0.35s.

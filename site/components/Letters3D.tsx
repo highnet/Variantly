@@ -30,7 +30,7 @@ import {
 import { morphMesh } from '@/lib/morphMesh';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
-import { lockPop, lookAt, morphAt, type MorphPhase } from '@/lib/titleTiming';
+import { lockPop, lookAt, morphAt, stepAt, type MorphPhase } from '@/lib/titleTiming';
 
 const WORD = 'variantly';
 // The 3D wardrobe is the 2D title's: the same faces in the same order. While
@@ -528,11 +528,20 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
       const pose = (t: number) => {
         stepped = false;
         letters.forEach((l, i) => {
-          const live = morphAt(t * 1000, i, phase);
+          const ms = t * 1000;
+          // Before its start delay a letter rests on its final face, like the
+          // still 2D word it fades in over.
+          const waiting = stepAt(ms, i) === -1;
+          const live = !waiting && morphAt(ms, i, phase);
           const s = slots[i];
           let k = 1;
           let y = s.base;
-          if (!live || !data || !l.track || !l.morph) {
+          if (waiting) {
+            if (l.mesh.geometry !== l.final) l.mesh.geometry = l.extra.geometry = l.final;
+            if (l.step !== -1) stepped = true;
+            l.step = -1;
+            wear(l, i, lookAt(null, i, n));
+          } else if (!live || !data || !l.track || !l.morph) {
             // Locked: the final glyph on its own baseline, popping once
             // (already at rest when the 3D word appears or in a seeked frame).
             if (l.lockedAt < 0) {
@@ -610,6 +619,12 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
 
       const takeOver = () => {
         if (disposed) return;
+        // The 2D word held still on its final faces: the reveal starts now,
+        // in 3D, from that same word.
+        if (seek === null && !still) {
+          clock.current = performance.now();
+          letters.forEach((l) => (l.lockedAt = -1));
+        }
         frame();
         el.style.opacity = '1';
         onReady();
@@ -635,7 +650,7 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
     <div
       ref={host}
       aria-hidden="true"
-      className="vy-letters3d absolute inset-0 z-2 opacity-0 [transition:opacity_0.2s_ease-out,transform_0.7s_ease-out]"
+      className="vy-letters3d absolute inset-0 z-2 opacity-0 [transition:opacity_0.6s_ease-out,transform_0.7s_ease-out]"
     />
   );
 };

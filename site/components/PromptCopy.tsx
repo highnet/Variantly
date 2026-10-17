@@ -16,6 +16,8 @@ type PromptCopyProps = {
   preview?: boolean;
   /** A single primary button instead of the prompt card. */
   accent?: boolean;
+  /** A quiet copy button with the prompt's full text under it, instead of the card. */
+  chip?: boolean;
   className?: string;
 };
 
@@ -33,6 +35,7 @@ const PromptCopy = ({
   tone = 'light',
   preview = false,
   accent = false,
+  chip = false,
   className,
 }: PromptCopyProps) => {
   const [copied, setCopied] = useState(false);
@@ -104,6 +107,45 @@ const PromptCopy = ({
       <span className={cn(long && !open && 'line-clamp-2')}>{prompt}</span>
     </p>
   );
+
+  if (chip) {
+    // The exact words sit right under the button, never only in a tooltip:
+    // nobody should paste a prompt into their assistant without reading it.
+    return (
+      <div className={cn('grid justify-items-start gap-2.5', className)}>
+        <Button
+          variant={slate ? 'prompt-slate' : 'prompt'}
+          size="prompt"
+          onClick={copy}
+          className="w-fit gap-1.5"
+        >
+          {copied ? (
+            <Check aria-hidden="true" className="animate-pop" />
+          ) : (
+            <Copy aria-hidden="true" />
+          )}
+          <span className="grid [grid-template-areas:'x'] *:[grid-area:x]">
+            <span className={cn(copied && 'invisible')}>{label}</span>
+            <span aria-hidden={!copied} className={cn(!copied && 'invisible')}>
+              Copied
+            </span>
+          </span>
+        </Button>
+        <blockquote
+          className={cn(
+            'm-0 max-w-[62ch] border-l pl-3.5 text-[14px] leading-relaxed',
+            slate ? 'border-slate-line text-steel-on-slate' : 'border-rule text-steel',
+          )}
+        >
+          <span className="sr-only">Prompt: </span>
+          {prompt}
+        </blockquote>
+        <span className="sr-only" role="status">
+          {copied ? 'Copied to clipboard' : ''}
+        </span>
+      </div>
+    );
+  }
 
   if (accent) {
     // The button, and right under it the exact words it copies: nobody should

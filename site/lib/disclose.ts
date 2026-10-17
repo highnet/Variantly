@@ -1,3 +1,4 @@
+import { EASE } from '@/lib/motion';
 import { calmMotion } from '@/lib/prefs';
 
 /*
@@ -7,8 +8,8 @@ import { calmMotion } from '@/lib/prefs';
  * un-blurs. Every helper is a no-op under reduced or calm motion.
  */
 
-const OPEN_EASE = 'cubic-bezier(0.3, 1.3, 0.4, 1)';
-const SHUT_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+const OPEN_EASE = EASE.spring;
+const SHUT_EASE = EASE.outExpo;
 
 export const stillMotion = () =>
   calmMotion() || matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -57,6 +58,6 @@ export const squash = (el: Element) => {
       { scale: '0.95 1.06', offset: 0.55 },
       { scale: '1 1' },
     ],
-    { duration: 480, easing: 'ease-out' },
+    { duration: 480, easing: EASE.outExpo },
   );
 };

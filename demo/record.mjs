@@ -29,6 +29,10 @@ import { at, HEIGHT, log, PAD_MS, readJson, REPO, run, script, WIDTH, writeJson 
 const film = script();
 const IN_PAGE_CURSOR = Boolean(process.env.IN_PAGE_CURSOR);
 const agent = process.argv.includes('--dry') ? 'demo' : process.env.DEMO_AGENT || film.agent;
+// The run's agent mix (script.json `mix`, e.g. "claude:2,gemini:2"). A dry
+// run keeps the split with the demo agent in every row, so the wizard and
+// the labels look the same.
+const mix = film.mix ? (agent === 'demo' ? film.mix.split(',').map((r) => `demo:${r.split(':').at(-1)}`).join(',') : film.mix) : '';
 const single = process.argv.includes('--single');
 const THEMES = single ? ['light'] : ['light', 'dark'];
 const port = Number(process.env.DEMO_PORT || 4499);
@@ -77,7 +81,7 @@ async function preflight() {
 }
 
 function startVariantly() {
-  const args = [path.join(REPO, 'bin', 'variantly.mjs'), SITE, '--agent', agent, '--no-open', '-p', String(port)];
+  const args = [path.join(REPO, 'bin', 'variantly.mjs'), SITE, ...(mix ? ['--agents', mix] : ['--agent', agent]), '--no-open', '-p', String(port)];
   const child = spawn(process.execPath, args, {
     cwd: SITE,
     env: {
@@ -497,6 +501,8 @@ class Director {
   async act(step) {
     // Steps that only make sense with a real agent (installing Impeccable).
     if (step.realOnly && agent === 'demo') return;
+    // Steps that set the count by hand: a mix sets it with its rows instead.
+    if (step.unlessMix && mix) return;
     const began = Date.now();
     const from = this.now();
     try {
@@ -591,7 +597,7 @@ if (filmed.problems.length) {
   }
   log('record', 'ALLOW_STALE is set: recording anyway. Do not publish this take.');
 }
-log('record', `agent: ${agent}${agent === 'demo' ? ' (dry run, no AI)' : ''}; themes: ${THEMES.join(', ')}`);
+log('record', `agent: ${mix || agent}${agent === 'demo' ? ' (dry run, no AI)' : ''}; themes: ${THEMES.join(', ')}`);
 await smokeTest();
 await prepareSite();
 hideImpeccable();
@@ -700,7 +706,8 @@ try {
       for (const view of views) schemes[view.theme] = await view.page.evaluate(() => ({ media: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light', ui: document.documentElement.dataset.theme ?? null }));
     }
     // Hold until the line has been spoken, plus a breath.
-    const hold = start + lineSeconds(scene) + PAD_MS / 1000 - director.now();
+    // `rest`: extra silence after the line (a pause for the viewer).
+    const hold = start + lineSeconds(scene) + (scene.rest ?? 0) / 1000 + PAD_MS / 1000 - director.now();
     if (hold > 0) await director.page.waitForTimeout(hold * 1000);
     else if (!scene.timelapse && hold < -1) {
       director.warnings.push(`${scene.id}: actions ran ${(-hold).toFixed(1)}s past the narration (dead air)`);

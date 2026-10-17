@@ -102,21 +102,20 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
   const t0 = useRef(0);
 
   useEffect(() => {
-    if (seekTime() !== null || calmMotion() || !go) return;
-    // The 3D word does its own reveal: the hidden HTML letters stay still
-    // instead of re-rendering and re-measuring every step.
-    if (solid) {
-      document.documentElement.removeAttribute('data-intro');
-      return;
-    }
+    if (seekTime() !== null || calmMotion()) return;
+    document.documentElement.removeAttribute('data-intro');
+    // Where the 3D word can load, it plays the reveal: the HTML word holds
+    // still on its final faces as the poster it fades in over, so the
+    // flicker never changes material halfway through.
+    if (solid || canWebGL()) return;
+    // Without WebGL the HTML word plays the reveal, once its outlines are in.
+    if (!go) return;
     const start = performance.now();
     t0.current = start;
     let timer = 0;
     const tick = () => {
       const step = stepAt(performance.now() - start, index);
       setLive(step === null ? null : Math.max(step, 0));
-      // The first glyph to move reveals the title (hidden by VARIANT_BOOT).
-      document.documentElement.removeAttribute('data-intro');
       // Wake exactly when the face next changes, not on a fixed poll.
       if (step !== null)
         timer = window.setTimeout(tick, msToNextStep(performance.now() - start, index) + 4);
@@ -128,7 +127,8 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
   // seekreel frames derive the step from ?t instead of the clock.
   const seek = useSeekTime();
   const raw = seek === null ? live : stepAt(seek * 1000, index);
-  const step = solid || raw === null || raw === 'idle' ? null : Math.max(raw, 0);
+  // Before its start delay (-1) a letter rests on its final face.
+  const step = solid || raw === null || raw === 'idle' || raw < 0 ? null : raw;
 
   // The slot is sized by the final face (invisible), so the word keeps the same
   // width, and stays centred, while the shifting glyph swaps faces on top.

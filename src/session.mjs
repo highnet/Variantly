@@ -35,6 +35,8 @@ const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  * @property {string} originalUrl      '' = variantly starts the original too
  * @property {string} agent
  * @property {string} model
+ * @property {AgentRow[]} [mix]      agents per variant, in order; the counts add up to count
+ * @property {boolean} [blind]       hide which agent made each variant until one is kept
  * @property {'safe' | 'full'} permissions
  * @property {'redesign' | 'refine'} approach
  * @property {number} count
@@ -53,10 +55,40 @@ const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  */
 
 /**
+ * @typedef {object} AgentRow
+ * @property {string} agent
+ * @property {string} model   '' = the agent's default
+ * @property {number} count
+ */
+
+/**
+ * Which agent and model make each variant: the mix's rows in order, or the
+ * one agent for all of them.
+ * @param {Pick<Config, 'agent' | 'model' | 'mix'>} config
+ * @param {number} count
+ * @returns {{ agent: string, model: string }[]}
+ */
+export const agentsFor = (config, count) => {
+  const rows = config.mix?.length ? config.mix : [{ agent: config.agent, model: config.model, count }];
+  const out = rows.flatMap((r) => Array.from({ length: r.count }, () => ({ agent: r.agent, model: r.model ?? '' })));
+  while (out.length < count) out.push({ agent: config.agent, model: config.model });
+  return out.slice(0, count);
+};
+
+/**
+ * The agent and model that made a variant. Runs saved before mixes carry
+ * them on the config only.
+ * @param {Config} config @param {Variant} v
+ */
+export const agentOf = (config, v) => ({ agent: v.agent ?? config.agent, model: v.model ?? config.model });
+
+/**
  * @typedef {'queued' | 'preparing' | 'running' | 'reviewing' | 'committing' | 'done' | 'failed' | 'cancelled'} VariantStatus
  * @typedef {object} Variant
  * @property {number} n
  * @property {string} direction
+ * @property {string} [agent]     the agent that makes this variant
+ * @property {string} [model]     its model, '' = the agent's default
  * @property {VariantStatus} status
  * @property {string} summary
  * @property {string[]} files
@@ -258,7 +290,10 @@ export class Session extends EventEmitter {
       runId: new Date().toISOString().replace(/[-:T]/g, '').slice(0, 12),
       base: snap.base,
       config: { ...config, count, directions },
-      variants: directions.map((direction, i) => ({ n: i + 1, direction, status: 'queued', summary: '', files: [] })),
+      variants: (() => {
+        const who = agentsFor(config, count);
+        return directions.map((direction, i) => ({ n: i + 1, direction, ...who[i], status: 'queued', summary: '', files: [] }));
+      })(),
       chosen: null,
       result: null,
     };
@@ -282,17 +317,18 @@ export class Session extends EventEmitter {
       if (v) claimed.add(v.n);
       return v;
     };
-    // Set when the agent itself can't run (missing, not signed in): the rest
-    // of the queue would fail the same way, so it isn't started.
-    /** @type {{ reason?: string }} */
+    // Set per agent when it can't run (missing, not signed in): the rest of
+    // that agent's variants would fail the same way, so they aren't started.
+    /** @type {Record<string, string>} */
     const halt = {};
     // Parallel agents each start `npx --yes @playwright/mcp`; a cold cache
     // makes them race on one install. Fetch it once first.
-    if (config.browser && config.agent !== 'demo' && config.concurrency > 1) await warmPlaywrightMcp().catch(() => {});
+    if (config.browser && this.state.variants.some((v) => agentOf(config, v).agent !== 'demo') && config.concurrency > 1) await warmPlaywrightMcp().catch(() => {});
     const workers = Array.from({ length: Math.max(1, config.concurrency) }, async () => {
       for (let v = next(); v; v = next()) {
-        if (halt.reason) {
-          Object.assign(v, { status: 'failed', error: `Not started: ${halt.reason}`, finishedAt: Date.now() });
+        const stop = halt[agentOf(config, v).agent];
+        if (stop) {
+          Object.assign(v, { status: 'failed', error: `Not started: ${stop}`, finishedAt: Date.now() });
           await this.save();
           continue;
         }
@@ -348,11 +384,12 @@ export class Session extends EventEmitter {
     await this.save();
   }
 
-  /** @param {Variant} v @param {{ reason?: string }} [halt] */
+  /** @param {Variant} v @param {Record<string, string>} [halt] */
   async #generateOne(v, halt = {}) {
     const config = /** @type {Config} */ (this.state.config);
     const adapter = adapterById(config.stackId);
-    const agent = agentById(config.agent);
+    const who = agentOf(config, v);
+    const agent = agentById(who.agent);
     const log = new LineBuffer(2000);
     /** @type {AgentRunState & { log: LineBuffer }} */
     const run = { log };
@@ -374,7 +411,7 @@ export class Session extends EventEmitter {
     };
 
     try {
-      if (!agent) throw new Error(`Unknown agent "${config.agent}".`);
+      if (!agent) throw new Error(`Unknown agent "${who.agent}".`);
       await update({ status: 'preparing', startedAt: Date.now(), step: 0 });
       const wt = this.worktreeFor(v.n);
       say(`Creating worktree ${wt}`);
@@ -382,7 +419,7 @@ export class Session extends EventEmitter {
       // Cancelled or discarded while the worktree was being made: don't fill
       // a folder discard() already removed (or is about to).
       if (run.cancelled) return;
-      const { placed, lockfiles } = await this.#prepareWorktree(wt, config, adapter, say);
+      const { placed, lockfiles } = await this.#prepareWorktree(wt, config, adapter, say, agent.id);
       if (run.cancelled) {
         // Discarded mid-prepare: the copies just recreated a folder discard() removed.
         if (!this.runs.has(v.n)) await this.gitLock(() => git.removeWorktree(this.repo, wt)).catch(() => {});
@@ -430,7 +467,7 @@ export class Session extends EventEmitter {
         this.save().catch(() => {});
       }, 3000);
       const launch = async (/** @type {string} */ brief) => {
-        const inv = agent.invocation({ cwd: wt, briefPath: brief, model: config.model || undefined, permissions: config.permissions, mcp });
+        const inv = agent.invocation({ cwd: wt, briefPath: brief, model: who.model || undefined, permissions: config.permissions, mcp });
         inv.file = await agentFile(agent);
         for (const [file, body] of Object.entries(inv.files ?? {})) {
           await mkdir(path.dirname(file), { recursive: true });
@@ -491,7 +528,7 @@ export class Session extends EventEmitter {
       if (run.cancelled) return;
       await this.pool.stop(`v${v.n}`).catch(() => {});
       const message = err instanceof Error ? err.message : String(err);
-      if (err instanceof AgentUnavailable) halt.reason ??= message;
+      if (err instanceof AgentUnavailable) halt[who.agent] ??= message;
       say(`Failed: ${message}`);
       await update({ status: 'failed', error: message.split('\n').slice(0, 8).join('\n'), finishedAt: Date.now(), usage: run.usage, costUsd: run.costUsd, credits: run.credits });
     } finally {
@@ -506,10 +543,11 @@ export class Session extends EventEmitter {
    * @param {Config} config
    * @param {import('./stacks.mjs').StackAdapter} adapter
    * @param {(line: string) => void} say
+   * @param {string} agentId   the agent that will work in it
    * @returns {Promise<{ placed: string[], lockfiles: Map<string, string> }>} paths placed under
    *   the app root, and the lockfiles as the install left them
    */
-  async #prepareWorktree(wt, config, adapter, say) {
+  async #prepareWorktree(wt, config, adapter, say, agentId) {
     const appSrc = path.join(this.repo, config.appRel);
     const appDst = path.join(wt, config.appRel);
     const install = config.deps === 'install';
@@ -531,7 +569,7 @@ export class Session extends EventEmitter {
     // Impeccable's global installs land in different home folders per agent
     // (and Copilot doesn't read every one of them). Put the skill where this
     // agent reads project skills, inside the worktree, so it is always found.
-    const projectSkillDir = { claude: '.claude/skills', codex: '.agents/skills', copilot: '.github/skills', gemini: '.gemini/skills', cursor: '.cursor/skills' }[config.agent];
+    const projectSkillDir = { claude: '.claude/skills', codex: '.agents/skills', copilot: '.github/skills', gemini: '.gemini/skills', cursor: '.cursor/skills' }[agentId];
     if (projectSkillDir && !existsSync(path.join(wt, projectSkillDir, 'impeccable', 'SKILL.md'))) {
       const home = os.homedir();
       const source = ['.claude/skills', '.agents/skills', '.github/skills', '.copilot/skills', '.codex/skills', '.gemini/skills', '.cursor/skills']
@@ -600,8 +638,9 @@ export class Session extends EventEmitter {
     if (this.state.phase === 'finalized') throw new Error('This run is finished; start a new one to keep chatting.');
     if (!text) throw new Error('Type a change for the agent first.');
     if (this.chatting.has(n)) throw new Error(`The agent is still working on V${String(n).padStart(2, '0')}.`);
-    const agent = agentById(config.agent);
-    if (!agent) throw new Error(`Unknown agent "${config.agent}".`);
+    const who = agentOf(config, v);
+    const agent = agentById(who.agent);
+    if (!agent) throw new Error(`Unknown agent "${who.agent}".`);
 
     const history = (v.chat ?? []).filter((t) => t.status !== 'failed').map(({ role, text: t }) => ({ role, text: t }));
     const stamp = Date.now();
@@ -633,7 +672,7 @@ export class Session extends EventEmitter {
           briefPath,
           writeChatBrief({ variant: n, agent: agent.id, direction: v.picked || v.direction, appRel: config.appRel, message: text, history: history.slice(-8), previewUrl }),
         );
-        const inv = agent.invocation({ cwd: wt, briefPath, model: config.model || undefined, permissions: config.permissions, mcp: browser ? { playwright: playwrightMcp() } : undefined });
+        const inv = agent.invocation({ cwd: wt, briefPath, model: who.model || undefined, permissions: config.permissions, mcp: browser ? { playwright: playwrightMcp() } : undefined });
         inv.file = await agentFile(agent);
         for (const [file, body] of Object.entries(inv.files ?? {})) {
           await mkdir(path.dirname(file), { recursive: true });
@@ -867,7 +906,8 @@ export class Session extends EventEmitter {
    */
   async #rollout(v) {
     const config = /** @type {Config} */ (this.state.config);
-    const agent = agentById(config.agent);
+    const who = agentOf(config, v);
+    const agent = agentById(who.agent);
     // The demo agent restyles the global stylesheet, so its look is site-wide already.
     if (!agent || agent.id === 'demo') return {};
     const wt = this.worktreeFor(v.n);
@@ -898,7 +938,7 @@ export class Session extends EventEmitter {
       const briefPath = path.join(this.dir, 'briefs', `v${v.n}-rollout.md`);
       await mkdir(path.dirname(briefPath), { recursive: true });
       await writeFile(briefPath, writeRolloutBrief({ variant: v.n, agent: agent.id, done, pages, appRel: config.appRel, direction: v.picked || v.direction }));
-      const inv = agent.invocation({ cwd: wt, briefPath, model: config.model || undefined, permissions: config.permissions });
+      const inv = agent.invocation({ cwd: wt, briefPath, model: who.model || undefined, permissions: config.permissions });
       inv.file = await agentFile(agent);
       for (const [file, body] of Object.entries(inv.files ?? {})) {
         await mkdir(path.dirname(file), { recursive: true });

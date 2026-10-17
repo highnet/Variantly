@@ -8,7 +8,7 @@ import { Segments } from './Progress';
 import { Terminal } from './Terminal';
 import { api } from '@/lib/api';
 import { clearLog, fetchLog } from '@/lib/live';
-import { LIVE, STATUS, STEPS, agentShort, clock, compactTokens, directionLabel, elapsed, isPickable, pad, scoreText, stepAt, stepState, statusKey, usageText, usageTitle, vname } from '@/lib/format';
+import { LIVE, STATUS, STEPS, agentLabel, agentShort, clock, compactTokens, directionLabel, elapsed, isPickable, pad, scoreText, stepAt, stepState, statusKey, usageText, usageTitle, madeBy, vname } from '@/lib/format';
 import { seen, setState, toast, useStore } from '@/lib/store';
 import type { Variant } from '@/lib/types';
 
@@ -123,8 +123,20 @@ const Board = () => {
   const tokens = vs.reduce((sum, v) => sum + (v.usage ? v.usage.inputTokens + v.usage.outputTokens : 0), 0);
   const credits = vs.reduce((sum, v) => sum + (typeof v.credits === 'number' ? v.credits : 0), 0);
   const cost = vs.reduce((sum, v) => sum + (typeof v.costUsd === 'number' ? v.costUsd : 0), 0);
+  // A mix reads out each agent and model with its share and its spend.
+  const mixed = Boolean(snap.config?.mix?.length) && !(snap.config?.blind && snap.phase !== 'finalized');
+  const groups = new Map<string, { n: number; cost: number }>();
+  if (mixed) {
+    for (const v of vs) {
+      const key = agentLabel(v.agent ?? snap.config?.agent ?? '', v.model ?? snap.config?.model);
+      const g = groups.get(key) ?? { n: 0, cost: 0 };
+      groups.set(key, { n: g.n + 1, cost: g.cost + (typeof v.costUsd === 'number' ? v.costUsd : 0) });
+    }
+  }
   const readout = [
-    agentShort[snap.config?.agent ?? ''] ?? snap.config?.agent ?? '',
+    ...(mixed
+      ? [...groups].map(([key, g]) => `${key} ×${g.n}${g.cost > 0 ? ` $${g.cost.toFixed(2)}` : ''}`)
+      : [snap.config?.mix?.length ? 'Agents hidden' : (agentShort[snap.config?.agent ?? ''] ?? snap.config?.agent ?? '')]),
     `Elapsed ${start ? clock(end - start) : '0:00'}`,
     `${vs.filter((v) => v.status === 'done').length} of ${vs.length} ready`,
     tokens > 0 ? `${compactTokens(tokens)} tokens` : null,
@@ -264,6 +276,7 @@ const Board = () => {
                   </td>
                   <td className="dir">
                     {directionLabel(v.direction, v.picked)}
+                    {madeBy(snap, v) && <span className="tag made-by">{madeBy(snap, v)}</span>}
                     {v.summary ? <span className="summary">{v.summary}</span> : v.error ? <span className="summary">{v.error.split('\n')[0]}</span> : null}
                     {v.review && <span className="summary">Review: {v.review}</span>}
                     {v.auditState === 'running' && <span className="summary">Scoring with axe-core and Lighthouse…</span>}

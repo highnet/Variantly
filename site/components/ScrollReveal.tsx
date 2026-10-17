@@ -1,130 +1,88 @@
 'use client';
 
-import { animate, inView, stagger } from 'motion';
 import { useEffect } from 'react';
 
 import { calmMotion } from '@/lib/prefs';
+import { lowPerf, touchUI } from '@/lib/scrollIdle';
 import { seekTime } from '@/lib/seek';
 
 // What enters, and how. Selectors are scoped to the content below the hero.
-const SPRING = { type: 'spring', stiffness: 260, damping: 22, mass: 0.9 } as const;
-const HEADS = 'main > div h2';
-const LEADS = 'main > div h2 + p, main > div h2 ~ p:first-of-type';
-const CARDS =
-  'main > div > section > .bg-surface, main > div > section > div > .bg-surface, main > div .on-slate';
+const KINDS: [selector: string, kind: string][] = [
+  ['main > div h2', 'head'],
+  ['main > div h2 + p, main > div h2 ~ p:first-of-type', 'lead'],
+  [
+    'main > div > section > .bg-surface, main > div > section > div > .bg-surface, main > div .on-slate',
+    'card',
+  ],
+  // Big figures pop. Step numerals are left out: they have their own fill
+  // and pop (Delight), and their list item already enters.
+  ['main > div .figure:not(h3, .vy-step-num *, :is(ol, ul, dl) *)', 'fig'],
+];
 const GROUPS = 'main > div ol, main > div ul, main > div dl';
-// Step numerals enter as one piece (outline and fill together).
-const FIGURES =
-  'main > div .figure:not(h3, .vy-step-ghost, .vy-step-fill), main > div .vy-step-num';
+// Longest entrance (slow duration plus the deepest cascade delay), after
+// which the reveal classes come off and the stylesheet is in sole charge.
+const SETTLE_MS = 1100;
 
 /*
- * Site-wide scroll entrances. Each element starts hidden only if it is below
- * the fold when the page loads (so nothing already on screen blinks), then
- * animates the first time it scrolls into view: headings rise and un-blur,
- * leads follow, cards spring up and settle, list items cascade, and big
- * figures pop. Skipped entirely for reduced motion and seekreel frames.
+ * Site-wide scroll entrances, CSS-only (see .vy-rv in globals.css). Elements
+ * below the fold at load are tagged, and <html> gets .vy-reveal-ready, which
+ * is what hides them, so content is never hidden without JS. One shared
+ * IntersectionObserver flips each to .vy-rv-in as its first pixel enters; a transform/opacity transition on the motion tokens does the
+ * rest. Touch devices, low-power and calm motion get no entrances at all:
+ * everything simply stays visible.
  */
 export const ScrollReveal = () => {
   useEffect(() => {
-    if (calmMotion() || seekTime() !== null) return;
-    const stops: (() => void)[] = [];
-    const below = (el: Element) => el.getBoundingClientRect().top > innerHeight * 0.92;
-    const hide = (el: HTMLElement, from: Record<string, string>) => Object.assign(el.style, from);
+    if (calmMotion() || lowPerf() || touchUI() || seekTime() !== null) return;
+    const below = innerHeight * 0.92;
+    const tagged: HTMLElement[] = [];
+    const tops = new Map<Element, number>();
+    // One layout read pass before any writes.
+    const all = [
+      ...KINDS.flatMap(([sel, kind]) =>
+        [...document.querySelectorAll<HTMLElement>(sel)].map((el) => [el, kind] as const),
+      ),
+      ...[...document.querySelectorAll<HTMLElement>(GROUPS)].map((el) => [el, 'list'] as const),
+    ];
+    all.forEach(([el]) => tops.set(el, el.getBoundingClientRect().top));
 
-    const each = (
-      selector: string,
-      from: Record<string, string>,
-      run: (el: HTMLElement) => void,
-    ) => {
-      document.querySelectorAll<HTMLElement>(selector).forEach((el) => {
-        if (el.dataset.revealed || !below(el)) return;
-        el.dataset.revealed = 'pending';
-        hide(el, from);
-        stops.push(
-          inView(
-            el,
-            () => {
-              el.dataset.revealed = 'done';
-              run(el);
-            },
-            { amount: 0.15 },
-          ),
-        );
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          io.unobserve(e.target);
+          const el = e.target as HTMLElement;
+          el.classList.add('vy-rv-in');
+          if (el.dataset.rv === 'card') el.classList.add('vy-sheen');
+          window.setTimeout(() => {
+            el.classList.remove('vy-rv', 'vy-rv-in', 'vy-rv-list', 'vy-sheen');
+            el.removeAttribute('data-rv');
+          }, SETTLE_MS + 400);
+        });
+      },
+      { rootMargin: '0px', threshold: 0 },
+    );
+
+    all.forEach(([el, kind]) => {
+      if ((tops.get(el) ?? 0) <= below || el.closest('.vy-rv')) return;
+      if (kind === 'list' && el.children.length < 2) return;
+      el.classList.add('vy-rv');
+      if (kind === 'list') el.classList.add('vy-rv-list');
+      el.dataset.rv = kind;
+      tagged.push(el);
+      io.observe(el);
+    });
+    const root = document.documentElement;
+    root.classList.add('vy-reveal-ready');
+
+    return () => {
+      io.disconnect();
+      root.classList.remove('vy-reveal-ready');
+      tagged.forEach((el) => {
+        el.classList.remove('vy-rv', 'vy-rv-in', 'vy-rv-list');
+        el.removeAttribute('data-rv');
       });
     };
-
-    each(
-      HEADS,
-      { opacity: '0', transform: 'translateY(28px) skewY(2deg)', filter: 'blur(8px)' },
-      (el) =>
-        animate(
-          el,
-          { opacity: 1, transform: 'translateY(0px) skewY(0deg)', filter: 'blur(0px)' },
-          { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
-        ),
-    );
-    each(LEADS, { opacity: '0', transform: 'translateY(16px)' }, (el) =>
-      animate(
-        el,
-        { opacity: 1, transform: 'translateY(0px)' },
-        { duration: 0.6, delay: 0.12, ease: [0.16, 1, 0.3, 1] },
-      ),
-    );
-    each(CARDS, { opacity: '0', transform: 'translateY(48px) scale(0.96)' }, (el) => {
-      // 20 · a light streak sweeps the card once as it lands.
-      el.classList.add('vy-sheen');
-      setTimeout(() => el.classList.remove('vy-sheen'), 1400);
-      return animate(
-        el,
-        { opacity: 1, transform: 'translateY(0px) scale(1)' },
-        { ...SPRING, opacity: { duration: 0.35 } },
-      );
-    });
-    // Lists: the container stays put; its items cascade in.
-    document.querySelectorAll<HTMLElement>(GROUPS).forEach((list) => {
-      if (list.dataset.revealed || !below(list) || list.closest('[data-revealed="pending"]'))
-        return;
-      const items = [...list.children] as HTMLElement[];
-      if (items.length < 2) return;
-      list.dataset.revealed = 'pending';
-      // Some lists draw their dividers as a background; hold it back until
-      // the items have landed and cover it.
-      hide(list, { backgroundColor: 'transparent' });
-      items.forEach((i) => hide(i, { opacity: '0', transform: 'translateY(24px) scale(0.94)' }));
-      stops.push(
-        inView(
-          list,
-          () => {
-            list.dataset.revealed = 'done';
-            void animate(
-              items,
-              { opacity: 1, transform: 'translateY(0px) scale(1)' },
-              {
-                ...SPRING,
-                delay: stagger(0.045),
-              },
-            ).finished.then(() => {
-              // Hand the items back to the stylesheet (e.g. step dimming).
-              list.style.removeProperty('background-color');
-              items.forEach((i) => {
-                i.style.removeProperty('opacity');
-                i.style.removeProperty('transform');
-              });
-            });
-          },
-          { amount: 0.1 },
-        ),
-      );
-    });
-    each(FIGURES, { opacity: '0', transform: 'scale(0.4) rotate(-12deg)' }, (el) =>
-      animate(
-        el,
-        { opacity: 1, transform: 'scale(1) rotate(0deg)' },
-        { type: 'spring', stiffness: 380, damping: 14, delay: 0.1 },
-      ),
-    );
-
-    return () => stops.forEach((s) => s());
   }, []);
 
   return null;

@@ -15,13 +15,16 @@ const HowItWorks = () => (
       {STEPS.map((s, i) => (
         <li key={s.label} className="border-ink grid content-start gap-3 border-t-2 pt-5">
           {/* An outlined numeral that fills with ink as the scroll progress reaches
-              it (--fill, set in Delight); the filled copy sits on top, clipped. */}
+              it (--fill, set in Delight). The filled copy sits on top inside a
+              sliding overflow-hidden window: transforms only, no repaint. */}
           <span className="vy-step-num relative w-fit" aria-hidden="true">
             <span className="figure vy-step-ghost text-ink text-[clamp(4.5rem,8vw,7rem)] leading-[0.8]">
               {i + 1}
             </span>
-            <span className="figure vy-step-fill text-ink absolute inset-0 text-[clamp(4.5rem,8vw,7rem)] leading-[0.8]">
-              {i + 1}
+            <span className="vy-step-clip absolute inset-x-0 -inset-y-[0.15em] text-[clamp(4.5rem,8vw,7rem)]">
+              <span className="figure vy-step-fill text-ink py-[0.15em] leading-[0.8]">
+                {i + 1}
+              </span>
             </span>
           </span>
           <Typography variant="title" as="h3">

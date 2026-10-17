@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, FileText, MousePointer2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, MousePointer2, Pause, Play } from 'lucide-react';
 import {
   useCallback,
   useEffect,
@@ -21,7 +21,9 @@ import { VariantTitle } from '@/components/VariantTitle';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
 import { markLoaded } from '@/lib/loadProgress';
+import { EASE } from '@/lib/motion';
 import { applyPrefsToFrame, calmMotion, PREFS_EVENT, readPrefs, type Prefs } from '@/lib/prefs';
+import { whenIdle } from '@/lib/scrollIdle';
 import { DEMO_ORIGINAL_SCORES, DEMO_VARIANTS, PROMPTS } from '@/lib/content';
 import { INSTALL } from '@/lib/site';
 import { cn } from '@/lib/utils';
@@ -62,6 +64,9 @@ const FlapCell = ({ target, index }: FlapCellProps) => {
   useEffect(() => {
     const reduce = calmMotion();
     let timer = 0;
+    let idle = () => {};
+    // Each flip waits for the page to be still: nothing flips under a scroll.
+    const next = (ms: number) => (timer = window.setTimeout(() => (idle = whenIdle(step)), ms));
     const step = () => {
       if (reduce || showing.current === target) {
         showing.current = target;
@@ -71,10 +76,13 @@ const FlapCell = ({ target, index }: FlapCellProps) => {
       const at = Math.max(0, DRUM.indexOf(showing.current));
       showing.current = DRUM[(at + 1) % DRUM.length];
       setShown(showing.current);
-      timer = window.setTimeout(step, STEP_MS);
+      next(STEP_MS);
     };
-    timer = window.setTimeout(step, index * STAGGER_MS);
-    return () => window.clearTimeout(timer);
+    next(index * STAGGER_MS);
+    return () => {
+      window.clearTimeout(timer);
+      idle();
+    };
   }, [target, index]);
 
   return (
@@ -498,7 +506,7 @@ const Showcase = () => {
       el.style.clipPath = '';
       wipe = el.animate([{ clipPath: SWAP_FROM }, { clipPath: SWAP_TO }], {
         duration: 680,
-        easing: 'cubic-bezier(0.7, 0, 0.2, 1)',
+        easing: EASE.wipe,
       });
       wipe.onfinish = done;
     };
@@ -711,12 +719,17 @@ const Showcase = () => {
             'group/stage relative isolate h-[62svh] min-h-[380px] overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]',
           )}
         >
-          <PageSkeleton className={cn('z-10', ready && 'pointer-events-none opacity-0')} />
+          <PageSkeleton
+            className={cn(
+              'z-10',
+              ready && 'pointer-events-none opacity-0 [&_.skeleton]:animate-none!',
+            )}
+          />
           {auto && ready && (
             <div
               key={selected}
               aria-hidden="true"
-              className="bg-alert absolute inset-x-0 top-0 z-30 h-1 origin-left animate-[cycle_12s_linear_forwards] motion-reduce:hidden"
+              className="bg-alert absolute inset-x-0 top-0 z-30 h-1 origin-left animate-[cycle_12s_linear_forwards] in-data-[motion=calm]:hidden motion-reduce:hidden"
             />
           )}
           <iframe
@@ -839,7 +852,7 @@ const Showcase = () => {
               onPointerUp={onUp}
               onPointerCancel={onUp}
               onDoubleClick={() => tween(50, 300)}
-              className="pointer-events-auto absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 touch-pan-y transition-[scale,box-shadow] duration-200 ease-[cubic-bezier(.3,1.6,.5,1)] group-data-[dragging=true]/stage:scale-115 group-data-[dragging=true]/stage:shadow-[0_6px_20px_rgb(0_0_0/.45)] max-sm:h-10 max-sm:gap-0 max-sm:px-1.5"
+              className="pointer-events-auto absolute top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 touch-pan-y transition-[scale,box-shadow] duration-200 ease-(--ease-spring-pop) group-data-[dragging=true]/stage:scale-115 group-data-[dragging=true]/stage:shadow-[0_6px_20px_rgb(0_0_0/.45)] max-sm:h-10 max-sm:gap-0 max-sm:px-1.5"
             >
               <ChevronLeft aria-hidden="true" />
               <span className="hidden sm:inline">Before</span>
@@ -883,7 +896,7 @@ const Showcase = () => {
                     <span
                       key={selected}
                       aria-hidden="true"
-                      className="bg-ink/50 absolute inset-x-1.5 bottom-1 h-0.5 origin-left animate-[cycle_12s_linear_forwards]"
+                      className="bg-ink/50 absolute inset-x-1.5 bottom-1 h-0.5 origin-left animate-[cycle_12s_linear_forwards] in-data-[motion=calm]:hidden"
                     />
                   )}
                 </Button>
@@ -900,6 +913,22 @@ const Showcase = () => {
               <ChevronRight className="size-4" aria-hidden="true" />
             </Button>
           </div>
+          {/* WCAG 2.2.2: the tour moves on its own, so it can be paused (and
+              any interaction with the demo stops it too). */}
+          <Button
+            variant="toggle-slate"
+            size="toggle"
+            onClick={() => setAuto((a) => !a)}
+            title={auto ? 'Stop cycling through the redesigns' : 'Cycle through the redesigns'}
+            className="in-data-[motion=calm]:hidden"
+          >
+            {auto ? (
+              <Pause className="size-3.5" aria-hidden="true" />
+            ) : (
+              <Play className="size-3.5" aria-hidden="true" />
+            )}
+            {auto ? 'Pause tour' : 'Play tour'}
+          </Button>
           <Button
             variant="toggle-slate"
             size="toggle"

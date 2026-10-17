@@ -91,6 +91,19 @@ and Impeccable installed for it (the wizard offers to run this for you):
 npx impeccable install --providers=claude --scope=global --yes --no-hooks   # or codex, copilot, gemini, cursor
 ```
 
+**Mix agents in one run.** Split the variants across agents and models, say
+two from Claude Code and two from Gemini CLI, for more variety. In the wizard,
+**Add another agent** under the agent list; on the command line:
+
+```sh
+npx variantly --agents claude:opus:2,claude:sonnet:1,gemini:2   # agent[:model]:count
+npx variantly --agents claude:2,codex:2 --blind                 # hide who made what until you keep one
+```
+
+Every agent in a mix must be installed and signed in before the run starts.
+Each variant shows the agent and model that made it, and the board adds up the
+spend per agent. The wizard remembers your last mix.
+
 **No agent yet?** `npx variantly --demo` runs the full flow with fixed restyles: **no AI, no account**.
 
 **Let your agent drive it.** `install-skill` teaches your agent variantly once
@@ -249,7 +262,9 @@ variantly keep <n> [dir]   roll variant n's style out to every page, then apply 
 variantly clean [dir]      remove every worktree, branch and state file
 variantly install-skill    put the variantly skill where your agents read skills
 
-  --agent <id>   claude | codex | copilot | demo
+  --agent <id>   claude | codex | copilot | gemini | cursor | demo
+  --agents <mix> split the variants: agent[:model]:count,… e.g. claude:opus:2,gemini:2
+  --blind        hide which agent made each variant until you keep one
   --count <n>    1–10
   --brief <txt>  what you want, in your words
   --yes          skip the wizard and start with detected defaults
