@@ -32,6 +32,9 @@ const buttonVariants = cva(
           'border border-slate-line bg-transparent text-surface normal-case tracking-normal font-sans hover:bg-ink active:translate-y-px',
         // A numbered cell on the slate dock; the current one lifts, white.
         cell: 'relative bg-slate-raised text-surface opacity-55 tracking-normal tabular-nums [font-stretch:75%] hover:opacity-90 aria-[current=true]:bg-surface aria-[current=true]:text-ink aria-[current=true]:opacity-100 aria-[current=true]:-translate-y-0.5 aria-[current=true]:shadow-cell',
+        // A concept chip in the homepage switcher dock.
+        concept:
+          'normal-case tracking-normal font-sans text-steel hover:text-ink aria-pressed:bg-ink aria-pressed:text-surface',
         // The show-more pill that sits on a card's bottom edge.
         pill: 'border border-rule bg-surface text-ink normal-case tracking-normal font-sans hover:border-ink',
         'pill-slate':

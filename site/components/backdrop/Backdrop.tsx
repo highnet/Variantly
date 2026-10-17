@@ -7,6 +7,8 @@ import { calmMotion } from '@/lib/prefs';
 import { holdFrame, releaseFrame, seekTime } from '@/lib/seek';
 
 import { GlField } from './GlField';
+import { readVariant, VARIANT_EVENT } from '@/lib/variant';
+
 import { VARIANTS, type VariantKey } from './variants';
 
 // Each blob morphs through these outlines; all share one command structure so
@@ -72,10 +74,6 @@ const Blob = ({ color, i, sharp }: { color: string; i: number; sharp?: boolean }
   );
 };
 
-const pick = (): VariantKey => {
-  const v = new URLSearchParams(location.search).get('v');
-  return v && 'bcdef'.includes(v) && v.length === 1 ? (v as VariantKey) : 'a';
-};
 
 const useTheme = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -101,7 +99,7 @@ export const Backdrop = () => {
   const [key, setKey] = useState<VariantKey | null>(null);
   const theme = useTheme();
   useEffect(() => {
-    const k = pick();
+    const k = readVariant();
     const html = document.documentElement;
     html.dataset.variant = k;
     if (seekTime() !== null) {
@@ -114,7 +112,12 @@ export const Backdrop = () => {
     const onScroll = () => html.toggleAttribute('data-scrolled', scrollY > 520);
     onScroll();
     addEventListener('scroll', onScroll, { passive: true });
-    return () => removeEventListener('scroll', onScroll);
+    const onVariant = (e: Event) => setKey((e as CustomEvent<VariantKey>).detail);
+    addEventListener(VARIANT_EVENT, onVariant);
+    return () => {
+      removeEventListener('scroll', onScroll);
+      removeEventListener(VARIANT_EVENT, onVariant);
+    };
   }, []);
   if (!key) return null;
   const v = VARIANTS[key];
@@ -128,7 +131,7 @@ export const Backdrop = () => {
         </div>
       )}
       <div className="vy-scene absolute inset-0">
-        <GlField key={theme} scene={v.scene} colors={v.colors[theme]} />
+        <GlField key={key + theme} scene={v.scene} colors={v.colors[theme]} />
       </div>
       <div className="vy-grain absolute inset-0" style={{ opacity: v.grain }} />
     </div>

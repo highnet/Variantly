@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
+import { VARIANT_EVENT } from '@/lib/variant';
 import { cn } from '@/lib/utils';
 
 const WORD = 'variantly';
@@ -78,6 +79,10 @@ export const VariantTitle = () => {
   const [run, setRun] = useState(0);
   useEffect(() => {
     if (seekTime() !== null) releaseFrame('title');
+    // A new concept gets its own title reveal.
+    const replay = () => setRun((r) => r + 1);
+    addEventListener(VARIANT_EVENT, replay);
+    return () => removeEventListener(VARIANT_EVENT, replay);
   }, []);
   return (
     <div data-hero-title className="vy-card relative grid place-items-center overflow-hidden border-b border-slate-line px-4 py-14 sm:py-20">

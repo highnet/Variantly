@@ -625,7 +625,8 @@
 :root[data-variant] body {
   background: transparent;
 }
-:root[data-variant] section.on-slate {
+:root[data-variant] section.on-slate,
+:root[data-variant] footer.on-slate {
   --slate: var(--hero-bg);
   --slate-raised: var(--hero-line);
   --slate-line: var(--hero-line);
@@ -945,3 +946,126 @@
 :root[data-scrolled] .vy-blobs {
   opacity: 0.16;
 }
+
+/* ---- Concepts carried below the hero ------------------------------------ */
+:root[data-variant] main > div h2 {
+  font-family: var(--hero-face, var(--font-martian));
+  font-stretch: normal;
+}
+:root[data-variant] main > div .figure:not(h3) { color: var(--title, var(--ink)); }
+:root[data-variant] .text-on-alert { color: var(--on-alert, #0d0d10); }
+
+/* A · Soft Clay: pillowy cards, centred section heads, clay numerals */
+:root[data-variant='a'] main > div h2 { text-transform: none; text-align: center; letter-spacing: -0.01em; }
+:root[data-variant='a'] main > div .bg-surface {
+  border: 0;
+  border-radius: 28px;
+  box-shadow: inset 0 2px 0 rgb(255 255 255 / 0.7), 0 18px 40px -18px rgb(140 60 40 / 0.35);
+}
+:root[data-variant='a'][data-theme='dark'] main > div .bg-surface {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.08), 0 18px 40px -18px rgb(0 0 0 / 0.7);
+}
+:root[data-variant='a'] main > div .figure:not(h3) { text-shadow: 0 2px 0 #e8603f, 0 4px 0 #c94322; }
+:root[data-variant='a'] main > div .border-rule { border-color: transparent; }
+
+/* B · Riso Poster: halftone paper, ink underlines, tilted tickets */
+:root[data-variant='b'] body {
+  background-image: radial-gradient(color-mix(in srgb, var(--ink) 9%, transparent) 1px, transparent 1.3px);
+  background-size: 8px 8px;
+}
+:root[data-variant='b'] main > div h2 {
+  text-transform: none;
+  font-size: clamp(2.2rem, 4vw, 3.6rem);
+  text-decoration: underline 6px #ff4f9a;
+  text-underline-offset: 8px;
+}
+:root[data-variant='b'] main > div .bg-surface { border: 2px dashed var(--ink); border-radius: 4px; }
+:root[data-variant='b'] main > div .grid > .bg-surface:nth-child(odd) { transform: rotate(-0.6deg); }
+:root[data-variant='b'] main > div .grid > .bg-surface:nth-child(even) { transform: rotate(0.6deg); }
+:root[data-variant='b'] main > div .figure:not(h3) { color: #ff4f9a; text-shadow: 4px 3px 0 rgb(47 91 255 / 0.8); }
+
+/* C · TVA Terminal: case-file sections, ruled paper, form-strip cards */
+:root[data-variant='c'] body {
+  background-image: repeating-linear-gradient(to bottom, transparent 0 31px, color-mix(in srgb, var(--rule) 45%, transparent) 31px 32px);
+}
+:root[data-variant='c'] main > div h2::before { content: '§ '; color: var(--alert); }
+:root[data-variant='c'] main > div .bg-surface {
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  box-shadow: inset 0 6px 0 var(--rule);
+}
+:root[data-variant='c'] main > div .figure:not(h3) { font-family: var(--font-typewriter); color: var(--alert); }
+:root[data-variant='c'][data-theme='dark'] main > div .figure:not(h3) { text-shadow: 0 0 16px rgb(255 176 0 / 0.5); }
+
+/* D · Brutal Zine: hard edges, hard shadows, highlighter heads */
+:root[data-variant='d'] main > div h2 {
+  text-transform: uppercase;
+  display: inline;
+  justify-self: start;
+  background: linear-gradient(transparent 55%, #c6ff00 55% 92%, transparent 92%);
+}
+:root[data-variant='d'][data-theme='dark'] main > div h2 { background: linear-gradient(transparent 55%, #ff3d00 55% 92%, transparent 92%); }
+:root[data-variant='d'] main > div .bg-surface {
+  border: 3px solid var(--ink);
+  border-radius: 0;
+  box-shadow: 8px 8px 0 var(--ink);
+}
+:root[data-variant='d'] main > div .border-rule { border-color: var(--ink); border-width: 3px; }
+:root[data-variant='d'] main > div .figure:not(h3) { text-shadow: 4px 4px 0 #ff3d00; }
+
+/* E · Bauhaus: primary-coded cards, red-square heads, flat geometry */
+:root[data-variant='e'] main > div h2 { text-transform: uppercase; letter-spacing: 0.03em; }
+:root[data-variant='e'] main > div h2::before {
+  content: '';
+  display: inline-block;
+  width: 0.7em;
+  height: 0.7em;
+  margin-right: 0.35em;
+  background: #e63946;
+}
+:root[data-variant='e'] main > div .bg-surface { border: 0; border-radius: 0; border-top: 10px solid #1d4ed8; }
+:root[data-variant='e'] main > div .grid > .bg-surface:nth-child(3n + 1) { border-top-color: #e63946; }
+:root[data-variant='e'] main > div .grid > .bg-surface:nth-child(3n) { border-top-color: #ffc300; }
+:root[data-variant='e'] main > div .figure:not(h3) { font-family: var(--font-geo); }
+:root[data-variant='e'] main > div li:nth-child(3n + 1) .figure:not(h3) { color: #e63946; }
+:root[data-variant='e'] main > div li:nth-child(3n + 2) .figure:not(h3) { color: #1d4ed8; }
+:root[data-variant='e'] main > div li:nth-child(3n) .figure:not(h3) { color: #ffc300; }
+
+/* F · Synth Sunset: sunset gradient ground, neon glass cards, chrome heads */
+:root[data-variant='f'] body { background: linear-gradient(180deg, transparent 0 900px, color-mix(in srgb, #ff2e88 10%, transparent)); }
+:root[data-variant='f'] main > div h2 {
+  background: linear-gradient(90deg, #ff9a3c, #ff2e88 45%, #7a2cff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  justify-self: start;
+}
+:root[data-variant='f'] main > div .bg-surface {
+  border: 1px solid color-mix(in srgb, #ff2e88 40%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 36px -10px rgb(255 46 136 / 0.5);
+}
+:root[data-variant='f'] main > div .figure:not(h3) {
+  background: linear-gradient(180deg, #18e0ff, #ff2e88);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ---- Concept switcher dock ---------------------------------------------- */
+.vy-switcher {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--rule);
+  box-shadow: 0 14px 40px -12px rgb(0 0 0 / 0.45);
+  backdrop-filter: blur(10px);
+  scrollbar-width: none;
+}
+.vy-switcher-label { color: var(--steel); }
+.vy-swatch-a { background: conic-gradient(#ff9a76, #ffd166, #a78bfa, #ff9a76); }
+.vy-swatch-b { background: linear-gradient(135deg, #ff4f9a 50%, #2f5bff 50%); }
+.vy-swatch-c { background: radial-gradient(#ffb000 40%, #1f6f6a 42%); }
+.vy-swatch-d { background: #c6ff00; box-shadow: inset 0 0 0 2px #0a0a0a; }
+.vy-swatch-e { background: conic-gradient(#e63946 0 33%, #1d4ed8 0 66%, #ffc300 0); }
+.vy-swatch-f { background: linear-gradient(#ffd23f, #ff2e88 60%, #7a2cff); }
