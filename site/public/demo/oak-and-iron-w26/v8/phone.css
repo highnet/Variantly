@@ -1,0 +1,33 @@
+/* Phone edition: neo-folk craft after Dalarna kurbits painting. */
+@import url("https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600&display=swap");
+:root{color-scheme:light;--ivory:#f6efe3;--paper:#fbf7ef;--ox:#6b1e23;--teal:#2c6461;--teal-soft:#d6e4df;--sienna:#b0502a;--ochre:#d6a043;--ink:#2a2421;--mute:#5e524b;--rule:#e2d5c2;--on-ox:#f6efe3;--field:#fff}
+html[data-theme="dark"]{color-scheme:dark;--ivory:#1d1715;--paper:#241c1a;--ox:#e7a39a;--teal:#8fc4bd;--teal-soft:#1f302e;--sienna:#e08a62;--ink:#f1e8dc;--mute:#c4b5a8;--rule:#3c302c;--on-ox:#241c1a;--field:#1a1412}
+body{background:var(--paper);color:var(--ink);font:400 16px/1.55 Figtree,system-ui,sans-serif}
+a{color:var(--ox)}
+h1,h2,h3{font-family:"Young Serif",Georgia,serif;font-weight:400;color:var(--ox)}
+.b-head{gap:6px;border-bottom:2px solid var(--ox)}
+.topbar{font-size:12px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:.08em}
+.logo{font:400 24px "Young Serif",serif}.logo i{font-style:normal;color:var(--sienna)}
+.bloom{width:110px;height:138px;align-self:center}
+.k-leaf{fill:#2c6461}.k-stem{stroke:var(--ox);stroke-width:4}.k-gourd{fill:#6b1e23}.k-inner{fill:#b0502a}.k-heart{fill:#d6a043}
+h1{font-size:40px;line-height:1.04}
+h1 em{font-style:normal;color:var(--teal)}
+.intro{color:var(--mute)}
+.btn,button{background:var(--ox);color:var(--on-ox);border:0;border-radius:999px;padding:12px 22px;font:600 15px Figtree,sans-serif;text-decoration:none}
+.link{font-weight:600}
+.b-sec{font-size:26px;line-height:1.1}
+.b-feat{border-bottom:1px solid var(--rule)}
+.b-feat h3{font-size:22px}
+.b-feat p{color:var(--mute)}
+.b-item{background:var(--ivory);border-bottom:16px solid var(--paper)}
+.b-item .art{color:var(--ink);padding:32px 44px}
+.i1 .art{background:var(--teal-soft)}.i2 .art{background:#f1dcc8}.i3 .art{background:#efd7d3}
+html[data-theme="dark"] .i2 .art{background:#33241b}html[data-theme="dark"] .i3 .art{background:#36201f}
+.no{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+.b-item h3{font-size:24px}
+.desc{color:var(--mute)}
+.price{font:400 20px "Young Serif",serif;color:var(--ox)}
+.b-news label{font-weight:600;font-size:14px}
+.b-news input{background:var(--field);color:var(--ink);border:2px solid var(--ox);border-radius:999px;padding:0 18px}
+.b-foot{border-top:2px solid var(--ox);color:var(--mute);font-size:14px}
+.small{font-size:12px}
