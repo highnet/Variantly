@@ -72,3 +72,29 @@ test('a rollout commits only its own work, and a cancelled one leaves placed fil
   assert.deepEqual(await commitAll(wt, 'rollout', before), ['about.css']);
   await removeWorktree(repo, wt);
 });
+
+test('a variant never commits Playwright MCP output', async (t) => {
+  const { root, repo, wt } = repoWithDeps();
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  await addWorktree(repo, wt, 'variantly/t/v1', 'HEAD');
+  mkdirSync(path.join(wt, '.playwright-mcp'));
+  writeFileSync(path.join(wt, '.playwright-mcp', 'page-1.yml'), 'x\n');
+  mkdirSync(path.join(wt, 'site', '.playwright-mcp'), { recursive: true });
+  writeFileSync(path.join(wt, 'site', '.playwright-mcp', 'console.log'), 'x\n');
+  writeFileSync(path.join(wt, 'app.css'), 'body { color: red }\n');
+  assert.deepEqual(await commitAll(wt, 'variant', []), ['app.css']);
+  await removeWorktree(repo, wt);
+});
+
+test('a project that already gitignores .playwright-mcp still commits its variant', async (t) => {
+  const { root, repo, wt } = repoWithDeps();
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  writeFileSync(path.join(repo, '.gitignore'), 'node_modules\n.env\n.playwright-mcp/\n');
+  git(repo, ['-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false', 'commit', '-qam', 'ignore mcp']);
+  await addWorktree(repo, wt, 'variantly/t/v1', 'HEAD');
+  mkdirSync(path.join(wt, '.playwright-mcp'));
+  writeFileSync(path.join(wt, '.playwright-mcp', 'page-1.yml'), 'x\n');
+  writeFileSync(path.join(wt, 'app.css'), 'body { color: red }\n');
+  assert.deepEqual(await commitAll(wt, 'variant', []), ['app.css']);
+  await removeWorktree(repo, wt);
+});

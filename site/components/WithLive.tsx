@@ -58,7 +58,7 @@ const WithLive = () => (
       </ul>
     </div>
     {/* Phones: one card per question, both answers stacked. */}
-    <dl className="m-0 mt-4 grid gap-5 md:hidden">
+    <dl className="m-0 grid gap-5 md:hidden">
       {ROWS.map((r) => (
         <div
           key={r.label}
@@ -78,7 +78,7 @@ const WithLive = () => (
         </div>
       ))}
     </dl>
-    <div className="rounded-pass border-rule bg-surface mt-4 hidden overflow-hidden border md:block">
+    <div className="rounded-pass border-rule bg-surface hidden overflow-hidden border md:block">
       <table className="w-full border-collapse text-left text-[16px] leading-relaxed">
         <thead>
           <tr className="border-rule border-b">

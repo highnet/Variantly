@@ -29,7 +29,7 @@ const Segments = ({ v, size = 'small' }: SegmentsProps) => (
           <motion.i
             className="seg-fill"
             initial={false}
-            animate={{ width: st === 'done' ? '100%' : st === 'now' ? '35%' : '0%' }}
+            animate={{ width: st === 'done' || st === 'now' ? '100%' : '0%' }}
             transition={{ ...SPRING, delay: 0.15 + i * 0.05 }}
           />
           {st === 'now' && <i className="seg-shine" />}
@@ -71,9 +71,11 @@ const Burst = () => (
 type ProgressCardProps = {
   v: Variant;
   last?: string;
+  /** On the board: the table row already shows the segments, so drop the bar and checklist. */
+  compact?: boolean;
 };
 
-const ProgressCard = ({ v, last }: ProgressCardProps) => {
+const ProgressCard = ({ v, last, compact = false }: ProgressCardProps) => {
   const reduce = useReducedMotion();
   const at = stepAt(v);
   const done = v.status === 'done';
@@ -106,7 +108,7 @@ const ProgressCard = ({ v, last }: ProgressCardProps) => {
 
   return (
     <motion.div
-      className={clsx('progress-card', done && 'is-done')}
+      className={clsx('progress-card', done && 'is-done', compact && 'compact')}
       initial={{ opacity: 0, y: 16, scale: 0.98 }}
       animate={celebrate && !reduce ? { opacity: 1, y: 0, scale: [1, 1.03, 1] } : { opacity: 1, y: 0, scale: 1 }}
       transition={{ type: 'spring', stiffness: 300, damping: 15 }}
@@ -132,20 +134,20 @@ const ProgressCard = ({ v, last }: ProgressCardProps) => {
 
       <div className="progress-body">
         <p className="progress-dir">{directionLabel(v.direction, v.picked)}</p>
-        <div className="progress-bar">
+        {!compact && <div className="progress-bar">
           <Segments v={v} size="large" />
           {celebrate && !reduce && <Burst />}
-        </div>
+        </div>}
         {LIVE.includes(v.status) && at >= 0 && <StepStage v={v} at={at} />}
         <p className="progress-now">
           <AnimatePresence mode="wait" initial={false}>
             <motion.span key={done ? 'd' : at} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
-              {done ? 'Ready to compare.' : LIVE.includes(v.status) ? STEPS[Math.max(0, at)] : v.status === 'queued' ? `0/${STEPS.length} · Waiting for a free slot` : `Stopped at ${STEPS[Math.max(0, at)]}`}
+              {compact && LIVE.includes(v.status) ? `Now: ${STEPS[Math.max(0, at)]}` : done ? 'Ready to compare.' : LIVE.includes(v.status) ? STEPS[Math.max(0, at)] : v.status === 'queued' ? `0/${STEPS.length} · Waiting for a free slot` : `Stopped at ${STEPS[Math.max(0, at)]}`}
             </motion.span>
           </AnimatePresence>
           {next && <span className="progress-next">Next: {next}</span>}
         </p>
-        <ol className="progress-steps">
+        {!compact && <ol className="progress-steps">
           {STEPS.map((s, i) => {
             const st = stepState(v, i);
             return (
@@ -155,9 +157,9 @@ const ProgressCard = ({ v, last }: ProgressCardProps) => {
               </li>
             );
           })}
-        </ol>
+        </ol>}
         <p className="progress-time">
-          {v.status === 'queued' ? 'It starts as soon as a slot frees up. You can look at other variants meanwhile.' : (<><span className="data">{clock(elapsedMs(v, now))}</span> {done ? 'in total.' : 'so far. You can look at other variants meanwhile.'}</>)}
+          {v.status === 'queued' ? 'It starts as soon as a slot frees up. You can look at other variants meanwhile.' : (<><span className="data">{clock(elapsedMs(v, now))}</span> {done ? 'in total.' : compact ? 'so far.' : 'so far. You can look at other variants meanwhile.'}</>)}
         </p>
       </div>
       {last && !done && <pre className="progress-last">{last}</pre>}
