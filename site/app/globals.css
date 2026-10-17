@@ -1250,3 +1250,31 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   .vy-split-shade,
   .vy-split-line { --lean: 14px; }
 }
+
+/* ---- Concept swap: the new page wipes in behind a leaning edge ---------- */
+::view-transition-old(root) {
+  animation: none;
+}
+::view-transition-new(root) {
+  animation: vy-swap-wipe 760ms cubic-bezier(0.7, 0, 0.2, 1) both;
+}
+/* The trailing shadow of the edge, drawn on the old page as it is covered. */
+::view-transition-image-pair(root) {
+  isolation: auto;
+}
+@keyframes vy-swap-wipe {
+  from {
+    clip-path: polygon(-20% 0, -10% 0, -20% 100%, -30% 100%);
+    filter: brightness(1.15);
+  }
+  70% {
+    filter: brightness(1.03);
+  }
+  to {
+    clip-path: polygon(-20% 0, 130% 0, 120% 100%, -30% 100%);
+    filter: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(root) { animation: none; }
+}

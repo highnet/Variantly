@@ -6,7 +6,7 @@ import { StoreHydrator } from '@/components/StoreHydrator';
 import { Toaster } from '@/components/Toaster';
 import { HERO_FONT_VARS } from '@/lib/introFonts';
 import { cn } from '@/lib/utils';
-import { VARIANT_BOOT } from '@/lib/variant';
+import { VARIANT_BOOT } from '@/lib/variantBoot';
 import { PREFS_BOOT } from '@/lib/prefs';
 import { REPO_URL, SITE_URL } from '@/lib/site';
 
