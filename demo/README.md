@@ -146,7 +146,7 @@ mid-render slows it down and can break git worktrees.
 ## Make the film
 
 ```sh
-npm run all                # voice → record → edit → build everything
+npm run all                # voice → record → voice (real run time) → edit → build everything
 ```
 
 Or step by step:

@@ -23,6 +23,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 import { checkVariantly } from './lib/freshness.mjs';
+import { captureDoctor } from './stacks.mjs';
 import { CAPTURE_FPS, REPAINT, encodeCfr, startScreencast } from './lib/screencast.mjs';
 import { at, HEIGHT, log, PAD_MS, readJson, REPO, run, script, WIDTH, writeJson } from './lib/common.mjs';
 
@@ -292,6 +293,10 @@ class Director {
     this.branches = [];
     this.presses = [];
     this.warnings = [];
+    // Named moments (`mark` on a step), e.g. when the run started and ended,
+    // so the film can say how long it really took.
+    this.marks = {};
+    this.lastCommit = '';
   }
 
   now() {
@@ -397,6 +402,8 @@ class Director {
       t1: Number(this.now().toFixed(3)),
       box: [target.box.x - pad, target.box.y - pad, target.box.width + pad * 2, target.box.height + pad * 2].map(Math.round),
       callout: step.callout ?? null,
+      // `zoom`: a full punch-in, like a zoomed click, instead of the gentle one.
+      zoom: !!step.zoom,
     });
   }
 
@@ -509,6 +516,7 @@ class Director {
       await this.actInner(step);
       // Where the app itself moves on screen: the smoothness check looks here.
       if (step.scroll !== undefined || step.drag || step.fill) this.motion.push([Number(from.toFixed(3)), Number(this.now().toFixed(3))]);
+      if (step.mark) this.marks[step.mark] = Number(this.now().toFixed(3));
     } finally {
       const ms = Date.now() - began;
       if (ms > 1500 && !step.wait && !step.waitApi) log('record', `    slow: ${JSON.stringify(step).slice(0, 90)} took ${(ms / 1000).toFixed(1)}s`);
@@ -532,6 +540,8 @@ class Director {
     } else if (step.gitStat) {
       this.diffstat = (await run('git', ['diff', '--stat'], { cwd: SITE, quiet: true }).catch(() => '')).trimEnd();
       this.branches = (await run('git', ['branch', '--list', 'variantly/*', '--format=%(refname:short)'], { cwd: SITE, quiet: true }).catch(() => '')).trim().split('\n').filter(Boolean);
+      // Still the commit the take started from: keeping commits nothing.
+      this.lastCommit = (await run('git', ['log', '--oneline', '-1'], { cwd: SITE, quiet: true }).catch(() => '')).trim();
     }
     else if (step.click) await this.click(step);
     else if (step.fill) await this.type(step);
@@ -543,6 +553,7 @@ class Director {
     else if (step.press) await this.all((page) => page.keyboard.press(step.press));
     else if (step.waitPanes) await this.waitPanes();
     else if (step.waitApi === 'allDone') await waitAllDone(this.vars.app, step.timeoutMin ?? 60);
+    else if (step.mark) {} // a named moment only (see act)
     else throw new Error(`Unknown action ${JSON.stringify(step)}`);
     // slowMo, applied between actions rather than to every mouse step.
     await this.page.waitForTimeout(250);
@@ -600,6 +611,8 @@ if (filmed.problems.length) {
 log('record', `agent: ${mix || agent}${agent === 'demo' ? ' (dry run, no AI)' : ''}; themes: ${THEMES.join(', ')}`);
 await smokeTest();
 await prepareSite();
+// The stack montage and the doctor ✗ beat: detection only, no agent, no keys.
+await captureDoctor();
 hideImpeccable();
 await preflight();
 const { child, url: app } = await startVariantly();
@@ -771,6 +784,8 @@ writeJson(at('video', 'raw-timeline.json'), {
   keys: director.keys,
   diffstat: director.diffstat,
   branches: director.branches,
+  lastCommit: director.lastCommit,
+  marks: director.marks,
   warnings: director.warnings,
   pageErrors,
 });
