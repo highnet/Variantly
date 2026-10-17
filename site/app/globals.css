@@ -1334,3 +1334,24 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   border-radius: 50%;
   will-change: transform, opacity;
 }
+
+/* ---- Demo picker tiles (01–06) ------------------------------------------ */
+/* The tiles drew "raised slate" behind "surface" text; in the remapped hero
+   those can be the same colour, which blanked the numbers. Give them their
+   own pair: hero box with hero ink, and the accent for the current one. */
+:root[data-variant] { --on-alert: #111111; }
+:root[data-variant='c'], :root[data-variant='f'] { --on-alert: #ffffff; }
+:root[data-variant='c'][data-theme='dark'] { --on-alert: #111111; }
+:root[data-variant] [role='group'][aria-label='Redesigns'] button {
+  background: var(--hero-box);
+  color: var(--hero-ink);
+  opacity: 0.75;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hero-line) 45%, transparent);
+}
+:root[data-variant] [role='group'][aria-label='Redesigns'] button:hover { opacity: 1; }
+:root[data-variant] [role='group'][aria-label='Redesigns'] button[aria-current='true'] {
+  background: var(--alert);
+  color: var(--on-alert);
+  opacity: 1;
+  box-shadow: none;
+}
