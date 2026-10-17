@@ -23,6 +23,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { chromium } from 'playwright';
 import { checkVariantly } from './lib/freshness.mjs';
+import { captureDoctor } from './stacks.mjs';
 import { CAPTURE_FPS, REPAINT, encodeCfr, startScreencast } from './lib/screencast.mjs';
 import { at, HEIGHT, log, PAD_MS, readJson, REPO, run, script, WIDTH, writeJson } from './lib/common.mjs';
 
@@ -292,6 +293,10 @@ class Director {
     this.branches = [];
     this.presses = [];
     this.warnings = [];
+    // Named moments (`mark` on a step), e.g. when the run started and ended,
+    // so the film can say how long it really took.
+    this.marks = {};
+    this.lastCommit = '';
   }
 
   now() {
@@ -397,6 +402,8 @@ class Director {
       t1: Number(this.now().toFixed(3)),
       box: [target.box.x - pad, target.box.y - pad, target.box.width + pad * 2, target.box.height + pad * 2].map(Math.round),
       callout: step.callout ?? null,
+      // `zoom`: a full punch-in, like a zoomed click, instead of the gentle one.
+      zoom: !!step.zoom,
     });
   }
 
@@ -509,6 +516,7 @@ class Director {
       await this.actInner(step);
       // Where the app itself moves on screen: the smoothness check looks here.
       if (step.scroll !== undefined || step.drag || step.fill) this.motion.push([Number(from.toFixed(3)), Number(this.now().toFixed(3))]);
+      if (step.mark) this.marks[step.mark] = Number(this.now().toFixed(3));
     } finally {
       const ms = Date.now() - began;
       if (ms > 1500 && !step.wait && !step.waitApi) log('record', `    slow: ${JSON.stringify(step).slice(0, 90)} took ${(ms / 1000).toFixed(1)}s`);
@@ -532,6 +540,8 @@ class Director {
     } else if (step.gitStat) {
       this.diffstat = (await run('git', ['diff', '--stat'], { cwd: SITE, quiet: true }).catch(() => '')).trimEnd();
       this.branches = (await run('git', ['branch', '--list', 'variantly/*', '--format=%(refname:short)'], { cwd: SITE, quiet: true }).catch(() => '')).trim().split('\n').filter(Boolean);
+      // Still the commit the take started from: keeping commits nothing.
+      this.lastCommit = (await run('git', ['log', '--oneline', '-1'], { cwd: SITE, quiet: true }).catch(() => '')).trim();
     }
     else if (step.click) await this.click(step);
     else if (step.fill) await this.type(step);
@@ -543,6 +553,7 @@ class Director {
     else if (step.press) await this.all((page) => page.keyboard.press(step.press));
     else if (step.waitPanes) await this.waitPanes();
     else if (step.waitApi === 'allDone') await waitAllDone(this.vars.app, step.timeoutMin ?? 60);
+    else if (step.mark) {} // a named moment only (see act)
     else throw new Error(`Unknown action ${JSON.stringify(step)}`);
     // slowMo, applied between actions rather than to every mouse step.
     await this.page.waitForTimeout(250);
@@ -600,6 +611,8 @@ if (filmed.problems.length) {
 log('record', `agent: ${mix || agent}${agent === 'demo' ? ' (dry run, no AI)' : ''}; themes: ${THEMES.join(', ')}`);
 await smokeTest();
 await prepareSite();
+// The stack montage and the doctor ✗ beat: detection only, no agent, no keys.
+await captureDoctor();
 hideImpeccable();
 await preflight();
 const { child, url: app } = await startVariantly();
@@ -664,6 +677,19 @@ async function openView(theme, mirror) {
       window.fetch = (input, init = {}) => {
         const url = new URL(typeof input === 'string' ? input : input.url, location.href);
         const method = (init.method ?? (typeof input === 'string' ? 'GET' : input.method) ?? 'GET').toUpperCase();
+        // The kept screen's "Open your site" goes through too, so both themes
+        // show the same local URL in the hand-off prompt. The light page asks
+        // first; until its server pool exists this call can fail, so retry.
+        if (url.origin === location.origin && url.pathname === '/api/open-site' && method === 'POST') {
+          return (async () => {
+            await new Promise((r) => setTimeout(r, 1500));
+            for (let i = 0; ; i++) {
+              const res = await real(input, init);
+              if (res.ok || i >= 20) return res;
+              await new Promise((r) => setTimeout(r, 500));
+            }
+          })();
+        }
         if (url.origin === location.origin && url.pathname.startsWith('/api/') && method !== 'GET' && !url.pathname.startsWith('/api/ensure/')) {
           return Promise.resolve(new Response('{"ok":true}', { status: 200, headers: { 'content-type': 'application/json' } }));
         }
@@ -672,6 +698,11 @@ async function openView(theme, mirror) {
     });
   }
   const page = await context.newPage();
+  // A tab the app opens ("Open your site" on the kept screen) is never
+  // filmed: give the recorded page the focus back so its frames keep coming.
+  context.on('page', (opened) => {
+    if (opened !== page) setTimeout(() => page.bringToFront().catch(() => {}), 300);
+  });
   const capture = await startScreencast(page, at('video', theme, 'frames'), { width: WIDTH, height: HEIGHT });
   const view = { theme, context, page, capture, t0: Date.now(), errors: [] };
   page.on('pageerror', (e) => view.errors.push(String(e)));
@@ -688,6 +719,8 @@ const director = new Director(views, {
   app,
   site: pathToFileURL(path.join(SITE, 'index.html')).href,
   about: pathToFileURL(path.join(SITE, 'about.html')).href,
+  // The website beat films the live site (or a local build: DEMO_WEB_URL).
+  web: process.env.DEMO_WEB_URL || 'https://variantly.style',
   keep: String(film.keep ?? 1),
 });
 const scenes = [];
@@ -751,6 +784,8 @@ writeJson(at('video', 'raw-timeline.json'), {
   keys: director.keys,
   diffstat: director.diffstat,
   branches: director.branches,
+  lastCommit: director.lastCommit,
+  marks: director.marks,
   warnings: director.warnings,
   pageErrors,
 });

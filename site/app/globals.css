@@ -997,7 +997,8 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 :root[data-variant='d'] main > div .figure:not(h3) { text-shadow: 4px 4px 0 #ff3d00; }
 
 /* E · Bauhaus: primary-coded cards, red-square heads, flat geometry */
-:root[data-variant='e'] main > div h2 { text-transform: uppercase; letter-spacing: 0.03em; }
+/* Hanging indent: a wrapped head's second line starts under the text, not under the square. */
+:root[data-variant='e'] main > div h2 { text-transform: uppercase; letter-spacing: 0.03em; padding-left: 1.05em; text-indent: -1.05em; }
 :root[data-variant='e'] main > div h2::before {
   content: '';
   display: inline-block;
@@ -1040,11 +1041,6 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   .vy-switcher { bottom: 12px; }
   /* Line-based scenes cross the stacked copy on phones; keep them faint. */
   :root[data-variant='c']:not([data-scrolled]) .vy-scene { opacity: 0.35; }
-}
-
-/* Until the reveal starts, keep the title hidden rather than flash the final word. */
-:root[data-intro] .vy-title {
-  visibility: hidden;
 }
 
 /* ---- "Now showing" split-flap tiles, styled per concept ------------------ */
@@ -1200,9 +1196,10 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 }
 :root[data-variant='f'] main > div .grid > .bg-surface:nth-child(odd) { transform: rotate(-0.5deg); }
 :root[data-variant='f'] main > div .grid > .bg-surface:nth-child(even) { transform: rotate(0.5deg); }
+/* Tape goes on cards, not on copy buttons or command blocks, where it covers the label. */
 :root[data-variant='f'] [data-hero-side]::before,
 :root[data-variant='f'] main > div > section > .bg-surface::before,
-:root[data-variant='f'] main > div .grid > .bg-surface::before {
+:root[data-variant='f'] main > div .grid > .bg-surface:not(button, [data-slot='command-copy'])::before {
   content: '';
   position: absolute;
   top: -9px;
@@ -1538,7 +1535,8 @@ header.vy-header-glass {
 :root[data-variant] main > div.mx-auto { row-gap: clamp(7rem, 14vw, 12rem); padding-top: clamp(6rem, 10vw, 9rem); padding-bottom: clamp(5rem, 8vw, 8rem); }
 :root[data-variant] [data-hero-title] { padding-block: clamp(4rem, 9vw, 8rem); }
 :root[data-variant] [data-hero-grid] { padding-block: clamp(3rem, 7vw, 6.5rem); row-gap: 3.5rem; }
-:root[data-variant] main > div section { row-gap: 2.25rem; }
+/* Each section sets its own rhythm (its gap-* class): no blanket row-gap here, it
+   flattened every section, nested ones and the two-panel start card included. */
 
 /* ---- Breathing room ------------------------------------------------------ */
 /* Readable measure and rhythm for body copy. */
@@ -1564,6 +1562,17 @@ main > div p { line-height: 1.65; }
 /* The backdrop is fixed and static: isolate it so nothing outside makes it
    repaint, and give the art its own layer so parallax only composites. */
 .vy-backdrop { contain: strict; }
+/* The server-rendered art (BackdropPoster): only the current concept's shows,
+   and none on the agent view. */
+[data-art] { display: none; }
+:root[data-variant='a'] [data-art='a'],
+:root[data-variant='b'] [data-art='b'],
+:root[data-variant='c'] [data-art='c'],
+:root[data-variant='d'] [data-art='d'],
+:root[data-variant='e'] [data-art='e'],
+:root[data-variant='f'] [data-art='f'],
+:root[data-variant='g'] [data-art='g'] { display: block; }
+:root[data-audience='agent'] .vy-backdrop-art { display: none; }
 .vy-art { will-change: transform; }
 @media (max-width: 639px), (pointer: coarse) {
   /* Phones: no frosted header (a blur of everything under it, every frame). */

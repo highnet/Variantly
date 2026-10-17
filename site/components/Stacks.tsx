@@ -48,7 +48,7 @@ const Stacks = () => (
       </ul>
     </div>
 
-    <div className="mt-16 grid gap-10">
+    <div className="grid gap-10">
       <div className="grid max-w-[60ch] content-start gap-3">
         <Typography variant="headline" as="h2">
           Uses your own AI

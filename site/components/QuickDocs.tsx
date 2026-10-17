@@ -1,6 +1,8 @@
 import { CommandCopy } from '@/components/CommandCopy';
 import { GlossaryTip } from '@/components/GlossaryTip';
+import { PromptCopy } from '@/components/PromptCopy';
 import { Typography } from '@/components/ui/Typography';
+import { PROMPTS } from '@/lib/content';
 import { cn } from '@/lib/utils';
 
 export const COMMANDS = [
@@ -43,6 +45,7 @@ const QuickDocs = ({ className }: QuickDocsProps) => (
         Every command runs in your site&apos;s folder. Add a path to run it somewhere else, or{' '}
         <GlossaryTip term="flags" /> to change what it does.
       </Typography>
+      <PromptCopy chip prompt={PROMPTS.docs} label="Copy prompt: point your AI at these docs" />
     </div>
     <div className="grid max-w-[920px] gap-10">
       <dl className="m-0 grid gap-7">

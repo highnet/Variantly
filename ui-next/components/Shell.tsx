@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
 import { Board } from './Board';
 import { ViewSkeleton } from './Skeleton';
 import { Checkin } from './Checkin';
@@ -10,6 +9,7 @@ import { Mark } from './Icon';
 import { Kept } from './Kept';
 import { Prefs } from './Prefs';
 import { Rolling } from './Rolling';
+import { Toaster } from './Toaster';
 import { setState, useStore, type UiState } from '@/lib/store';
 
 type View = 'loading' | 'checkin' | 'board' | 'compare' | 'rolling' | 'kept' | 'stopped';
@@ -42,12 +42,20 @@ const KEYS: [string, string][] = [
 const Shell = () => {
   const view = useStore(pickView);
   const repo = useStore((s) => s.snap?.repo ?? '');
-  const phase = useStore((s) => (s.reconnecting ? 'Reconnecting…' : (PHASE[s.snap?.phase ?? ''] ?? '')));
+  const phase = useStore((s) => (s.stopped ? '' : s.reconnecting ? 'Reconnecting…' : (s.snap?.phase === 'ready' && !s.snap.variants.some((v) => v.status === 'done') ? 'Nothing to compare yet' : (PHASE[s.snap?.phase ?? ''] ?? ''))));
   const helpOpen = useStore((s) => s.helpOpen);
-  const toast = useStore((s) => s.toast);
 
   useEffect(() => {
     document.body.dataset.view = view;
+    // ?step= belongs to the wizard; past it, drop it so a reload doesn't
+    // claim a wizard step the screen isn't on.
+    if (view !== 'checkin' && view !== 'loading') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('step')) {
+        url.searchParams.delete('step');
+        window.history.replaceState(null, '', url);
+      }
+    }
   }, [view]);
 
   // Esc closes the key list on every screen, not just in compare.
@@ -102,22 +110,7 @@ const Shell = () => {
           ))}
         </dl>
       </aside>
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            key={toast.id}
-            className={toast.bad ? 'toast bad' : 'toast'}
-            role="status"
-            aria-live="polite"
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ type: 'spring', stiffness: 420, damping: 32 }}
-          >
-            {toast.message}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Toaster />
     </>
   );
 };

@@ -178,7 +178,7 @@ export async function mount(layout, theme = 'light') {
   let focus = zoomAt(tl.clicks);
   let amount = 0.2 * focus.k;
   for (const sp of spots) {
-    const k = window_(sp.t0 - 0.3, sp.t1 + 0.2, 0.6) * 0.55;
+    const k = window_(sp.t0 - 0.3, sp.t1 + 0.2, 0.6) * (sp.zoom ? 1 : 0.55);
     if (0.2 * k > amount) {
       amount = 0.2 * k;
       focus = { x: sp.box[0] + sp.box[2] / 2, y: sp.box[1] + sp.box[3] / 2, k };
@@ -216,11 +216,13 @@ export async function mount(layout, theme = 'light') {
   const chapter = [...tl.scenes].reverse().find((s) => s.chapter && s.start <= t + 0.001)?.chapter;
   const bug = el('div', 'bug', `<img src="icon.svg" alt=""><span>variantly</span>`);
   document.body.append(bug);
-  if (chapter && !cold) {
-    const chip = el('div', 'step', `${String(chapter.n).padStart(2, '0')} · ${esc(chapter.title)}`);
-    document.body.append(chip);
-  }
   if (cold) bug.style.opacity = '0';
+  // The corner chapter label ("03/12 · Setup") is drawn last, after every
+  // card, veil and end card, so the viewer always knows where they are.
+  const chapters = Math.max(0, ...tl.scenes.map((s) => s.chapter?.n ?? 0));
+  const where = chapter && !cold
+    ? el('div', 'step', `${String(chapter.n).padStart(2, '0')}/${String(chapters).padStart(2, '0')} · ${esc(chapter.title)}`)
+    : null;
 
   // Chapter band: the number and title slide in at each chapter's start.
   for (const s of tl.scenes) {
@@ -233,11 +235,18 @@ export async function mount(layout, theme = 'light') {
     document.body.append(band);
   }
 
-  // Timelapse: how much real time it covers, and how much faster it runs.
+  // Timelapse: the real clock first, at real speed, then how much faster it
+  // runs. `fastAt` is where the speed-up starts (edit.mjs cuts a 1× head);
+  // `clock.from` is how long the run had already taken when the scene began.
   if (scene.speed > 1) {
-    const total = Math.round(((scene.end - scene.start) * scene.speed) / 60);
-    const real = (t - scene.start) * scene.speed;
-    const chip = el('div', 'chip', `▶▶ ~${Math.max(1, total)} min, sped up ${Math.round(scene.speed)}× · ${clock(real)}`);
+    const fastAt = scene.fastAt ?? scene.start;
+    const from = scene.clock?.from ?? 0;
+    const real = from + (t < fastAt ? t - scene.start : fastAt - scene.start + (t - fastAt) * scene.speed);
+    const total = Math.max(1, Math.round((scene.clock?.total ?? (fastAt - scene.start) + (scene.end - fastAt) * scene.speed) / 60));
+    const text = t < fastAt
+      ? `● Real time · ${clock(real)}`
+      : `▶▶ Sped up ${Math.round(scene.speed)}× · ${clock(real)} of ~${total} min`;
+    const chip = el('div', 'chip', text);
     chip.style.opacity = window_(scene.start, scene.end, 0.3);
     document.body.append(chip);
   }
@@ -254,7 +263,8 @@ export async function mount(layout, theme = 'light') {
   }
 
   // ---------------------------------------------------------------- captions
-  const cue = captionAt(tl.captions, t);
+  // On by default; `build.mjs --no-captions` renders a picture without them.
+  const cue = tl.burnCaptions === false ? null : captionAt(tl.captions, t);
   if (cue && !scene.cta) document.body.append(el('div', 'caption', `<span>${esc(cue.text)}</span>`));
 
   // ---------------------------------------------------------------- lower thirds
@@ -270,27 +280,49 @@ export async function mount(layout, theme = 'light') {
   }
 
   // ---------------------------------------------------------------- terminal cards
+  // A terminal shows `lines`, or a `sequence` of panels one after another
+  // (the stack montage), or the take's own git output (`diffstat`). Commands
+  // start with "$ " and get the film's clean prompt (tl.prompt, e.g.
+  // "~/tallyboard $"); lines with a ✗ are marked.
   for (const s of tl.scenes) {
     if (!s.terminal) continue;
     const diff = s.terminal.diffstat;
-    const a = diff ? s.start + 7 : s.start + 0.4;
-    const b = diff ? s.end - 0.3 : s.start + 6.5;
-    const k = window_(a, b, 0.35);
+    const a0 = diff ? s.start + 7 : s.start + (s.terminal.from ?? 0.4);
+    const b0 = diff || s.terminal.untilEnd || s.terminal.sequence ? s.end - 0.3 : s.start + 6.5;
+    let panel = { title: s.terminal.title, lines: s.terminal.lines ?? [] };
+    let a = a0, b = b0;
+    if (s.terminal.sequence?.length) {
+      const n = s.terminal.sequence.length;
+      const each = (b0 - a0) / n;
+      const i = clamp(Math.floor((t - a0) / each), 0, n - 1);
+      panel = s.terminal.sequence[i];
+      a = a0 + i * each;
+      b = a + each;
+    }
+    const k = s.terminal.sequence ? window_(a0, b0, 0.35) : window_(a, b, 0.35);
     if (k <= 0) continue;
+    const head = [];
+    if (diff && tl.lastCommit) head.push('$ git log --oneline -1', tl.lastCommit);
     const lines = diff
-      ? ['$ git diff --stat', ...(tl.diffstat || ' (no changes)').split('\n').map((l) => l.replace(/^\s+/, ' ')), ...(s.terminal.after ?? [])]
-      : s.terminal.lines;
+      ? [...head, '$ git diff --stat', ...(tl.diffstat || ' (no changes)').split('\n').map((l) => l.replace(/^\s+/, ' ')),
+          ...(s.terminal.branches && tl.branches?.length ? ['$ git branch --list "variantly/*"', ...tl.branches.slice(0, 3).map((x) => `  ${x}`), ...(tl.branches.length > 3 ? [`  … ${tl.branches.length - 3} more`] : [])] : []),
+          ...(s.terminal.after ?? [])]
+      : panel.lines;
     // Lines appear one by one; commands type out.
-    const per = diff ? 0.12 : 1.1;
+    const per = diff ? 0.12 : s.terminal.per ?? 1.1;
+    const prompt = esc(s.terminal.prompt ?? panel.prompt ?? tl.prompt ?? '$');
     let html = '';
     lines.forEach((line, i) => {
       const at = a + 0.3 + i * per;
       if (t < at) return;
       const cmd = line.startsWith('$ ');
       const shownText = cmd && !diff ? line.slice(0, 2 + Math.round((line.length - 2) * span(at, at + 0.6))) : line;
-      html += cmd ? `<span class="prompt">$</span> ${esc(shownText.slice(2))}\n` : `<span class="dim">${esc(shownText)}</span>\n`;
+      html += cmd
+        ? `<span class="prompt">${prompt}</span> ${esc(shownText.slice(2))}\n`
+        : `<span class="${line.includes('✗') ? 'bad' : 'dim'}">${esc(shownText)}</span>\n`;
     });
-    const term = el('div', `term${diff ? ' side' : ''}`, `<div class="bar"><i></i><i></i><i></i></div><pre>${html}<span class="caret"></span></pre>`);
+    const title = panel.title ? `<b>${esc(panel.title)}</b>` : '';
+    const term = el('div', `term${diff ? ' side' : ''}`, `<div class="bar"><i></i><i></i><i></i>${title}</div><pre>${html}<span class="caret"></span></pre>`);
     term.style.opacity = String(k);
     term.style.transform = `translateY(${(1 - k) * 20}px)`;
     if (!diff) {
@@ -331,8 +363,9 @@ export async function mount(layout, theme = 'light') {
 
   // ---------------------------------------------------------------- end card
   const outro = tl.scenes.find((s) => s.cta);
-  if (outro && t >= outro.start + 6) {
-    const a = outro.start + 6;
+  const outroAt = outro ? outro.cta.fromAt ?? outro.start + 6 : 0;
+  if (outro && t >= outroAt) {
+    const a = outroAt;
     const k = ease(span(a, a + 0.8));
     const veil = el('div', 'veil');
     veil.style.opacity = String(k);
@@ -346,6 +379,8 @@ export async function mount(layout, theme = 'light') {
     card.style.opacity = String(ease(span(a + 0.3, a + 1.1)));
     document.body.append(veil, card);
   }
+
+  if (where) document.body.append(where);
 
   await document.fonts.ready;
   markReady();
