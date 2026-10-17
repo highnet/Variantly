@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import { CommandBlock } from './CommandBlock';
 import { api } from '@/lib/api';
 import { resetRun } from '@/lib/live';
-import { directionLabel, pad, plural, scoreText, vname } from '@/lib/format';
+import { directionLabel, pad, plural, scoreText, usageText, vname } from '@/lib/format';
 import { setState, toast, useStore } from '@/lib/store';
 
 const Kept = () => {
@@ -54,7 +54,12 @@ const Kept = () => {
             {v?.audit && <p className="hint data">{scoreText(v.audit, snap.baseline)}</p>}
           </div>
           {r.conflicts.length > 0 && <p className="note bad">Merged with your own edits, with conflicts in {r.conflicts.join(', ')}. Resolve the conflict markers in those files.</p>}
-          {r.rollout && <p className="hint">Rolled out site-wide: {r.rollout}</p>}
+          {r.rollout && (
+            <p className="hint">
+              Rolled out site-wide: {r.rollout}
+              {snap.rollout && <span className="data"> · {usageText(snap.rollout)}</span>}
+            </p>
+          )}
           {r.rolloutError && <p className="note alert">The site-wide rollout failed ({r.rolloutError}), so only the pages this variant redesigned changed.</p>}
           {r.depsChanged && <p className="note alert">This variant changed dependency files. Run your install command.</p>}
           <div>

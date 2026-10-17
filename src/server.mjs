@@ -156,6 +156,11 @@ export const startApp = async (opts) => {
         return detectProject(opts.repo, opts.defaults);
       case 'GET log':
         return { lines: session.logFor(n) };
+      case 'GET rollout-log':
+        return { lines: session.rolloutLog() };
+      case 'POST cancel-rollout':
+        await session.cancelRollout();
+        return { ok: true };
       case 'GET server':
         return session.pool.status(arg);
       case 'POST generate':

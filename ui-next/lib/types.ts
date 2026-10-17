@@ -43,6 +43,7 @@ export type Snapshot = {
   result: { files: string[]; conflicts: string[]; depsChanged: boolean; rollout?: string; rolloutError?: string } | null;
   baseline?: Audit;
   baselineError?: string;
+  rollout?: { n: number; startedAt: number; finishedAt?: number; costUsd?: number; credits?: number; usage?: Variant['usage'] };
 };
 
 export type Agent = {

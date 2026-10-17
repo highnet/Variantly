@@ -87,6 +87,8 @@ const VARIANTLY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url))
  * @property {{ files: string[], conflicts: string[], depsChanged: boolean, rollout?: string, rolloutError?: string } | null} result
  * @property {import('./checks.mjs').AuditResult} [baseline]  the original's scores
  * @property {string} [baselineError]
+ * @property {{ n: number, startedAt: number, finishedAt?: number, costUsd?: number, usage?: import('./agent-output.mjs').Usage, credits?: number }} [rollout]
+ *   the site-wide pass after a keep
  */
 
 /** @param {string} repo */
@@ -116,6 +118,8 @@ export class Session extends EventEmitter {
     this.auditQueue = undefined;
     /** Saves, one at a time. @type {Promise<void>} */
     this.saveQueue = Promise.resolve();
+    /** The site-wide rollout agent, while it runs. @type {(AgentRunState & { log: LineBuffer }) | undefined} */
+    this.rolloutRun = undefined;
     /** Aborts in-flight dependency installs on close(). */
     this.installs = new AbortController();
     this.pool = new ServerPool({
@@ -127,11 +131,17 @@ export class Session extends EventEmitter {
     this.pool.on('log', (id, lines) => lines.length && this.emit('log', { target: id, lines }));
   }
 
-  async load() {
+  /**
+   * @param {{ inspect?: boolean }} [opts]  inspect: read the state as saved, for
+   *   `variantly status`, which may run beside a live session; nothing is
+   *   treated as interrupted
+   */
+  async load(opts = {}) {
     try {
       const saved = JSON.parse(await readFile(path.join(this.dir, 'state.json'), 'utf8'));
       if (saved.version === 1) this.state = saved;
     } catch {}
+    if (opts.inspect) return this.state;
     // A run that was interrupted mid-generation can't be resumed: those
     // agents are gone. Mark what didn't finish so the user can retry it.
     // Nothing runs right after a start, in any phase: a queued variant left
@@ -736,7 +746,15 @@ export class Session extends EventEmitter {
       for (const other of this.state.variants) await this.cancel(other.n);
     }
     await this.pool.closeAll();
-    const rolled = opts.sitewide === false ? {} : await this.#rollout(v);
+    const { cancelled, ...rolled } = opts.sitewide === false ? {} : await this.#rollout(v);
+    if (cancelled) {
+      // Back to choosing, previews and all.
+      this.state.phase = 'ready';
+      this.state.chosen = null;
+      await this.#registerTargets();
+      await this.save();
+      throw new Error('Rollout cancelled. Nothing was applied; pick again when ready.');
+    }
     const result = await git.applyBranch(this.repo, this.state.base, this.branchFor(n));
     const depsChanged = result.files.some((f) => /(^|\/)(package\.json|package-lock\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lockb?|composer\.(json|lock)|Gemfile(\.lock)?|go\.(mod|sum)|Cargo\.(toml|lock)|requirements.*\.txt|pyproject\.toml)$/.test(f));
     // The change is already applied: a worktree Windows won't release yet is
@@ -754,9 +772,10 @@ export class Session extends EventEmitter {
   /**
    * Restyle the rest of the site in the kept variant's worktree, committed
    * onto its branch so the keep applies it with the rest. A failed rollout
-   * still keeps the variant: the pages it redesigned are worth having.
+   * still keeps the variant: the pages it redesigned are worth having. A
+   * cancelled one keeps nothing: the run goes back to choosing.
    * @param {Variant} v
-   * @returns {Promise<{ rollout?: string, rolloutError?: string }>}
+   * @returns {Promise<{ rollout?: string, rolloutError?: string, cancelled?: boolean }>}
    */
   async #rollout(v) {
     const config = /** @type {Config} */ (this.state.config);
@@ -767,17 +786,23 @@ export class Session extends EventEmitter {
     const appDir = path.join(wt, config.appRel);
     const done = config.routes.length ? config.routes : ['/'];
     const pages = detectRoutes(appDir).filter((r) => !done.includes(r));
-    const log = new LineBuffer(2000);
     /** @type {AgentRunState & { log: LineBuffer }} */
-    const run = { log };
+    const run = { log: new LineBuffer(2000) };
+    this.rolloutRun = run;
     const say = (/** @type {string} */ line) => {
-      log.push(line + '\n');
-      this.emit('log', { target: `v${v.n}`, lines: [line] });
+      run.log.push(line + '\n');
+      this.emit('log', { target: 'rollout', lines: [line] });
     };
+    const rollout = { n: v.n, startedAt: Date.now() };
+    this.state.rollout = rollout;
     this.state.phase = 'rolling-out';
     this.state.chosen = v.n;
     await this.save();
-    this.emit('state', this.snapshot());
+    // Spend shows on the rollout screen while the agent works.
+    const live = setInterval(() => {
+      Object.assign(rollout, { costUsd: run.costUsd, usage: run.usage && { ...run.usage }, credits: run.credits });
+      this.save().catch(() => {});
+    }, 3000);
     // Whatever is already uncommitted here was placed by variantly, not designed.
     const exclude = [...new Set([...(v.exclude ?? []), ...(await git.pendingPaths(wt).catch(() => []))])];
     try {
@@ -791,16 +816,40 @@ export class Session extends EventEmitter {
         await mkdir(path.dirname(file), { recursive: true });
         await writeFile(file, body);
       }
+      say(`$ ${inv.file === agent.bin ? agent.bin : JSON.stringify(inv.file)} ${inv.args.map((x) => (/\s/.test(x) ? JSON.stringify(x) : x)).join(' ')}`);
       const { text } = await this.#runAgent(run, inv, wt, config.agentTimeoutMin, say);
-      // Same exclusions as the variant's own commit: linked and copied files stay out.
+      if (run.cancelled) throw new Error('cancelled');
       const files = await git.commitAll(wt, `variantly: roll variant ${v.n} out site-wide`, exclude);
-      say(files.length ? `Rolled out: ${files.length} more file${files.length === 1 ? '' : 's'}.` : 'Rollout changed nothing more.');
+      say(files.length ? `Committed ${files.length} more file${files.length === 1 ? '' : 's'}.` : 'Rollout changed nothing more.');
       return { rollout: extractRollout(text) || (files.length ? `Restyled ${files.length} more file${files.length === 1 ? '' : 's'}.` : '') };
     } catch (err) {
+      if (run.cancelled) {
+        say('Rollout cancelled. Nothing was applied.');
+        await git.discardChanges(wt, exclude).catch(() => {});
+        return { cancelled: true };
+      }
       const message = err instanceof Error ? err.message.split('\n')[0] : String(err);
       say(`Rollout failed, keeping the variant as built: ${message}`);
+      await git.discardChanges(wt, exclude).catch(() => {});
       return { rolloutError: message };
+    } finally {
+      clearInterval(live);
+      run.child = undefined;
+      Object.assign(rollout, { finishedAt: Date.now(), costUsd: run.costUsd, usage: run.usage, credits: run.credits });
     }
+  }
+
+  /** Stop a rollout in progress; the keep it belongs to is called off. */
+  async cancelRollout() {
+    const run = this.rolloutRun;
+    if (this.state.phase !== 'rolling-out' || !run) return;
+    run.cancelled = true;
+    if (run.child) await killTree(run.child);
+  }
+
+  /** The rollout agent's recent output. */
+  rolloutLog() {
+    return this.rolloutRun?.log.tail(200) ?? [];
   }
 
   /**
@@ -809,6 +858,7 @@ export class Session extends EventEmitter {
    * the other variants were) until `variantly clean`.
    */
   async discard() {
+    await this.cancelRollout();
     const keepBranches = this.state.phase === 'finalized';
     for (const v of this.state.variants) await this.cancel(v.n);
     await this.pool.closeAll();
@@ -831,7 +881,7 @@ export class Session extends EventEmitter {
 
   async close() {
     this.installs.abort();
-    for (const [, run] of this.runs) {
+    for (const run of [...this.runs.values(), ...(this.rolloutRun ? [this.rolloutRun] : [])]) {
       run.cancelled = true;
       if (run.child) await killTree(run.child);
     }

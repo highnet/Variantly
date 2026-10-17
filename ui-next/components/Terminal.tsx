@@ -218,4 +218,4 @@ const Terminal = ({ v }: TerminalProps) => {
   );
 };
 
-export { Terminal };
+export { Line, Terminal };
