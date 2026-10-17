@@ -76,8 +76,11 @@ const appendLog = (key: string, lines: string[]) =>
 export const loadDetect = async () => {
   try {
     const detect = await api<Detect>('GET', 'detect');
+    // A re-check (after an install or sign-in) keeps what the person has
+    // already picked; only the first load starts from the suggestion.
     const saved = getState().snap?.config;
-    const form: Form = { ...detect.suggested, ...(saved ?? {}) } as Form;
+    const current = getState().form;
+    const form: Form = { ...detect.suggested, ...(saved ?? {}), ...(current ?? {}) } as Form;
     if (!form.routes?.length) form.routes = ['/'];
     form.extras ??= [];
     form.directions = Array.from({ length: 10 }, (_, i) => form.directions?.[i] ?? '');
