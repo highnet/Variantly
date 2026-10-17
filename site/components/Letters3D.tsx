@@ -51,13 +51,16 @@ export const Letters3D = ({ run }: Letters3DProps) => {
     let disposed = false;
     let stopObserving = () => {};
     let raf = 0;
+    const phone = innerWidth < 640;
     const renderer = new THREE.WebGLRenderer({
       // Phones: no MSAA and 1x pixels; the grain hides the difference.
-      antialias: innerWidth >= 640,
+      antialias: !phone,
       alpha: true,
-      preserveDrawingBuffer: true,
+      // Only seekreel captures need the frame kept after compositing.
+      preserveDrawingBuffer: seekTime() !== null,
+      powerPreference: phone ? 'low-power' : 'default',
     });
-    renderer.setPixelRatio(innerWidth < 640 ? 1 : Math.min(devicePixelRatio, 2));
+    renderer.setPixelRatio(phone ? 1 : Math.min(devicePixelRatio, 2));
     // Neutral tone mapping keeps the candy colours saturated under the studio light.
     renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.toneMappingExposure = 0.9;
@@ -85,7 +88,14 @@ export const Letters3D = ({ run }: Letters3DProps) => {
       camera.updateProjectionMatrix();
     };
     size();
-    addEventListener('resize', size);
+    // A settled word has stopped its loop; a resize (a phone's URL bar
+    // sliding) clears the canvas, so it paints one more frame.
+    let repaint = () => {};
+    const resize = () => {
+      size();
+      repaint();
+    };
+    addEventListener('resize', resize);
     let px = 0;
     let py = 0;
     const move = (e: PointerEvent) => {
@@ -131,13 +141,20 @@ export const Letters3D = ({ run }: Letters3DProps) => {
         const letters = [...WORD].map((ch, i) => {
           const mesh = new THREE.Mesh(
             glyph(ch, FINAL[i]).geo,
-            new THREE.MeshPhysicalMaterial({
-              color: COLOURS[i % COLOURS.length],
-              roughness: 0.22,
-              metalness: 0.05,
-              clearcoat: 1,
-              clearcoatRoughness: 0.08,
-            }),
+            // Clearcoat is a second lighting pass per pixel; phones skip it.
+            phone
+              ? new THREE.MeshStandardMaterial({
+                  color: COLOURS[i % COLOURS.length],
+                  roughness: 0.18,
+                  metalness: 0.05,
+                })
+              : new THREE.MeshPhysicalMaterial({
+                  color: COLOURS[i % COLOURS.length],
+                  roughness: 0.22,
+                  metalness: 0.05,
+                  clearcoat: 1,
+                  clearcoatRoughness: 0.08,
+                }),
           );
           mesh.position.x = x + widths[i] / 2;
           x += widths[i] + GAP;
@@ -194,7 +211,11 @@ export const Letters3D = ({ run }: Letters3DProps) => {
           ty += (px * 0.35 - ty) * 0.06;
           group.rotation.set(tx, ty, 0);
           renderer.render(scene, camera);
-          if (seek === null && !still) raf = requestAnimationFrame(frame);
+          // Phones have no cursor to follow: once every letter has landed
+          // (and popped), the word rests and the loop stops.
+          const settled = phone && letters.every((l) => l.lockedAt >= 0 && t - l.lockedAt > 0.5);
+          if (seek === null && !still && !settled) raf = requestAnimationFrame(frame);
+          else repaint = () => renderer.render(scene, camera);
         };
         frame();
         if (seek !== null) releaseFrame('title');
@@ -205,7 +226,7 @@ export const Letters3D = ({ run }: Letters3DProps) => {
       disposed = true;
       stopObserving();
       cancelAnimationFrame(raf);
-      removeEventListener('resize', size);
+      removeEventListener('resize', resize);
       removeEventListener('pointermove', move);
       pmrem.dispose();
       renderer.dispose();

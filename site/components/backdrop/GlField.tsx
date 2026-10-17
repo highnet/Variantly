@@ -19,11 +19,15 @@ export const GlField = ({ scene: kind, colors }: GlFieldProps) => {
   useEffect(() => {
     const el = host.current;
     if (!el) return;
+    const seek = seekTime();
+    const phone = innerWidth < 640;
     const renderer = new THREE.WebGLRenderer({
       // Phones: no MSAA and 1x pixels; the grain hides the difference.
-      antialias: innerWidth >= 640,
+      antialias: !phone,
       alpha: true,
-      preserveDrawingBuffer: true,
+      // Only seekreel captures need the frame kept after compositing.
+      preserveDrawingBuffer: seek !== null,
+      powerPreference: phone ? 'low-power' : 'default',
     });
     renderer.setPixelRatio(innerWidth < 640 ? 1 : Math.min(devicePixelRatio, 1.5));
     el.appendChild(renderer.domElement);
@@ -42,27 +46,25 @@ export const GlField = ({ scene: kind, colors }: GlFieldProps) => {
       (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
     };
     size();
-    addEventListener('resize', size);
+    // A resize clears the canvas; a still scene has to repaint itself.
+    const resize = () => {
+      size();
+      if (still) renderer.render(scene, camera);
+    };
+    addEventListener('resize', resize);
 
     let px = 0;
     let ease = 0;
     const move = (e: PointerEvent) => (px = e.clientX / innerWidth - 0.5);
     addEventListener('pointermove', move);
 
-    const seek = seekTime();
-    const still = seek !== null || calmMotion();
+    // Phones get one painted frame of the scene: a moving full-screen WebGL
+    // layer behind scrolling content is the costliest thing on the page there.
+    const still = seek !== null || phone || calmMotion();
     let raf = 0;
     const t0 = performance.now();
     const html = document.documentElement;
-    // Phones draw the slow-moving scene at 30fps: half the GPU and battery.
-    const everyOther = innerWidth < 640;
-    let odd = false;
     const tick = () => {
-      odd = !odd;
-      if (everyOther && odd && !still) {
-        raf = requestAnimationFrame(tick);
-        return;
-      }
       // Hidden tab, or scrolled past the hero where the scene is a faint wash:
       // keep the loop alive but skip the GPU work.
       if (!still && (document.hidden || html.hasAttribute('data-scrolled'))) {
@@ -78,7 +80,7 @@ export const GlField = ({ scene: kind, colors }: GlFieldProps) => {
     if (seek !== null) releaseFrame('gl');
     return () => {
       cancelAnimationFrame(raf);
-      removeEventListener('resize', size);
+      removeEventListener('resize', resize);
       removeEventListener('pointermove', move);
       renderer.dispose();
       el.removeChild(renderer.domElement);

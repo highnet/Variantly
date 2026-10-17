@@ -27,15 +27,22 @@ type LetterProps = {
   char: string;
   index: number;
   run: number;
+  solid: boolean;
 };
 
 /* One letter that shape-shifts through the font wardrobe, then locks in. */
-const Letter = ({ char, index, run }: LetterProps) => {
+const Letter = ({ char, index, run, solid }: LetterProps) => {
   // 'idle' = resting on the final face, a number = flickering, null = just locked.
   const [live, setLive] = useState<number | null | 'idle'>('idle');
 
   useEffect(() => {
     if (seekTime() !== null || calmMotion()) return;
+    // The 3D word does its own reveal: the hidden HTML letters stay still
+    // instead of re-rendering and re-measuring every step.
+    if (solid) {
+      document.documentElement.removeAttribute('data-intro');
+      return;
+    }
     const t0 = performance.now();
     let timer = 0;
     const tick = () => {
@@ -49,12 +56,12 @@ const Letter = ({ char, index, run }: LetterProps) => {
     };
     timer = window.setTimeout(tick, startDelay(index));
     return () => clearTimeout(timer);
-  }, [index, run]);
+  }, [index, run, solid]);
 
   // seekreel frames derive the step from ?t instead of the clock.
   const seek = useSeekTime();
   const raw = seek === null ? live : stepAt(seek * 1000, index);
-  const step = raw === null || raw === 'idle' ? null : Math.max(raw, 0);
+  const step = solid || raw === null || raw === 'idle' ? null : Math.max(raw, 0);
 
   // The slot is sized by the final face (invisible), so the word keeps the same
   // width, and stays centred, while the shifting glyph swaps faces on top.
@@ -68,7 +75,7 @@ const Letter = ({ char, index, run }: LetterProps) => {
     g.style.transform = 'none';
     const fit = Math.min(1, box.offsetWidth / Math.max(1, g.scrollWidth));
     g.style.transform = `scale(${fit * scaleAt(step, index)})`;
-  });
+  }, [step, index]);
 
   return (
     <span
@@ -125,7 +132,7 @@ export const VariantTitle = () => {
         )}
       >
         {[...WORD].map((c, i) => (
-          <Letter key={i} char={c} index={i} run={run} />
+          <Letter key={i} char={c} index={i} run={run} solid={solid} />
         ))}
       </button>
       {solid && <Letters3D run={run} />}
