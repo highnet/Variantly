@@ -14,11 +14,15 @@ const HowItWorks = () => (
     <ol className="m-0 grid list-none gap-10 p-0 md:grid-cols-3 md:gap-8">
       {STEPS.map((s, i) => (
         <li key={s.label} className="border-ink grid content-start gap-3 border-t-2 pt-5">
-          <span
-            className="figure text-ink text-[clamp(4.5rem,8vw,7rem)] leading-[0.8]"
-            aria-hidden="true"
-          >
-            {i + 1}
+          {/* An outlined numeral that fills with ink as the scroll progress reaches
+              it (--fill, set in Delight); the filled copy sits on top, clipped. */}
+          <span className="vy-step-num relative w-fit" aria-hidden="true">
+            <span className="figure vy-step-ghost text-ink text-[clamp(4.5rem,8vw,7rem)] leading-[0.8]">
+              {i + 1}
+            </span>
+            <span className="figure vy-step-fill text-ink absolute inset-0 text-[clamp(4.5rem,8vw,7rem)] leading-[0.8]">
+              {i + 1}
+            </span>
           </span>
           <Typography variant="title" as="h3">
             {s.title}

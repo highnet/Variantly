@@ -13,7 +13,9 @@ const LEADS = 'main > div h2 + p, main > div h2 ~ p:first-of-type';
 const CARDS =
   'main > div > section > .bg-surface, main > div > section > div > .bg-surface, main > div .on-slate';
 const GROUPS = 'main > div ol, main > div ul, main > div dl';
-const FIGURES = 'main > div .figure:not(h3)';
+// Step numerals enter as one piece (outline and fill together).
+const FIGURES =
+  'main > div .figure:not(h3, .vy-step-ghost, .vy-step-fill), main > div .vy-step-num';
 
 /*
  * Site-wide scroll entrances. Each element starts hidden only if it is below

@@ -1385,8 +1385,24 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 }
 .vy-steps > li { opacity: 0.45; transition: opacity 400ms ease, transform 500ms cubic-bezier(0.34, 1.5, 0.5, 1); }
 .vy-steps > li.vy-step-on { opacity: 1; }
-.vy-steps > li.vy-step-on .figure { animation: vy-step-pop 520ms cubic-bezier(0.34, 1.7, 0.5, 1); }
-@keyframes vy-step-pop { 40% { transform: scale(1.18) rotate(-4deg); } }
+/* Step numerals: an outline that fills with ink from the bottom as the
+   progress line reaches it, then pops once. */
+.vy-step-num { display: inline-grid; }
+.vy-step-ghost {
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 2px currentColor;
+  text-shadow: none !important;
+  opacity: 0.55;
+}
+.vy-step-fill {
+  clip-path: inset(calc((1 - var(--fill, 1)) * 100%) 0 0 0);
+  transition: clip-path 160ms linear;
+}
+.vy-steps > li.vy-step-done .vy-step-num { animation: vy-step-pop 620ms cubic-bezier(0.34, 1.7, 0.5, 1); }
+@keyframes vy-step-pop {
+  35% { transform: scale(1.16) rotate(-5deg); }
+  65% { transform: scale(0.97) rotate(1.5deg); }
+}
 /* 11 · typing caret */
 .vy-typing::after { content: '▍'; margin-left: 1px; animation: brand-blink 0.9s steps(1) infinite; }
 /* 17 · frosted header once scrolled */
@@ -1413,7 +1429,7 @@ button:not(.vy-fresh):active, a.rounded-chip:active { transform: scale(0.94); tr
 @media (prefers-reduced-motion: reduce) {
   .vy-title, .vy-scene, .vy-blobs { translate: none !important; }
   .vy-steps > li { opacity: 1; }
-  .vy-steps > li .figure, .vy-sheen::after, .vy-typing::after { animation: none !important; }
+  .vy-steps > li .vy-step-num, .vy-sheen::after, .vy-typing::after { animation: none !important; }
 }
 :root[data-seek] .vy-title, :root[data-seek] .vy-scene, :root[data-seek] .vy-blobs { translate: none !important; }
 :root[data-seek] .vy-steps > li { opacity: 1; }
