@@ -201,7 +201,12 @@ async function unlinkShared(worktree) {
   await visit(worktree, 3);
 }
 
-/** Folders agent tooling writes into its cwd; never part of a variant. */
+/**
+ * Folders agent tooling writes into its cwd; never part of a variant. Excluded
+ * with a glob pathspec, whose leading double star also matches the root; unlike a plain
+ * `:(exclude).playwright-mcp` it does not make `git add` fail when the
+ * project already gitignores the folder.
+ */
 export const TOOL_OUTPUT = [".playwright-mcp"];
 
 /**
@@ -216,7 +221,7 @@ const changeSpec = async (worktree, exclude) => {
   const ignored = rels.length
     ? new Set((await run("git", ["check-ignore", "--", ...rels], { cwd: worktree })).stdout.split("\n").map((s) => s.trim()))
     : new Set();
-  return [".", `:(exclude)${MARKER}`, `:(exclude)**/${MARKER}`, ...TOOL_OUTPUT.flatMap((d) => [`:(exclude)${d}`, `:(exclude)**/${d}/**`]), ...rels.filter((p) => !ignored.has(p)).map((p) => `:(exclude)${p}`)];
+  return [".", `:(exclude)${MARKER}`, `:(exclude)**/${MARKER}`, ...TOOL_OUTPUT.map((d) => `:(exclude,glob)**/${d}/**`), ...rels.filter((p) => !ignored.has(p)).map((p) => `:(exclude)${p}`)];
 };
 
 /**
