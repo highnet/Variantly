@@ -3,6 +3,8 @@ const PATHS: Record<string, string[]> = {
   single: ['M3 5h18v14H3z'],
   side: ['M3 5h8v14H3z', 'M13 5h8v14h-8z'],
   board: ['M4 6h16', 'M4 10h16', 'M4 14h16', 'M4 18h10'],
+  chat: ['M4 5h16v11H9l-5 4z', 'M8 9.5h8', 'M8 12.5h5'],
+  send: ['M4 12l16-8-6 16-2.5-6.5z', 'M11.5 13.5l3-3'],
   info: ['M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', 'M12 11v6', 'M12 7.5v.5'],
   plus: ['M12 5v14', 'M5 12h14'],
   minus: ['M5 12h14'],

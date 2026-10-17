@@ -140,6 +140,21 @@ export const connect = () => {
     const { target, lines } = JSON.parse((e as MessageEvent).data) as { target: string; lines: string[] };
     appendLog(logKey(target), lines);
   });
+  es.addEventListener('chat', (e) => {
+    const { n, id, line, done } = JSON.parse((e as MessageEvent).data) as { n: number; id: string; line?: string; done?: boolean };
+    if (done) {
+      // The final text arrives with the next snapshot; drop the live lines and
+      // reload the variant so the change shows.
+      setState((s) => {
+        const { [id]: _gone, ...rest } = s.chatLive;
+        return { chatLive: rest };
+      });
+      const frame = document.querySelector<HTMLIFrameElement>('iframe[title="Variant"]');
+      if (frame?.src && getState().sel === n) frame.src = frame.src;
+      return;
+    }
+    if (line) setState((s) => ({ chatLive: { ...s.chatLive, [id]: [...(s.chatLive[id] ?? []), line].slice(-40) } }));
+  });
   es.addEventListener('installed', (e) => {
     const { agent, code, what = '', tail = [] } = JSON.parse((e as MessageEvent).data) as { agent: string; code: number; what?: string; tail?: string[] };
     const thing = /impeccable/.test(what) ? `Impeccable for ${agent}` : agent;

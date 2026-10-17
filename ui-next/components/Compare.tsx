@@ -11,6 +11,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import clsx from 'clsx';
 import { act, goCompare } from './Board';
+import { Chat } from './Chat';
 import { Icon, Mark } from './Icon';
 import { ProgressCard } from './Progress';
 import { PageSkeleton } from './Skeleton';
@@ -36,7 +37,7 @@ const pickable = (s: UiState) => (s.snap?.variants ?? []).filter(isPickable).map
 const handleKey = (key: string) => {
   const s = getState();
   if (key === 'Escape') {
-    setState({ confirming: false, infoOpen: false, helpOpen: false });
+    setState({ confirming: false, infoOpen: false, chatOpen: false, helpOpen: false });
     return;
   }
   const ready = pickable(s);
@@ -51,7 +52,8 @@ const handleKey = (key: string) => {
     return setState({ mode: modes[(modes.indexOf(s.mode) + 1) % modes.length] });
   }
   if (key === 'm') return setState({ device: s.device === 'mobile' ? 'desktop' : 'mobile' });
-  if (key === 'i') return setState({ infoOpen: !s.infoOpen });
+  if (key === 'i') return setState({ infoOpen: !s.infoOpen, chatOpen: false });
+  if (key === 'c') return setState({ chatOpen: !s.chatOpen, infoOpen: false });
   if (key === '[') return setState({ split: Math.max(0, s.split - 5) });
   if (key === ']') return setState({ split: Math.min(100, s.split + 5) });
   if ((key === 'ArrowLeft' || key === 'ArrowRight') && ready.length) {
@@ -220,6 +222,7 @@ const Dock = () => {
   const confirming = useStore((s) => s.confirming);
   const applying = useStore((s) => s.applying);
   const infoOpen = useStore((s) => s.infoOpen);
+  const chatOpen = useStore((s) => s.chatOpen);
   const [draft, setDraft] = useState(path);
   const apply = useRef<HTMLButtonElement>(null);
   const keepBtn = useRef<HTMLButtonElement>(null);
@@ -342,7 +345,10 @@ const Dock = () => {
       <button className="icon-btn" type="button" title="Board" aria-label="Show the board" onClick={() => setState({ forceBoard: true })}>
         <Icon name="board" />
       </button>
-      <button className="icon-btn" type="button" title="Details (i)" aria-label="Variant details" aria-pressed={infoOpen} onClick={() => setState({ infoOpen: !infoOpen })}>
+      <button className="icon-btn" type="button" title="Chat with the agent (c)" aria-label="Chat with the agent" aria-pressed={chatOpen} onClick={() => setState({ chatOpen: !chatOpen, infoOpen: false })}>
+        <Icon name="chat" />
+      </button>
+      <button className="icon-btn" type="button" title="Details (i)" aria-label="Variant details" aria-pressed={infoOpen} onClick={() => setState({ infoOpen: !infoOpen, chatOpen: false })}>
         <Icon name="info" />
       </button>
       {chosen?.status === 'done' && (
@@ -388,6 +394,7 @@ const Compare = () => {
   const applying = useStore((s) => s.applying);
   const confirming = useStore((s) => s.confirming);
   const infoOpen = useStore((s) => s.infoOpen);
+  const chatOpen = useStore((s) => s.chatOpen);
   const logs = useStore((s) => s.logs);
   const frames = { before: useRef<HTMLIFrameElement>(null), after: useRef<HTMLIFrameElement>(null) };
   const shown = useRef<Record<Side, { target: string; path: string }>>({ before: { target: '', path: '' }, after: { target: '', path: '' } });
@@ -607,6 +614,7 @@ const Compare = () => {
         )}
       </AnimatePresence>
       <Info />
+      <Chat />
       <Dock />
     </div>
   );
