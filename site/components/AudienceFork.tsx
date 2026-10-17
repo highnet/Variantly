@@ -19,7 +19,7 @@ type AudienceForkProps = {
   agent: ReactNode;
   brand: ReactNode;
   aside: ReactNode;
-  /** Decoration and footer that only the human view mounts. */
+  /** Decoration that only the human view mounts. */
   chrome: ReactNode;
   footer: ReactNode;
 };
@@ -63,8 +63,6 @@ const AudienceFork = ({ human, agent, brand, aside, chrome, footer }: AudienceFo
     const url = next === 'agent' ? '#agent' : window.location.pathname;
     window.history.replaceState(null, '', url);
   }, []);
-
-  if (audience === 'agent') return agent;
 
   return (
     <>
@@ -110,10 +108,11 @@ const AudienceFork = ({ human, agent, brand, aside, chrome, footer }: AudienceFo
         id="audience-panel"
         role="tabpanel"
         tabIndex={-1}
-        aria-labelledby="fork-human"
+        aria-labelledby={audience === 'agent' ? 'fork-agent' : 'fork-human'}
         className="flex flex-1 flex-col outline-none"
       >
-        {human}
+        {/* Same header and footer for both; only the panel changes. */}
+        {audience === 'agent' ? agent : human}
       </div>
       {footer}
     </>

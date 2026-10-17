@@ -1474,19 +1474,13 @@ main > div p { line-height: 1.65; }
  * A plain document for agents (see AgentDoc): system text, browser-default
  * structure, no backdrop or concept styling. Only layout and legibility here.
  * ------------------------------------------------------------------------- */
-:root[data-audience='agent'] {
-  background: Canvas;
-  color: CanvasText;
-  color-scheme: light dark;
-  scroll-behavior: auto;
-}
-:root[data-audience='agent'] body {
-  display: block;
-  background: Canvas;
-  color: CanvasText;
+.agent-doc {
+  max-width: 80ch;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1rem 16px 3rem;
   font: 15px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
-.agent-doc { max-width: 80ch; margin: 0 auto; padding: 1rem 16px 3rem; }
 .agent-doc a { color: LinkText; text-decoration: underline; }
 .agent-doc h1 { font-size: 1.5em; margin: 1.5em 0 0.5em; }
 .agent-doc h2 { font-size: 1.2em; margin: 2em 0 0.5em; }
@@ -1512,3 +1506,6 @@ main > div p { line-height: 1.65; }
 .vy-label { transition: opacity 220ms ease, translate 320ms cubic-bezier(0.34, 1.6, 0.5, 1), filter 220ms ease; }
 .vy-label-off { opacity: 0; translate: 0 40%; filter: blur(2px); }
 .vy-chevron { transition: rotate 420ms cubic-bezier(0.34, 1.6, 0.5, 1); }
+/* Before hydration the server-rendered human panel is in the DOM; an agent
+   landing on #agent never sees it flash. */
+:root[data-audience='agent'] #audience-panel > :not(.agent-doc) { display: none; }
