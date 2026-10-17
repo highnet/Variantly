@@ -39,10 +39,29 @@ export const HERO_FONT_VARS = [abril, elite, orbitron, fredoka, jost, archivo]
   .join(' ');
 
 export const INTRO_FONTS = [
-  fraktur, abril, cinzel, vibes, pacifico, elite, orbitron, monoton, bungee, rubik, pixel, righteous,
+  fraktur,
+  abril,
+  cinzel,
+  vibes,
+  pacifico,
+  elite,
+  orbitron,
+  monoton,
+  bungee,
+  rubik,
+  pixel,
+  righteous,
 ].map((f) => f.className);
 
 // Final lockup per letter of "variantly": deliberately mismatched.
 export const INTRO_FINAL = [
-  cinzel, rubik, vibes, fraktur, abril, bungee, elite, pacifico, orbitron,
+  cinzel,
+  rubik,
+  vibes,
+  fraktur,
+  abril,
+  bungee,
+  elite,
+  pacifico,
+  orbitron,
 ].map((f) => f.className);

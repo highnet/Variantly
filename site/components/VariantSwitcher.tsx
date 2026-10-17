@@ -1,11 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-import { VARIANTS, type VariantKey } from '@/components/backdrop/variants';
+import { VARIANTS } from '@/components/backdrop/variants';
 import { Button } from '@/components/ui/Button';
-import { seekTime } from '@/lib/seek';
-import { readVariant, setVariant, VARIANT_EVENT, VARIANT_KEYS } from '@/lib/variant';
+import { useSeekTime } from '@/lib/seek';
+import { setVariant, useVariant, VARIANT_KEYS } from '@/lib/variant';
 import { cn } from '@/lib/utils';
 
 /*
@@ -13,18 +11,10 @@ import { cn } from '@/lib/utils';
  * The pick sticks (localStorage) and lands in the URL so it can be shared.
  */
 export const VariantSwitcher = () => {
-  const [current, setCurrent] = useState<VariantKey | null>(null);
-  const [hidden, setHidden] = useState(false);
+  const current = useVariant();
+  const seek = useSeekTime();
 
-  useEffect(() => {
-    setCurrent(readVariant());
-    setHidden(seekTime() !== null);
-    const on = (e: Event) => setCurrent((e as CustomEvent<VariantKey>).detail);
-    addEventListener(VARIANT_EVENT, on);
-    return () => removeEventListener(VARIANT_EVENT, on);
-  }, []);
-
-  if (!current || hidden) return null;
+  if (!current || seek !== null) return null;
 
   return (
     <nav
@@ -44,7 +34,10 @@ export const VariantSwitcher = () => {
           onClick={() => setVariant(k)}
           className="shrink-0 rounded-full"
         >
-          <span className={cn('vy-swatch size-3 rounded-full', `vy-swatch-${k}`)} aria-hidden="true" />
+          <span
+            className={cn('vy-swatch size-3 rounded-full', `vy-swatch-${k}`)}
+            aria-hidden="true"
+          />
           <span className="hidden md:inline">{VARIANTS[k].name}</span>
           <span className="md:hidden">{k.toUpperCase()}</span>
         </Button>

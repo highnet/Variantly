@@ -4,12 +4,12 @@ import { animate, motion, useMotionValue, useTransform } from 'motion/react';
 import { useEffect, useState } from 'react';
 
 import { calmMotion } from '@/lib/prefs';
-import { holdFrame, releaseFrame, seekTime } from '@/lib/seek';
+import { holdFrame, seekTime } from '@/lib/seek';
 
 import { GlField } from './GlField';
-import { readVariant, VARIANT_EVENT } from '@/lib/variant';
+import { readVariant, useVariant } from '@/lib/variant';
 
-import { VARIANTS, type VariantKey } from './variants';
+import { VARIANTS } from './variants';
 
 // Each blob morphs through these outlines; all share one command structure so
 // the path string interpolates point for point.
@@ -31,7 +31,11 @@ const SHARP = [
 
 const Blob = ({ color, i, sharp }: { color: string; i: number; sharp?: boolean }) => {
   const p = useMotionValue(0);
-  const d = useTransform(p, SHAPES.map((_, k) => k), sharp ? SHARP : SHAPES);
+  const d = useTransform(
+    p,
+    SHAPES.map((_, k) => k),
+    sharp ? SHARP : SHAPES,
+  );
   useEffect(() => {
     const seek = seekTime();
     if (seek !== null) {
@@ -74,7 +78,6 @@ const Blob = ({ color, i, sharp }: { color: string; i: number; sharp?: boolean }
   );
 };
 
-
 const useTheme = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   useEffect(() => {
@@ -96,33 +99,29 @@ const useTheme = () => {
  * shapes (noise-textured), and a film-grain overlay. Fixed behind content.
  */
 export const Backdrop = () => {
-  const [key, setKey] = useState<VariantKey | null>(null);
+  const key = useVariant();
   const theme = useTheme();
   useEffect(() => {
-    const k = readVariant();
     const html = document.documentElement;
-    html.dataset.variant = k;
+    html.dataset.variant = readVariant();
     if (seekTime() !== null) {
       html.dataset.seek = '';
       holdFrame('gl');
       holdFrame('title');
     }
-    setKey(k);
     // Past the hero the scene steps back so body copy stays readable.
     const onScroll = () => html.toggleAttribute('data-scrolled', scrollY > 520);
     onScroll();
     addEventListener('scroll', onScroll, { passive: true });
-    const onVariant = (e: Event) => setKey((e as CustomEvent<VariantKey>).detail);
-    addEventListener(VARIANT_EVENT, onVariant);
-    return () => {
-      removeEventListener('scroll', onScroll);
-      removeEventListener(VARIANT_EVENT, onVariant);
-    };
+    return () => removeEventListener('scroll', onScroll);
   }, []);
   if (!key) return null;
   const v = VARIANTS[key];
   return (
-    <div className="vy-backdrop pointer-events-none fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+    <div
+      className="vy-backdrop pointer-events-none fixed inset-0 -z-10 overflow-hidden"
+      aria-hidden="true"
+    >
       {v.blobs && (
         <div className="vy-blobs absolute inset-0" style={{ filter: `blur(${v.blur}px)` }}>
           {v.blobs[theme].map((c, i) => (

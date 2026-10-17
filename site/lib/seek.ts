@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from 'react';
+
 // Seek mode for seekreel renders: `?t=<seconds>` freezes every animated
 // effect at that timestamp instead of running off the clock.
 export const seekTime = (): number | null => {
@@ -32,3 +34,8 @@ export const releaseFrame = (id: string) => {
     ),
   );
 };
+
+const still = () => () => {};
+
+// seekTime() as render-safe state: null on the server and outside renders.
+export const useSeekTime = () => useSyncExternalStore(still, seekTime, () => null);

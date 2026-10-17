@@ -19,7 +19,11 @@ export const GlField = ({ scene: kind, colors }: GlFieldProps) => {
   useEffect(() => {
     const el = host.current;
     if (!el) return;
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+    const renderer = new THREE.WebGLRenderer({
+      antialias: true,
+      alpha: true,
+      preserveDrawingBuffer: true,
+    });
     renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
     el.appendChild(renderer.domElement);
     const scene = new THREE.Scene();

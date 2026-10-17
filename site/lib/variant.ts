@@ -1,3 +1,5 @@
+import { useSyncExternalStore } from 'react';
+
 import type { VariantKey } from '@/components/backdrop/variants';
 
 export const VARIANT_KEYS: VariantKey[] = ['a', 'b', 'c', 'd', 'e', 'f'];
@@ -27,3 +29,11 @@ export const setVariant = (v: VariantKey) => {
   document.documentElement.dataset.variant = v;
   dispatchEvent(new CustomEvent(VARIANT_EVENT, { detail: v }));
 };
+
+const subscribe = (cb: () => void) => {
+  addEventListener(VARIANT_EVENT, cb);
+  return () => removeEventListener(VARIANT_EVENT, cb);
+};
+
+// The active concept on the client; null during server render.
+export const useVariant = () => useSyncExternalStore(subscribe, readVariant, () => null);

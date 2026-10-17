@@ -473,7 +473,10 @@ const Showcase = () => {
     >
       <div className="text-surface">
         <VariantTitle />
-        <div data-hero-grid className="bg-slate border-slate-line mx-auto grid max-w-[1440px] gap-x-16 gap-y-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:py-16">
+        <div
+          data-hero-grid
+          className="bg-slate border-slate-line mx-auto grid max-w-[1440px] gap-x-16 gap-y-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:py-16"
+        >
           <div data-hero-copy className="grid content-start gap-6">
             <Typography
               variant="display"

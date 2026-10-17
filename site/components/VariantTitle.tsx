@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react';
 
 import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import { calmMotion } from '@/lib/prefs';
-import { releaseFrame, seekTime } from '@/lib/seek';
+import { releaseFrame, seekTime, useSeekTime } from '@/lib/seek';
 import { VARIANT_EVENT } from '@/lib/variant';
 import { cn } from '@/lib/utils';
 
 const WORD = 'variantly';
 // Per-letter frame delays: fast flicker, then an ease-out into the lockup.
-const SCHEDULE = [...Array(22).fill(55), 70, 90, 120, 160, 220, 300];
-const startDelay = (index: number) => 200 + index * 90;
+const SCHEDULE = [...Array(20).fill(90), 110, 140, 180, 240, 320, 420];
+const startDelay = (index: number) => 250 + index * 140;
 // Deterministic jitter, so a seeked frame is the same picture every time.
 const fontAt = (step: number, index: number) =>
   INTRO_FONTS[(step * 5 + index * 3 + ((step * 7 + index * 13) % 4)) % INTRO_FONTS.length];
@@ -39,18 +39,11 @@ const Letter = ({ char, index, run }: LetterProps) => {
   const [locked, setLocked] = useState(true);
 
   useEffect(() => {
-    const seek = seekTime();
-    if (seek !== null) {
-      const step = stepAt(seek * 1000, index);
-      setFont(step === null ? INTRO_FINAL[index] : fontAt(Math.max(step, 0), index));
-      setLocked(step === null);
-      return;
-    }
-    if (calmMotion()) return;
+    if (seekTime() !== null || calmMotion()) return;
     let step = 0;
     let timer = 0;
-    setLocked(false);
     const tick = () => {
+      if (step === 0) setLocked(false);
       if (step >= SCHEDULE.length) {
         setFont(INTRO_FINAL[index]);
         setLocked(true);
@@ -63,6 +56,22 @@ const Letter = ({ char, index, run }: LetterProps) => {
     timer = window.setTimeout(tick, startDelay(index));
     return () => clearTimeout(timer);
   }, [index, run]);
+
+  // seekreel frames derive the letter from ?t instead of the timers above.
+  const seek = useSeekTime();
+  if (seek !== null) {
+    const step = stepAt(seek * 1000, index);
+    return (
+      <span
+        className={cn(
+          'vy-letter inline-block leading-none',
+          step === null ? INTRO_FINAL[index] : fontAt(Math.max(step, 0), index),
+        )}
+      >
+        {char}
+      </span>
+    );
+  }
 
   return (
     <span className={cn('vy-letter inline-block leading-none', font, locked && 'vy-letter-locked')}>
@@ -85,7 +94,10 @@ export const VariantTitle = () => {
     return () => removeEventListener(VARIANT_EVENT, replay);
   }, []);
   return (
-    <div data-hero-title className="vy-card relative grid place-items-center overflow-hidden border-b border-slate-line px-4 py-14 sm:py-20">
+    <div
+      data-hero-title
+      className="vy-card border-slate-line relative grid place-items-center overflow-hidden border-b px-4 py-14 sm:py-20"
+    >
       <button
         type="button"
         aria-label="variantly"
