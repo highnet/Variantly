@@ -143,7 +143,7 @@
           }
         ]
       },
-      "text": "First, the mental model. Your project stays where it is. Each variant is its own copy, a git worktree, with its own preview. You compare them side by side, keep one, and a last pass rolls it out to the whole site.",
+      "text": "First, the mental model. Your project stays where it is. Each variant is its own copy: a git worktree on its own branch, a little timeline of your site, with a preview. You compare them side by side, keep one, and a last pass rolls it out to the whole site.",
       "actions": [
         {
           "wait": 300
@@ -814,7 +814,7 @@
       "step": "The run",
       "timelapse": true,
       "hold": 9000,
-      "text": "This is real time. The whole run took {{runMinutes}} minutes, start to finish, so here's the rest, sped up.",
+      "text": "Real time, for the record: the whole run took {{runMinutes}} minutes, start to finish, so here's the rest, sped up.",
       "actions": [
         {
           "waitApi": "allDone",
@@ -1209,7 +1209,7 @@
           "$ npx variantly clean"
         ]
       },
-      "text": "It lands in your working tree, merged with anything you've changed since. The last commit is still yours: nothing is committed. So you review it like any other change, and undo it the same way. The other variants stay as branches until you run npx variantly clean.",
+      "text": "It lands in your working tree, merged with anything you've changed since. The last commit is still yours: nothing is committed. So you review it like any other change, and undo it the same way. You keep one timeline; the others stay as branches until you run npx variantly clean.",
       "actions": [
         {
           "spotlight": "text=/Rolled out site-wide/",
@@ -1431,7 +1431,7 @@
           }
         ]
       },
-      "text": "To recap: each variant is an isolated copy. You can pin a direction per variant, and mix agents. You compare on your real site, with real scores. And you keep one, and it rolls out site-wide.",
+      "text": "To recap: each variant is an isolated copy, its own branch of your site. You can pin a direction per variant, and mix agents. You compare on your real site, with real scores. And you keep one, and it rolls out site-wide.",
       "actions": [
         {
           "wait": 300
@@ -1445,7 +1445,8 @@
         "command": "npx variantly",
         "url": "variantly.style",
         "credit": "Free & open source (MIT) · Designs by Impeccable",
-        "fromOn": "try"
+        "fromOn": "try",
+        "stamp": "Variant record VY-001 · kept"
       },
       "text": "I designed and directed Variantly with Claude Code and Impeccable: I set the direction, made the calls, and tested it on a real iPhone. It's free and open source, and it runs on your machine. No account, no server of ours. To try it, run npx variantly in your project. Docs at variantly.style. Thanks for watching.",
       "actions": [

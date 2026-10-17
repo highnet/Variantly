@@ -148,7 +148,8 @@ function drawCursor(layer, cursor) {
   layer.append(arrow);
 }
 
-const clock = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+/** The lapse readout, clock-style: 00:12:40. */
+const hms = (s) => [Math.floor(s / 3600), Math.floor(s / 60) % 60, Math.floor(s % 60)].map((n) => String(n).padStart(2, '0')).join(':');
 
 export async function mount(layout, theme = 'light') {
   document.body.classList.add(layout, theme);
@@ -244,8 +245,8 @@ export async function mount(layout, theme = 'light') {
     const real = from + (t < fastAt ? t - scene.start : fastAt - scene.start + (t - fastAt) * scene.speed);
     const total = Math.max(1, Math.round((scene.clock?.total ?? (fastAt - scene.start) + (scene.end - fastAt) * scene.speed) / 60));
     const text = t < fastAt
-      ? `● Real time · ${clock(real)}`
-      : `▶▶ Sped up ${Math.round(scene.speed)}× · ${clock(real)} of ~${total} min`;
+      ? `● Real time · ${hms(real)}`
+      : `▶▶ Sped up ${Math.round(scene.speed)}× · ${hms(real)} of ~${total} min`;
     const chip = el('div', 'chip', text);
     chip.style.opacity = window_(scene.start, scene.end, 0.3);
     document.body.append(chip);
@@ -374,7 +375,7 @@ export async function mount(layout, theme = 'light') {
       'card',
       `<div class="kicker figure"><img src="icon.svg" alt="">variantly</div><div class="cmd">${esc(outro.cta.command)}</div><div class="url">${esc(outro.cta.url)}</div>${
         outro.cta.credit ? `<div class="credit">${esc(outro.cta.credit)}</div>` : ''
-      }`,
+      }${outro.cta.stamp ? `<div class="stamp">${esc(outro.cta.stamp)}</div>` : ''}`,
     );
     card.style.opacity = String(ease(span(a + 0.3, a + 1.1)));
     document.body.append(veil, card);

@@ -1,6 +1,6 @@
 # variantly in 90 seconds
 
-**About 1:30, about 195 spoken words** · Joaquin's voice (ElevenLabs, trained on the owner's own voice) · cut from the full take's footage · 16:9 and 9:16 · captions burned in
+**About 1:30, about 197 spoken words** · Joaquin's voice (ElevenLabs, trained on the owner's own voice) · cut from the full take's footage · 16:9 and 9:16 · captions burned in
 
 Same format as `SCRIPT-v4.md`: per beat, the time, what's on screen, then the voiceover. `[id]` names the full film's scene the footage comes from. The variants to flick through, for the most contrast: **V10** quiet organic minimalism, **V04** maximalist collage, **V03** cinematic drama, **V06** expressive typography.
 
@@ -23,8 +23,8 @@ Same format as `SCRIPT-v4.md`: per beat, the time, what's on screen, then the vo
 
 ## The run (0:30–0:45)
 
-**0:30** `[lapse]` the board at real speed under **● Real time**, then **▶▶ Sped up**. **0:37** `[worktrees]` the diagram, *main branch untouched*. **0:41** `[retry]` a *Failed:* reason and **Retry**; if the take had no failure, `[doctor]` the ✗ line instead.
-> Real time first: this run took {{runMinutes}} minutes. Here it is, sped up. Each variant gets its own git worktree, so your main branch is never touched. One fails? Retry just that one.
+**0:30** `[lapse]` the board at real speed under the amber **● Real time · 00:…** clock, then **▶▶ Sped up**. **0:37** `[worktrees]` the diagram, *main branch untouched*. **0:41** `[retry]` a *Failed:* reason and **Retry**; if the take had no failure, `[doctor]` the ✗ line instead.
+> Real time, for the record: this run took {{runMinutes}} minutes. Here it is, sped up. Each variant gets its own git worktree, so your main branch is never touched. One fails? Retry just that one.
 
 If the ✗ is used instead of Retry, the last sentence is: "No commit yet? Doctor marks it with a cross."
 
@@ -36,18 +36,18 @@ If the ✗ is used instead of Retry, the last sentence is: "No commit yet? Docto
 ## Keep (1:15–1:25)
 
 **1:15** `[keep]` Keep V01, the *Restyle the rest of the site* checkbox, Apply. **1:19** `[sitewide]` the about page in V01's look, then the git card: last commit still *before*, the diff stat.
-> Keep one, and a last pass rolls it out to every page. It lands in your working tree, so you review it like any other change. Nothing is committed.
+> Keep one timeline, and a last pass rolls it out to every page. It lands in your working tree, so you review it like any other change. Nothing is committed.
 
 ## Try it (1:25–1:30)
 
-**1:25** `[wrap]` the end card: `npx variantly` · variantly.style · *Free & open source (MIT)*.
+**1:25** `[wrap]` the end card: `npx variantly` · variantly.style · *Free & open source (MIT)*, with the **Variant record VY-001 · kept** stamp.
 > Free and open source. Run npx variantly. It's at variantly.style.
 
 ---
 
 # The 30-second vertical (9:16, LinkedIn and X)
 
-**About 0:30, about 55 words** · just the hook and the slider · captions burned in, inside the 9:16 safe area.
+**About 0:30, about 60 words** · just the hook and the slider · captions burned in, inside the 9:16 safe area.
 
 ## Beats
 
@@ -58,7 +58,7 @@ If the ✗ is used instead of Retry, the last sentence is: "No commit yet? Docto
 > Drag for a before and after. This is the real site running, not screenshots.
 
 **0:10–0:20** `[walk]` V10, V04, V03, V06 at 2.5 s each.
-> My agent built ten at once, each in its own copy. My main branch was never touched.
+> My agent built ten at once, each on its own branch, its own little timeline of my site. My main branch was never touched.
 
 **0:20–0:26** `[keep]` Keep V01, Apply.
 > I keep one. It lands as a normal change, and nothing is committed.

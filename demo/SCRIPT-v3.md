@@ -17,7 +17,7 @@ Chapter chip, top right throughout, in the app's signature look: the split mark,
 ## 0 · Cold open (0:00–0:08)
 
 **SHOT** No intro. Full-bleed compare view of Tallyboard, the slider sweeping once, then hard cuts on the beat: V01 → V02 → V03 → V04, about 1 s each. On the last cut, a fast whip through three *other* pages of the kept site (pricing, FAQ, sign-up), all in V04's look.
-**GFX** Kinetic type, Martian Mono, centre, with the site's Loki-style title reveal: **Four redesigns. Keep one. Your whole site follows.** Then `npx variantly`, typed.
+**GFX** Kinetic type, Martian Mono, centre, with the site's mismatched-typeface title reveal: **Four redesigns. Keep one. Your whole site follows.** Then `npx variantly`, typed.
 **MUSIC** The bed starts on the first frame; a hit on each cut (SeekReel `stamp`), a riser into ch. 1.
 **VO** (none)
 
@@ -124,7 +124,7 @@ Same footage, no new takes: cold open (0:08) → board timelapse (0:08) → comp
 
 ## Production notes
 
-- **Look:** chapter cards, kinetic type, lower thirds and end card use the signature look from #79: split mark, soft violet accent, grainy-gradient ground, sentence case. Chapter cards use the site's Loki-style title reveal.
+- **Look:** chapter cards, kinetic type, lower thirds and end card use the signature look from #79: split mark, soft violet accent, grainy-gradient ground, sentence case. Chapter cards use the site's mismatched-typeface title reveal.
 - **Camera:** eased punch-ins and pull-backs with SeekReel `punchIn` and footage clips; inset window parallax ±6 px.
 - **Spotlight:** dim the rest of the frame to 60% around the focused element, over the gradient ground.
 - **Editing:** cut the takes with SeekReel footage edit lists (trims, speed, freezes, `xfade`). Freeze-frames on the "fixed" score and on the first never-redesigned page.
