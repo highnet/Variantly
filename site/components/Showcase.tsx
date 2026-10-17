@@ -828,22 +828,37 @@ const Showcase = () => {
               id="hero-title"
               className="text-surface text-[clamp(2.25rem,4.2vw,4.25rem)]"
             >
-              Your website needs <FreshLook />
+              One website. Four redesigns. <FreshLook>You pick.</FreshLook>
             </Typography>
             <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">
-              <strong className="text-surface">One command.</strong> Your own AI assistant redesigns
-              your site <strong className="text-surface">several ways</strong>,{' '}
-              <strong className="text-surface">from scratch</strong> using{' '}
-              <a
-                href="https://impeccable.style"
-                className="text-surface font-semibold underline decoration-1 underline-offset-2"
-              >
-                Impeccable
-              </a>
-              : the missing design vocabulary for agents. No preset themes. Try each{' '}
-              <strong className="text-surface">live</strong>,{' '}
-              <strong className="text-surface">keep one</strong>.
+              Your AI coding agent redesigns your{' '}
+              <strong className="text-surface">actual site</strong>{' '}
+              <strong className="text-surface">in parallel</strong>. Compare{' '}
+              <strong className="text-surface">live versions</strong>, keep the best, and{' '}
+              <strong className="text-surface">review the code</strong> before it ships.
             </p>
+            <ul className="text-steel-on-slate m-0 grid list-none gap-1.5 p-0 text-[15px] leading-snug">
+              <li>
+                <span className="text-surface font-semibold">Real code:</span> each design is a git
+                branch in its own worktree, made by the agent you already use.
+              </li>
+              <li>
+                <span className="text-surface font-semibold">Your call:</span> nothing touches your
+                files until you press Keep, and then it lands as an unstaged diff.
+              </li>
+              <li>
+                <span className="text-surface font-semibold">Free and MIT-licensed:</span> the AI
+                work runs on your own plan.{' '}
+                <a href="#demo-stage" className="text-surface underline underline-offset-2">
+                  Try the comparison below
+                </a>{' '}
+                or{' '}
+                <a href="#trust" className="text-surface underline underline-offset-2">
+                  see what it does to your repo
+                </a>
+                .
+              </li>
+            </ul>
           </div>
 
           <div data-hero-side className="grid content-start gap-6">
@@ -935,7 +950,8 @@ const Showcase = () => {
                   >
                     <p className="text-steel-on-slate m-0 text-[13px] leading-snug">{r.brief}</p>
                     <p className="text-steel-on-slate m-0 text-[13px] leading-snug">
-                      A made-up shop, redesigned{' '}
+                      <strong className="text-surface">Illustrative example:</strong> a made-up
+                      shop, not customer work, redesigned{' '}
                       <strong className="text-surface">
                         {r.variants.length === 20
                           ? 'twenty'

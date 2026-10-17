@@ -41,7 +41,11 @@ const FinePrint = () => (
           Paul Bakaus
         </a>{' '}
         (Apache-2.0). Independent: not affiliated with or endorsed by Impeccable or Paul Bakaus;
-        names used only for credit. variantly is MIT ©{' '}
+        names used only for credit. variantly is{' '}
+        <a href={`${REPO_URL}/blob/main/LICENCE.md`} className="text-ink underline">
+          MIT
+        </a>{' '}
+        ©{' '}
         <a href={AUTHOR_URL} className="text-ink underline">
           highnet
         </a>
