@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import type { ReactNode } from 'react';
 
+import { StoreHydrator } from '@/components/StoreHydrator';
 import { Toaster } from '@/components/Toaster';
 import { HERO_FONT_VARS } from '@/lib/introFonts';
 import { cn } from '@/lib/utils';
@@ -101,6 +102,7 @@ const RootLayout = ({ children }: RootLayoutProps) => (
     <body>
       {children}
       <Toaster />
+      <StoreHydrator />
     </body>
   </html>
 );

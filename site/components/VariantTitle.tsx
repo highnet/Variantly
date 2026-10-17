@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime, useSeekTime } from '@/lib/seek';
-import { VARIANT_EVENT } from '@/lib/variant';
+import { useSiteStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 const WORD = 'variantly';
@@ -89,9 +89,9 @@ export const VariantTitle = () => {
   useEffect(() => {
     if (seekTime() !== null) releaseFrame('title');
     // A new concept gets its own title reveal.
-    const replay = () => setRun((r) => r + 1);
-    addEventListener(VARIANT_EVENT, replay);
-    return () => removeEventListener(VARIANT_EVENT, replay);
+    return useSiteStore.subscribe((s, prev) => {
+      if (prev.hydrated && s.variant !== prev.variant) setRun((r) => r + 1);
+    });
   }, []);
   return (
     <div

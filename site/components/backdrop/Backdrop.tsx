@@ -7,7 +7,7 @@ import { calmMotion } from '@/lib/prefs';
 import { holdFrame, seekTime } from '@/lib/seek';
 
 import { GlField } from './GlField';
-import { readVariant, useVariant } from '@/lib/variant';
+import { useVariant } from '@/lib/variant';
 
 import { VARIANTS } from './variants';
 
@@ -101,9 +101,12 @@ const useTheme = () => {
 export const Backdrop = () => {
   const key = useVariant();
   const theme = useTheme();
+  // Concept styles in globals.css key off html[data-variant].
+  useEffect(() => {
+    if (key) document.documentElement.dataset.variant = key;
+  }, [key]);
   useEffect(() => {
     const html = document.documentElement;
-    html.dataset.variant = readVariant();
     if (seekTime() !== null) {
       html.dataset.seek = '';
       holdFrame('gl');
