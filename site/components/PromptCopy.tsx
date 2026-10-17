@@ -1,9 +1,10 @@
 'use client';
 
-import { Check, ClipboardCopy, Copy, FileText } from 'lucide-react';
-import { useState } from 'react';
+import { Check, ChevronDown, ClipboardCopy, Copy, FileText } from 'lucide-react';
+import { useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 
 import { Button } from '@/components/ui/Button';
+import { animateHeight, revealText, squash } from '@/lib/disclose';
 import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
@@ -36,6 +37,25 @@ const PromptCopy = ({
 }: PromptCopyProps) => {
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(preview);
+  const body = useRef<HTMLParagraphElement>(null);
+  // The body's height just before a toggle; null when nothing is animating.
+  const fromHeight = useRef<number | null>(null);
+
+  // After the clamp changes, spring the card from its old height to the new one.
+  useLayoutEffect(() => {
+    const el = body.current;
+    const from = fromHeight.current;
+    if (!el || from === null) return;
+    fromHeight.current = null;
+    animateHeight(el, from, el.offsetHeight);
+    if (open && el.firstElementChild) revealText([el.firstElementChild]);
+  }, [open]);
+
+  const toggle = (e: MouseEvent<HTMLButtonElement>) => {
+    fromHeight.current = body.current?.offsetHeight ?? null;
+    squash(e.currentTarget);
+    setOpen((o) => !o);
+  };
 
   const copy = async () => {
     try {
@@ -110,6 +130,7 @@ const PromptCopy = ({
           </Button>
         </div>
         <p
+          ref={body}
           className={cn(
             'm-0 px-4 pt-3 text-[14px] leading-relaxed',
             long ? 'pb-6' : 'pb-3.5',
@@ -122,11 +143,23 @@ const PromptCopy = ({
           <Button
             variant={slate ? 'pill-slate' : 'pill'}
             size="pill"
-            onClick={() => setOpen((o) => !o)}
+            onClick={toggle}
             aria-expanded={open}
-            className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2"
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 gap-1.5"
           >
-            {open ? 'Show less' : 'Show more'}
+            {/* Both labels share one cell, so the pill keeps its width as they crossfade. */}
+            <span className="grid [grid-template-areas:'x'] *:[grid-area:x]">
+              <span aria-hidden={open} className={cn('vy-label', open && 'vy-label-off')}>
+                Show more
+              </span>
+              <span aria-hidden={!open} className={cn('vy-label', !open && 'vy-label-off')}>
+                Show less
+              </span>
+            </span>
+            <ChevronDown
+              aria-hidden="true"
+              className={cn('vy-chevron size-3.5', open && 'rotate-180')}
+            />
           </Button>
         )}
         <span className="sr-only" role="status">

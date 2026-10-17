@@ -86,6 +86,9 @@ const JSON_LD = {
   sameAs: [REPO_URL],
 };
 
+// The agent view is a plain document: flag it before paint so no styling flashes.
+const AUDIENCE_BOOT = `if(location.hash==='#agent')document.documentElement.dataset.audience='agent'`;
+
 type RootLayoutProps = {
   children: ReactNode;
 };
@@ -96,6 +99,7 @@ const RootLayout = ({ children }: RootLayoutProps) => (
       {/* Theme and reading aids before first paint, so nothing flashes. */}
       <script dangerouslySetInnerHTML={{ __html: PREFS_BOOT }} />
       <script dangerouslySetInnerHTML={{ __html: VARIANT_BOOT }} />
+      <script dangerouslySetInnerHTML={{ __html: AUDIENCE_BOOT }} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
