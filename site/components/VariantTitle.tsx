@@ -9,15 +9,15 @@ import { useSiteStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 const WORD = 'variantly';
-// Timing after the Loki title card: every letter flickers at once, about nine
+// Timing after the Loki title card: every letter flickers at once, about four
 // typefaces a second, then the changes slow and each letter drops into its
 // final face. Letters lock in a loose, uneven order rather than left to right.
-const FLICKER_MS = 110;
-const EASE_OUT = [140, 180, 240, 320, 420, 560];
+const FLICKER_MS = 260;
+const EASE_OUT = [320, 400, 500, 640, 820, 1040];
 // Deterministic per-letter jitter, so a seeked frame is the same every time.
 const jitter = (index: number, salt: number) => ((index * 37 + salt * 11) % 7) / 6;
 const scheduleFor = (index: number) => [
-  ...Array(36 + Math.round(jitter(index, 1) * 6)).fill(FLICKER_MS),
+  ...Array(12 + Math.round(jitter(index, 1) * 4)).fill(FLICKER_MS),
   ...EASE_OUT,
 ];
 const SCHEDULES = [...WORD].map((_, i) => scheduleFor(i));
