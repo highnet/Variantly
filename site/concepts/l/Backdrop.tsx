@@ -29,7 +29,7 @@ const CAPTIONS = [
     'top-[12%] left-4 sm:left-8',
     `l/${CONCEPTS.length}  inflated chrome\nmetalness 1.00  rough 0.05`,
   ],
-  ['top-[12%] right-4 text-right sm:right-8', 'port 4477\nloop 24.000s @ 120bpm'],
+  ['top-[12%] right-4 text-right sm:right-8 max-sm:hidden', 'port 4477\nloop 24.000s @ 120bpm'],
   [
     'bottom-[16%] right-4 text-right sm:right-8 max-sm:hidden',
     `grid 72px  24px/s\n${CONCEPTS.length} looks  keep 1`,

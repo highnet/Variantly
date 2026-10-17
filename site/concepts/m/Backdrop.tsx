@@ -34,23 +34,35 @@ const Crescent = () => (
 type DoorProps = {
   id: string;
   glow: string;
+  ink: string;
 };
 
-// An arched plaster doorway; the light inside is another variant's colour.
-const Door = ({ id, glow }: DoorProps) => (
-  <svg viewBox="0 0 60 100" className="size-full">
+// A plaster wall with a doorway onto another variant's world: its own sky
+// colour, horizon and sun, and the door leaf standing ajar.
+const Door = ({ id, glow, ink }: DoorProps) => (
+  <svg viewBox="0 0 100 100" className="size-full">
     <defs>
       <linearGradient id={`lm-door-${id}`} x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" className={glow} stopOpacity="0.55" />
-        <stop offset="1" className={glow} />
+        <stop offset="0" className={glow} stopOpacity="0.6" />
+        <stop offset="0.7" className={glow} />
       </linearGradient>
     </defs>
-    <path
-      d="M2 100 V30 A28 28 0 0 1 58 30 V100Z"
+    <rect
+      x="6"
+      y="18"
+      width="88"
+      height="82"
       className="fill-(--art-plaster) stroke-(--art-2)"
-      strokeWidth="1.2"
+      strokeWidth="0.8"
     />
-    <path d="M14 100 V34 A16 16 0 0 1 46 34 V100Z" fill={`url(#lm-door-${id})`} />
+    <rect x="38" y="40" width="26" height="60" fill={`url(#lm-door-${id})`} />
+    <circle cx="54" cy="62" r="4" className={ink} fillOpacity="0.45" />
+    <rect x="38" y="80" width="26" height="20" className={ink} fillOpacity="0.3" />
+    <path
+      d="M38 40 L28 44 V100 L38 100Z"
+      className="fill-(--art-plaster) stroke-(--art-2)"
+      strokeWidth="0.8"
+    />
   </svg>
 );
 
@@ -59,18 +71,18 @@ const UncannyMirror = () => (
     <div className="vy-lm-room absolute inset-0" />
     <div className="vy-lm-line absolute inset-x-0" />
     {/* the moon sits on the horizon; its reflection hangs below, late and wrong */}
-    <div className="vy-lm-slide absolute top-[calc(58%-10vmax)] left-[24%] size-[12vmax]">
+    <div className="vy-lm-slide absolute top-[calc(var(--lm-h)-10vmax)] left-[24%] size-[12vmax]">
       <Moon />
     </div>
-    <div className="vy-lm-slide vy-lm-late absolute top-[calc(58%+2vmax)] left-[24%] size-[12vmax] -scale-y-100 opacity-70">
+    <div className="vy-lm-slide vy-lm-late absolute top-[calc(var(--lm-h)+2vmax)] left-[24%] size-[12vmax] -scale-y-100 opacity-70">
       <Crescent />
     </div>
     {/* a tiny doorway on the horizon, opening onto other variants */}
-    <div className="absolute top-[calc(58%-6vmax)] right-[28%] h-[6vmax] w-[3.6vmax]">
-      <Door id="up" glow="[stop-color:var(--art-lie)]" />
+    <div className="absolute top-[calc(var(--lm-h)-7vmax)] right-[28%] size-[7vmax]">
+      <Door id="up" glow="[stop-color:var(--art-lie)]" ink="fill-(--art-moon)" />
     </div>
-    <div className="absolute top-[58%] right-[28%] h-[6vmax] w-[3.6vmax] -scale-y-100 opacity-50">
-      <Door id="down" glow="[stop-color:var(--art-lie-2)]" />
+    <div className="absolute top-[var(--lm-h)] right-[28%] size-[7vmax] -scale-y-100 opacity-50">
+      <Door id="down" glow="[stop-color:var(--art-lie-2)]" ink="fill-(--art-ink)" />
     </div>
   </>
 );

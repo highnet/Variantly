@@ -64,7 +64,7 @@ const glass = (tint: string, dark: boolean, clear: number) =>
     uniforms: {
       uTint: { value: new THREE.Color(tint) },
       uTop: { value: new THREE.Color(dark ? '#3a4a66' : '#ffffff') },
-      uBot: { value: new THREE.Color(dark ? '#0b1220' : '#7f9cbd') },
+      uBot: { value: new THREE.Color(dark ? '#0b1220' : '#4f7299') },
       uField: { value: new THREE.Color(dark ? '#4a78b8' : '#c6e6ee') },
       uHi: { value: new THREE.Color(dark ? '#e6f0ff' : '#ffffff') },
       uClear: { value: clear },
@@ -74,7 +74,7 @@ const glass = (tint: string, dark: boolean, clear: number) =>
 
 export const look: ConceptLook = {
   pool: (ink, dark, phone) => {
-    const looks = [0.15, 0.55, 0].map((clear) =>
+    const looks = (dark ? [0.15, 0.55, 0] : [0.45, 0.8, 0.25]).map((clear) =>
       plain(glass(ink.face, dark, clear), glass(ink.side, dark, clear * 0.5)),
     );
     if (phone) return looks;

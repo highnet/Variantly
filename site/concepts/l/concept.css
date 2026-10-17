@@ -67,7 +67,7 @@
 }
 
 /* Backdrop: a horizon, a perspective grid floor rolling toward you, glints. */
-.vy-ll-sky {
+:root[data-variant='l'] .vy-ll-sky {
   background: linear-gradient(
     180deg,
     var(--art-sky) 0 54%,
@@ -75,12 +75,12 @@
     var(--art-floor) 62.4%
   );
 }
-.vy-ll-floor {
+:root[data-variant='l'] .vy-ll-floor {
   top: 62%;
   perspective: 340px;
   perspective-origin: 50% 0;
 }
-.vy-ll-grid {
+:root[data-variant='l'] .vy-ll-grid {
   position: absolute;
   left: -60vw;
   right: -60vw;
@@ -101,12 +101,12 @@
     transform: rotateX(76deg) translateY(0);
   }
 }
-.vy-ll-spin {
+:root[data-variant='l'] .vy-ll-spin {
   transform-box: fill-box;
   transform-origin: center;
   animation: vy-ll-spin 6s cubic-bezier(0.5, 0, 0.2, 1) infinite;
 }
-.vy-ll-spin-b {
+:root[data-variant='l'] .vy-ll-spin-b {
   animation-duration: 4s;
   animation-direction: reverse;
 }
@@ -121,7 +121,7 @@
     transform: rotate(90deg) scale(1);
   }
 }
-.vy-ll-cap {
+:root[data-variant='l'] .vy-ll-cap {
   font:
     400 10px/1.5 var(--font-caption),
     monospace;
@@ -129,13 +129,13 @@
   color: var(--art-cap);
   white-space: pre;
 }
-:root[data-scrolled] .vy-ll-grid,
-:root[data-scrolled] .vy-ll-spin {
+:root[data-variant='l'][data-scrolled] .vy-ll-grid,
+:root[data-variant='l'][data-scrolled] .vy-ll-spin {
   animation-play-state: paused;
 }
 @media (prefers-reduced-motion: reduce), (pointer: coarse) {
-  .vy-ll-grid,
-  .vy-ll-spin {
+  :root[data-variant='l'] .vy-ll-grid,
+  :root[data-variant='l'] .vy-ll-spin {
     animation: none;
   }
 }

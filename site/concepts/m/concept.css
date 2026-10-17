@@ -38,6 +38,7 @@
   --art-moon-shade: #cfcbd8;
   --art-lie: #ffb59a;
   --art-lie-2: #c6ff00;
+  --art-ink: #1f2229;
   --art-plaster: #efece6;
   --art-haze: rgb(122 99 184 / 0.18);
 }
@@ -70,28 +71,37 @@
   --art-haze: rgb(154 130 224 / 0.16);
 }
 
-/* Backdrop: sky above the horizon, a hue-shifted mirror floor below it. */
-.vy-lm-room {
+/* Backdrop: sky above the horizon, a hue-shifted mirror floor below it. The
+   horizon (scene.ts matches it) sits under the title on phones. */
+:root[data-variant='m'] .vy-backdrop {
+  --lm-h: 58%;
+}
+@media (max-width: 639px) {
+  :root[data-variant='m'] .vy-backdrop {
+    --lm-h: 36%;
+  }
+}
+:root[data-variant='m'] .vy-lm-room {
   background:
     linear-gradient(
       180deg,
-      transparent 50%,
-      var(--art-haze) 56%,
-      transparent 60%,
-      var(--art-haze) 64%,
-      transparent 72%
+      transparent calc(var(--lm-h) - 8%),
+      var(--art-haze) calc(var(--lm-h) - 2%),
+      transparent calc(var(--lm-h) + 2%),
+      var(--art-haze) calc(var(--lm-h) + 6%),
+      transparent calc(var(--lm-h) + 14%)
     ),
     linear-gradient(
       180deg,
       var(--art-sky-top),
-      var(--art-sky) 46%,
-      var(--art-horizon) 58%,
-      var(--art-floor) 58%,
+      var(--art-sky) calc(var(--lm-h) - 12%),
+      var(--art-horizon) var(--lm-h),
+      var(--art-floor) var(--lm-h),
       var(--art-floor-deep)
     );
 }
-.vy-lm-line {
-  top: 58%;
+:root[data-variant='m'] .vy-lm-line {
+  top: var(--lm-h);
   height: 1px;
   background: linear-gradient(
     90deg,
@@ -102,11 +112,11 @@
   );
   opacity: 0.8;
 }
-.vy-lm-slide {
+:root[data-variant='m'] .vy-lm-slide {
   animation: vy-lm-slide 24s ease-in-out infinite;
 }
 /* The reflection runs a beat (0.5s at 120bpm) behind its moon. */
-.vy-lm-late {
+:root[data-variant='m'] .vy-lm-late {
   animation-delay: -23.5s;
 }
 @keyframes vy-lm-slide {
@@ -118,11 +128,11 @@
     transform: translateX(30vw);
   }
 }
-:root[data-scrolled] .vy-lm-slide {
+:root[data-variant='m'][data-scrolled] .vy-lm-slide {
   animation-play-state: paused;
 }
 @media (prefers-reduced-motion: reduce), (pointer: coarse) {
-  .vy-lm-slide {
+  :root[data-variant='m'] .vy-lm-slide {
     animation: none;
   }
 }

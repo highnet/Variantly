@@ -71,7 +71,7 @@
   --glass-edge: rgb(143 180 230 / 0.22);
 }
 /* The ground the glass refracts (scene.ts paints the same field inside its lenses). */
-.vy-li-field {
+:root[data-variant='i'] .vy-li-field {
   background:
     radial-gradient(
       60vmax 60vmax at 82% 18%,
@@ -91,12 +91,12 @@
     repeating-linear-gradient(180deg, var(--art-line) 0 1px, transparent 1px 32px),
     linear-gradient(180deg, var(--art-top), var(--art-bot));
 }
-.vy-li-spin {
+:root[data-variant='i'] .vy-li-spin {
   transform-box: fill-box;
   transform-origin: center;
   animation: vy-li-spin 24s linear infinite;
 }
-.vy-li-spin-r {
+:root[data-variant='i'] .vy-li-spin-r {
   animation-direction: reverse;
   animation-duration: 12s;
 }
@@ -108,11 +108,11 @@
     transform: rotate(1turn);
   }
 }
-:root[data-scrolled] .vy-li-spin {
+:root[data-variant='i'][data-scrolled] .vy-li-spin {
   animation-play-state: paused;
 }
 @media (prefers-reduced-motion: reduce), (pointer: coarse) {
-  .vy-li-spin {
+  :root[data-variant='i'] .vy-li-spin {
     animation: none;
   }
 }
