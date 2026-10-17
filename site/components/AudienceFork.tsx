@@ -19,17 +19,28 @@ type AudienceForkProps = {
   agent: ReactNode;
   brand: ReactNode;
   aside: ReactNode;
+  /** Decoration and footer that only the human view mounts. */
+  chrome: ReactNode;
+  footer: ReactNode;
 };
 
 /*
  * The fork lives in the header strip. `#agent` in the URL opens the agent
  * view directly, so a link handed to an agent lands on the quickstart.
  */
-const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
-  const [audience, setAudience] = useState<Audience>('human');
+const AudienceFork = ({ human, agent, brand, aside, chrome, footer }: AudienceForkProps) => {
+  // null until the hash is read: the server renders the human page, but its
+  // heavy chrome waits, so an agent landing on #agent never loads it.
+  const [audience, setAudience] = useState<Audience | null>(null);
 
   useEffect(() => {
-    const sync = () => setAudience(fromHash());
+    const sync = () => {
+      // The agent doc links to #human to come back; keep the URL clean.
+      if (window.location.hash === '#human') {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+      setAudience(fromHash());
+    };
     sync();
     window.addEventListener('hashchange', sync);
     return () => window.removeEventListener('hashchange', sync);
@@ -43,14 +54,21 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
     }
   }, [audience]);
 
+  useEffect(() => {
+    if (audience) document.documentElement.dataset.audience = audience;
+  }, [audience]);
+
   const choose = useCallback((next: Audience) => {
     setAudience(next);
     const url = next === 'agent' ? '#agent' : window.location.pathname;
     window.history.replaceState(null, '', url);
   }, []);
 
+  if (audience === 'agent') return agent;
+
   return (
     <>
+      {audience === 'human' && chrome}
       <a
         href="#audience-panel"
         className="bg-ink text-surface fixed top-3 left-3 z-50 -translate-y-24 rounded-[4px] px-3.5 py-2.5 font-mono text-[13px] font-semibold no-underline focus:translate-y-0"
@@ -58,7 +76,7 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
         Skip to content
       </a>
       <header
-        data-audience={audience}
+        data-audience={audience ?? 'human'}
         className="border-rule bg-panel/95 sticky top-0 z-20 border-b backdrop-blur-sm"
       >
         {/* Phones: brand and controls on one row, the audience tabs below.
@@ -77,7 +95,7 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
                 role="tab"
                 variant="tab"
                 size="tab"
-                aria-selected={audience === o.id}
+                aria-selected={(audience ?? 'human') === o.id}
                 aria-controls="audience-panel"
                 onClick={() => choose(o.id)}
               >
@@ -92,11 +110,12 @@ const AudienceFork = ({ human, agent, brand, aside }: AudienceForkProps) => {
         id="audience-panel"
         role="tabpanel"
         tabIndex={-1}
-        aria-labelledby={`fork-${audience}`}
+        aria-labelledby="fork-human"
         className="flex flex-1 flex-col outline-none"
       >
-        {audience === 'human' ? human : agent}
+        {human}
       </div>
+      {footer}
     </>
   );
 };

@@ -1,20 +1,17 @@
-import { AgentQuickstart } from '@/components/AgentQuickstart';
+import { AgentDoc } from '@/components/AgentDoc';
 import { AudienceFork } from '@/components/AudienceFork';
 import { FinePrint } from '@/components/FinePrint';
 import { DemoVideo } from '@/components/DemoVideo';
 import { HowItWorks } from '@/components/HowItWorks';
 import { PrefsMenu } from '@/components/PrefsMenu';
 import { Brand } from '@/components/Brand';
+import { HumanChrome } from '@/components/HumanChrome';
 import { SiteFooter } from '@/components/SiteFooter';
 import { Showcase } from '@/components/Showcase';
 import { Stacks } from '@/components/Stacks';
 import { WithLive } from '@/components/WithLive';
 import { StartChecklist } from '@/components/StartChecklist';
 import { siGithub } from 'simple-icons';
-import { Backdrop } from '@/components/backdrop/Backdrop';
-import { Delight } from '@/components/Delight';
-import { ScrollReveal } from '@/components/ScrollReveal';
-import { VariantSwitcher } from '@/components/VariantSwitcher';
 
 import { REPO_URL } from '@/lib/site';
 
@@ -60,24 +57,19 @@ const Human = () => (
 );
 
 const Page = () => (
-  <>
-    <Backdrop />
-    <AudienceFork
-      brand={<Brand />}
-      aside={
-        <div className="flex items-center gap-3">
-          <PrefsMenu />
-          <GitHubLink />
-        </div>
-      }
-      human={<Human />}
-      agent={<AgentQuickstart />}
-    />
-    <SiteFooter />
-    <VariantSwitcher />
-    <ScrollReveal />
-    <Delight />
-  </>
+  <AudienceFork
+    brand={<Brand />}
+    aside={
+      <div className="flex items-center gap-3">
+        <PrefsMenu />
+        <GitHubLink />
+      </div>
+    }
+    human={<Human />}
+    agent={<AgentDoc />}
+    chrome={<HumanChrome />}
+    footer={<SiteFooter />}
+  />
 );
 
 export default Page;
