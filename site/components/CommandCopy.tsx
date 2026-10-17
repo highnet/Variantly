@@ -1,7 +1,7 @@
 'use client';
 
 import { Check, Copy, SquareTerminal } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 
 import { Button } from '@/components/ui/Button';
 import { copyCommand } from '@/lib/copy';
@@ -29,8 +29,8 @@ const CommandCopy = ({
   const runner = useRunner();
   const shown = withRunner(command, runner);
 
-  const copy = async () => {
-    const ok = await copyCommand(shown);
+  const copy = async (e: MouseEvent<HTMLButtonElement>) => {
+    const ok = await copyCommand(shown, e.currentTarget);
     setCopied(ok);
     if (ok) setTimeout(() => setCopied(false), 1600);
   };

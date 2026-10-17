@@ -3,9 +3,7 @@
 import { inView } from 'motion';
 import { useEffect } from 'react';
 
-import { burst } from '@/components/FreshLook';
 import { animateHeight, revealText, stillMotion } from '@/lib/disclose';
-import { EASE } from '@/lib/motion';
 import { calmMotion } from '@/lib/prefs';
 import { lowPerf, onScrollStart, scrolling, touchUI, whenIdle } from '@/lib/scrollIdle';
 import { seekTime } from '@/lib/seek';
@@ -148,25 +146,8 @@ export const Delight = () => {
       });
     }
 
-    // 4 · copy pop + burst
-    const onClick = (e: MouseEvent) => {
-      const btn = (e.target as HTMLElement).closest<HTMLElement>(
-        'button[aria-label^="Copy"], button[aria-label="Copied"]',
-      );
-      if (!btn || calm) return;
-      const r = btn.getBoundingClientRect();
-      burst(r.left + r.width / 2, r.top + r.height / 2, 10);
-      btn.animate(
-        [
-          { transform: 'scale(0.8)' },
-          { transform: 'scale(1.2) rotate(-6deg)', offset: 0.4 },
-          { transform: 'none' },
-        ],
-        { duration: 420, easing: EASE.springPop },
-      );
-    };
-    document.addEventListener('click', onClick);
-    stops.push(() => document.removeEventListener('click', onClick));
+    // 4 · copy pop + burst: celebrateCopy in lib/copy.ts, called by every
+    // copy action once the clipboard has taken the text.
 
     // 12 · springy <details>: the same height spring as the show-more pill
     const onSummary = (e: MouseEvent) => {

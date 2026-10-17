@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
   type FocusEvent,
+  type MouseEvent,
   type PointerEvent,
   type ReactNode,
 } from 'react';
@@ -293,8 +294,8 @@ const TipCommand = ({ command, className }: TipCommandProps) => {
   const [copied, setCopied] = useState(false);
   const shown = withRunner(command, useRunner());
 
-  const copy = async () => {
-    const ok = await copyCommand(shown);
+  const copy = async (e: MouseEvent<HTMLButtonElement>) => {
+    const ok = await copyCommand(shown, e.currentTarget);
     setCopied(ok);
     if (ok) window.setTimeout(() => setCopied(false), 1600);
   };

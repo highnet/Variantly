@@ -715,7 +715,7 @@ const Showcase = () => {
                 </a>
               </div>
               <p className="text-steel-on-slate m-0 text-[13px] leading-snug">
-                A made-up shop, redesigned <strong className="text-surface">six ways</strong> by
+                A made-up shop, redesigned <strong className="text-surface">six ways</strong> by{' '}
                 <GlossaryTip term="claude-code" />.{' '}
                 <strong className="text-surface">Drag the line</strong> or pick a number.
               </p>
