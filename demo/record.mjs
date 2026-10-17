@@ -501,6 +501,8 @@ class Director {
   async act(step) {
     // Steps that only make sense with a real agent (installing Impeccable).
     if (step.realOnly && agent === 'demo') return;
+    // Steps that set the count by hand: a mix sets it with its rows instead.
+    if (step.unlessMix && mix) return;
     const began = Date.now();
     const from = this.now();
     try {
