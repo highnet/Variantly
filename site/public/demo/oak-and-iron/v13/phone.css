@@ -1,0 +1,30 @@
+/* Phone edition: neon night market. */
+@import url("https://fonts.googleapis.com/css2?family=Tilt+Neon&family=Sora:wght@400;600&display=swap");
+:root{color-scheme:dark;--night:#0b0a0e;--stall:#1a171f;--text:#f2ece4;--mute:#bdb4c4;--amber:#ffb547;--pink:#ff4f8b;--cyan:#4cf2ff;
+  --glow-a:0 0 2px #fff,0 0 8px var(--amber),0 0 20px var(--amber);--glow-p:0 0 2px #fff,0 0 8px var(--pink),0 0 20px var(--pink);--glow-c:0 0 2px #fff,0 0 8px var(--cyan),0 0 18px var(--cyan)}
+body{background:var(--night);color:var(--text);font:400 16px/1.5 "Sora",system-ui,sans-serif}
+a{color:var(--cyan)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.logo{font:400 28px "Tilt Neon",sans-serif;color:#fff4e3;text-shadow:var(--glow-a)}
+.b-hero{background:radial-gradient(ellipse 70% 40% at 30% 40%,rgba(255,79,139,.2),transparent 70%),linear-gradient(180deg,transparent 70%,rgba(255,181,71,.1))}
+.kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
+h1{font:400 50px/1.02 "Tilt Neon",sans-serif;color:#ffe3ee;text-shadow:var(--glow-p)}
+.intro,.b-feat p,.desc,.b-news p{color:var(--mute)}
+.btn,button{border-radius:999px;border:2px solid var(--pink);background:rgba(255,79,139,.14);color:#fff;font:600 15px "Sora",sans-serif;padding:11px 20px;text-decoration:none;box-shadow:0 0 12px rgba(255,79,139,.55)}
+.link{font-weight:600}
+.b-sec{font:400 32px "Tilt Neon",sans-serif;color:#e9fdff;text-shadow:var(--glow-c)}
+.num{display:none}
+.b-feat{border-bottom:1px solid #2a2530}
+.b-feat h3{font:400 24px "Tilt Neon",sans-serif;color:#fff1e0}
+.b-item{background:var(--stall);border-top:34px solid transparent;border-image:repeating-linear-gradient(90deg,var(--c) 0 24px,#f5ede2 24px 48px) 34 0 0 0;--c:var(--amber)}
+.i2{--c:var(--pink)}.i3{--c:var(--cyan)}
+.b-item .art{color:#fff;padding:30px 44px}
+.b-item .art svg{stroke-width:2.5;filter:drop-shadow(0 0 3px var(--c)) drop-shadow(0 0 9px var(--c))}
+.no{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--c)}
+.b-item h3{font:400 28px "Tilt Neon",sans-serif;color:#fff}
+.price{font-weight:600;font-size:18px;color:#fff1e0}
+.b-news label{font-weight:600;font-size:14px}
+.b-news input{border-radius:999px;border:1px solid #4a4252;background:#141218;color:var(--text);padding:0 16px}
+.b-news input::placeholder{color:#9d93a6}
+.b-foot{border-top:1px solid #2a2530;color:var(--mute);font-size:14px}
+.small{font-size:12px}
