@@ -130,19 +130,14 @@
   font-weight: 600;
   text-transform: none;
 }
-/* The picked word sits under glass: a tinted gradient fill with a specular top edge. */
+/* The picked word: the glass blue as a solid ink with a specular top edge
+   (no gradient fill: emphasis comes from colour, not a gradient). */
 :root[data-variant='i'] #hero-title .vy-fresh {
-  color: var(--alert);
-  background: linear-gradient(180deg, #4f86bd 0%, #2a6198 46%, #1b4876 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #2a6198;
   filter: drop-shadow(0 1px 0 rgb(255 255 255 / 0.9));
 }
 :root[data-variant='i'][data-theme='dark'] #hero-title .vy-fresh {
-  background: linear-gradient(180deg, #e3eefc 0%, #a9c8f0 50%, #7fa6dc 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: #a9c8f0;
   filter: drop-shadow(0 -1px 0 rgb(255 255 255 / 0.25));
 }
 :root[data-variant='i'] main > div h2 {
