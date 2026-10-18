@@ -44,7 +44,8 @@ const field = new Float32Array(SIZE * SIZE);
 for (let y = 0; y < SIZE; y++)
   for (let x = 0; x < SIZE; x++) {
     let v = 0;
-    for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) v += K[j + 1][i + 1] * at(x + i, y + j);
+    for (let j = -1; j <= 1; j++)
+      for (let i = -1; i <= 1; i++) v += K[j + 1][i + 1] * at(x + i, y + j);
     field[y * SIZE + x] = v;
   }
 const sd = Math.sqrt(field.reduce((s, v) => s + v * v, 0) / field.length);

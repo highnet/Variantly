@@ -1,13 +1,34 @@
+/* Concept c: every rule is scoped to :root[data-variant='c'] (concepts/README.md). */
 :root[data-variant='c'] {
-  --panel: #e9e2c8; --surface: #f4efdc; --rule: #b9ae86; --steel: #4d4a3a; --ink: #1d2a28;
-  --alert: #1f6f6a; --alert-hover: #2a8a84;
-  --hero-bg: #efe7cb; --hero-ink: #1d2a28; --hero-mute: #5a5a46; --hero-line: #8f845c; --hero-box: #f7f2e0;
-  --hero-face: var(--font-typewriter); --title: #1f6f6a; --hero-alpha: 78%;
+  --panel: #e9e2c8;
+  --surface: #f4efdc;
+  --rule: #b9ae86;
+  --steel: #4d4a3a;
+  --ink: #1d2a28;
+  --alert: #1f6f6a;
+  --alert-hover: #2a8a84;
+  --hero-bg: #efe7cb;
+  --hero-ink: #1d2a28;
+  --hero-mute: #5a5a46;
+  --hero-line: #8f845c;
+  --hero-box: #f7f2e0;
+  --hero-face: var(--font-typewriter);
+  --title: #1f6f6a;
+  --hero-alpha: 78%;
 }
 :root[data-variant='c'][data-theme='dark'] {
-  --panel: #120d06; --surface: #1c140a; --rule: #3a2b12; --steel: #c9a66b; --ink: #ffd88a;
-  --alert: #ffb000; --alert-hover: #ffc640;
-  --hero-bg: #160f06; --hero-ink: #ffcf70; --hero-mute: #b8904a; --hero-line: #5a4116; --hero-box: #0c0803;
+  --panel: #120d06;
+  --surface: #1c140a;
+  --rule: #3a2b12;
+  --steel: #c9a66b;
+  --ink: #ffd88a;
+  --alert: #ffb000;
+  --alert-hover: #ffc640;
+  --hero-bg: #160f06;
+  --hero-ink: #ffcf70;
+  --hero-mute: #b8904a;
+  --hero-line: #5a4116;
+  --hero-box: #0c0803;
   --title: #ffb000;
 }
 :root[data-variant='c'] [data-hero-title]::before {
@@ -25,12 +46,15 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(to bottom, transparent, rgb(255 255 255 / 0.07), transparent) 0 0 / 100% 30% no-repeat;
+  background: linear-gradient(to bottom, transparent, rgb(255 255 255 / 0.07), transparent) 0 0 /
+    100% 30% no-repeat;
   animation: vy-roll 6s linear infinite;
   z-index: 2;
 }
 :root[data-variant='c'] .vy-title {
-  text-shadow: 2px 0 0 rgb(0 200 200 / 0.35), -2px 0 0 rgb(255 80 40 / 0.35);
+  text-shadow:
+    2px 0 0 rgb(0 200 200 / 0.35),
+    -2px 0 0 rgb(255 80 40 / 0.35);
   animation: vy-flicker 4s steps(1) infinite;
 }
 :root[data-variant='c'] [data-hero-grid] {
@@ -38,41 +62,97 @@
   margin: 0 24px 32px;
   max-width: calc(1440px - 48px);
 }
-:root[data-variant='c'] #hero-title::before { content: '> '; color: var(--title); }
+:root[data-variant='c'] #hero-title::before {
+  content: '> ';
+  color: var(--title);
+}
 :root[data-variant='c'] [data-hero-side] {
   border: 1px solid var(--hero-line);
-  /* A solid amber bar across the top of the frame, no label. */
-  border-top-width: 8px;
   padding: 18px;
   position: relative;
 }
 :root[data-variant='c'] body {
-  background-image: repeating-linear-gradient(to bottom, transparent 0 31px, color-mix(in srgb, var(--rule) 45%, transparent) 31px 32px);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 31px,
+    color-mix(in srgb, var(--rule) 45%, transparent) 31px 32px
+  );
 }
-:root[data-variant='c'] main > div h2::before { content: '§ '; color: var(--alert); }
+:root[data-variant='c'] main > div h2::before {
+  content: '§ ';
+  color: var(--alert);
+}
 :root[data-variant='c'] main > div .bg-surface {
   border: 1px solid var(--rule);
   border-radius: 0;
   box-shadow: inset 0 6px 0 var(--rule);
 }
-:root[data-variant='c'] main > div .figure:not(h3) { font-family: var(--font-typewriter); color: var(--alert); }
-.vy-swatch-c { background: radial-gradient(#ffb000 40%, #1f6f6a 42%); }
-@media (max-width: 639px) {
-:root[data-variant='c'] [data-hero-grid] { margin: 0 12px 24px; }
-:root[data-variant='c']:not([data-scrolled]) .vy-scene { opacity: 0.35; }
+:root[data-variant='c'] main > div .figure:not(h3) {
+  font-family: var(--font-typewriter);
+  color: var(--alert);
 }
-:root[data-variant='c'] { --flap-bg: #1d2a28; --flap-ink: #e9e2c8; }
-:root[data-variant='c'][data-theme='dark'] { --flap-bg: #2a1d08; --flap-ink: #ffb000; }
-:root[data-variant='c'] { --board-bg: #1d2a28; --board-raised: #263836; --board-line: #3b524e; --board-mute: #b9c9c2; --board-text: #f4efdc; --board-deep: #0f1716; --board-ok: #3fb6a8; }
-:root[data-variant='c'][data-theme='dark'] { --board-bg: #1c140a; --board-raised: #2a1e0e; --board-line: #4a3512; --board-mute: #c9a66b; --board-text: #ffcf70; --board-deep: #0c0803; --board-ok: #ffb000; }
-:root[data-variant='c'] { --blob-o: 0.45; }
-:root[data-variant='c'] { --on-alert: #ffffff; }
-:root[data-variant='c'][data-theme='dark'] { --on-alert: #111111; }
-:root[data-variant='c'] { --art-1: #1f6f6a; --art-ink: #1d2a28; }
-:root[data-variant='c'][data-theme='dark'] { --art-1: #ffb000; --art-ink: #000; }
-:root[data-variant='c'] .vy-loadbar { height: auto; inset: auto auto 12px 12px; }
-:root[data-variant='c'] .vy-loadbar-fill { display: none; }
+@media (max-width: 639px) {
+  :root[data-variant='c'] [data-hero-grid] {
+    margin: 0 12px 24px;
+  }
+  :root[data-variant='c']:not([data-scrolled]) .vy-scene {
+    opacity: 0.35;
+  }
+}
+:root[data-variant='c'] {
+  --flap-bg: #1d2a28;
+  --flap-ink: #e9e2c8;
+}
+:root[data-variant='c'][data-theme='dark'] {
+  --flap-bg: #2a1d08;
+  --flap-ink: #ffb000;
+}
+:root[data-variant='c'] {
+  --board-bg: #1d2a28;
+  --board-raised: #263836;
+  --board-line: #3b524e;
+  --board-mute: #b9c9c2;
+  --board-text: #f4efdc;
+  --board-deep: #0f1716;
+  --board-ok: #3fb6a8;
+}
+:root[data-variant='c'][data-theme='dark'] {
+  --board-bg: #1c140a;
+  --board-raised: #2a1e0e;
+  --board-line: #4a3512;
+  --board-mute: #c9a66b;
+  --board-text: #ffcf70;
+  --board-deep: #0c0803;
+  --board-ok: #ffb000;
+}
+:root[data-variant='c'] {
+  --blob-o: 0.45;
+}
+:root[data-variant='c'][data-theme='dark'] {
+  --on-alert: #111111;
+}
+:root[data-variant='c'] {
+  --art-1: #1f6f6a;
+  --art-ink: #1d2a28;
+}
+:root[data-variant='c'][data-theme='dark'] {
+  --art-1: #ffb000;
+  --art-ink: #000;
+}
+:root[data-variant='c'] .vy-loadbar {
+  height: auto;
+  inset: auto auto 12px 12px;
+}
+:root[data-variant='c'] .vy-loadbar-fill {
+  display: none;
+}
 :root[data-variant='c'] .vy-loadbar-text {
-  display: block; font: 600 12px/1 var(--font-martian), monospace; color: var(--art-1);
-  background: var(--panel); padding: 6px 8px; border: 1px solid var(--rule);
+  display: block;
+  font:
+    600 12px/1 var(--font-martian),
+    monospace;
+  color: var(--art-1);
+  background: var(--panel);
+  padding: 6px 8px;
+  border: 1px solid var(--rule);
 }

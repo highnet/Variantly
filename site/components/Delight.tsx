@@ -11,6 +11,10 @@ import { lowPerf, onScrollStart, scrolling, touchUI, whenIdle } from '@/lib/scro
 import { seekTime } from '@/lib/seek';
 import { useSiteStore } from '@/lib/store';
 
+// Frames in each baked liquid sprite (scripts/bake-liquid.mjs; the mask
+// position in globals.css divides by LIQUID_FRAMES - 1).
+const LIQUID_FRAMES = 48;
+
 // The favicon redrawn in the current concept's accent (idea 16).
 const favicon = () => {
   const accent =
@@ -49,32 +53,41 @@ export const Delight = () => {
     const steps = document.querySelector<HTMLElement>('main > div ol');
     const items = steps ? ([...steps.children] as HTMLElement[]) : [];
     // Touch and low-power: no per-frame scrubbing and no parallax. The steps
-    // light up (and their numerals fill in one CSS transition) from an
+    // light up (and their numerals pour in one stepped CSS animation) from an
     // observer, applied once the scroll settles.
     const light = touchUI() || lowPerf();
+    const root = document.documentElement;
     if (light && steps) {
-      // Steps already in the lit zone at mount start lit, set in the same
-      // frame as the classes that enable the fill, so nothing drains and
-      // refills. One rect read pass, then writes.
+      // Steps already in the lit zone at mount start lit and full, so a
+      // numeral never drains from its no-JS full state and pours again. One
+      // rect read pass, then writes.
       const lit = items.map((el) => el.getBoundingClientRect().top < innerHeight * 0.75);
-      items.forEach((el, i) => lit[i] && el.classList.add('vy-step-on', 'vy-step-done'));
+      items.forEach(
+        (el, i) => lit[i] && el.classList.add('vy-step-on', 'vy-step-full', 'vy-step-done'),
+      );
       steps.style.setProperty('--steps-p', (lit.filter(Boolean).length / items.length).toFixed(3));
-      document.documentElement.classList.add('vy-steps-touch');
+      root.classList.add('vy-steps-touch');
     }
     steps?.classList.add('vy-steps');
-    // Fill transitions switch on only after the mount state has painted.
-    let armed = 0;
-    if (light && steps)
-      armed = requestAnimationFrame(() => {
-        armed = requestAnimationFrame(() =>
-          document.documentElement.classList.add('vy-steps-anim'),
-        );
-      });
+    // The liquid masks load only once the steps are near the viewport.
+    if (steps) {
+      const near = new IntersectionObserver(
+        (entries) => {
+          if (!entries.some((e) => e.isIntersecting)) return;
+          steps.classList.add('vy-liquid');
+          near.disconnect();
+        },
+        { rootMargin: '50% 0px' },
+      );
+      near.observe(steps);
+      stops.push(() => near.disconnect());
+    }
     const title = light ? [] : [...document.querySelectorAll<HTMLElement>('.vy-title')];
     // The backdrop's depth layers (scene, shapes) keep drifting through the
-    // whole page: see "10 · hero parallax" in globals.css.
+    // whole page: see "10 · parallax" in globals.css.
     const depth = light ? [] : [...document.querySelectorAll<HTMLElement>('.vy-scene, .vy-blobs')];
-    if (depth.length && !calm) document.documentElement.classList.add('vy-parallax');
+    if (depth.length && !calm) root.classList.add('vy-parallax');
+    const frames: string[] = [];
     let glass = false;
     let lastY = '';
     let lastP = '';
@@ -90,13 +103,21 @@ export const Delight = () => {
       if (steps) {
         // The one layout read of the frame; writes follow.
         const r = steps.getBoundingClientRect();
-        const p = Math.min(1, Math.max(0, (innerHeight * 0.75 - r.top) / r.height));
+        // Progress runs over the steps' trip from the bottom of the screen to
+        // its upper quarter, long enough to watch each numeral pour.
+        const p = Math.min(1, Math.max(0, (innerHeight * 0.85 - r.top) / (innerHeight * 0.6)));
         steps.style.setProperty('--steps-p', p.toFixed(3));
         items.forEach((el, i, all) => {
-          // Each numeral fills over its own stretch of the progress line.
+          // Each numeral pours over its own stretch of the progress line:
+          // the stretch picks a frame of its baked liquid sequence.
           const fill = calm ? 1 : Math.min(1, Math.max(0, (p * all.length - i) / 0.7));
-          el.style.setProperty('--fill', fill.toFixed(2));
+          const f = String(Math.round(fill * (LIQUID_FRAMES - 1)));
+          if (frames[i] !== f) {
+            frames[i] = f;
+            el.style.setProperty('--frame', f);
+          }
           el.classList.toggle('vy-step-on', p >= (i + 0.4) / all.length);
+          el.classList.toggle('vy-step-full', fill >= 1);
           // The pop plays once, the first time a numeral is full.
           if (fill >= 1) el.classList.add('vy-step-done');
         });
@@ -129,19 +150,28 @@ export const Delight = () => {
     stops.push(() => {
       removeEventListener('scroll', onScroll);
       cancelAnimationFrame(frame);
-      document.documentElement.classList.remove('vy-parallax');
+      root.classList.remove('vy-parallax');
     });
     if (light && steps) {
-      const root = document.documentElement;
       const on = new Set<Element>();
       let pending: () => void = () => {};
+      // Calm and low power skip the pour: a lit numeral is full at once.
+      const still = calm || lowPerf();
       const apply = () => {
         items.forEach((el) => {
-          if (on.has(el)) el.classList.add('vy-step-on', 'vy-step-done');
+          if (!on.has(el)) return;
+          el.classList.add('vy-step-on');
+          if (still) el.classList.add('vy-step-full', 'vy-step-done');
         });
         const p = items.filter((el) => el.classList.contains('vy-step-on')).length / items.length;
         steps.style.setProperty('--steps-p', p.toFixed(3));
       };
+      // Once the pour has run its frames the numeral is plain full text.
+      const poured = (e: AnimationEvent) => {
+        if (e.animationName !== 'vy-liq-pour') return;
+        (e.target as HTMLElement).closest('li')?.classList.add('vy-step-full', 'vy-step-done');
+      };
+      steps.addEventListener('animationend', poured);
       const io = new IntersectionObserver(
         (entries) => {
           entries.forEach((e) => e.isIntersecting && on.add(e.target));
@@ -156,8 +186,8 @@ export const Delight = () => {
       stops.push(() => {
         io.disconnect();
         pending();
-        cancelAnimationFrame(armed);
-        root.classList.remove('vy-steps-touch', 'vy-steps-anim');
+        steps.removeEventListener('animationend', poured);
+        root.classList.remove('vy-steps-touch');
       });
     }
 

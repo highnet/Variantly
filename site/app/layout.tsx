@@ -87,8 +87,8 @@ const JSON_LD = {
   sameAs: [REPO_URL],
 };
 
-// The agent view is a plain document: flag it before paint so no styling flashes.
-const AUDIENCE_BOOT = `if(location.hash==='#agent')document.documentElement.dataset.audience='agent'`;
+// The agent page is a plain document: flag it before paint so no styling flashes.
+const AUDIENCE_BOOT = `document.documentElement.dataset.audience=location.pathname==='/agents'||location.hash==='#agent'?'agent':'human'`;
 
 type RootLayoutProps = {
   children: ReactNode;

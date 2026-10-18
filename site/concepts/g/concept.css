@@ -1,28 +1,95 @@
-:root[data-variant='g'] { --blob-o: 0.75; }
+/* Concept g: every rule is scoped to :root[data-variant='g'] (concepts/README.md). */
 :root[data-variant='g'] {
-  --panel: #f6f2ff; --surface: #ffffff; --rule: #ddd3fb; --steel: #5b5280; --ink: #1a1033;
-  --alert: #7c5cff; --alert-hover: #9479ff; --on-alert: #ffffff;
-  --hero-bg: #f1ebff; --hero-ink: #1a1033; --hero-mute: #5b5280; --hero-line: #cfc2fa; --hero-box: #ffffff;
-  --hero-face: var(--font-clay); --title: #7c5cff; --hero-alpha: 40%;
-  --board-bg: #1a1033; --board-raised: #2a1c52; --board-line: #43307a; --board-mute: #c9bff0; --board-text: #ffffff; --board-deep: #0d0820; --board-ok: #ff5fa2;
-  --flap-bg: #7c5cff; --flap-ink: #ffffff; --blob-o: 0.7;
+  --blob-o: 0.75;
+}
+:root[data-variant='g'] {
+  --panel: #f6f2ff;
+  --surface: #ffffff;
+  --rule: #ddd3fb;
+  --steel: #5b5280;
+  --ink: #1a1033;
+  --alert: #7c5cff;
+  --alert-hover: #9479ff;
+  --on-alert: #ffffff;
+  --hero-bg: #f1ebff;
+  --hero-ink: #1a1033;
+  --hero-mute: #5b5280;
+  --hero-line: #cfc2fa;
+  --hero-box: #ffffff;
+  --hero-face: var(--font-clay);
+  --title: #7c5cff;
+  --hero-alpha: 40%;
+  --board-bg: #1a1033;
+  --board-raised: #2a1c52;
+  --board-line: #43307a;
+  --board-mute: #c9bff0;
+  --board-text: #ffffff;
+  --board-deep: #0d0820;
+  --board-ok: #ff5fa2;
+  --flap-bg: #7c5cff;
+  --flap-ink: #ffffff;
+  --blob-o: 0.7;
 }
 :root[data-variant='g'][data-theme='dark'] {
-  --panel: #0f0a20; --surface: #1a1236; --rule: #33255f; --steel: #b7aee0; --ink: #f4f0ff;
-  --hero-bg: #130c29; --hero-ink: #f4f0ff; --hero-mute: #b7aee0; --hero-line: #3d2c70; --hero-box: #0b0718;
+  --panel: #0f0a20;
+  --surface: #1a1236;
+  --rule: #33255f;
+  --steel: #b7aee0;
+  --ink: #f4f0ff;
+  --hero-bg: #130c29;
+  --hero-ink: #f4f0ff;
+  --hero-mute: #b7aee0;
+  --hero-line: #3d2c70;
+  --hero-box: #0b0718;
   --title: #a58bff;
 }
-:root[data-variant='g'] main > div h2 { text-transform: none; text-shadow: 0 2px 0 color-mix(in srgb, currentColor 55%, #1a1033); }
-:root[data-variant='g'] main > div .bg-surface { border: 0; border-radius: 22px; box-shadow: 0 1px 0 rgb(255 255 255 / 0.8) inset, 0 6px 0 rgb(124 92 255 / 0.28); }
-:root[data-variant='g'] [data-hero-side] { background: var(--hero-box); border-radius: 22px; padding: 22px; box-shadow: 0 6px 0 rgb(124 92 255 / 0.28); }
-:root[data-variant='g'] .flap-cell:nth-child(5n + 1) { --flap-bg: #ff5fa2; }
-:root[data-variant='g'] .flap-cell:nth-child(5n + 3) { --flap-bg: #22c3ee; --flap-ink: #0d0820; }
-:root[data-variant='g'] .flap-cell:nth-child(5n + 4) { --flap-bg: #ffb020; --flap-ink: #0d0820; }
-.vy-swatch-g { background: conic-gradient(#ff5fa2, #7c5cff, #22c3ee, #ffb020, #ff5fa2); }
-:root[data-variant='g'] { --art-1: #ff5fa2; --art-2: #22c3ee; --art-3: #a78bfa; --art-deep: #9d2a74; }
-:root[data-variant='g'][data-theme='dark'] { --art-1: #ff4f9a; --art-2: #22d3ee; --art-3: #8b5cf6; --art-deep: #2e0a40; }
-:root[data-variant='g'] .vy-loadbar { height: 8px; inset: 6px 12px auto; }
+:root[data-variant='g'] main > div h2 {
+  text-transform: none;
+  text-shadow: 0 2px 0 color-mix(in srgb, currentColor 55%, #1a1033);
+}
+:root[data-variant='g'] main > div .bg-surface {
+  border: 0;
+  border-radius: 22px;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.8) inset,
+    0 6px 0 rgb(124 92 255 / 0.28);
+}
+:root[data-variant='g'] [data-hero-side] {
+  background: var(--hero-box);
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 0 6px 0 rgb(124 92 255 / 0.28);
+}
+:root[data-variant='g'] .flap-cell:nth-child(5n + 1) {
+  --flap-bg: #ff5fa2;
+}
+:root[data-variant='g'] .flap-cell:nth-child(5n + 3) {
+  --flap-bg: #22c3ee;
+  --flap-ink: #0d0820;
+}
+:root[data-variant='g'] .flap-cell:nth-child(5n + 4) {
+  --flap-bg: #ffb020;
+  --flap-ink: #0d0820;
+}
+:root[data-variant='g'] {
+  --art-1: #ff5fa2;
+  --art-2: #22c3ee;
+  --art-3: #a78bfa;
+  --art-deep: #9d2a74;
+}
+:root[data-variant='g'][data-theme='dark'] {
+  --art-1: #ff4f9a;
+  --art-2: #22d3ee;
+  --art-3: #8b5cf6;
+  --art-deep: #2e0a40;
+}
+:root[data-variant='g'] .vy-loadbar {
+  height: 8px;
+  inset: 6px 12px auto;
+}
 :root[data-variant='g'] .vy-loadbar-fill {
   border-radius: 99px;
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.7), transparent 45%), linear-gradient(90deg, var(--art-1), var(--art-3), var(--art-2));
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.7), transparent 45%),
+    linear-gradient(90deg, var(--art-1), var(--art-3), var(--art-2));
 }

@@ -1,0 +1,32 @@
+/* Phone edition: bitmap item shop, 16-colour palette, 1-bit dither. */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;600&display=swap');
+:root{color-scheme:dark;--bg:#1d2b53;--panel:#000;--text:#fff1e8;--muted:#c2c3c7;--edge:#c2c3c7;--px:'Press Start 2P',monospace}
+html[data-theme="light"]{color-scheme:light;--bg:#ffccaa;--panel:#fff1e8;--text:#000;--muted:#5f574f;--edge:#000}
+body{background:var(--bg);color:var(--text);font:18px/1.45 'Pixelify Sans',sans-serif}
+.b-head{background:var(--panel);border-bottom:4px solid var(--edge);gap:6px}
+.topbar{font-size:14px;color:#ff77a8}.topbar strong{color:#ffec27}
+.logo{font:16px var(--px);color:#ffec27}
+.b-hero{background-color:var(--panel);background-image:conic-gradient(#1d2b53 25%,transparent 0 50%,#1d2b53 0 75%,transparent 0);background-size:4px 4px;border-bottom:4px solid var(--edge)}
+.b-hero>*{background:var(--panel);padding:6px 8px}
+.kicker{color:#00e436;align-self:flex-start}
+h1{font:400 26px/1.4 var(--px)}h1 span{color:#ffec27}
+.intro{color:var(--muted)}
+.btn,button{font:400 11px/1 var(--px);background:#ffa300;color:#000;border:0;padding:14px;text-decoration:none;box-shadow:inset -4px -4px 0 #ab5236,inset 4px 4px 0 #ffec27}
+.link{font:400 11px var(--px);color:#29adff;text-decoration:underline}
+.b-sec{font:400 15px/1.4 var(--px);color:#ffec27}
+.b-sec::before{content:'\25A0';color:#ff004d}
+.b-feat{background:var(--panel);border-bottom:4px solid var(--bg)}
+.b-feat h3{font:400 12px var(--px);color:#29adff}.b-feat p{color:var(--muted)}
+.b-item{background:var(--panel);border-top:4px solid var(--edge)}
+.b-item .art{color:#ffa300;background-color:#1d2b53;background-image:conic-gradient(#000 25%,transparent 0 50%,#000 0 75%,transparent 0);background-size:4px 4px}
+.b-item .art svg{stroke-width:5;stroke-linecap:square;shape-rendering:crispEdges}
+.no{font:400 10px var(--px);background:#ff004d;color:#fff1e8;align-self:flex-start;padding:5px 6px}
+.i2 .no{background:#ffa300;color:#000}.i3 .no{background:#00e436;color:#000}
+.b-item h3{font:400 15px/1.4 var(--px)}
+.desc{color:var(--muted)}.price{font:400 14px var(--px);color:#00e436}
+.b-news{background:var(--panel)}
+.b-news label{font:400 10px var(--px);color:#00e436}
+.b-news input{background:#fff1e8;color:#000;border:0;padding:0 12px;box-shadow:inset 4px 4px 0 #c2c3c7}
+.b-news input::placeholder{color:#5f574f}
+.b-foot{color:var(--muted);border-top:4px solid var(--edge)}
+.small{font-size:15px}

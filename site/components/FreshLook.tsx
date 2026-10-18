@@ -84,7 +84,12 @@ export const burst = (x: number, y: number, sparks = SPARKS) => {
  * arrow invite the click; the press squashes, the release springs back with a
  * wobble, a burst flies out, and then the next concept wipes in.
  */
-export const FreshLook = () => {
+type FreshLookProps = {
+  /** The word or phrase shown in the headline. */
+  children?: string;
+};
+
+export const FreshLook = ({ children = 'a fresh look' }: FreshLookProps) => {
   const self = useRef<HTMLButtonElement>(null);
 
   const next = (e: MouseEvent<HTMLButtonElement>) => {
@@ -130,10 +135,10 @@ export const FreshLook = () => {
       size="none"
       onClick={next}
       title="Show the next concept"
-      aria-label="a fresh look: restyle this page as the next concept"
+      aria-label={`${children} Restyle this page as the next concept`}
       className="vy-fresh"
     >
-      a fresh look
+      {children}
       <RefreshCw aria-hidden="true" className="vy-fresh-icon" />
     </Button>
   );

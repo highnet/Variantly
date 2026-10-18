@@ -1,0 +1,156 @@
+/* Oak & Iron, Winter 26 · v3 Cinematic drama: stills from a noir film about a furniture maker. */
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..800;1,6..96,400..700&family=Courier+Prime:wght@400;700&display=swap');
+
+:root {
+  color-scheme: dark;
+  --black: #0b0909;
+  --stage: #140f0f;
+  --velvet: #3b0b14;
+  --oxblood: #7a1424;
+  --oxblood-hi: #b3283c;
+  --ivory: #efe4d0;
+  --text: #ddd2bf;
+  --mute: #a99c88;
+  --spot: #e9cc8f;
+  --line: rgba(239, 228, 208, 0.16);
+  --field: #070606;
+}
+html[data-theme='light'] {
+  color-scheme: light;
+  --black: #f1e8d8;
+  --stage: #e8dcc6;
+  --velvet: #d9bfa8;
+  --oxblood: #7a1424;
+  --oxblood-hi: #5e0f1c;
+  --ivory: #1a1212;
+  --text: #2a2020;
+  --mute: #5c4c42;
+  --spot: #7a1424;
+  --line: rgba(26, 18, 18, 0.2);
+  --field: #fbf6ee;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; overflow-x: hidden; color: var(--text); background: var(--black);
+  font: 400 17px/1.65 'Courier Prime', 'Courier New', monospace;
+}
+/* film grain over everything, very faint */
+body::after { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 50; opacity: 0.07; mix-blend-mode: overlay;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E"); }
+a { color: var(--spot); }
+a, button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--spot); outline-offset: 4px; }
+h1, h2, h3, h4 { font-family: 'Bodoni Moda', Didot, serif; color: var(--ivory); margin: 0; font-weight: 500; }
+
+.topbar { margin: 0; text-align: center; font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; padding: 8px 16px; color: var(--mute); background: #000; }
+html[data-theme='light'] .topbar { background: var(--stage); }
+.topbar b { color: var(--spot); }
+
+.navbar { max-width: 1280px; margin: 0 auto; display: flex; align-items: center; gap: 28px; padding: 22px 36px; flex-wrap: wrap; }
+.logo { font: italic 600 28px/1 'Bodoni Moda', serif; color: var(--ivory); text-decoration: none; letter-spacing: 0.02em; }
+.navbar ul { list-style: none; display: flex; gap: 6px 28px; margin: 0 0 0 auto; padding: 0; flex-wrap: wrap; }
+.navbar ul a { color: var(--mute); text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 0.16em; }
+.navbar ul a:hover, .navbar ul a[aria-current] { color: var(--ivory); border-bottom: 1px solid var(--oxblood-hi); }
+.cart { color: var(--ivory); text-decoration: none; font-size: 14px; text-transform: uppercase; letter-spacing: 0.16em; }
+.cart span { color: var(--spot); margin-left: 4px; }
+
+/* Hero: a 2.39:1 frame, a velvet curtain, one hard key light, a stool on stage. */
+.hero { position: relative; display: grid; grid-template-columns: 1fr; min-height: 640px; background: #000; border-block: 44px solid #000; overflow: hidden; }
+html[data-theme='light'] .hero { background: #120c0c; border-color: #120c0c; }
+.still { position: absolute; inset: 0; background: radial-gradient(40% 70% at 72% 30%, rgba(233, 204, 143, 0.28), transparent 70%), linear-gradient(#1a1010, #0a0707); }
+.curtain { position: absolute; top: 0; bottom: 0; width: 22%; background: repeating-linear-gradient(90deg, #2a0710 0 18px, #5a0f1d 18px 34px, #3b0b14 34px 52px); box-shadow: inset -40px 0 60px rgba(0, 0, 0, 0.8); }
+.curtain.l { left: 0; border-radius: 0 0 60% 0; }
+.curtain.r { right: 0; transform: scaleX(-1); border-radius: 0 0 60% 0; }
+.beam { position: absolute; top: -10%; left: 56%; width: 34%; height: 120%; background: linear-gradient(rgba(233, 204, 143, 0.32), rgba(233, 204, 143, 0.04)); clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%); animation: flicker 7s steps(1) infinite; }
+@keyframes flicker { 0%, 100% { opacity: 1; } 47% { opacity: 0.82; } 48% { opacity: 1; } 71% { opacity: 0.9; } }
+.blinds { position: absolute; inset: 0 0 0 40%; background: repeating-linear-gradient(-14deg, transparent 0 26px, rgba(0, 0, 0, 0.55) 26px 44px); -webkit-mask-image: radial-gradient(50% 60% at 50% 40%, #000, transparent); mask-image: radial-gradient(50% 60% at 50% 40%, #000, transparent); }
+.silhouette { position: absolute; right: 24%; bottom: 8%; width: 220px; height: 170px; fill: none; stroke: #e9cc8f; stroke-width: 3; filter: drop-shadow(-60px 30px 0 rgba(0, 0, 0, 0.9)) drop-shadow(0 0 18px rgba(233, 204, 143, 0.45)); }
+.hero-text { position: relative; z-index: 1; max-width: 1280px; width: 100%; margin: 0 auto; padding: 72px 36px; align-self: end; }
+.slug { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 22px; font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; color: #cfc2ab; }
+.slug span:first-child { color: #000; background: #e9cc8f; padding: 0 8px; }
+/* the one digital effect: a running timecode burned into the frame */
+.tc { color: #ff5a5a; font-weight: 700; }
+.tc::before { content: '● REC '; animation: blink 1.4s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.hero h1 { color: #f4ead6; font-size: clamp(48px, 7.4vw, 112px); line-height: 0.95; letter-spacing: -0.02em; max-width: 12ch; text-shadow: 0 6px 40px rgba(0, 0, 0, 0.8); }
+.hero h1 em { font-style: italic; font-weight: 400; color: #e9cc8f; }
+.intro { max-width: 52ch; color: #cfc2ab; margin: 26px 0 32px; }
+.ctas { display: flex; flex-wrap: wrap; gap: 14px 28px; align-items: center; margin: 0; }
+.btn, button {
+  display: inline-block; border: 0; text-decoration: none; font: 700 14px 'Courier Prime', monospace; text-transform: uppercase; letter-spacing: 0.18em;
+  color: #f8efe0; background: var(--oxblood); padding: 16px 28px; box-shadow: inset 0 0 0 1px rgba(239, 228, 208, 0.25), 0 20px 40px -18px rgba(179, 40, 60, 0.9);
+}
+.btn:hover, button:hover { background: var(--oxblood-hi); }
+.btn-ghost { background: transparent; color: var(--ivory); box-shadow: inset 0 0 0 1px var(--oxblood-hi); }
+.link { color: #e9cc8f; font-size: 14px; text-transform: uppercase; letter-spacing: 0.16em; text-underline-offset: 6px; }
+
+main { max-width: 1280px; margin: 0 auto; padding: 0 36px; }
+section { padding: 88px 0; }
+section h2 { font-size: clamp(36px, 5vw, 72px); line-height: 1; margin-bottom: 48px; font-style: italic; font-weight: 400; }
+.eyebrow { display: block; font: normal 700 13px 'Courier Prime', monospace; letter-spacing: 0.24em; text-transform: uppercase; color: var(--oxblood-hi); margin-bottom: 12px; }
+html[data-theme='dark'] .eyebrow, :root:not([data-theme='light']) .eyebrow { color: #e0566a; }
+
+.facts { display: grid; grid-template-columns: repeat(4, 1fr); padding: 34px 0; border-bottom: 1px solid var(--line); }
+.facts p { margin: 0; padding: 0 18px; color: var(--mute); font-size: 13px; text-transform: uppercase; letter-spacing: 0.14em; }
+.facts b { display: block; font: italic 500 54px/1 'Bodoni Moda', serif; color: var(--ivory); letter-spacing: 0; text-transform: none; margin-bottom: 8px; }
+
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--line); }
+.feature { position: relative; padding: 48px 32px 36px; background: radial-gradient(70% 60% at 50% 0%, color-mix(in srgb, var(--oxblood) 30%, transparent), transparent 70%), var(--stage); }
+.stamp { display: inline-block; font: 700 13px 'Courier Prime', monospace; letter-spacing: 0.2em; color: var(--spot); border: 1px solid var(--spot); padding: 2px 10px; margin-bottom: 26px; }
+.stamp::before { content: 'Shot '; }
+.feature h3 { font-size: 34px; font-style: italic; font-weight: 400; margin-bottom: 10px; }
+.feature p { margin: 0 0 16px; color: var(--mute); }
+.more { font-size: 14px; text-transform: uppercase; letter-spacing: 0.14em; }
+
+.cards { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 28px; }
+.card { position: relative; padding-bottom: 6px; }
+.label { position: absolute; z-index: 1; top: 14px; left: 14px; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: #000; background: #e9cc8f; padding: 2px 8px; }
+.art { position: relative; height: 320px; display: grid; place-items: center; padding: 50px; margin-bottom: 20px; overflow: hidden;
+  background: radial-gradient(45% 55% at 60% 35%, rgba(233, 204, 143, 0.35), transparent 70%), linear-gradient(#1c1212, #050404); border: 10px solid #000; }
+.art::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(-12deg, transparent 0 22px, rgba(0, 0, 0, 0.5) 22px 36px); }
+.art svg { width: 100%; height: 100%; fill: none; stroke: #e9cc8f; stroke-width: 2.4; stroke-linecap: round; filter: drop-shadow(-40px 20px 0 rgba(0, 0, 0, 0.85)); }
+.stars { margin: 0; color: var(--spot); letter-spacing: 3px; font-size: 14px; }
+.stars small { color: var(--mute); letter-spacing: 0; }
+.card h3 { font-size: 34px; font-style: italic; font-weight: 400; margin: 4px 0; }
+.card p { margin: 0 0 10px; color: var(--mute); }
+.card .price { font: 500 26px 'Bodoni Moda', serif; color: var(--ivory); margin: 8px 0 18px; }
+.price s { font: 400 16px 'Courier Prime', monospace; color: var(--mute); margin-right: 8px; }
+.all { text-align: center; margin: 56px 0 0; }
+
+.testimonials { text-align: center; padding: 120px 0; background: radial-gradient(40% 60% at 50% 50%, color-mix(in srgb, var(--oxblood) 30%, transparent), transparent 70%); }
+.testimonials h2 { font-size: 16px; font-style: normal; font-family: 'Courier Prime', monospace; letter-spacing: 0.24em; text-transform: uppercase; color: var(--mute); margin-bottom: 28px; }
+.quote { margin: 0 auto; max-width: 900px; }
+.quote p { font: italic 400 clamp(30px, 4vw, 54px)/1.15 'Bodoni Moda', serif; color: var(--ivory); margin: 0 0 22px; }
+.quote footer { color: var(--spot); font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase; }
+
+.newsletter { margin: 0 0 88px; padding: 64px; background: linear-gradient(90deg, var(--velvet), var(--stage) 70%); border-left: 8px solid var(--oxblood); }
+.newsletter h2 { margin-bottom: 14px; }
+.newsletter > p { margin: 0 0 26px; color: var(--mute); max-width: 52ch; }
+.newsletter label { display: block; font-size: 13px; text-transform: uppercase; letter-spacing: 0.18em; color: var(--ivory); margin-bottom: 8px; }
+.row { display: flex; gap: 14px; flex-wrap: wrap; }
+.row input { flex: 1 1 260px; min-height: 54px; padding: 0 18px; font: 16px 'Courier Prime', monospace; color: var(--text); background: var(--field); border: 1px solid var(--line); border-radius: 0; }
+.row input::placeholder { color: var(--mute); }
+
+.foot { max-width: 1280px; margin: 0 auto; padding: 44px 36px 52px; display: grid; grid-template-columns: 2fr 1.5fr 2fr; gap: 28px; border-top: 1px solid var(--line); color: var(--mute); font-size: 14px; }
+.foot h4 { font-size: 22px; font-style: italic; font-weight: 400; margin-bottom: 6px; }
+.foot p { margin: 0; }
+.foot .small { grid-column: 1 / -1; font-size: 12px; padding-top: 18px; letter-spacing: 0.06em; }
+.foot .small::before { content: 'THE END · '; color: var(--spot); }
+
+@media (max-width: 900px) {
+  .navbar { padding: 18px 20px; gap: 12px 20px; }
+  .navbar ul { margin: 0; order: 3; width: 100%; gap: 6px 18px; }
+  .cart { margin-left: auto; }
+  .hero { min-height: 620px; border-width: 24px; }
+  .curtain { width: 16%; }
+  .silhouette { right: 8%; top: 6%; bottom: auto; width: 140px; }
+  .beam { left: 44%; width: 60%; }
+  .hero-text { padding: 200px 20px 40px; }
+  main { padding: 0 20px; }
+  .facts { grid-template-columns: 1fr 1fr; gap: 26px 0; }
+  .feature-grid, .cards { grid-template-columns: 1fr; }
+  .newsletter { padding: 40px 24px; }
+  .foot { grid-template-columns: 1fr; padding: 32px 20px; }
+}
+@media (prefers-reduced-motion: reduce) { .beam, .tc::before { animation: none; } }

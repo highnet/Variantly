@@ -432,21 +432,58 @@
 /* Human: the before/after split. The node shapes wait, folded into the grip. */
 .brand-split {
   transform-origin: 16px 16px;
-  transition: opacity 260ms ease, transform 520ms var(--brand-spring);
+  transition:
+    opacity 260ms ease,
+    transform 520ms var(--brand-spring);
 }
-.brand-split .brand-after { fill: var(--alert); }
-.brand-split .brand-line { fill: #ffffff; opacity: 0.7; }
-.brand-split .brand-block { fill: #121216; }
-.brand-split .brand-divider { stroke: #ffffff; stroke-width: 1.6; stroke-linecap: round; }
-.brand-split .brand-grip { fill: #ffffff; stroke: #121216; stroke-width: 1.4; }
-.brand-mark .brand-split rect { transition: none; }
-.brand-node rect { x: 16px; y: 16px; width: 0; height: 0; rx: 0; }
-.brand-node { opacity: 0; transition: opacity 260ms ease; }
-[data-audience='agent'] .brand-node { opacity: 1; }
-[data-audience='agent'] .brand-split { opacity: 0; transform: rotate(-20deg) scale(0.6); }
+.brand-split .brand-after {
+  fill: var(--alert);
+}
+.brand-split .brand-line {
+  fill: #ffffff;
+  opacity: 0.7;
+}
+.brand-split .brand-block {
+  fill: #121216;
+}
+.brand-split .brand-divider {
+  stroke: #ffffff;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.brand-split .brand-grip {
+  fill: #ffffff;
+  stroke: #121216;
+  stroke-width: 1.4;
+}
+.brand-mark .brand-split rect {
+  transition: none;
+}
+.brand-node rect {
+  x: 16px;
+  y: 16px;
+  width: 0;
+  height: 0;
+  rx: 0;
+}
+.brand-node {
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+[data-audience='agent'] .brand-node {
+  opacity: 1;
+}
+[data-audience='agent'] .brand-split {
+  opacity: 0;
+  transform: rotate(-20deg) scale(0.6);
+}
 /* The grip nudges along the line on hover, like the real slider. */
-a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
-.brand-split .brand-grip { transition: transform 420ms var(--brand-spring); }
+a:hover > .brand-mark .brand-grip {
+  transform: translate(-0.6px, 2.6px);
+}
+.brand-split .brand-grip {
+  transition: transform 420ms var(--brand-spring);
+}
 
 /* Agent: a core with three satellites that pulse in and fuse with it. */
 [data-audience='agent'] .brand-a {
@@ -670,35 +707,64 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 
 /* ---- B · Riso Poster: two-ink overprint, halftone, ticket stub ------------ */
 
-/* ---- C · Amber Terminal: amber CRT, console frames, typewriter ----------- */
+/* ---- C · Amber Terminal: amber CRT, console frames, typewriter ------------- */
 
 /* ---- D · Brutal Zine: hard borders, highlighter, sticker, ticker --------- */
 
 /* ---- E · Bauhaus: geometric face, primary blocks, asymmetric ------------- */
+
 /* The asymmetric split only where there is room for it; phones stack copy first. */
 
 @keyframes vy-roll {
-  from { background-position: 0 -40%; }
-  to { background-position: 0 140%; }
+  from {
+    background-position: 0 -40%;
+  }
+  to {
+    background-position: 0 140%;
+  }
 }
 @keyframes vy-flicker {
-  0%, 100% { opacity: 1; }
-  41% { opacity: 0.88; }
-  42% { opacity: 1; }
-  77% { opacity: 0.93; }
-  78% { opacity: 1; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  41% {
+    opacity: 0.88;
+  }
+  42% {
+    opacity: 1;
+  }
+  77% {
+    opacity: 0.93;
+  }
+  78% {
+    opacity: 1;
+  }
 }
 @keyframes vy-lock {
-  from { transform: scale(1.12); filter: brightness(1.6); }
-  to { transform: none; filter: none; }
+  from {
+    transform: scale(1.12);
+    filter: brightness(1.6);
+  }
+  to {
+    transform: none;
+    filter: none;
+  }
 }
 @keyframes vy-ticker {
-  to { transform: translateX(-50%); }
+  to {
+    transform: translateX(-50%);
+  }
 }
 /* Same curve as the 3D word's pop (lockPop in lib/titleTiming): ease-out quad. */
-.vy-letter-locked { animation: vy-lock 0.35s cubic-bezier(0.5, 1, 0.89, 1); }
+.vy-letter-locked {
+  animation: vy-lock 0.35s cubic-bezier(0.5, 1, 0.89, 1);
+}
 @media (prefers-reduced-motion: reduce) {
-  .vy-title, [data-hero-title]::after { animation: none !important; }
+  .vy-title,
+  [data-hero-title]::after {
+    animation: none !important;
+  }
 }
 /* seekreel renders: no clock-driven CSS motion, every frame is derived from ?t. */
 :root[data-seek] *,
@@ -721,22 +787,29 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   font-family: var(--hero-face, var(--font-martian));
   font-stretch: normal;
 }
-:root[data-variant] main > div .figure:not(h3) { color: var(--title, var(--ink)); }
-:root[data-variant] .text-on-alert { color: var(--on-alert, #0d0d10); }
+:root[data-variant] main > div .figure:not(h3) {
+  color: var(--title, var(--ink));
+}
+:root[data-variant] .text-on-alert {
+  color: var(--on-alert, #0d0d10);
+}
 
 /* A · Soft Clay: pillowy cards, centred section heads, clay numerals */
 
 /* B · Riso Poster: halftone paper, ink underlines, tilted tickets */
 
-/* C · Amber Terminal: ruled paper, console-frame cards */
+/* C · Amber Terminal: case-file sections, ruled paper, form-strip cards */
 
 /* D · Brutal Zine: hard edges, hard shadows, highlighter heads */
 
 /* E · Bauhaus: primary-coded cards, red-square heads, flat geometry */
+/* Hanging indent: a wrapped head's second line starts under the text, not under the square. */
 
 /* ---- Concept switcher dock ---------------------------------------------- */
 /* The dock is fixed to the bottom; the footer leaves room so it never sits under it. */
-:root[data-variant] .site-footer { padding-bottom: 6.5rem; }
+:root[data-variant] .site-footer {
+  padding-bottom: 6.5rem;
+}
 .vy-switcher {
   background: color-mix(in srgb, var(--surface) 88%, transparent);
   border: 1px solid var(--rule);
@@ -744,7 +817,9 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   backdrop-filter: blur(10px);
   scrollbar-width: none;
 }
-.vy-switcher-label { color: var(--steel); }
+.vy-switcher-label {
+  color: var(--steel);
+}
 .vy-switcher-pop {
   background: color-mix(in srgb, var(--surface) 94%, transparent);
   border: 1px solid var(--rule);
@@ -752,37 +827,103 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   backdrop-filter: blur(12px);
   animation: vy-pop-in var(--dur-fast) var(--ease-out-expo) both;
 }
-@keyframes vy-pop-in { from { opacity: 0; translate: 0 8px; } }
-.vy-switcher-pop [role='listbox'] { scrollbar-width: none; }
-.vy-kbd {
-  display: inline-grid; place-items: center; min-width: 1.5em; height: 1.5em; padding-inline: 0.3em;
-  border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: var(--radius-keycap);
-  font: 600 11px/1 var(--font-mono); color: var(--ink); background: var(--surface);
+@keyframes vy-pop-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
 }
-.vy-chip { box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12); }
-/* Chip colours: both themes ride as --c-l / --c-d; the theme attribute picks. */
-.vy-chip i { background: var(--c-l); }
-:root[data-theme='dark'] .vy-chip i { background: var(--c-d); }
+.vy-switcher-pop [role='listbox'] {
+  scrollbar-width: none;
+}
+.vy-kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5em;
+  height: 1.5em;
+  padding-inline: 0.3em;
+  border: 1px solid var(--rule);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-keycap);
+  font: 600 11px/1 var(--font-mono);
+  color: var(--ink);
+  background: var(--surface);
+}
+.vy-chip {
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12);
+}
+/* Chip colours: both themes ride as --c-l / --c-d; the theme attribute picks,
+   so the chip is right on its first frame. */
+.vy-chip i {
+  background: var(--c-l);
+}
+:root[data-theme='dark'] .vy-chip i {
+  background: var(--c-d);
+}
+/* A draft concept's tag in the picker (?drafts=1, concepts/README.md). */
 .vy-draft {
-  align-self: center; padding: 1px 5px; border: 1px dashed currentColor; border-radius: 999px;
-  font: 600 9px/1.3 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.7;
+  align-self: center;
+  padding: 1px 5px;
+  border: 1px dashed currentColor;
+  border-radius: 999px;
+  font: 600 9px/1.3 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
 }
 /* Phones / touch: the dock steps aside while the before/after demo fills the
    bottom of the screen (VariantSwitcher's useYield, or the demo's own
    html[data-demo-focus]); it slides back once the demo has scrolled past. */
 .vy-switcher {
-  transition: transform var(--dur-fast, 200ms) var(--ease-out-expo, ease-out),
+  transition:
+    transform var(--dur-fast, 200ms) var(--ease-out-expo, ease-out),
     opacity var(--dur-fast, 200ms) ease;
 }
-.vy-switcher[data-yield] { transform: translateY(calc(100% + 24px)); opacity: 0; pointer-events: none; }
-@media (max-width: 639px), (pointer: coarse) {
-  :root[data-demo-focus] .vy-switcher { transform: translateY(calc(100% + 24px)); opacity: 0; pointer-events: none; }
-  :root[data-demo-focus] .vy-switcher-pop { display: none; }
+.vy-switcher[data-yield] {
+  transform: translateY(calc(100% + 24px));
+  opacity: 0;
+  pointer-events: none;
 }
-@media (prefers-reduced-motion: reduce) { .vy-switcher { transition: none; } }
+@media (max-width: 639px), (pointer: coarse) {
+  :root[data-demo-focus] .vy-switcher {
+    transform: translateY(calc(100% + 24px));
+    opacity: 0;
+    pointer-events: none;
+  }
+  :root[data-demo-focus] .vy-switcher-pop {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vy-switcher {
+    transition: none;
+  }
+}
+.vy-swatch-a {
+  background: conic-gradient(#ff9a76, #ffd166, #a78bfa, #ff9a76);
+}
+.vy-swatch-b {
+  background: linear-gradient(135deg, #ff4f9a 50%, #2f5bff 50%);
+}
+.vy-swatch-c {
+  background: radial-gradient(#ffb000 40%, #1f6f6a 42%);
+}
+.vy-swatch-d {
+  background: #c6ff00;
+  box-shadow: inset 0 0 0 2px #0a0a0a;
+}
+.vy-swatch-e {
+  background: conic-gradient(#e63946 0 33%, #1d4ed8 0 66%, #ffc300 0);
+}
+.vy-swatch-f {
+  background: linear-gradient(135deg, #d8c3a0 50%, #e5322d 50%);
+  box-shadow: inset 0 0 0 2px #1b1b1b;
+}
 
 @media (max-width: 639px) {
-  .vy-switcher { bottom: 12px; }
+  .vy-switcher {
+    bottom: 12px;
+  }
   /* Line-based scenes cross the stacked copy on phones; keep them faint. */
 }
 
@@ -794,9 +935,18 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   color: var(--flap-ink, var(--hero-bg));
   box-shadow: inset 0 -0.56em 0 rgb(0 0 0 / 0.12);
 }
-:root[data-variant] .flap-cell::after { background: var(--flap-ink, var(--hero-bg)); opacity: 0.35; }
-:root[data-variant] .flap-cell.is-blank { background: transparent; box-shadow: none; }
-:root[data-variant] .flap-cell.is-blank::after { opacity: 0; }
+:root[data-variant] .flap-cell::after {
+  background: var(--flap-ink, var(--hero-bg));
+  opacity: 0.35;
+}
+
+:root[data-variant] .flap-cell.is-blank {
+  background: transparent;
+  box-shadow: none;
+}
+:root[data-variant] .flap-cell.is-blank::after {
+  opacity: 0;
+}
 
 /* ---- Audit fixes --------------------------------------------------------- */
 /* Concept card treatments (dashed riso tickets, zine hard shadows, Bauhaus
@@ -831,9 +981,18 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   transform-origin: 50% 80%;
   -webkit-tap-highlight-color: transparent;
 }
-.vy-fresh:hover { transform: translateY(-0.04em) rotate(-1.2deg); }
-.vy-fresh:active { transform: scale(0.88, 0.8); transition-duration: 70ms; }
-.vy-fresh:focus-visible { outline: 3px solid var(--alert); outline-offset: 4px; border-radius: 4px; }
+.vy-fresh:hover {
+  transform: translateY(-0.04em) rotate(-1.2deg);
+}
+.vy-fresh:active {
+  transform: scale(0.88, 0.8);
+  transition-duration: 70ms;
+}
+.vy-fresh:focus-visible {
+  outline: 3px solid var(--alert);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
 /* The little arrow keeps nudging until the first press, then spins on each one. */
 .vy-fresh .vy-fresh-icon {
   display: inline-block;
@@ -845,20 +1004,40 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   animation: vy-nudge 2.6s 1.2s ease-in-out 3;
 }
 @keyframes vy-nudge {
-  0%, 70%, 100% { transform: rotate(0); }
-  78% { transform: rotate(-40deg); }
-  88% { transform: rotate(20deg); }
+  0%,
+  70%,
+  100% {
+    transform: rotate(0);
+  }
+  78% {
+    transform: rotate(-40deg);
+  }
+  88% {
+    transform: rotate(20deg);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .vy-fresh, .vy-fresh .vy-fresh-icon { animation: none !important; transition: none; }
+  .vy-fresh,
+  .vy-fresh .vy-fresh-icon {
+    animation: none !important;
+    transition: none;
+  }
 }
 
 /* ---- F · Cut & Paste: ransom-note collage on kraft paper ----------------- */
+
 /* Kraft fibres over the whole ground. */
+
 /* Title: every letter cut out of a different scrap and stuck down crooked. */
+
 /* Headline: newsprint strips pasted line by line. */
+
 /* Cards: paper notes taped to the board. */
+
+/* Tape goes on cards, not on copy buttons or command blocks, where it covers the label. */
+
 /* Section heads: label-maker strips. */
+
 /* "Now showing" tiles: alternating scraps. */
 
 /* ---- Before/after divider with a slight lean ----------------------------- */
@@ -871,7 +1050,12 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   --lean: 28px;
 }
 .vy-split-clip {
-  clip-path: polygon(calc(var(--split) + var(--lean)) 0, 100% 0, 100% 100%, calc(var(--split) - var(--lean)) 100%);
+  clip-path: polygon(
+    calc(var(--split) + var(--lean)) 0,
+    100% 0,
+    100% 100%,
+    calc(var(--split) - var(--lean)) 100%
+  );
 }
 .vy-split-shade {
   /* A soft band of shade the line casts on the after side. */
@@ -895,7 +1079,9 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 @media (max-width: 639px) {
   .vy-split-clip,
   .vy-split-shade,
-  .vy-split-line { --lean: 14px; }
+  .vy-split-line {
+    --lean: 14px;
+  }
 }
 
 /* ---- Concept swap: the new page wipes in behind a leaning edge ---------- */
@@ -923,7 +1109,9 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-new(root) { animation: none; }
+  ::view-transition-new(root) {
+    animation: none;
+  }
 }
 
 /* ---- Boards: every slate surface follows the concept --------------------- */
@@ -944,7 +1132,12 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   --steel: var(--board-mute);
   --rule: var(--board-line);
 }
+
 /* Toggle chips on a board use the accent; keep their label dark enough. */
+:root[data-variant='f'] .on-slate [aria-pressed='true'],
+:root[data-variant='b'] .on-slate [aria-pressed='true'] {
+  color: #ffffff;
+}
 /* Boards nested in the hero (its command box) stay on the hero palette. */
 :root[data-variant] section.on-slate .on-slate {
   --surface: var(--hero-ink);
@@ -954,7 +1147,13 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 }
 
 /* ---- Grainy-gradient shapes: strength per concept ------------------------- */
-.vy-blobs { opacity: var(--blob-o, 0.7); }
+.vy-blobs {
+  opacity: var(--blob-o, 0.7);
+}
+
+:root[data-scrolled] .vy-blobs {
+  opacity: 0.16;
+}
 /* Grain on the art's shapes (artKit's Piece draws each shape again with the
    tile pattern). Soft-edged helpers (contact shadows, rims, specular
    highlights, dot and hatch screens) and unfilled strokes are skipped: grain
@@ -964,15 +1163,19 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   opacity: var(--art-grain, 0.9);
   pointer-events: none;
 }
-.vy-art-grain * { fill: url(#vy-art-grain); stroke: none; }
+.vy-art-grain * {
+  fill: url(#vy-art-grain);
+  stroke: none;
+}
 .vy-art-grain [fill='none'],
 .vy-art-grain [fill='none'] *,
 .vy-art-grain [fill*='-ao'],
 .vy-art-grain [fill*='-rim'],
 .vy-art-grain [fill*='-spec'],
 .vy-art-grain [fill*='dots'],
-.vy-art-grain [fill*='hatch'] { display: none; }
-:root[data-scrolled] .vy-blobs { opacity: 0.16; }
+.vy-art-grain [fill*='hatch'] {
+  display: none;
+}
 
 /* The press burst sits above everything; it finishes before the concept wipe. */
 .vy-burst {
@@ -1002,14 +1205,23 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 /* The tiles drew "raised slate" behind "surface" text; in the remapped hero
    those can be the same colour, which blanked the numbers. Give them their
    own pair: hero box with hero ink, and the accent for the current one. */
-:root[data-variant] { --on-alert: #111111; }
+:root[data-variant] {
+  --on-alert: #111111;
+}
+:root[data-variant='c'],
+:root[data-variant='f'] {
+  --on-alert: #ffffff;
+}
+
 :root[data-variant] [role='group'][aria-label='Redesigns'] button {
   background: var(--hero-box);
   color: var(--hero-ink);
   opacity: 0.75;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hero-line) 45%, transparent);
 }
-:root[data-variant] [role='group'][aria-label='Redesigns'] button:hover { opacity: 1; }
+:root[data-variant] [role='group'][aria-label='Redesigns'] button:hover {
+  opacity: 1;
+}
 :root[data-variant] [role='group'][aria-label='Redesigns'] button[aria-current='true'] {
   background: var(--alert);
   color: var(--on-alert);
@@ -1018,41 +1230,98 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 }
 
 /* ---- Agent mark: the split folds into a terminal prompt ------------------ */
-.brand-node { display: none; }
-.brand-agent { opacity: 0; transform: scale(0.6) rotate(20deg); transform-origin: 16px 16px;
-  transition: opacity 260ms ease, transform 520ms var(--brand-spring); }
-[data-audience='agent'] .brand-agent { opacity: 1; transform: none; transition-delay: 80ms; }
-.brand-prompt { fill: none; stroke: #ffffff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
-.brand-cursor { fill: var(--alert); }
-.brand-spark { fill: var(--alert); opacity: 0.85; }
-[data-audience='agent'] .brand-cursor { animation: brand-blink 1.1s steps(1) infinite; }
-[data-audience='agent'] .brand-spark { animation: brand-breathe 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
-@keyframes brand-blink { 50% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .brand-cursor, .brand-spark { animation: none !important; } }
+.brand-node {
+  display: none;
+}
+.brand-agent {
+  opacity: 0;
+  transform: scale(0.6) rotate(20deg);
+  transform-origin: 16px 16px;
+  transition:
+    opacity 260ms ease,
+    transform 520ms var(--brand-spring);
+}
+[data-audience='agent'] .brand-agent {
+  opacity: 1;
+  transform: none;
+  transition-delay: 80ms;
+}
+.brand-prompt {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.brand-cursor {
+  fill: var(--alert);
+}
+.brand-spark {
+  fill: var(--alert);
+  opacity: 0.85;
+}
+[data-audience='agent'] .brand-cursor {
+  animation: brand-blink 1.1s steps(1) infinite;
+}
+[data-audience='agent'] .brand-spark {
+  animation: brand-breathe 2.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes brand-blink {
+  50% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-cursor,
+  .brand-spark {
+    animation: none !important;
+  }
+}
 
 /* ---- Delights ------------------------------------------------------------- */
 /* 8 · the switcher's sliding pill */
-.vy-switcher-pill { background: var(--ink); }
-.vy-switcher [aria-pressed='true'] { color: var(--surface); }
+.vy-switcher-pill {
+  background: var(--ink);
+}
+.vy-switcher [aria-pressed='true'] {
+  color: var(--surface);
+}
 /* 10 · parallax: the title drifts through the hero; the backdrop keeps going
    for the whole page. --px-p (0 → 1, set by Delight on .vy-scene/.vy-blobs,
-   desktop pointers only) maps scroll to layered depth: the blurred scene is
-   farthest and sinks a little, the shapes rise faster the nearer they are
-   (float-0 is the big foreground piece). Full-bleed textures stay put. The
-   scene is overscaled by more than its travel so no edge ever shows; the
-   shapes are free-standing, so leaving the top is just them passing by. */
-.vy-title { translate: 0 calc(var(--px-y, 0px) * 0.18); }
+   fine pointers only; touch keeps drift only) maps scroll to layered depth:
+   the blurred scene is farthest and sinks a little, the art's shapes rise
+   faster the nearer they are (float-0 is the big foreground piece) and the
+   full-bleed textures stay put. The scene is overscaled by more than its
+   travel so its edges never show; the shapes are free-standing, so leaving
+   the top is just them passing by. */
+.vy-title {
+  translate: 0 calc(var(--px-y, 0px) * 0.18);
+}
 :root.vy-parallax .vy-scene {
   scale: 1.14;
   translate: 0 calc(var(--px-p, 0) * 6vh);
 }
-:root.vy-parallax .vy-blobs .vy-art-float-0 { translate: 0 calc(var(--px-p, 0) * -26vh); }
-:root.vy-parallax .vy-blobs .vy-art-float-1 { translate: 0 calc(var(--px-p, 0) * -16vh); }
-:root.vy-parallax .vy-blobs .vy-art-float-2 { translate: 0 calc(var(--px-p, 0) * -9vh); }
-:root.vy-parallax .vy-blobs .vy-art-radar { translate: 0 calc(var(--px-p, 0) * -10vh); }
-:root[data-perf='low'] .vy-backdrop * { translate: none !important; }
+:root.vy-parallax .vy-blobs .vy-art-float-0 {
+  translate: 0 calc(var(--px-p, 0) * -26vh);
+}
+:root.vy-parallax .vy-blobs .vy-art-float-1 {
+  translate: 0 calc(var(--px-p, 0) * -16vh);
+}
+:root.vy-parallax .vy-blobs .vy-art-float-2 {
+  translate: 0 calc(var(--px-p, 0) * -9vh);
+}
+:root.vy-parallax .vy-blobs .vy-art-radar {
+  translate: 0 calc(var(--px-p, 0) * -10vh);
+}
+:root[data-perf='low'] .vy-backdrop * {
+  translate: none !important;
+}
 /* 5 · "How it works" progress line and steps lighting up */
-.vy-steps { position: relative; }
+.vy-steps {
+  position: relative;
+}
 .vy-steps::before {
   content: '';
   position: absolute;
@@ -1066,77 +1335,240 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
   transform: scaleX(var(--steps-p, 0));
   transition: transform 120ms linear;
 }
-.vy-steps > li { opacity: 0.45; transition: opacity var(--dur-base) var(--ease-out-expo); }
-.vy-steps > li.vy-step-on { opacity: 1; }
-/* Step numerals: an outline that fills with ink from the bottom as the
-   progress line reaches it, then pops once. */
-.vy-step-num { display: inline-grid; }
+.vy-steps > li {
+  opacity: 0.45;
+  transition: opacity var(--dur-base) var(--ease-out-expo);
+}
+.vy-steps > li.vy-step-on {
+  opacity: 1;
+}
+/* Step numerals: an outline that fills with liquid as the progress line
+   reaches it, then pops once. The liquid is a copy of the numeral in the
+   theme's own colour, masked by a prebaked liquid simulation: one SVG sprite
+   per numeral (public/liquid, scripts/bake-liquid.mjs), 48 frames side by
+   side, the body in the top row and the meniscus line in the bottom row.
+   The real glyph clips the liquid, so it stays inside the outline in every
+   concept's face. A frame change only moves the mask on a numeral-sized
+   element: no layout, no filters, no animated mask on anything large. Full
+   numerals drop the mask entirely and are plain, crisp text. */
+.vy-step-num {
+  display: inline-grid;
+}
 .vy-step-ghost {
   -webkit-text-fill-color: transparent;
   -webkit-text-stroke: 2px currentColor;
   text-shadow: none !important;
   opacity: 0.55;
 }
-/* The filled copy sits in an overflow-hidden window that slides up from
-   below while the copy slides the other way, so the glyph stays put and only
-   transforms change: compositor work, no repaint per scroll frame. */
-.vy-step-clip { overflow: hidden; pointer-events: none; }
-.vy-step-clip,
-.vy-step-fill {
-  transform: translateY(calc((1 - var(--fill, 1)) * var(--fill-dir, 1) * 100%));
-  transition: transform 160ms linear;
+.vy-step-liq {
+  pointer-events: none;
 }
-/* Desktop scrubs these every scroll frame: keep them on their own layers. */
-:root:not(.vy-steps-touch) .vy-steps .vy-step-clip,
-:root:not(.vy-steps-touch) .vy-steps .vy-step-fill { will-change: transform; }
-.vy-step-fill { --fill-dir: -1; display: block; }
-.vy-steps > li { --fill: 0; }
-/* Touch: no scrubbing. Each numeral fills in one short transition as its
-   step lights up (Delight sets no per-frame --fill there). */
-:root.vy-steps-touch .vy-steps > li.vy-step-on { --fill: 1; }
-:root.vy-steps-touch .vy-step-clip,
-:root.vy-steps-touch .vy-step-fill { transition: transform var(--dur-base) var(--ease-out-expo); }
-/* Until the first frame after mount, set the fill without animating, so a
-   numeral never drains from its no-JS full state before filling. */
-:root.vy-steps-touch:not(.vy-steps-anim) .vy-step-clip,
-:root.vy-steps-touch:not(.vy-steps-anim) .vy-step-fill { transition: none; }
-.vy-steps > li.vy-step-done .vy-step-num { animation: vy-step-pop 620ms var(--ease-spring-pop); }
+/* Depth and grain inside the liquid only: a copy of the numeral painted with
+   a static grain tile over a gradient, lighter at the top and deeper toward
+   the bottom, clipped
+   to the glyph (and to the liquid by the same mask as the fill). Neutral
+   black and white over the theme's fill colour, so every concept keeps its
+   own ink. The tile is a 2 kB bake (scripts/bake-liquid.mjs); switch to the
+   shared --grain-tile token once it lands on main. */
+.vy-step-tone {
+  --liq-grain: url('/liquid/grain.png');
+  background:
+    var(--grain-tile, var(--liq-grain)) 0 0 / 40px 40px,
+    linear-gradient(
+      to bottom,
+      rgb(255 255 255 / 0.16),
+      rgb(255 255 255 / 0) 30%,
+      rgb(0 0 0 / 0) 45%,
+      rgb(0 0 0 / 0.32)
+    );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none !important;
+  opacity: var(--liq-tone-o, 0.8);
+}
+:root[data-theme='dark'] .vy-step-tone {
+  --liq-tone-o: 0.6;
+}
+.vy-step-line {
+  display: none;
+  -webkit-text-fill-color: #fff;
+  text-shadow: none !important;
+  opacity: 0.6;
+}
+.vy-steps > li {
+  --frame: 0;
+}
+/* Masks load once the steps come near the viewport (Delight adds .vy-liquid);
+   until then a numeral that is not full shows only its outline. */
+.vy-steps:not(.vy-liquid) > li:not(.vy-step-full) .vy-step-liq {
+  opacity: 0;
+}
+.vy-steps.vy-liquid > li:nth-child(1) {
+  --liq: url('/liquid/step-1.svg');
+}
+.vy-steps.vy-liquid > li:nth-child(2) {
+  --liq: url('/liquid/step-2.svg');
+}
+.vy-steps.vy-liquid > li:nth-child(3) {
+  --liq: url('/liquid/step-3.svg');
+}
+.vy-steps.vy-liquid > li:not(.vy-step-full) :is(.vy-step-fill, .vy-step-tone, .vy-step-line) {
+  -webkit-mask: var(--liq) no-repeat;
+  mask: var(--liq) no-repeat;
+  -webkit-mask-size: 4800% 200%;
+  mask-size: 4800% 200%;
+  -webkit-mask-position: calc(var(--frame) * 100% / 47) var(--row, 0%);
+  mask-position: calc(var(--frame) * 100% / 47) var(--row, 0%);
+}
+.vy-steps.vy-liquid > li:not(.vy-step-full) .vy-step-line {
+  --row: 100%;
+  display: block;
+}
+/* Touch: no scrubbing. A numeral pours in one stepped run through the frames
+   once its step lights up and the scroll has settled; it pauses while a
+   scroll is under way. */
+:root.vy-steps-touch
+  .vy-steps.vy-liquid
+  > li.vy-step-on:not(.vy-step-full)
+  :is(.vy-step-fill, .vy-step-tone) {
+  animation: vy-liq-pour 1.5s steps(48, jump-none) forwards;
+}
+:root.vy-steps-touch .vy-steps.vy-liquid > li.vy-step-on:not(.vy-step-full) .vy-step-line {
+  animation: vy-liq-pour-line 1.5s steps(48, jump-none) forwards;
+}
+:root.vy-steps-touch[data-scrolling] .vy-step-liq > * {
+  animation-play-state: paused;
+}
+@keyframes vy-liq-pour {
+  from {
+    -webkit-mask-position: 0% 0%;
+    mask-position: 0% 0%;
+  }
+  to {
+    -webkit-mask-position: 100% 0%;
+    mask-position: 100% 0%;
+  }
+}
+@keyframes vy-liq-pour-line {
+  from {
+    -webkit-mask-position: 0% 100%;
+    mask-position: 0% 100%;
+  }
+  to {
+    -webkit-mask-position: 100% 100%;
+    mask-position: 100% 100%;
+  }
+}
+.vy-steps > li.vy-step-done .vy-step-num {
+  animation: vy-step-pop 620ms var(--ease-spring-pop);
+}
 @keyframes vy-step-pop {
-  35% { transform: scale(1.16) rotate(-5deg); }
-  65% { transform: scale(0.97) rotate(1.5deg); }
+  35% {
+    transform: scale(1.16) rotate(-5deg);
+  }
+  65% {
+    transform: scale(0.97) rotate(1.5deg);
+  }
 }
 /* 11 · commands typing out: the not-yet-typed tail (a CSS highlight, Delight). */
-::highlight(vy-untyped) { color: transparent; }
+::highlight(vy-untyped) {
+  color: transparent;
+}
 /* 17 · frosted header once scrolled */
-header { transition: background-color 300ms ease, box-shadow 300ms ease, backdrop-filter 300ms ease; }
+header {
+  transition:
+    background-color 300ms ease,
+    box-shadow 300ms ease,
+    backdrop-filter 300ms ease;
+}
 header.vy-header-glass {
   background: color-mix(in srgb, var(--panel) 62%, transparent) !important;
   backdrop-filter: blur(14px) saturate(1.6);
   box-shadow: 0 8px 24px -16px rgb(0 0 0 / 0.35);
 }
 /* 20 · a light streak across cards as they land */
-.vy-sheen { position: relative; overflow: hidden; }
+.vy-sheen {
+  position: relative;
+  overflow: hidden;
+}
 .vy-sheen::after {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: linear-gradient(105deg, transparent 35%, rgb(255 255 255 / 0.35) 50%, transparent 65%);
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgb(255 255 255 / 0.35) 50%,
+    transparent 65%
+  );
   transform: translateX(-120%);
   animation: vy-sheen 1.1s 0.15s var(--ease-out-expo) forwards;
 }
-@keyframes vy-sheen { to { transform: translateX(120%); } }
-@media (prefers-reduced-motion: reduce) {
-  .vy-title, .vy-scene, .vy-blobs, .vy-blobs * { translate: none !important; }
-  .vy-steps > li { opacity: 1; }
-  .vy-steps > li .vy-step-num, .vy-sheen::after { animation: none !important; }
+@keyframes vy-sheen {
+  to {
+    transform: translateX(120%);
+  }
 }
-:root[data-seek] .vy-title, :root[data-seek] .vy-scene, :root[data-seek] .vy-blobs, :root[data-seek] .vy-blobs * { translate: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .vy-title,
+  .vy-scene,
+  .vy-blobs,
+  .vy-blobs * {
+    translate: none !important;
+  }
+  .vy-steps > li {
+    opacity: 1;
+  }
+  .vy-steps > li .vy-step-num,
+  .vy-sheen::after {
+    animation: none !important;
+  }
+  /* A still frame at the target level: a lit numeral is simply full. */
+  .vy-steps > li.vy-step-on .vy-step-liq {
+    opacity: 1 !important;
+  }
+  .vy-steps > li.vy-step-on :is(.vy-step-fill, .vy-step-tone) {
+    mask: none !important;
+    -webkit-mask: none !important;
+  }
+  .vy-steps > li.vy-step-on .vy-step-line {
+    display: none !important;
+  }
+}
+:root[data-seek] .vy-title,
+:root[data-seek] .vy-scene,
+:root[data-seek] .vy-blobs,
+:root[data-seek] .vy-blobs * {
+  translate: none !important;
+}
 :root[data-seek] .vy-steps > li,
-:root[data-motion='calm'] .vy-steps > li { opacity: 1; --fill: 1; }
+:root[data-motion='calm'] .vy-steps > li {
+  opacity: 1;
+}
+/* Calm and seek: no pour, every numeral is full. Low power: no pour either,
+   a numeral is outlined until its step lights, then full. */
+:root:is([data-seek], [data-motion='calm']) .vy-steps > li,
+:root[data-perf='low'] .vy-steps > li.vy-step-on {
+  & .vy-step-liq {
+    opacity: 1 !important;
+  }
+  & :is(.vy-step-fill, .vy-step-tone, .vy-step-line) {
+    animation: none !important;
+    -webkit-mask: none !important;
+    mask: none !important;
+  }
+  & .vy-step-line {
+    display: none !important;
+  }
+}
 
 /* ---- G · Candy 3D: extruded glossy letters, pastel candy ground ---------- */
-.vy-letters3d { pointer-events: none; }
+
+.vy-letters3d {
+  pointer-events: none;
+}
 /* The 3D word has taken over. It sits exactly over the 2D word with the same
    faces, sizes and colours, so the two crossfade: the 2D glyphs (and their
    text-shadows, which the 3D word renders as extrusion, offset shadow or glow)
@@ -1144,27 +1576,53 @@ header.vy-header-glass {
    Brutal highlighter) stay under the 3D letters. The HTML word stays for screen
    readers; its parallax and title animations stop so it holds still under the
    canvas. */
-.vy-title-solid { animation: none !important; translate: none !important; }
+.vy-title-solid {
+  animation: none !important;
+  translate: none !important;
+}
 .vy-title-solid .vy-letter > * {
   color: transparent !important;
   text-shadow: none !important;
-  transition: color 0.6s ease-in, text-shadow 0.6s ease-in;
+  transition:
+    color 0.6s ease-in,
+    text-shadow 0.6s ease-in;
+}
+
+.vy-swatch-g {
+  background: conic-gradient(#ff5fa2, #7c5cff, #22c3ee, #ffb020, #ff5fa2);
 }
 
 /* ---- More breathing room: sections spread out vertically ----------------- */
-:root[data-variant] main > div.mx-auto { row-gap: clamp(7rem, 14vw, 12rem); padding-top: clamp(6rem, 10vw, 9rem); padding-bottom: clamp(5rem, 8vw, 8rem); }
-:root[data-variant] [data-hero-title] { padding-block: clamp(4rem, 9vw, 8rem); }
-:root[data-variant] [data-hero-grid] { padding-block: clamp(3rem, 7vw, 6.5rem); row-gap: 3.5rem; }
+:root[data-variant] main > div.mx-auto {
+  row-gap: clamp(7rem, 14vw, 12rem);
+  padding-top: clamp(6rem, 10vw, 9rem);
+  padding-bottom: clamp(5rem, 8vw, 8rem);
+}
+:root[data-variant] [data-hero-title] {
+  padding-block: clamp(4rem, 9vw, 8rem);
+}
+:root[data-variant] [data-hero-grid] {
+  padding-block: clamp(3rem, 7vw, 6.5rem);
+  row-gap: 3.5rem;
+}
 /* Each section sets its own rhythm (its gap-* class): no blanket row-gap here, it
    flattened every section, nested ones and the two-panel start card included. */
 
 /* ---- Breathing room ------------------------------------------------------ */
 /* Readable measure and rhythm for body copy. */
-main > div p, main > div dd, main > div li > span + span { max-width: 65ch; }
-main > div p { line-height: 1.65; }
+main > div p,
+main > div dd,
+main > div li > span + span {
+  max-width: 65ch;
+}
+main > div p {
+  line-height: 1.65;
+}
 /* Group with spacing, not lines: dividers inside sections step back. */
 :root[data-variant] main > div section .border-t:not(.on-slate *),
-:root[data-variant] main > div section .border-b:not(.on-slate *) { border-color: transparent; }
+:root[data-variant] main > div section .border-b:not(.on-slate *) {
+  border-color: transparent;
+}
 /* Fewer boxes: a card inside a card becomes a soft tint instead of a frame. */
 :root[data-variant] main > div .bg-surface .bg-surface,
 :root[data-variant] main > div .on-slate .bg-surface {
@@ -1172,22 +1630,49 @@ main > div p { line-height: 1.65; }
   background: color-mix(in srgb, var(--ink) 4%, transparent);
 }
 /* Disclosures: a quiet chevron, content springs in (see Delight). */
-.vy-more > summary { list-style: none; display: inline-flex; gap: 0.5em; align-items: baseline; }
-.vy-more > summary::-webkit-details-marker { display: none; }
-.vy-more > summary::before { content: '+'; font-weight: 700; color: var(--alert); transition: transform 300ms var(--ease-spring); display: inline-block; }
-.vy-more[open] > summary::before { transform: rotate(45deg); }
-.vy-more.vy-closing > summary::before { transform: none; }
+.vy-more > summary {
+  list-style: none;
+  display: inline-flex;
+  gap: 0.5em;
+  align-items: baseline;
+}
+.vy-more > summary::-webkit-details-marker {
+  display: none;
+}
+.vy-more > summary::before {
+  content: '+';
+  font-weight: 700;
+  color: var(--alert);
+  transition: transform 300ms var(--ease-spring);
+  display: inline-block;
+}
+.vy-more[open] > summary::before {
+  transform: rotate(45deg);
+}
+.vy-more.vy-closing > summary::before {
+  transform: none;
+}
 
 /* ---- Performance ---------------------------------------------------------- */
 /* The backdrop is fixed and static: isolate it so nothing outside makes it
    repaint, and give the art its own layer so parallax only composites. */
-.vy-backdrop { contain: strict; }
+.vy-backdrop {
+  contain: strict;
+}
 /* The server-rendered art (BackdropPoster) shows only the current concept's
-   piece: its own inline <style>, generated from the live concept list. */
-.vy-art { will-change: transform; }
+   piece through its own inline <style>, generated from the live concept list. */
+:root[data-audience='agent'] .vy-backdrop-art {
+  display: none;
+}
+.vy-art {
+  will-change: transform;
+}
 @media (max-width: 639px), (pointer: coarse) {
   /* Phones: no frosted header (a blur of everything under it, every frame). */
-  header.vy-header-glass { backdrop-filter: none; background: color-mix(in srgb, var(--panel) 94%, transparent) !important; }
+  header.vy-header-glass {
+    backdrop-filter: none;
+    background: color-mix(in srgb, var(--panel) 94%, transparent) !important;
+  }
 }
 
 /* ---- Agent view ------------------------------------------------------------
@@ -1199,17 +1684,47 @@ main > div p { line-height: 1.65; }
   width: 100%;
   margin: 0 auto;
   padding: 1rem 16px 3rem;
-  font: 15px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font:
+    15px/1.6 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
 }
-.agent-doc a { color: LinkText; text-decoration: underline; }
-.agent-doc h1 { font-size: 1.5em; margin: 1.5em 0 0.5em; }
-.agent-doc h2 { font-size: 1.2em; margin: 2em 0 0.5em; }
-.agent-doc p, .agent-doc ul, .agent-doc ol, .agent-doc dl { margin: 0.75em 0; }
-.agent-doc ul, .agent-doc ol { padding-left: 2.5ch; }
-.agent-doc ul { list-style: disc; }
-.agent-doc ol { list-style: decimal; }
-.agent-doc li { margin: 0.5em 0; }
-.agent-doc dd { margin: 0 0 0.5em 2ch; }
+.agent-doc a {
+  color: LinkText;
+  text-decoration: underline;
+}
+.agent-doc h1 {
+  font-size: 1.5em;
+  margin: 1.5em 0 0.5em;
+}
+.agent-doc h2 {
+  font-size: 1.2em;
+  margin: 2em 0 0.5em;
+}
+.agent-doc p,
+.agent-doc ul,
+.agent-doc ol,
+.agent-doc dl {
+  margin: 0.75em 0;
+}
+.agent-doc ul,
+.agent-doc ol {
+  padding-left: 2.5ch;
+}
+.agent-doc ul {
+  list-style: disc;
+}
+.agent-doc ol {
+  list-style: decimal;
+}
+.agent-doc li {
+  margin: 0.5em 0;
+}
+.agent-doc dd {
+  margin: 0 0 0.5em 2ch;
+}
 .agent-doc pre {
   margin: 0.5em 0;
   padding: 0.5em 0.75em;
@@ -1218,17 +1733,38 @@ main > div p { line-height: 1.65; }
   overflow-wrap: anywhere;
   font: inherit;
 }
-.agent-doc header, .agent-doc footer { border-color: GrayText; border-style: solid; border-width: 0 0 1px; }
-.agent-doc footer { border-width: 1px 0 0; margin-top: 3rem; }
+.agent-doc header,
+.agent-doc footer {
+  border-color: GrayText;
+  border-style: solid;
+  border-width: 0 0 1px;
+}
+.agent-doc footer {
+  border-width: 1px 0 0;
+  margin-top: 3rem;
+}
 
 /* Show-more pill: the labels crossfade with a little lift, the chevron flips
    with a spring (motion in lib/disclose.ts). */
-.vy-label { transition: opacity 220ms ease, translate 320ms var(--ease-spring), filter 220ms ease; }
-.vy-label-off { opacity: 0; translate: 0 40%; filter: blur(2px); }
-.vy-chevron { transition: rotate 420ms var(--ease-spring); }
+.vy-label {
+  transition:
+    opacity 220ms ease,
+    translate 320ms var(--ease-spring),
+    filter 220ms ease;
+}
+.vy-label-off {
+  opacity: 0;
+  translate: 0 40%;
+  filter: blur(2px);
+}
+.vy-chevron {
+  transition: rotate 420ms var(--ease-spring);
+}
 /* Before hydration the server-rendered human panel is in the DOM; an agent
    landing on #agent never sees it flash. */
-:root[data-audience='agent'] #audience-panel > :not(.agent-doc) { display: none; }
+:root[data-audience='agent'] #audience-panel > :not(.agent-doc) {
+  display: none;
+}
 
 /* ---- Backdrop art (BackdropArt.tsx): one look per concept ---------------- */
 
@@ -1236,96 +1772,223 @@ main > div p { line-height: 1.65; }
 .vy-art-fibre {
   opacity: 0.5;
   background:
-    repeating-linear-gradient(17deg, transparent 0 11px, color-mix(in srgb, var(--art-ink) 7%, transparent) 11px 12px),
-    repeating-linear-gradient(-71deg, transparent 0 23px, color-mix(in srgb, var(--art-ink) 5%, transparent) 23px 24px);
+    repeating-linear-gradient(
+      17deg,
+      transparent 0 11px,
+      color-mix(in srgb, var(--art-ink) 7%, transparent) 11px 12px
+    ),
+    repeating-linear-gradient(
+      -71deg,
+      transparent 0 23px,
+      color-mix(in srgb, var(--art-ink) 5%, transparent) 23px 24px
+    );
 }
-/* Terminal: phosphor bloom, grid and vignette; scanlines over the top. */
+/* Terminal: grid and vignette (no phosphor bloom); scanlines over the top. */
 .vy-art-crt {
   background:
     radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 0.32)),
-    linear-gradient(color-mix(in srgb, var(--art-1) 14%, transparent) 1px, transparent 1px) 0 0 / 44px 44px,
-    linear-gradient(90deg, color-mix(in srgb, var(--art-1) 14%, transparent) 1px, transparent 1px) 0 0 / 44px 44px;
+    linear-gradient(color-mix(in srgb, var(--art-1) 14%, transparent) 1px, transparent 1px) 0 0 /
+      44px 44px,
+    linear-gradient(90deg, color-mix(in srgb, var(--art-1) 14%, transparent) 1px, transparent 1px) 0
+      0 / 44px 44px;
 }
-.vy-art-scan { background: repeating-linear-gradient(0deg, rgb(0 0 0 / 0.14) 0 1px, transparent 1px 3px); }
+.vy-art-scan {
+  background: repeating-linear-gradient(0deg, rgb(0 0 0 / 0.14) 0 1px, transparent 1px 3px);
+}
 .vy-art-radar {
   background:
-    repeating-radial-gradient(circle, transparent 0 calc(12.5% - 1px), color-mix(in srgb, var(--art-1) 40%, transparent) calc(12.5% - 1px) 12.5%),
-    linear-gradient(color-mix(in srgb, var(--art-1) 30%, transparent), color-mix(in srgb, var(--art-1) 30%, transparent)) center / 1px 100% no-repeat,
-    linear-gradient(color-mix(in srgb, var(--art-1) 30%, transparent), color-mix(in srgb, var(--art-1) 30%, transparent)) center / 100% 1px no-repeat;
+    repeating-radial-gradient(
+      circle,
+      transparent 0 calc(12.5% - 1px),
+      color-mix(in srgb, var(--art-1) 40%, transparent) calc(12.5% - 1px) 12.5%
+    ),
+    linear-gradient(
+        color-mix(in srgb, var(--art-1) 30%, transparent),
+        color-mix(in srgb, var(--art-1) 30%, transparent)
+      )
+      center / 1px 100% no-repeat,
+    linear-gradient(
+        color-mix(in srgb, var(--art-1) 30%, transparent),
+        color-mix(in srgb, var(--art-1) 30%, transparent)
+      )
+      center / 100% 1px no-repeat;
 }
-.vy-art-sweep { background: conic-gradient(from 0deg, color-mix(in srgb, var(--art-1) 45%, transparent), transparent 70deg); }
+.vy-art-sweep {
+  background: conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--art-1) 45%, transparent),
+    transparent 70deg
+  );
+}
 /* Zine: xerox streaks and an uneven toner band. */
 .vy-art-xerox {
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--art-ink) 10%, transparent), transparent 18%, transparent 80%, color-mix(in srgb, var(--art-ink) 14%, transparent)),
-    repeating-linear-gradient(90deg, transparent 0 37px, color-mix(in srgb, var(--art-ink) 9%, transparent) 37px 39px, transparent 39px 83px, color-mix(in srgb, var(--art-ink) 5%, transparent) 83px 84px);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--art-ink) 10%, transparent),
+      transparent 18%,
+      transparent 80%,
+      color-mix(in srgb, var(--art-ink) 14%, transparent)
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent 0 37px,
+      color-mix(in srgb, var(--art-ink) 9%, transparent) 37px 39px,
+      transparent 39px 83px,
+      color-mix(in srgb, var(--art-ink) 5%, transparent) 83px 84px
+    );
 }
 /* Bauhaus construction grid. */
 .vy-art-grid {
   background:
-    linear-gradient(color-mix(in srgb, var(--art-ink) 8%, transparent) 2px, transparent 2px) 0 0 / 12vmin 12vmin,
-    linear-gradient(90deg, color-mix(in srgb, var(--art-ink) 8%, transparent) 2px, transparent 2px) 0 0 / 12vmin 12vmin;
+    linear-gradient(color-mix(in srgb, var(--art-ink) 8%, transparent) 2px, transparent 2px) 0 0 /
+      12vmin 12vmin,
+    linear-gradient(90deg, color-mix(in srgb, var(--art-ink) 8%, transparent) 2px, transparent 2px)
+      0 0 / 12vmin 12vmin;
 }
 /* A seamless 24s loop for every concept: each layer's keyframes start and end
    on the same transform, and every period divides 24s (24, 12, 8), so the
    whole scene returns to its exact start state. Transform only: the layers
    are composited, never repainted. Paused past the hero; static for reduced
    motion and seek renders (see :root[data-seek] above). */
-.vy-art-float { will-change: transform; animation: vy-art-orbit 24s ease-in-out infinite; }
-.vy-art-float-1 { animation-name: vy-art-orbit-b; animation-duration: 12s; }
-.vy-art-float-2 { animation-name: vy-art-bob; animation-duration: 8s; }
-.vy-art-sweep { will-change: transform; animation: vy-art-spin 8s linear infinite; }
-:root[data-scrolled] .vy-art-float, :root[data-scrolled] .vy-art-sweep { animation-play-state: paused; }
-@media (prefers-reduced-motion: reduce) { .vy-art-float, .vy-art-sweep { animation: none; } }
+.vy-art-float {
+  will-change: transform;
+  animation: vy-art-orbit 24s ease-in-out infinite;
+}
+.vy-art-float-1 {
+  animation-name: vy-art-orbit-b;
+  animation-duration: 12s;
+}
+.vy-art-float-2 {
+  animation-name: vy-art-bob;
+  animation-duration: 8s;
+}
+.vy-art-sweep {
+  will-change: transform;
+  animation: vy-art-spin 8s linear infinite;
+}
+:root[data-scrolled] .vy-art-float,
+:root[data-scrolled] .vy-art-sweep {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .vy-art-float,
+  .vy-art-sweep {
+    animation: none;
+  }
+}
 /* Phones: only the cheapest layer (float-0) drifts; the rest hold still. */
 @media (pointer: coarse) {
-  .vy-art-float-1, .vy-art-float-2, .vy-art-sweep { animation: none; }
-  .vy-switcher, .vy-switcher-pop { backdrop-filter: none; background: var(--surface); }
+  .vy-art-float-1,
+  .vy-art-float-2,
+  .vy-art-sweep {
+    animation: none;
+  }
+  .vy-switcher,
+  .vy-switcher-pop {
+    backdrop-filter: none;
+    background: var(--surface);
+  }
 }
 /* Low perf tier (lib/perfTier.ts): every backdrop loop holds its poster frame
    (0% = 100%, so the still is the loop's own start). While a concept swap
    runs, loops pause so the wipe has the frame budget to itself. */
 :root[data-perf='low'] .vy-backdrop *,
 :root[data-perf='low'] .vy-backdrop *::before,
-:root[data-perf='low'] .vy-backdrop *::after { animation: none !important; }
-:root[data-swapping] .vy-backdrop * { animation-play-state: paused !important; }
+:root[data-perf='low'] .vy-backdrop *::after {
+  animation: none !important;
+}
+:root[data-swapping] .vy-backdrop * {
+  animation-play-state: paused !important;
+}
 @keyframes vy-art-orbit {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  25% { transform: translate(1.2vmax, 0.8vmax) rotate(3deg); }
-  50% { transform: translate(0, 1.6vmax) rotate(0deg); }
-  75% { transform: translate(-1.2vmax, 0.8vmax) rotate(-3deg); }
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(1.2vmax, 0.8vmax) rotate(3deg);
+  }
+  50% {
+    transform: translate(0, 1.6vmax) rotate(0deg);
+  }
+  75% {
+    transform: translate(-1.2vmax, 0.8vmax) rotate(-3deg);
+  }
 }
 @keyframes vy-art-orbit-b {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  50% { transform: translate(-1vmax, 1.2vmax) rotate(-4deg); }
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(-1vmax, 1.2vmax) rotate(-4deg);
+  }
 }
 @keyframes vy-art-bob {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-1.2vmax) scale(1.03); }
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-1.2vmax) scale(1.03);
+  }
 }
-@keyframes vy-art-spin { from { transform: rotate(0turn); } to { transform: rotate(1turn); } }
+@keyframes vy-art-spin {
+  from {
+    transform: rotate(0turn);
+  }
+  to {
+    transform: rotate(1turn);
+  }
+}
 
 /* ---- Load bar (LoadBar.tsx): heavy visuals streaming in, per concept ------ */
 .vy-loadbar {
-  position: fixed; inset: 0 0 auto; z-index: 60; height: 3px; pointer-events: none;
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 60;
+  height: 3px;
+  pointer-events: none;
   transition: opacity 400ms ease 300ms;
 }
-.vy-loadbar-done { opacity: 0; }
+.vy-loadbar-done {
+  opacity: 0;
+}
 .vy-loadbar-fill {
-  position: absolute; inset: 0; background: var(--alert);
-  transform-origin: left; transform: scaleX(max(0.06, var(--p)));
+  position: absolute;
+  inset: 0;
+  background: var(--alert);
+  transform-origin: left;
+  transform: scaleX(max(0.06, var(--p)));
   transition: transform 500ms var(--ease-out-expo);
 }
-.vy-loadbar-text { display: none; }
+.vy-loadbar-text {
+  display: none;
+}
 /* Amber Terminal: a printed terminal bar. */
+
 /* Candy: a fat, rounded gummy bar with a shine. */
+
 /* Bauhaus: three primary segments. */
+
 /* Clay: soft and pillowy. */
+
 /* Riso: halftone-dotted ink. */
+
 /* Zine: a stark black-and-acid bar. */
+
 /* Cut & Paste: a strip of tape. */
-@media (prefers-reduced-motion: reduce) { .vy-loadbar, .vy-loadbar-fill { transition: none; } }
-:root[data-audience='agent'] .vy-loadbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .vy-loadbar,
+  .vy-loadbar-fill {
+    transition: none;
+  }
+}
+:root[data-audience='agent'] .vy-loadbar {
+  display: none;
+}
 
 /* ---- Rolling score digits (RollingNumber) --------------------------------- */
 .vy-roll-slot {
@@ -1341,23 +2004,45 @@ main > div p { line-height: 1.65; }
   transform: translateY(calc(var(--roll-d) * -1lh));
   transition: transform 0.9s var(--ease-spring) var(--roll-delay, 0ms);
 }
-:root[data-motion='calm'] .vy-roll-strip { transition: none; }
+:root[data-motion='calm'] .vy-roll-strip {
+  transition: none;
+}
 @media (hover: none) and (pointer: coarse) {
   /* Phones: numbers roll once, short, with a plain clip instead of a mask
      that would repaint as the strip moves. */
-  .vy-roll-slot { mask-image: none; }
-  .vy-roll-strip { transition-duration: 450ms; transition-timing-function: var(--ease-out-expo); }
+  .vy-roll-slot {
+    mask-image: none;
+  }
+  .vy-roll-strip {
+    transition-duration: 450ms;
+    transition-timing-function: var(--ease-out-expo);
+  }
 }
 
 /* ---- Scroll entrances (ScrollReveal) -------------------------------------- */
 /* Only hidden once <html> has .vy-reveal-ready (set after hydration), so the
    page reads fine without JS. Transform and opacity only; the shared
    observer flips .vy-rv-in as each enters the viewport. */
-[data-rv='head'] { --rv-from: translateY(24px); }
-[data-rv='lead'] { --rv-from: translateY(16px); --rv-delay: 120ms; }
-[data-rv='card'] { --rv-from: translateY(40px) scale(0.97); --rv-ease: var(--ease-spring); }
-[data-rv='fig'] { --rv-from: scale(0.6) rotate(-8deg); --rv-ease: var(--ease-spring-pop); --rv-delay: 100ms; }
-[data-rv='list'] { --rv-from: translateY(24px) scale(0.96); --rv-ease: var(--ease-spring); }
+[data-rv='head'] {
+  --rv-from: translateY(24px);
+}
+[data-rv='lead'] {
+  --rv-from: translateY(16px);
+  --rv-delay: 120ms;
+}
+[data-rv='card'] {
+  --rv-from: translateY(40px) scale(0.97);
+  --rv-ease: var(--ease-spring);
+}
+[data-rv='fig'] {
+  --rv-from: scale(0.6) rotate(-8deg);
+  --rv-ease: var(--ease-spring-pop);
+  --rv-delay: 100ms;
+}
+[data-rv='list'] {
+  --rv-from: translateY(24px) scale(0.96);
+  --rv-ease: var(--ease-spring);
+}
 :root.vy-reveal-ready .vy-rv:not(.vy-rv-list, .vy-rv-in),
 :root.vy-reveal-ready .vy-rv-list:not(.vy-rv-in) > * {
   opacity: 0;
@@ -1370,15 +2055,34 @@ main > div p { line-height: 1.65; }
     transform var(--dur-slow) var(--rv-ease, var(--ease-out-expo)) var(--rv-delay, 0ms);
 }
 /* Lists that draw dividers as a background hold it back until items land. */
-:root.vy-reveal-ready .vy-rv-list { background-color: transparent !important; }
-.vy-rv-list > :nth-child(2) { --rv-delay: 45ms; }
-.vy-rv-list > :nth-child(3) { --rv-delay: 90ms; }
-.vy-rv-list > :nth-child(4) { --rv-delay: 135ms; }
-.vy-rv-list > :nth-child(5) { --rv-delay: 180ms; }
-.vy-rv-list > :nth-child(6) { --rv-delay: 225ms; }
-.vy-rv-list > :nth-child(7) { --rv-delay: 270ms; }
-.vy-rv-list > :nth-child(n + 8) { --rv-delay: 315ms; }
+:root.vy-reveal-ready .vy-rv-list {
+  background-color: transparent !important;
+}
+.vy-rv-list > :nth-child(2) {
+  --rv-delay: 45ms;
+}
+.vy-rv-list > :nth-child(3) {
+  --rv-delay: 90ms;
+}
+.vy-rv-list > :nth-child(4) {
+  --rv-delay: 135ms;
+}
+.vy-rv-list > :nth-child(5) {
+  --rv-delay: 180ms;
+}
+.vy-rv-list > :nth-child(6) {
+  --rv-delay: 225ms;
+}
+.vy-rv-list > :nth-child(7) {
+  --rv-delay: 270ms;
+}
+.vy-rv-list > :nth-child(n + 8) {
+  --rv-delay: 315ms;
+}
 @media (prefers-reduced-motion: reduce) {
   :root.vy-reveal-ready .vy-rv,
-  :root.vy-reveal-ready .vy-rv-list > * { opacity: 1 !important; transform: none !important; }
+  :root.vy-reveal-ready .vy-rv-list > * {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
