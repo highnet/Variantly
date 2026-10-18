@@ -32,6 +32,7 @@ import {
   useConcept,
   type SwapOrigin,
 } from '@/lib/variant';
+import { useDockSwipe } from '@/lib/dockSwipe';
 import { cn } from '@/lib/utils';
 
 const PHONE = '(max-width: 639px)';
@@ -234,6 +235,16 @@ export const VariantSwitcher = () => {
     );
     setOpen(true);
   };
+  // Phones: swipe the dock sideways to step, up to open the picker.
+  const dockEl = useRef<HTMLElement>(null);
+  const faceEl = useRef<HTMLSpanElement>(null);
+  const swipe = useDockSwipe({
+    dock: dockEl,
+    face: faceEl,
+    current: current ?? '',
+    step: (by, origin) => current && stepVariant(current, by, { origin }),
+    open: () => (open ? undefined : openPicker()),
+  });
 
   // `[` / `]` step through the shown concepts from anywhere on the page.
   useEffect(() => {
@@ -338,6 +349,8 @@ export const VariantSwitcher = () => {
   return (
     <>
       <nav
+        ref={dockEl}
+        {...swipe}
         aria-label="Homepage concept"
         data-slot="concept-dock"
         data-yield={yieldToDemo || undefined}
@@ -350,6 +363,7 @@ export const VariantSwitcher = () => {
         <Button
           variant="concept"
           size="touch"
+          data-dir="prev"
           aria-label="Previous concept"
           title="Previous concept ( [ )"
           onClick={(e) => stepVariant(current, -1, { origin: pressOrigin(e) })}
@@ -370,13 +384,15 @@ export const VariantSwitcher = () => {
           aria-expanded={open}
           aria-controls={open ? 'vy-concept-picker' : undefined}
           onClick={() => (open ? close() : openPicker())}
-          className="h-11 min-w-0 gap-2 px-3"
+          className="h-11 min-w-0 gap-2 overflow-hidden px-3"
         >
-          <Chip meta={meta} />
-          <span className="font-mono text-[10px] opacity-60">{current.toUpperCase()}</span>
-          <span className="text-ink truncate">{meta.name}</span>
-          <span className="text-steel font-mono text-[10px] tabular-nums">
-            {at < 0 ? 'draft' : `${at + 1}/${count}`}
+          <span ref={faceEl} className="vy-dock-face flex min-w-0 items-center gap-2">
+            <Chip meta={meta} />
+            <span className="font-mono text-[10px] opacity-60">{current.toUpperCase()}</span>
+            <span className="text-ink truncate">{meta.name}</span>
+            <span className="text-steel font-mono text-[10px] tabular-nums">
+              {at < 0 ? 'draft' : `${at + 1}/${count}`}
+            </span>
           </span>
           <ChevronUp
             aria-hidden="true"
@@ -386,6 +402,7 @@ export const VariantSwitcher = () => {
         <Button
           variant="concept"
           size="touch"
+          data-dir="next"
           aria-label="Next concept"
           title="Next concept ( ] )"
           onClick={(e) => stepVariant(current, 1, { origin: pressOrigin(e) })}
