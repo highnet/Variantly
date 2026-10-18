@@ -50,7 +50,7 @@
 :root[data-variant='q'] main > div h2 {
   justify-self: start;
   width: fit-content;
-  padding: 0.18em 0.42em 0.22em;
+  padding: 0.3em 0.5em 0.32em;
   border-radius: 0.4em;
   background: #ff3ea5;
   color: #111111;
