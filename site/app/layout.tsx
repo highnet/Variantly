@@ -11,6 +11,7 @@ import { PREFS_BOOT } from '@/lib/prefs';
 import { REPO_URL, SITE_URL } from '@/lib/site';
 
 import './globals.css';
+import '@/concepts/styles';
 
 const martian = localFont({
   src: './fonts/martian-mono.woff2',

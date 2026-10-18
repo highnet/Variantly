@@ -1,14 +1,27 @@
 import {
   Abril_Fatface,
+  Anybody,
+  Archivo,
+  Cormorant,
+  Fraunces,
   Archivo_Black,
+  Bricolage_Grotesque,
   Fredoka,
   Jost,
+  Doto,
+  IBM_Plex_Mono,
+  Inter_Tight,
+  Italiana,
+  Major_Mono_Display,
   Monoton,
   Orbitron,
   Press_Start_2P,
   Righteous,
   Rubik_Mono_One,
+  Silkscreen,
+  Space_Grotesk,
   Special_Elite,
+  Syne,
 } from 'next/font/google';
 import localFont from 'next/font/local';
 
@@ -104,8 +117,88 @@ const archivo = Archivo_Black({
   preload: false,
   variable: '--font-brutal',
 });
+// Concepts h, j, o: Dither Machine, Instrument OS, Swiss Punk.
+const silk = Silkscreen({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-silk',
+});
+const doto = Doto({ subsets: ['latin'], preload: false, variable: '--font-doto' });
+const archivoVar = Archivo({
+  subsets: ['latin'],
+  axes: ['wdth'],
+  preload: false,
+  variable: '--font-archivo',
+});
+const grotesk = Space_Grotesk({ subsets: ['latin'], preload: false, variable: '--font-grotesk' });
+const plex = IBM_Plex_Mono({
+  weight: ['400', '600'],
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-plex',
+});
+const hjo = [silk, doto, archivoVar, grotesk, plex];
 
-export const HERO_FONT_VARS = [abril, elite, orbitron, fredoka, jost, archivo, rubik]
+// Concepts q, r, s, t: Sticker Bomb, Kinetic Type (width and weight axes),
+// Lived-in Den (soft, wonky), Stone & Linen.
+const bricolage = Bricolage_Grotesque({
+  subsets: ['latin'],
+  axes: ['wdth', 'opsz'],
+  preload: false,
+  variable: '--font-bricolage',
+});
+const anybody = Anybody({
+  subsets: ['latin'],
+  axes: ['wdth'],
+  preload: false,
+  variable: '--font-anybody',
+});
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  axes: ['SOFT', 'WONK', 'opsz'],
+  preload: false,
+  variable: '--font-fraunces',
+});
+const cormorant = Cormorant({ subsets: ['latin'], preload: false, variable: '--font-cormorant' });
+const qrst = [bricolage, anybody, fraunces, cormorant];
+
+// i Liquid Glass, l Inflated Chrome (+ its captions), m Uncanny Mirror.
+const interTight = Inter_Tight({
+  weight: '600',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-glass',
+});
+const syne = Syne({ weight: '800', subsets: ['latin'], preload: false, variable: '--font-chrome' });
+const majorMono = Major_Mono_Display({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-caption',
+});
+const italiana = Italiana({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-mirror',
+});
+
+export const HERO_FONT_VARS = [
+  abril,
+  elite,
+  orbitron,
+  fredoka,
+  jost,
+  archivo,
+  rubik,
+  interTight,
+  syne,
+  majorMono,
+  italiana,
+  ...hjo,
+  ...qrst,
+]
   .map((f) => f.variable)
   .join(' ');
 

@@ -35,9 +35,17 @@ const buttonVariants = cva(
         // A word inside a headline that is also a button (the hero's "a fresh look").
         'headline-word':
           'inline normal-case tracking-[inherit] font-[inherit] [font-stretch:inherit] text-[length:inherit] leading-[inherit] text-inherit whitespace-normal',
+        // A word in running text that opens a tip: dotted underline, the text's own type.
+        tip: 'inline [text-transform:inherit]! tracking-[inherit] font-[family-name:inherit] font-[weight:inherit] [font-stretch:inherit] text-[length:inherit] leading-[inherit] text-inherit whitespace-normal text-left underline decoration-dotted decoration-current/55 decoration-[1.5px] underline-offset-[0.22em] cursor-help rounded-[2px] hover:decoration-current aria-expanded:decoration-solid aria-expanded:decoration-current',
+        // Words in running text that act as a button, styled as the text around them.
+        text: 'inline normal-case tracking-[inherit] font-[family-name:inherit] font-[weight:inherit] [font-stretch:inherit] text-[length:inherit] leading-[inherit] text-inherit whitespace-normal text-left hover:underline',
         // A concept chip in the homepage switcher dock.
         concept:
           'normal-case tracking-normal font-sans text-steel hover:text-ink aria-pressed:bg-ink aria-pressed:text-surface',
+        // A tile in the concept picker: the selected one inverts, the
+        // keyboard-active one gets the alert ring.
+        'concept-tile':
+          'normal-case tracking-normal font-sans font-semibold text-ink justify-start text-left hover:bg-panel aria-selected:bg-ink aria-selected:text-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink',
         // The show-more pill that sits on a card's bottom edge.
         pill: 'border border-rule bg-surface text-ink normal-case tracking-normal font-sans hover:border-ink',
         'pill-slate':
@@ -65,6 +73,12 @@ const buttonVariants = cva(
         // without pushing its neighbours.
         'cell-grid': 'h-9 w-full min-w-0 rounded-control px-0 text-[15px] aria-checked:text-2xl',
         pill: 'h-8 rounded-full px-4 text-[13px] font-semibold',
+        // Desktop picker row and the phone sheet's large strip tile.
+        tile: 'h-11 w-full rounded-control px-2 text-[13px] gap-2.5',
+        'tile-lg':
+          'h-32 w-40 shrink-0 snap-start flex-col items-start justify-between rounded-pass p-3 text-lg whitespace-normal',
+        // Phone dock arrows: at least 44px to hit.
+        touch: 'size-11 rounded-full',
         grip: 'h-11 rounded-full px-2 text-[10px] gap-1 tracking-[0.08em]',
       },
     },

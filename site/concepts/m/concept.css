@@ -1,0 +1,198 @@
+/* m · Uncanny Mirror: a cold dream room on an endless mirror floor that lies. */
+:root[data-variant='m'] {
+  --panel: #e7ecf1;
+  --surface: #f4f6f9;
+  --rule: #c9cfd9;
+  --steel: #4c5160;
+  --ink: #1f2229;
+  --alert: #4a6a96;
+  --alert-hover: #5a7cab;
+  --on-alert: #ffffff;
+  --hero-bg: #e7ecf1;
+  --hero-ink: #1f2229;
+  --hero-mute: #4a4f5e;
+  --hero-line: #c3c9d4;
+  --hero-box: #f4f6f9;
+  --hero-face: var(--font-mirror);
+  --title: #6a54a8;
+  --hero-alpha: 42%;
+  --board-bg: #1f2229;
+  --board-raised: #2a2e37;
+  --board-line: #3c414d;
+  --board-mute: #bfc5d1;
+  --board-text: #eef1f5;
+  --board-deep: #121419;
+  --board-ok: #a998e6;
+  --flap-bg: #1f2229;
+  --flap-ink: #e7ecf1;
+  --blob-o: 1;
+  --art-sky-top: #c9d4e1;
+  --art-sky: #eef1f5;
+  --art-horizon: #f7f5f0;
+  --art-floor: #d9d3ea;
+  --art-floor-deep: #c7c0e2;
+  --art-1: #6f8fb8;
+  --art-2: #a7a9b4;
+  --art-3: #7a63b8;
+  --art-moon: #f6f3ec;
+  --art-moon-shade: #cfcbd8;
+  --art-lie: #ffb59a;
+  --art-lie-2: #c6ff00;
+  --art-ink: #1f2229;
+  --art-plaster: #efece6;
+  --art-haze: rgb(122 99 184 / 0.18);
+}
+:root[data-variant='m'][data-theme='dark'] {
+  --panel: #0d0f14;
+  --surface: #151821;
+  --rule: #2a2e3a;
+  --steel: #a5abb8;
+  --ink: #e3e8ef;
+  --alert: #8fb4e6;
+  --alert-hover: #a7c4ec;
+  --on-alert: #0d0f14;
+  --hero-bg: #0d0f14;
+  --hero-ink: #e3e8ef;
+  --hero-mute: #a9afbd;
+  --hero-line: #2c3140;
+  --hero-box: #12151c;
+  --title: #b3a0ee;
+  --hero-alpha: 34%;
+  --flap-bg: #e3e8ef;
+  --flap-ink: #0d0f14;
+  --art-sky-top: #07080c;
+  --art-sky: #141826;
+  --art-horizon: #2a2f45;
+  --art-floor: #1c1830;
+  --art-floor-deep: #0b0a14;
+  --art-moon: #e9e6dc;
+  --art-moon-shade: #9a96a8;
+  --art-plaster: #c9cdd6;
+  --art-haze: rgb(154 130 224 / 0.16);
+}
+
+/* Backdrop: sky above the horizon, a hue-shifted mirror floor below it. The
+   horizon (scene.ts matches it) sits under the title on phones. */
+:root[data-variant='m'] .vy-backdrop {
+  --lm-h: 58%;
+}
+@media (max-width: 639px) {
+  :root[data-variant='m'] .vy-backdrop {
+    --lm-h: 36%;
+  }
+}
+:root[data-variant='m'] .vy-lm-room {
+  background:
+    linear-gradient(
+      180deg,
+      transparent calc(var(--lm-h) - 8%),
+      var(--art-haze) calc(var(--lm-h) - 2%),
+      transparent calc(var(--lm-h) + 2%),
+      var(--art-haze) calc(var(--lm-h) + 6%),
+      transparent calc(var(--lm-h) + 14%)
+    ),
+    linear-gradient(
+      180deg,
+      var(--art-sky-top),
+      var(--art-sky) calc(var(--lm-h) - 12%),
+      var(--art-horizon) var(--lm-h),
+      var(--art-floor) var(--lm-h),
+      var(--art-floor-deep)
+    );
+}
+:root[data-variant='m'] .vy-lm-line {
+  top: var(--lm-h);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--art-moon) 20%,
+    var(--art-moon) 80%,
+    transparent
+  );
+  opacity: 0.8;
+}
+:root[data-variant='m'] .vy-lm-slide {
+  animation: vy-lm-slide 24s ease-in-out infinite;
+}
+/* The reflection runs a beat (0.5s at 120bpm) behind its moon. */
+:root[data-variant='m'] .vy-lm-late {
+  animation-delay: -23.5s;
+}
+@keyframes vy-lm-slide {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(30vw);
+  }
+}
+:root[data-variant='m'][data-scrolled] .vy-lm-slide {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce), (pointer: coarse) {
+  :root[data-variant='m'] .vy-lm-slide {
+    animation: none;
+  }
+}
+
+/* Type: Italiana, airy and still. */
+:root[data-variant='m'] .vy-title {
+  text-shadow: 0 2px 0 #9f9a8f;
+}
+:root[data-variant='m'] #hero-title {
+  font-size: clamp(2.6rem, 5vw, 5rem);
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+}
+:root[data-variant='m'] #hero-title .vy-fresh {
+  font-style: italic;
+}
+:root[data-variant='m'] main > div h2 {
+  text-transform: none;
+  letter-spacing: 0.01em;
+  font-weight: 400;
+  font-size: clamp(2rem, 3.6vw, 3.2rem);
+}
+
+/* Cards: plaster slabs; each casts a faint, hue-shifted reflection below. */
+:root[data-variant='m'] main > div .bg-surface,
+:root[data-variant='m'] [data-hero-side] {
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.7) inset,
+    0 14px 0 -8px color-mix(in srgb, var(--art-3) 16%, transparent),
+    0 28px 40px -30px rgb(31 34 41 / 0.5);
+}
+:root[data-variant='m'] [data-hero-side] {
+  background: var(--hero-box);
+  padding: 22px;
+  border-color: var(--hero-line);
+}
+:root[data-variant='m'][data-theme='dark'] main > div .bg-surface,
+:root[data-variant='m'][data-theme='dark'] [data-hero-side] {
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.05) inset,
+    0 14px 0 -8px rgb(154 130 224 / 0.14),
+    0 28px 40px -30px #000;
+}
+:root[data-variant='m'] main > div .figure:not(h3) {
+  font-family: var(--font-mirror);
+}
+:root[data-variant='m'] .flap-cell:nth-child(4n + 3) {
+  --flap-bg: #7a63b8;
+  --flap-ink: #ffffff;
+}
+:root[data-variant='m'][data-theme='dark'] .flap-cell:nth-child(4n + 3) {
+  --flap-bg: #9a82e0;
+  --flap-ink: #0d0f14;
+}
+:root[data-variant='m'] .vy-loadbar {
+  height: 2px;
+  inset: 10px 20% auto;
+}
+:root[data-variant='m'] .vy-loadbar-fill {
+  background: linear-gradient(90deg, var(--art-1), var(--art-3));
+}

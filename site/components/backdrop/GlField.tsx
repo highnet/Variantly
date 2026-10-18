@@ -8,10 +8,11 @@ import { markLoaded } from '@/lib/loadProgress';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
 
-import { SCENES } from './scenes';
-import type { SceneKind } from './variants';
+import { CONCEPT_LOADERS, type ConceptId } from '@/concepts';
+import type { ConceptScene } from '@/concepts/types';
+import { perfTier } from '@/lib/perfTier';
 
-type GlFieldProps = { scene: SceneKind; colors: string[]; grain: number };
+type GlFieldProps = { concept: ConceptId; theme: 'light' | 'dark'; grain: number };
 
 /*
  * Film grain applied to what the scene drew, not the whole screen: the pass
@@ -46,153 +47,271 @@ const grainPass = (amount: number) => {
   return { scene, camera: new THREE.Camera() };
 };
 
-/* Hosts one variant's three.js scene; seeks to ?t in seekreel renders. */
-export const GlField = ({ scene: kind, colors, grain }: GlFieldProps) => {
+/*
+ * Hosts the active concept's three.js scene (concepts/<id>/scene.ts, loaded
+ * on demand); seeks to ?t in seekreel renders. Every concept inherits the
+ * same budget: phones, calm motion and the low perf tier paint one still
+ * frame; elsewhere it runs at ~24fps only while the hero shows, the tab is
+ * visible and the title is not busy animating ('vy:gl-busy').
+ */
+export const GlField = ({ concept, theme, grain }: GlFieldProps) => {
   const host = useRef<HTMLDivElement>(null);
-  const key = colors.join();
+  // The scene on screen. A theme change builds the next one beside it and
+  // retires this one only once the next has drawn and faded in, so the swap
+  // never shows an empty frame. A concept change instead fades the old scene
+  // out at once: its shapes belong to the previous concept and must not sit
+  // over the new concept's art while the next scene loads.
+  const shown = useRef<(() => void) | null>(null);
+  const shownConcept = useRef(concept);
 
   useEffect(() => {
     const el = host.current;
     if (!el) return;
+    let dead = false;
     const seek = seekTime();
-    // A soft full-screen wash: rendered at ~half resolution, which the blur
-    // and grain hide completely.
-    const tier = glTier(0.55);
-    const phone = tier.coarse || innerWidth < 640;
-    let renderer: THREE.WebGLRenderer;
-    try {
-      renderer = new THREE.WebGLRenderer({
-        antialias: tier.antialias,
-        alpha: true,
-        // Only seekreel captures need the frame kept after compositing.
-        preserveDrawingBuffer: seek !== null,
-        powerPreference: phone ? 'low-power' : 'default',
+    if (shown.current && shownConcept.current !== concept) {
+      const retire = shown.current;
+      shown.current = null;
+      const old = [...el.querySelectorAll('canvas')];
+      if (seek !== null || calmMotion()) retire();
+      else {
+        const fades = old.map((c) =>
+          c.animate([{ opacity: 1 }, { opacity: 0 }], {
+            duration: OUT_MS,
+            easing: 'ease-out',
+            fill: 'forwards',
+          }),
+        );
+        void Promise.all(fades.map((f) => f.finished))
+          .catch(() => {})
+          .then(retire);
+      }
+    }
+    shownConcept.current = concept;
+    void CONCEPT_LOADERS[concept]
+      .scene()
+      .then(({ scene }) => {
+        if (dead) return;
+        const prev = shown.current;
+        shown.current = run(el, scene, scene.colors[theme], seek, grain, !!prev) ?? null;
+        if (!prev) return;
+        // Retire the old scene after the new one's fade (FADE_MS).
+        if (seek !== null || calmMotion()) prev();
+        else setTimeout(prev, SWAP_FADE_MS + 100);
+      })
+      .catch(() => {
+        markLoaded('scene');
+        if (seek !== null) releaseFrame('gl');
       });
-    } catch {
-      // No WebGL: the CSS blobs carry the backdrop alone.
-      markFallback();
-      markLoaded('scene');
-      if (seek !== null) releaseFrame('gl');
-      return;
-    }
-    renderer.setPixelRatio(tier.pixelRatio);
-    const canvas = renderer.domElement;
-    canvas.style.width = canvas.style.height = '100%';
-    el.appendChild(canvas);
-    const scene = new THREE.Scene();
-    const { camera, update } = SCENES[kind](scene, key.split(','));
-    const film = grain > 0 ? grainPass(grain) : null;
-
-    // Phones get one painted frame of the scene: a moving full-screen WebGL
-    // layer behind scrolling content is the costliest thing on the page there.
-    const still = seek !== null || phone || calmMotion();
-    const t0 = performance.now();
-    const draw = () => {
-      update(seek ?? (still ? 6 : (performance.now() - t0) / 1000), 0);
-      renderer.render(scene, camera);
-      if (film) {
-        renderer.autoClear = false;
-        renderer.render(film.scene, film.camera);
-        renderer.autoClear = true;
-      }
-    };
-
-    const size = () => {
-      const { clientWidth: w, clientHeight: h } = el;
-      renderer.setSize(w, h, false);
-      if (camera instanceof THREE.PerspectiveCamera) camera.aspect = w / h;
-      if (camera instanceof THREE.OrthographicCamera) {
-        const half = (5 * w) / h;
-        camera.left = -half;
-        camera.right = half;
-      }
-      (camera as THREE.PerspectiveCamera).updateProjectionMatrix();
-    };
-    size();
-    // A resize clears the canvas; a resting scene has to repaint itself.
-    const resize = () => {
-      size();
-      if (!raf) draw();
-    };
-    addEventListener('resize', resize);
-
-    // Desktop parallax is a CSS transform on the canvas, not a re-render.
-    const move = (e: PointerEvent) => {
-      const x = (e.clientX / innerWidth - 0.5) * -24;
-      canvas.style.transform = `translate3d(${x.toFixed(1)}px, 0, 0) scale(1.04)`;
-    };
-    // The scene fades in over the art the server already painted, rather
-    // than popping in on top of it.
-    const fade = 'opacity 0.8s ease-out';
-    if (seek === null) {
-      canvas.style.opacity = '0';
-      canvas.style.transition = fade;
-      // Commit the hidden start, so clearing it below transitions.
-      void canvas.offsetWidth;
-    }
-    if (!still) {
-      canvas.style.transition = `${fade}, transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1)`;
-      addEventListener('pointermove', move, { passive: true });
-    }
-
-    // Run only while it shows: the tab is visible and the hero is in view
-    // (past it the scene is a faint wash). Otherwise cancel the loop outright.
-    let raf = 0;
-    const html = document.documentElement;
-    // The drift is slow ambient motion: ~24fps is indistinguishable from 60
-    // under the blur and leaves the main thread and GPU idle most frames.
-    let last = 0;
-    const tick = (now: number) => {
-      if (now - last >= 1000 / 24) {
-        last = now;
-        draw();
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    const sync = () => {
-      const visible = !document.hidden && !html.hasAttribute('data-scrolled');
-      if (visible && !raf) raf = requestAnimationFrame(tick);
-      if (!visible && raf) {
-        cancelAnimationFrame(raf);
-        raf = 0;
-      }
-    };
-    draw();
-    // Fade only once the first frame is on screen: the draw reaches the
-    // compositor a frame after it is issued (later still while shaders compile).
-    let shown = requestAnimationFrame(() => {
-      shown = requestAnimationFrame(() => (canvas.style.opacity = ''));
-    });
-    markLoaded('scene');
-    const mo = new MutationObserver(sync);
-    if (!still) {
-      sync();
-      document.addEventListener('visibilitychange', sync);
-      mo.observe(html, { attributes: true, attributeFilter: ['data-scrolled'] });
-    }
-    if (seek !== null) releaseFrame('gl');
     return () => {
-      cancelAnimationFrame(raf);
-      cancelAnimationFrame(shown);
-      mo.disconnect();
-      document.removeEventListener('visibilitychange', sync);
-      removeEventListener('resize', resize);
-      removeEventListener('pointermove', move);
-      [scene, film?.scene].forEach((s) =>
-        s?.traverse((o) => {
-          const m = o as THREE.Mesh;
-          m.geometry?.dispose();
-          const mats = Array.isArray(m.material) ? m.material : m.material ? [m.material] : [];
-          mats.forEach((mat) => {
-            Object.values(mat).forEach((v) => v instanceof THREE.Texture && v.dispose());
-            mat.dispose();
-          });
-        }),
-      );
-      renderer.dispose();
-      el.removeChild(canvas);
+      dead = true;
     };
-  }, [kind, key, grain]);
+  }, [concept, theme, grain]);
+
+  useEffect(
+    () => () => {
+      shown.current?.();
+      shown.current = null;
+    },
+    [],
+  );
 
   return <div ref={host} className="absolute inset-0" aria-hidden="true" />;
+};
+
+// The canvas fades in over the server-painted art instead of popping in, on
+// load and (faster, the wipe already moves) on every concept or theme swap.
+const FADE_MS = 800;
+const SWAP_FADE_MS = 400;
+// How fast the previous concept's scene leaves on a concept change.
+const OUT_MS = 160;
+
+const run = (
+  el: HTMLDivElement,
+  def: ConceptScene,
+  colors: string[],
+  seek: number | null,
+  grain: number,
+  swap: boolean,
+): (() => void) | undefined => {
+  // A soft full-screen wash: rendered at ~half resolution, which the blur
+  // and grain hide completely.
+  const tier = glTier(0.55);
+  const phone = tier.coarse || innerWidth < 640;
+  let renderer: THREE.WebGLRenderer;
+  try {
+    renderer = new THREE.WebGLRenderer({
+      antialias: tier.antialias,
+      alpha: true,
+      // Only seekreel captures need the frame kept after compositing.
+      preserveDrawingBuffer: seek !== null,
+      powerPreference: phone ? 'low-power' : 'default',
+    });
+  } catch {
+    // No WebGL: the CSS blobs carry the backdrop alone.
+    markFallback();
+    markLoaded('scene');
+    if (seek !== null) releaseFrame('gl');
+    return;
+  }
+  renderer.setPixelRatio(tier.pixelRatio);
+  const canvas = renderer.domElement;
+  // Stacked, so an outgoing scene can stay under the incoming one.
+  canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
+  const fade = seek === null && !calmMotion();
+  if (fade) canvas.style.opacity = '0';
+  el.appendChild(canvas);
+  const scene = new THREE.Scene();
+  const { camera, update } = def.build(scene, colors);
+  const film = grain > 0 ? grainPass(grain) : null;
+
+  // Phones get one painted frame of the scene: a moving full-screen WebGL
+  // layer behind scrolling content is the costliest thing on the page there.
+  const still = seek !== null || phone || calmMotion() || perfTier() === 'low';
+  const t0 = performance.now();
+  const draw = () => {
+    update(seek ?? (still ? 6 : (performance.now() - t0) / 1000), 0);
+    renderer.render(scene, camera);
+    if (film) {
+      renderer.autoClear = false;
+      renderer.render(film.scene, film.camera);
+      renderer.autoClear = true;
+    }
+  };
+
+  // Sized to its host (fixed, full viewport): drawing-buffer size, pixel
+  // ratio (re-clamped, so a DPR or zoom change never leaves it blurry or
+  // oversized) and the camera's projection, keeping the orthographic
+  // camera's own height. The scene itself is never rebuilt.
+  const half = camera instanceof THREE.OrthographicCamera ? (camera.top - camera.bottom) / 2 : 0;
+  let sized = { w: 0, h: 0, dpr: 0 };
+  const size = () => {
+    const { clientWidth: w, clientHeight: h } = el;
+    const dpr = glTier(0.55).pixelRatio;
+    if (!w || !h || (w === sized.w && h === sized.h && dpr === sized.dpr)) return false;
+    sized = { w, h, dpr };
+    if (dpr !== renderer.getPixelRatio()) renderer.setPixelRatio(dpr);
+    renderer.setSize(w, h, false);
+    if (camera instanceof THREE.PerspectiveCamera) {
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    if (camera instanceof THREE.OrthographicCamera) {
+      camera.left = (-half * w) / h;
+      camera.right = (half * w) / h;
+      camera.updateProjectionMatrix();
+    }
+    return true;
+  };
+  size();
+  // Resizing clears the drawing buffer, so every resize repaints at once,
+  // running loop or still frame alike (no blank frame until the next tick).
+  // Batched to one per frame: a drag or rotation fires many.
+  let pending = 0;
+  const resize = () => {
+    if (pending) return;
+    pending = requestAnimationFrame(() => {
+      pending = 0;
+      if (size()) draw();
+    });
+  };
+  const ro = new ResizeObserver(resize);
+  ro.observe(el);
+  // Zoom and DPR changes resize nothing the observer sees.
+  addEventListener('resize', resize);
+
+  // Desktop parallax is a CSS transform on the canvas, not a re-render.
+  const move = (e: PointerEvent) => {
+    const x = (e.clientX / innerWidth - 0.5) * -24;
+    canvas.style.transform = `translate3d(${x.toFixed(1)}px, 0, 0) scale(1.04)`;
+  };
+  if (!still) {
+    canvas.style.transition = 'transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1)';
+    addEventListener('pointermove', move, { passive: true });
+  }
+
+  // Run only while it shows: the tab is visible and the hero is in view
+  // (past it the scene is a faint wash). Otherwise cancel the loop outright.
+  let raf = 0;
+  const html = document.documentElement;
+  // The drift is slow ambient motion: ~24fps is indistinguishable from 60
+  // under the blur and leaves the main thread and GPU idle most frames.
+  let last = 0;
+  const tick = (now: number) => {
+    if (now - last >= 1000 / 24) {
+      last = now;
+      draw();
+    }
+    raf = requestAnimationFrame(tick);
+  };
+  // The hero title asks for the frame budget while it animates.
+  let busy = false;
+  const onBusy = (e: Event) => {
+    busy = !!(e as CustomEvent<{ busy: boolean }>).detail?.busy;
+    sync();
+  };
+  const sync = () => {
+    const visible =
+      !document.hidden &&
+      !html.hasAttribute('data-scrolled') &&
+      !html.hasAttribute('data-swapping') &&
+      !busy &&
+      perfTier() !== 'low';
+    if (visible && !raf) raf = requestAnimationFrame(tick);
+    if (!visible && raf) {
+      cancelAnimationFrame(raf);
+      raf = 0;
+    }
+  };
+  draw();
+  // Fade only once the first frame is on screen: the draw reaches the
+  // compositor a frame after it is issued (later still while shaders compile).
+  // Opacity is composited, so the fade costs no repaint.
+  let shown = 0;
+  if (fade) {
+    shown = requestAnimationFrame(() => {
+      shown = requestAnimationFrame(() => {
+        canvas.style.opacity = '';
+        canvas.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: swap ? SWAP_FADE_MS : FADE_MS,
+          easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)',
+        });
+      });
+    });
+  }
+  markLoaded('scene');
+  const mo = new MutationObserver(sync);
+  if (!still) {
+    sync();
+    document.addEventListener('visibilitychange', sync);
+    document.addEventListener('vy:gl-busy', onBusy);
+    document.addEventListener('vy:perf', sync);
+    mo.observe(html, { attributes: true, attributeFilter: ['data-scrolled', 'data-swapping'] });
+  }
+  if (seek !== null) releaseFrame('gl');
+  return () => {
+    cancelAnimationFrame(raf);
+    cancelAnimationFrame(pending);
+    cancelAnimationFrame(shown);
+    ro.disconnect();
+    mo.disconnect();
+    document.removeEventListener('visibilitychange', sync);
+    document.removeEventListener('vy:gl-busy', onBusy);
+    document.removeEventListener('vy:perf', sync);
+    removeEventListener('resize', resize);
+    removeEventListener('pointermove', move);
+    [scene, film?.scene].forEach((sc) =>
+      sc?.traverse((o) => {
+        const m = o as THREE.Mesh;
+        m.geometry?.dispose();
+        const mats = Array.isArray(m.material) ? m.material : m.material ? [m.material] : [];
+        mats.forEach((mat) => {
+          Object.values(mat).forEach((v) => v instanceof THREE.Texture && v.dispose());
+          mat.dispose();
+        });
+      }),
+    );
+    renderer.dispose();
+    el.removeChild(canvas);
+  };
 };

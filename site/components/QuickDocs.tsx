@@ -1,4 +1,5 @@
 import { CommandCopy } from '@/components/CommandCopy';
+import { GlossaryTip } from '@/components/GlossaryTip';
 import { PromptCopy } from '@/components/PromptCopy';
 import { Typography } from '@/components/ui/Typography';
 import { PROMPTS } from '@/lib/content';
@@ -46,7 +47,8 @@ const QuickDocs = ({ className, heading = 'h2' }: QuickDocsProps) => (
         Quick docs
       </Typography>
       <Typography variant="small" color="steel">
-        Every command runs in your site&apos;s folder. Add a path to run it somewhere else.
+        Every command runs in your site&apos;s folder. Add a path to run it somewhere else, or{' '}
+        <GlossaryTip term="flags" /> to change what it does.
       </Typography>
       <PromptCopy chip prompt={PROMPTS.docs} label="Copy prompt: point your AI at these docs" />
     </div>

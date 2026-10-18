@@ -1,3 +1,4 @@
+import { GlossaryTip } from '@/components/GlossaryTip';
 import { Typography } from '@/components/ui/Typography';
 
 const ROWS: { label: string; live: string; variantly: string }[] = [
@@ -43,8 +44,9 @@ const WithLive = () => (
           <a href="https://x.com/pbakaus" className="text-ink underline underline-offset-2">
             Paul Bakaus
           </a>
-          : the design skill doing the work. <strong className="text-ink">Required</strong>, and
-          variantly installs it for you if it&apos;s missing.
+          : the <GlossaryTip term="skill" /> doing the work.{' '}
+          <strong className="text-ink">Required</strong>, and variantly installs it for you if
+          it&apos;s missing.
         </li>
         <li>
           <strong className="text-ink">Live mode</strong> tunes{' '}

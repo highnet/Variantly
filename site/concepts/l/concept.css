@@ -1,0 +1,223 @@
+/* l · Inflated Chrome: liquid-chrome type over an acid-green wireframe world. */
+:root[data-variant='l'] {
+  --panel: #e6e6e6;
+  --surface: #f4f4f4;
+  --rule: #bdbdbd;
+  --steel: #4a4a4a;
+  --ink: #0a0a0a;
+  --alert: #0a0a0a;
+  --alert-hover: #2a2a2a;
+  --on-alert: #c6ff00;
+  --hero-bg: #e6e6e6;
+  --hero-ink: #0a0a0a;
+  --hero-mute: #444444;
+  --hero-line: #b4b4b4;
+  --hero-box: #f4f4f4;
+  --hero-face: var(--font-chrome);
+  --title: #9b9b9b;
+  --hero-alpha: 30%;
+  --board-bg: #0a0a0a;
+  --board-raised: #171717;
+  --board-line: #2e2e2e;
+  --board-mute: #b8b8b8;
+  --board-text: #eaeaea;
+  --board-deep: #000000;
+  --board-ok: #c6ff00;
+  --flap-bg: #0a0a0a;
+  --flap-ink: #c6ff00;
+  --blob-o: 1;
+  --art-1: #c6ff00;
+  --art-2: #8fb4e6;
+  --art-3: #9b9b9b;
+  --art-grid: rgb(10 10 10 / 0.3);
+  --art-glow: rgb(198 255 0 / 0.55);
+  --art-sky: #f2f2f2;
+  --art-floor: #d8d8d8;
+  --art-cap: #2b2b2b;
+  --chrome-hi: #ffffff;
+  --chrome-mid: #a9a9a9;
+  --chrome-lo: #2a2a2a;
+}
+:root[data-variant='l'][data-theme='dark'] {
+  --panel: #050505;
+  --surface: #101010;
+  --rule: #2e2e2e;
+  --steel: #a8a8a8;
+  --ink: #eaeaea;
+  --alert: #c6ff00;
+  --alert-hover: #d8ff4d;
+  --on-alert: #050505;
+  --hero-bg: #050505;
+  --hero-ink: #eaeaea;
+  --hero-mute: #a6a6a6;
+  --hero-line: #2e2e2e;
+  --hero-box: #0c0c0c;
+  --title: #cfcfcf;
+  --hero-alpha: 34%;
+  --flap-bg: #c6ff00;
+  --flap-ink: #050505;
+  --art-grid: rgb(198 255 0 / 0.5);
+  --art-glow: rgb(198 255 0 / 0.3);
+  --art-sky: #050505;
+  --art-floor: #050505;
+  --art-cap: #c6ff00;
+  --chrome-hi: #ffffff;
+  --chrome-mid: #6f6f6f;
+  --chrome-lo: #0d0d0d;
+}
+
+/* Backdrop: a horizon, a perspective grid floor rolling toward you, glints. */
+:root[data-variant='l'] .vy-ll-sky {
+  background: linear-gradient(
+    180deg,
+    var(--art-sky) 0 54%,
+    var(--art-glow) 62%,
+    var(--art-floor) 62.4%
+  );
+}
+:root[data-variant='l'] .vy-ll-floor {
+  top: 62%;
+  perspective: 340px;
+  perspective-origin: 50% 0;
+}
+:root[data-variant='l'] .vy-ll-grid {
+  position: absolute;
+  left: -60vw;
+  right: -60vw;
+  top: 0;
+  height: 150vh;
+  transform-origin: 50% 0;
+  background:
+    linear-gradient(90deg, var(--art-grid) 0 1.5px, transparent 1.5px) 50% 0 / 72px 72px,
+    linear-gradient(180deg, var(--art-grid) 0 1.5px, transparent 1.5px) 0 0 / 72px 72px;
+  transform: rotateX(76deg) translateY(-72px);
+  animation: vy-ll-roll 3s linear infinite;
+}
+@keyframes vy-ll-roll {
+  0% {
+    transform: rotateX(76deg) translateY(-72px);
+  }
+  100% {
+    transform: rotateX(76deg) translateY(0);
+  }
+}
+:root[data-variant='l'] .vy-ll-spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: vy-ll-spin 6s cubic-bezier(0.5, 0, 0.2, 1) infinite;
+}
+:root[data-variant='l'] .vy-ll-spin-b {
+  animation-duration: 4s;
+  animation-direction: reverse;
+}
+@keyframes vy-ll-spin {
+  0% {
+    transform: rotate(0) scale(1);
+  }
+  50% {
+    transform: rotate(45deg) scale(0.82);
+  }
+  100% {
+    transform: rotate(90deg) scale(1);
+  }
+}
+:root[data-variant='l'] .vy-ll-cap {
+  font:
+    400 10px/1.5 var(--font-caption),
+    monospace;
+  letter-spacing: 0.06em;
+  color: var(--art-cap);
+  white-space: pre;
+}
+:root[data-variant='l'][data-scrolled] .vy-ll-grid,
+:root[data-variant='l'][data-scrolled] .vy-ll-spin {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce), (pointer: coarse) {
+  :root[data-variant='l'] .vy-ll-grid,
+  :root[data-variant='l'] .vy-ll-spin {
+    animation: none;
+  }
+}
+
+/* Type: Syne extra bold, tight; the fresh look is an acid highlight. */
+:root[data-variant='l'] .vy-title {
+  text-shadow: 0 2px 0 #5a5a5a;
+}
+:root[data-variant='l'][data-theme='dark'] .vy-title {
+  text-shadow: 0 2px 0 #7a7a7a;
+}
+:root[data-variant='l'] #hero-title {
+  text-transform: uppercase;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-size: clamp(2rem, 3.3vw, 3.3rem);
+}
+:root[data-variant='l'] #hero-title .vy-fresh {
+  color: #0a0a0a;
+  background: #c6ff00;
+  padding: 0 0.12em;
+  text-decoration-color: #0a0a0a;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+:root[data-variant='l'] main > div h2 {
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+}
+:root[data-variant='l'] main > div h2::after {
+  content: ' \2726';
+  color: var(--ink);
+  font-size: 0.6em;
+  vertical-align: 0.5em;
+}
+:root[data-variant='l'][data-theme='dark'] main > div h2::after {
+  color: #c6ff00;
+}
+
+/* Cards: hairline technical plates with a micro caption. */
+:root[data-variant='l'] main > div .bg-surface,
+:root[data-variant='l'] [data-hero-side] {
+  position: relative;
+  border: 1px solid var(--ink);
+  border-radius: 3px;
+  box-shadow: 4px 4px 0 #c6ff00;
+}
+:root[data-variant='l'] [data-hero-side] {
+  background: var(--hero-box);
+  padding: 30px 20px 20px;
+  border-color: var(--hero-ink);
+}
+:root[data-variant='l'] [data-hero-side]::before {
+  content: 'fig. 01 \2014 one prompt, n variants';
+  position: absolute;
+  top: 9px;
+  left: 20px;
+  font:
+    400 10px/1 var(--font-caption),
+    monospace;
+  letter-spacing: 0.06em;
+  color: var(--hero-mute);
+}
+:root[data-variant='l'] main > div .figure:not(h3) {
+  color: var(--ink);
+  text-shadow: 0.04em 0.04em 0 #c6ff00;
+}
+:root[data-variant='l'] .flap-cell {
+  border-radius: 2px;
+}
+:root[data-variant='l'] .flap-cell:nth-child(3n + 2) {
+  --flap-bg: #c6ff00;
+  --flap-ink: #0a0a0a;
+}
+:root[data-variant='l'][data-theme='dark'] .flap-cell:nth-child(3n + 2) {
+  --flap-bg: #eaeaea;
+  --flap-ink: #050505;
+}
+:root[data-variant='l'] .vy-loadbar {
+  height: 4px;
+  inset: 8px 12px auto;
+}
+:root[data-variant='l'] .vy-loadbar-fill {
+  background: repeating-linear-gradient(90deg, #c6ff00 0 10px, transparent 10px 14px);
+}

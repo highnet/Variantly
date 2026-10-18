@@ -10,7 +10,7 @@ export type RunnerId = 'npm' | 'pnpm' | 'yarn' | 'bun';
 type SiteState = {
   // Package manager every command on the page is written for.
   runner: RunnerId;
-  // Homepage concept (a–f).
+  // Homepage concept (concepts/metas.ts).
   variant: VariantKey;
   // False until localStorage has been read, so the server render and the
   // first client render agree.

@@ -132,6 +132,11 @@
   --color-fail: var(--fail);
   --color-fail-on-slate: var(--fail-on-slate);
   --color-ok-on-slate: var(--ok-on-slate);
+  /* The branch log's own ground and amber, the same in every theme. */
+  --color-log-ground: #15120c;
+  --color-log-line: #3a3020;
+  --color-log-amber: #ffb547;
+  --color-log-dim: #b98a3e;
 
   --font-mono: var(--font-martian), ui-monospace, 'Cascadia Mono', Consolas, monospace;
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -186,6 +191,45 @@
     }
   }
   --animate-stamp: stamp 520ms var(--ease-spring-pop);
+  /* A tip springs out of its trigger (a slight overshoot) and fades away. */
+  --animate-tip-in: tip-in 220ms var(--ease-spring) both;
+  --animate-tip-out: tip-out 120ms ease-in both;
+
+  @keyframes tip-in {
+    0% {
+      opacity: 0;
+      translate: 0 var(--tip-from, 6px);
+      scale: 0.88;
+    }
+    55% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+  }
+
+  @keyframes tip-out {
+    100% {
+      opacity: 0;
+      translate: 0 calc(var(--tip-from, 6px) / 2);
+      scale: 0.96;
+    }
+  }
+
+  @keyframes tip-fade {
+    0% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes tip-fade-out {
+    100% {
+      opacity: 0;
+    }
+  }
 
   /* A press that lands: a quick swell and settle. */
   @keyframes pop {
@@ -262,6 +306,14 @@
     scrollbar-gutter: stable;
   }
 
+  /* Decoration that pokes past the edge (backdrop blobs, concept art,
+     sparks) must never make the page pan sideways; iOS Safari pans on any
+     overflow the root does not clip. `clip`, unlike `hidden`, makes no
+     scroll container, so the sticky header keeps working. */
+  html,
+  body {
+    overflow-x: clip;
+  }
   body {
     display: flex;
     flex-direction: column;
@@ -700,318 +752,16 @@ a:hover > .brand-mark .brand-grip {
   color: var(--title, var(--alert));
 }
 /* ---- A · Soft Clay: puffy, rounded, centred, glossy blobs ---------------- */
-:root[data-variant='a'] {
-  --panel: #fff3ea;
-  --surface: #fffaf6;
-  --rule: #f1d3c2;
-  --steel: #7a5a50;
-  --ink: #2a1630;
-  --alert: #ff7a59;
-  --alert-hover: #ff9677;
-  --hero-bg: #ffe9dc;
-  --hero-ink: #2a1630;
-  --hero-mute: #7a5a62;
-  --hero-line: #f3c9b4;
-  --hero-box: #fffaf6;
-  --hero-face: var(--font-clay);
-  --title: #ff7a59;
-  --hero-alpha: 55%;
-}
-:root[data-variant='a'][data-theme='dark'] {
-  --panel: #1a0f1e;
-  --surface: #251629;
-  --rule: #3d2744;
-  --steel: #c9a9b8;
-  --ink: #fbeee6;
-  --hero-bg: #241428;
-  --hero-ink: #fff1ea;
-  --hero-mute: #cfa9bb;
-  --hero-line: #4a2d52;
-  --hero-box: #120a15;
-}
-:root[data-variant='a'] .vy-title {
-  text-shadow:
-    0 2px 0 #e8603f,
-    0 4px 0 #d9502f,
-    0 6px 0 #c94322,
-    0 8px 0 #b8391b,
-    0 18px 30px rgb(120 40 20 / 0.35);
-}
-:root[data-variant='a'] [data-hero-grid] {
-  grid-template-columns: minmax(0, 1fr);
-  justify-items: center;
-  text-align: center;
-  max-width: 980px;
-  border-radius: 36px;
-  margin-block: 0 40px;
-}
-:root[data-variant='a'] [data-hero-copy] p {
-  margin-inline: auto;
-}
-:root[data-variant='a'] [data-hero-side] {
-  width: min(100%, 620px);
-  text-align: left;
-}
-:root[data-variant='a'] [data-hero-title] {
-  background: transparent;
-}
 
 /* ---- B · Riso Poster: two-ink overprint, halftone, ticket stub ------------ */
-:root[data-variant='b'] {
-  --panel: #f6f1e4;
-  --surface: #fffdf6;
-  --rule: #d9cfb6;
-  --steel: #5a5446;
-  --ink: #1b1a3a;
-  --alert: #ff4f9a;
-  --alert-hover: #ff77b2;
-  --hero-bg: #f6f1e4;
-  --hero-ink: #1b1a3a;
-  --hero-mute: #5a5446;
-  --hero-line: #1b1a3a;
-  --hero-box: #fffdf6;
-  --hero-face: var(--font-poster);
-  --title: #ff4f9a;
-  --hero-alpha: 40%;
-}
-:root[data-variant='b'][data-theme='dark'] {
-  --panel: #12122a;
-  --surface: #1b1b3a;
-  --rule: #2f2f5c;
-  --steel: #b7b3d6;
-  --ink: #f6f1e4;
-  --hero-bg: #16163a;
-  --hero-ink: #f6f1e4;
-  --hero-mute: #b7b3d6;
-  --hero-line: #f6f1e4;
-  --hero-box: #0d0d22;
-}
-:root[data-variant='b'] [data-hero-title] {
-  background-image: radial-gradient(
-    color-mix(in srgb, var(--hero-ink) 18%, transparent) 1.2px,
-    transparent 1.4px
-  );
-  background-size: 9px 9px;
-}
-:root[data-variant='b'] .vy-title {
-  transform: rotate(-3deg);
-  text-shadow: 7px 5px 0 rgb(47 91 255 / 0.85);
-  mix-blend-mode: multiply;
-}
-:root[data-variant='b'][data-theme='dark'] .vy-title {
-  mix-blend-mode: screen;
-}
-:root[data-variant='b'] #hero-title {
-  font-size: clamp(3rem, 6vw, 6rem);
-  line-height: 0.92;
-  text-transform: none;
-  letter-spacing: -0.01em;
-}
-:root[data-variant='b'] [data-hero-side] {
-  border: 2px dashed var(--hero-line);
-  padding: 22px;
-  transform: rotate(1.5deg);
-  background: var(--hero-box);
-}
 
 /* ---- C · Amber Terminal: amber CRT, console frames, typewriter ------------- */
-:root[data-variant='c'] {
-  --panel: #e9e2c8;
-  --surface: #f4efdc;
-  --rule: #b9ae86;
-  --steel: #4d4a3a;
-  --ink: #1d2a28;
-  --alert: #1f6f6a;
-  --alert-hover: #2a8a84;
-  --hero-bg: #efe7cb;
-  --hero-ink: #1d2a28;
-  --hero-mute: #5a5a46;
-  --hero-line: #8f845c;
-  --hero-box: #f7f2e0;
-  --hero-face: var(--font-typewriter);
-  --title: #1f6f6a;
-  --hero-alpha: 78%;
-}
-:root[data-variant='c'][data-theme='dark'] {
-  --panel: #120d06;
-  --surface: #1c140a;
-  --rule: #3a2b12;
-  --steel: #c9a66b;
-  --ink: #ffd88a;
-  --alert: #ffb000;
-  --alert-hover: #ffc640;
-  --hero-bg: #160f06;
-  --hero-ink: #ffcf70;
-  --hero-mute: #b8904a;
-  --hero-line: #5a4116;
-  --hero-box: #0c0803;
-  --title: #ffb000;
-}
-:root[data-variant='c'] [data-hero-title]::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    repeating-linear-gradient(to bottom, rgb(0 0 0 / 0.2) 0 1px, transparent 1px 3px),
-    radial-gradient(ellipse at center, transparent 50%, rgb(0 0 0 / 0.5));
-  z-index: 2;
-}
-:root[data-variant='c'] [data-hero-title]::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(to bottom, transparent, rgb(255 255 255 / 0.07), transparent) 0 0 /
-    100% 30% no-repeat;
-  animation: vy-roll 6s linear infinite;
-  z-index: 2;
-}
-:root[data-variant='c'] .vy-title {
-  text-shadow:
-    0 0 22px color-mix(in srgb, var(--title) 60%, transparent),
-    2px 0 0 rgb(0 200 200 / 0.35),
-    -2px 0 0 rgb(255 80 40 / 0.35);
-  animation: vy-flicker 4s steps(1) infinite;
-}
-:root[data-variant='c'] [data-hero-grid] {
-  border: 1px solid var(--hero-line);
-  margin: 0 24px 32px;
-  max-width: calc(1440px - 48px);
-}
-:root[data-variant='c'] #hero-title::before {
-  content: '> ';
-  color: var(--title);
-}
-:root[data-variant='c'] [data-hero-side] {
-  border: 1px solid var(--hero-line);
-  padding: 18px;
-  position: relative;
-}
 
 /* ---- D · Brutal Zine: hard borders, highlighter, sticker, ticker --------- */
-:root[data-variant='d'] {
-  --panel: #f2f2ec;
-  --surface: #ffffff;
-  --rule: #0a0a0a;
-  --steel: #3a3a3a;
-  --ink: #0a0a0a;
-  --alert: #c6ff00;
-  --alert-hover: #d8ff4d;
-  --hero-bg: #ffffff;
-  --hero-ink: #0a0a0a;
-  --hero-mute: #3a3a3a;
-  --hero-line: #0a0a0a;
-  --hero-box: #ffffff;
-  --hero-face: var(--font-brutal);
-  --title: #0a0a0a;
-  --hero-alpha: 82%;
-}
-:root[data-variant='d'][data-theme='dark'] {
-  --panel: #0a0a0a;
-  --surface: #151515;
-  --rule: #f2f2ec;
-  --steel: #b5b5a8;
-  --ink: #f2f2ec;
-  --hero-bg: #0a0a0a;
-  --hero-ink: #f2f2ec;
-  --hero-mute: #b5b5a8;
-  --hero-line: #f2f2ec;
-  --hero-box: #0a0a0a;
-  --title: #c6ff00;
-}
-:root[data-variant='d'] [data-hero-title] {
-  border-block: 4px solid var(--hero-line);
-}
-
-:root[data-variant='d'] .vy-title {
-  transform: skewX(-8deg);
-  background: linear-gradient(transparent 58%, #c6ff00 58% 88%, transparent 88%);
-}
-:root[data-variant='d'][data-theme='dark'] .vy-title {
-  background: linear-gradient(transparent 58%, #ff3d00 58% 88%, transparent 88%);
-}
-:root[data-variant='d'] #hero-title {
-  text-transform: uppercase;
-  font-size: clamp(2.6rem, 5vw, 5rem);
-  line-height: 0.9;
-  text-shadow: 4px 4px 0 #ff3d00;
-}
-:root[data-variant='d'] [data-hero-grid] {
-  border-bottom: 4px solid var(--hero-line);
-}
-:root[data-variant='d'] [data-hero-side] {
-  border: 4px solid var(--hero-line);
-  padding: 20px;
-  background: var(--hero-box);
-  box-shadow: 10px 10px 0 var(--hero-line);
-  transform: rotate(-1deg);
-}
 
 /* ---- E · Bauhaus: geometric face, primary blocks, asymmetric ------------- */
-:root[data-variant='e'] {
-  --panel: #f4efe6;
-  --surface: #fffdf8;
-  --rule: #1a1a1a;
-  --steel: #4a4a4a;
-  --ink: #1a1a1a;
-  --alert: #ffc300;
-  --alert-hover: #ffd34d;
-  --hero-bg: #f4efe6;
-  --hero-ink: #1a1a1a;
-  --hero-mute: #4a4a4a;
-  --hero-line: #1a1a1a;
-  --hero-box: #fffdf8;
-  --hero-face: var(--font-geo);
-  --title: #1a1a1a;
-  --hero-alpha: 60%;
-}
-:root[data-variant='e'][data-theme='dark'] {
-  --panel: #14161c;
-  --surface: #1d2029;
-  --rule: #f4efe6;
-  --steel: #b9bdc9;
-  --ink: #f4efe6;
-  --hero-bg: #14161c;
-  --hero-ink: #f4efe6;
-  --hero-mute: #b9bdc9;
-  --hero-line: #f4efe6;
-  --hero-box: #0c0d11;
-  --title: #f4efe6;
-}
-:root[data-variant='e'] .vy-letter:nth-child(3n + 1) {
-  color: #e63946;
-}
-:root[data-variant='e'] .vy-letter:nth-child(3n + 2) {
-  color: #1d4ed8;
-}
-:root[data-variant='e'] .vy-letter:nth-child(3n) {
-  color: #ffc300;
-}
-:root[data-variant='e'] #hero-title {
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  border-left: 18px solid #e63946;
-  padding-left: 22px;
-}
-:root[data-variant='e'] [data-hero-side] {
-  border-top: 14px solid #1d4ed8;
-  padding-top: 18px;
-}
+
 /* The asymmetric split only where there is room for it; phones stack copy first. */
-@media (min-width: 1024px) {
-  :root[data-variant='e'] [data-hero-grid] {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-  }
-  :root[data-variant='e'] [data-hero-side] {
-    order: -1;
-  }
-}
-:root[data-variant='e'] .rounded-md,
-:root[data-variant='e'] .rounded-lg,
-:root[data-variant='e'] .rounded-pass {
-  border-radius: 0;
-}
 
 @keyframes vy-roll {
   from {
@@ -1093,147 +843,15 @@ a:hover > .brand-mark .brand-grip {
 }
 
 /* A · Soft Clay: pillowy cards, centred section heads, clay numerals */
-:root[data-variant='a'] main > div h2 {
-  text-transform: none;
-  letter-spacing: -0.01em;
-}
-:root[data-variant='a'] main > div .bg-surface {
-  border: 0;
-  border-radius: 28px;
-  box-shadow:
-    inset 0 2px 0 rgb(255 255 255 / 0.7),
-    0 18px 40px -18px rgb(140 60 40 / 0.35);
-}
-:root[data-variant='a'][data-theme='dark'] main > div .bg-surface {
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.08),
-    0 18px 40px -18px rgb(0 0 0 / 0.7);
-}
-:root[data-variant='a'] main > div .figure:not(h3) {
-  text-shadow:
-    0 2px 0 #e8603f,
-    0 4px 0 #c94322;
-}
-:root[data-variant='a'] main > div .border-rule {
-  border-color: transparent;
-}
 
 /* B · Riso Poster: halftone paper, ink underlines, tilted tickets */
-:root[data-variant='b'] body {
-  background-image: radial-gradient(
-    color-mix(in srgb, var(--ink) 9%, transparent) 1px,
-    transparent 1.3px
-  );
-  background-size: 8px 8px;
-}
-:root[data-variant='b'] main > div h2 {
-  text-transform: none;
-  font-size: clamp(2.2rem, 4vw, 3.6rem);
-  text-decoration: underline 6px #ff4f9a;
-  text-underline-offset: 8px;
-}
-:root[data-variant='b'] main > div .bg-surface {
-  border: 2px dashed var(--ink);
-  border-radius: 4px;
-}
-:root[data-variant='b'] main > div .grid > .bg-surface:nth-child(odd) {
-  transform: rotate(-0.6deg);
-}
-:root[data-variant='b'] main > div .grid > .bg-surface:nth-child(even) {
-  transform: rotate(0.6deg);
-}
-:root[data-variant='b'] main > div .figure:not(h3) {
-  color: #ff4f9a;
-  text-shadow: 4px 3px 0 rgb(47 91 255 / 0.8);
-}
 
 /* C · Amber Terminal: case-file sections, ruled paper, form-strip cards */
-:root[data-variant='c'] body {
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0 31px,
-    color-mix(in srgb, var(--rule) 45%, transparent) 31px 32px
-  );
-}
-:root[data-variant='c'] main > div h2::before {
-  content: '§ ';
-  color: var(--alert);
-}
-:root[data-variant='c'] main > div .bg-surface {
-  border: 1px solid var(--rule);
-  border-radius: 0;
-  box-shadow: inset 0 6px 0 var(--rule);
-}
-:root[data-variant='c'] main > div .figure:not(h3) {
-  font-family: var(--font-typewriter);
-  color: var(--alert);
-}
-:root[data-variant='c'][data-theme='dark'] main > div .figure:not(h3) {
-  text-shadow: 0 0 16px rgb(255 176 0 / 0.5);
-}
 
 /* D · Brutal Zine: hard edges, hard shadows, highlighter heads */
-:root[data-variant='d'] main > div h2 {
-  text-transform: uppercase;
-  display: inline;
-  justify-self: start;
-  background: linear-gradient(transparent 55%, #c6ff00 55% 92%, transparent 92%);
-}
-:root[data-variant='d'][data-theme='dark'] main > div h2 {
-  background: linear-gradient(transparent 55%, #ff3d00 55% 92%, transparent 92%);
-}
-:root[data-variant='d'] main > div .bg-surface {
-  border: 3px solid var(--ink);
-  border-radius: 0;
-  box-shadow: 8px 8px 0 var(--ink);
-}
-:root[data-variant='d'] main > div .border-rule {
-  border-color: var(--ink);
-  border-width: 3px;
-}
-:root[data-variant='d'] main > div .figure:not(h3) {
-  text-shadow: 4px 4px 0 #ff3d00;
-}
 
 /* E · Bauhaus: primary-coded cards, red-square heads, flat geometry */
 /* Hanging indent: a wrapped head's second line starts under the text, not under the square. */
-:root[data-variant='e'] main > div h2 {
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  padding-left: 1.05em;
-  text-indent: -1.05em;
-}
-:root[data-variant='e'] main > div h2::before {
-  content: '';
-  display: inline-block;
-  width: 0.7em;
-  height: 0.7em;
-  margin-right: 0.35em;
-  background: #e63946;
-}
-:root[data-variant='e'] main > div .bg-surface {
-  border: 0;
-  border-radius: 0;
-  border-top: 10px solid #1d4ed8;
-}
-:root[data-variant='e'] main > div .grid > .bg-surface:nth-child(3n + 1) {
-  border-top-color: #e63946;
-}
-:root[data-variant='e'] main > div .grid > .bg-surface:nth-child(3n) {
-  border-top-color: #ffc300;
-}
-:root[data-variant='e'] main > div .figure:not(h3) {
-  font-family: var(--font-geo);
-}
-:root[data-variant='e'] main > div li:nth-child(3n + 1) .figure:not(h3) {
-  color: #e63946;
-}
-:root[data-variant='e'] main > div li:nth-child(3n + 2) .figure:not(h3) {
-  color: #1d4ed8;
-}
-:root[data-variant='e'] main > div li:nth-child(3n) .figure:not(h3) {
-  color: #ffc300;
-}
 
 /* ---- Concept switcher dock ---------------------------------------------- */
 /* The dock is fixed to the bottom; the footer leaves room so it never sits under it. */
@@ -1249,6 +867,85 @@ a:hover > .brand-mark .brand-grip {
 }
 .vy-switcher-label {
   color: var(--steel);
+}
+.vy-switcher-pop {
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  border: 1px solid var(--rule);
+  box-shadow: 0 24px 60px -18px rgb(0 0 0 / 0.5);
+  backdrop-filter: blur(12px);
+  animation: vy-pop-in var(--dur-fast) var(--ease-out-expo) both;
+}
+@keyframes vy-pop-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+.vy-switcher-pop [role='listbox'] {
+  scrollbar-width: none;
+}
+.vy-kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.5em;
+  height: 1.5em;
+  padding-inline: 0.3em;
+  border: 1px solid var(--rule);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-keycap);
+  font: 600 11px/1 var(--font-mono);
+  color: var(--ink);
+  background: var(--surface);
+}
+.vy-chip {
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.12);
+}
+/* Chip colours: both themes ride as --c-l / --c-d; the theme attribute picks,
+   so the chip is right on its first frame. */
+.vy-chip i {
+  background: var(--c-l);
+}
+:root[data-theme='dark'] .vy-chip i {
+  background: var(--c-d);
+}
+/* A draft concept's tag in the picker (?drafts=1, concepts/README.md). */
+.vy-draft {
+  align-self: center;
+  padding: 1px 5px;
+  border: 1px dashed currentColor;
+  border-radius: 999px;
+  font: 600 9px/1.3 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+/* Phones / touch: the dock steps aside while the before/after demo fills the
+   bottom of the screen (VariantSwitcher's useYield, or the demo's own
+   html[data-demo-focus]); it slides back once the demo has scrolled past. */
+.vy-switcher {
+  transition:
+    transform var(--dur-fast, 200ms) var(--ease-out-expo, ease-out),
+    opacity var(--dur-fast, 200ms) ease;
+}
+.vy-switcher[data-yield] {
+  transform: translateY(calc(100% + 24px));
+  opacity: 0;
+  pointer-events: none;
+}
+@media (max-width: 639px), (pointer: coarse) {
+  :root[data-demo-focus] .vy-switcher {
+    transform: translateY(calc(100% + 24px));
+    opacity: 0;
+    pointer-events: none;
+  }
+  :root[data-demo-focus] .vy-switcher-pop {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vy-switcher {
+    transition: none;
+  }
 }
 .vy-swatch-a {
   background: conic-gradient(#ff9a76, #ffd166, #a78bfa, #ff9a76);
@@ -1272,27 +969,10 @@ a:hover > .brand-mark .brand-grip {
 }
 
 @media (max-width: 639px) {
-  :root[data-variant='c'] [data-hero-grid] {
-    margin: 0 12px 24px;
-  }
-  :root[data-variant='d'] [data-hero-side] {
-    box-shadow: 6px 6px 0 var(--hero-line);
-    transform: none;
-  }
-  :root[data-variant='b'] [data-hero-side] {
-    transform: none;
-  }
-  :root[data-variant='a'] [data-hero-grid] {
-    border-radius: 24px;
-    margin-inline: 12px;
-  }
   .vy-switcher {
     bottom: 12px;
   }
   /* Line-based scenes cross the stacked copy on phones; keep them faint. */
-  :root[data-variant='c']:not([data-scrolled]) .vy-scene {
-    opacity: 0.35;
-  }
 }
 
 /* ---- "Now showing" split-flap tiles, styled per concept ------------------ */
@@ -1307,59 +987,7 @@ a:hover > .brand-mark .brand-grip {
   background: var(--flap-ink, var(--hero-bg));
   opacity: 0.35;
 }
-:root[data-variant='a'] {
-  --flap-bg: #ff7a59;
-  --flap-ink: #fff8f3;
-}
-:root[data-variant='a'] .flap-cell {
-  border-radius: 0.22em;
-}
-:root[data-variant='b'] {
-  --flap-bg: #ff4f9a;
-  --flap-ink: #fffdf6;
-}
-:root[data-variant='b'] .flap-cell {
-  border-radius: 2px;
-  box-shadow: 0.08em 0.06em 0 rgb(47 91 255 / 0.85);
-}
-:root[data-variant='c'] {
-  --flap-bg: #1d2a28;
-  --flap-ink: #e9e2c8;
-}
-:root[data-variant='c'][data-theme='dark'] {
-  --flap-bg: #2a1d08;
-  --flap-ink: #ffb000;
-}
-:root[data-variant='c'][data-theme='dark'] .flap-cell {
-  text-shadow: 0 0 8px rgb(255 176 0 / 0.6);
-}
-:root[data-variant='d'] {
-  --flap-bg: #0a0a0a;
-  --flap-ink: #c6ff00;
-}
-:root[data-variant='d'] .flap-cell {
-  border-radius: 0;
-}
-:root[data-variant='d'][data-theme='dark'] {
-  --flap-bg: #c6ff00;
-  --flap-ink: #0a0a0a;
-}
-:root[data-variant='e'] {
-  --flap-ink: #ffffff;
-}
-:root[data-variant='e'] .flap-cell {
-  border-radius: 0;
-}
-:root[data-variant='e'] .flap-cell:nth-child(3n + 1) {
-  --flap-bg: #e63946;
-}
-:root[data-variant='e'] .flap-cell:nth-child(3n + 2) {
-  --flap-bg: #1d4ed8;
-}
-:root[data-variant='e'] .flap-cell:nth-child(3n) {
-  --flap-bg: #ffc300;
-  --flap-ink: #1a1a1a;
-}
+
 :root[data-variant] .flap-cell.is-blank {
   background: transparent;
   box-shadow: none;
@@ -1379,12 +1007,6 @@ a:hover > .brand-mark .brand-grip {
   box-shadow: none;
   transform: none;
   backdrop-filter: none;
-}
-:root[data-variant='d'] main > div .bg-surface .bg-surface {
-  border-color: var(--ink);
-}
-:root[data-variant='e'] main > div .bg-surface .bg-surface {
-  border-radius: 0;
 }
 
 /* ---- "a fresh look": the headline word that restyles the page ----------- */
@@ -1451,182 +1073,26 @@ a:hover > .brand-mark .brand-grip {
 }
 
 /* ---- F · Cut & Paste: ransom-note collage on kraft paper ----------------- */
-:root[data-variant='f'] {
-  --panel: #e7d9bf;
-  --surface: #fbf7ee;
-  --rule: #c9b48f;
-  --steel: #5b4c36;
-  --ink: #1b1b1b;
-  --alert: #e5322d;
-  --alert-hover: #f04e49;
-  --hero-bg: #e7d9bf;
-  --hero-ink: #1b1b1b;
-  --hero-mute: #5b4c36;
-  --hero-line: #1b1b1b;
-  --hero-box: #fbf7ee;
-  --hero-face: var(--font-ransom);
-  --title: #1b1b1b;
-  --hero-alpha: 45%;
-  --flap-bg: #fbf7ee;
-  --flap-ink: #1b1b1b;
-}
-:root[data-variant='f'][data-theme='dark'] {
-  --panel: #1d1a16;
-  --surface: #2a2620;
-  --rule: #4a4233;
-  --steel: #c8b896;
-  --ink: #f3ead6;
-  --alert: #ff5a4f;
-  --alert-hover: #ff7a70;
-  --hero-bg: #1d1a16;
-  --hero-ink: #f3ead6;
-  --hero-mute: #c8b896;
-  --hero-line: #f3ead6;
-  --hero-box: #2a2620;
-  --title: #1b1b1b;
-}
+
 /* Kraft fibres over the whole ground. */
-:root[data-variant='f'] body {
-  background-image:
-    repeating-linear-gradient(83deg, rgb(120 90 50 / 0.05) 0 1px, transparent 1px 7px),
-    repeating-linear-gradient(-12deg, rgb(255 255 255 / 0.06) 0 1px, transparent 1px 11px);
-}
+
 /* Title: every letter cut out of a different scrap and stuck down crooked. */
-:root[data-variant='f'] .vy-title {
-  gap: 0.2em;
-  font-size: clamp(1.9rem, 10vw, 8rem);
-}
-:root[data-variant='f'] .vy-letter {
-  padding: 0.04em 0.1em 0.08em;
-  background: #fbf7ee;
-  color: #1b1b1b;
-  box-shadow: 0.04em 0.06em 0 rgb(0 0 0 / 0.25);
-  clip-path: polygon(2% 4%, 97% 0, 100% 93%, 4% 100%);
-}
-:root[data-variant='f'] .vy-letter:nth-child(4n + 1) {
-  transform: rotate(-6deg);
-  background: #e5322d;
-  color: #fbf7ee;
-}
-:root[data-variant='f'] .vy-letter:nth-child(4n + 2) {
-  transform: rotate(4deg) translateY(0.06em);
-}
-:root[data-variant='f'] .vy-letter:nth-child(4n + 3) {
-  transform: rotate(-2deg);
-  background: #2346c8;
-  color: #fbf7ee;
-}
-:root[data-variant='f'] .vy-letter:nth-child(4n) {
-  transform: rotate(7deg) translateY(-0.04em);
-  background: #f2c94c;
-}
+
 /* Headline: newsprint strips pasted line by line. */
-:root[data-variant='f'] #hero-title {
-  text-transform: uppercase;
-  font-size: clamp(2rem, 4vw, 3.8rem);
-  line-height: 1.25;
-}
-:root[data-variant='f'] #hero-title > :not(.vy-fresh) {
-  background: none;
-}
-:root[data-variant='f'] #hero-title {
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
-}
-:root[data-variant='f'] #hero-title .vy-fresh {
-  background: #e5322d;
-  color: #fbf7ee;
-  padding: 0 0.15em;
-  text-decoration-color: #fbf7ee;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
-}
+
 /* Cards: paper notes taped to the board. */
-:root[data-variant='f'] main > div .bg-surface,
-:root[data-variant='f'] [data-hero-side] {
-  position: relative;
-  border: 0;
-  border-radius: 2px;
-  background: var(--surface);
-  box-shadow:
-    0 1px 0 rgb(0 0 0 / 0.08),
-    0 10px 18px -12px rgb(60 40 10 / 0.45);
-}
-:root[data-variant='f'] [data-hero-side] {
-  /* Inside the hero, --surface is the text colour; the note is the hero box. */
-  background: var(--hero-box);
-  padding: 26px 22px 22px;
-  transform: rotate(0.8deg);
-}
-:root[data-variant='f'] main > div .grid > .bg-surface:nth-child(odd) {
-  transform: rotate(-0.5deg);
-}
-:root[data-variant='f'] main > div .grid > .bg-surface:nth-child(even) {
-  transform: rotate(0.5deg);
-}
+
 /* Tape goes on cards, not on copy buttons or command blocks, where it covers the label. */
-:root[data-variant='f'] [data-hero-side]::before,
-:root[data-variant='f'] main > div > section > .bg-surface::before,
-:root[data-variant='f']
-  main
-  > div
-  .grid
-  > .bg-surface:not(button, [data-slot='command-copy'])::before {
-  content: '';
-  position: absolute;
-  top: -9px;
-  left: 50%;
-  width: 72px;
-  height: 20px;
-  translate: -50% 0;
-  rotate: -3deg;
-  background: rgb(242 201 76 / 0.6);
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
-  pointer-events: none;
-}
+
 /* Section heads: label-maker strips. */
-:root[data-variant='f'] main > div h2 {
-  justify-self: start;
-  display: inline;
-  padding: 0.08em 0.3em;
-  background: #1b1b1b;
-  color: #fbf7ee;
-  text-transform: uppercase;
-  box-shadow: 0.06em 0.06em 0 #e5322d;
-}
-:root[data-variant='f'][data-theme='dark'] main > div h2 {
-  background: #f3ead6;
-  color: #1b1b1b;
-}
-:root[data-variant='f'] main > div .figure:not(h3) {
-  color: #e5322d;
-}
+
 /* "Now showing" tiles: alternating scraps. */
-:root[data-variant='f'] .flap-cell {
-  border-radius: 1px;
-  box-shadow: 0.05em 0.05em 0 rgb(0 0 0 / 0.3);
-}
-:root[data-variant='f'] .flap-cell:nth-child(3n + 1) {
-  --flap-bg: #e5322d;
-  --flap-ink: #fbf7ee;
-}
-:root[data-variant='f'] .flap-cell:nth-child(3n) {
-  --flap-bg: #2346c8;
-  --flap-ink: #fbf7ee;
-}
-@media (max-width: 639px) {
-  :root[data-variant='f'] [data-hero-side] {
-    transform: none;
-  }
-}
 
 /* ---- Before/after divider with a slight lean ----------------------------- */
 /* --lean is how far the line sits right of the split at the top (and left at
-   the bottom). One polygon edge drives the after pane, the shadow and the
-   line, so they always coincide; the grip sits on the midpoint. */
-.vy-split-clip,
-.vy-split-shade,
-.vy-split-line {
+   the bottom). The stage carries it; the after pane's clip and the divider
+   both read it, so they always coincide; the grip sits on the midpoint. */
+.vy-split {
   --lean: 28px;
 }
 .vy-split-clip {
@@ -1637,29 +1103,31 @@ a:hover > .brand-mark .brand-grip {
     calc(var(--split) - var(--lean)) 100%
   );
 }
-.vy-split-shade {
-  /* A soft band of shade the line casts on the after side. */
-  background: rgb(0 0 0 / 0.1);
-  clip-path: polygon(
-    calc(var(--split) + var(--lean)) 0,
-    calc(var(--split) + var(--lean) + 18px) 0,
-    calc(var(--split) - var(--lean) + 18px) 100%,
-    calc(var(--split) - var(--lean)) 100%
-  );
+/*
+ * The divider: a light core in a dark outline, with a soft shadow either
+ * side, so it reads on a white page, a black one and a busy photo alike.
+ * It is a thin element moved and tilted by transform (the tilt, --lean-a,
+ * is set from the stage height so it meets the clip's edge exactly), so a
+ * drag never repaints the stage; the shadow sits on the line alone.
+ */
+.vy-divider {
+  width: 2px;
+  margin-left: -1px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.62),
+    0 0 6px 1px rgb(0 0 0 / 0.38),
+    0 0 14px 2px rgb(0 0 0 / 0.16);
 }
-.vy-split-line {
-  background: var(--ink);
-  clip-path: polygon(
-    calc(var(--split) + var(--lean) - 1px) 0,
-    calc(var(--split) + var(--lean) + 1px) 0,
-    calc(var(--split) - var(--lean) + 1px) 100%,
-    calc(var(--split) - var(--lean) - 1px) 100%
-  );
+@media (pointer: coarse) {
+  /* Thicker under a thumb. */
+  .vy-divider {
+    width: 3px;
+    margin-left: -1.5px;
+  }
 }
 @media (max-width: 639px) {
-  .vy-split-clip,
-  .vy-split-shade,
-  .vy-split-line {
+  .vy-split {
     --lean: 14px;
   }
 }
@@ -1712,74 +1180,7 @@ a:hover > .brand-mark .brand-grip {
   --steel: var(--board-mute);
   --rule: var(--board-line);
 }
-:root[data-variant='a'] {
-  --board-bg: #2a1630;
-  --board-raised: #3a2242;
-  --board-line: #553363;
-  --board-mute: #d9b8c4;
-  --board-text: #fff1ea;
-  --board-deep: #1a0e1e;
-  --board-ok: #ff7a59;
-}
-:root[data-variant='b'] {
-  --board-bg: #1b1a3a;
-  --board-raised: #2a2858;
-  --board-line: #3c3a72;
-  --board-mute: #c9c5ea;
-  --board-text: #fffdf6;
-  --board-deep: #0e0d22;
-  --board-ok: #ff4f9a;
-}
-:root[data-variant='c'] {
-  --board-bg: #1d2a28;
-  --board-raised: #263836;
-  --board-line: #3b524e;
-  --board-mute: #b9c9c2;
-  --board-text: #f4efdc;
-  --board-deep: #0f1716;
-  --board-ok: #3fb6a8;
-}
-:root[data-variant='c'][data-theme='dark'] {
-  --board-bg: #1c140a;
-  --board-raised: #2a1e0e;
-  --board-line: #4a3512;
-  --board-mute: #c9a66b;
-  --board-text: #ffcf70;
-  --board-deep: #0c0803;
-  --board-ok: #ffb000;
-}
-:root[data-variant='d'] {
-  --board-bg: #0a0a0a;
-  --board-raised: #1c1c1c;
-  --board-line: #3a3a3a;
-  --board-mute: #b5b5a8;
-  --board-text: #f2f2ec;
-  --board-deep: #000000;
-  --board-ok: #c6ff00;
-}
-:root[data-variant='e'] {
-  --board-bg: #1d4ed8;
-  --board-raised: #2b5ee8;
-  --board-line: #6a8ff2;
-  --board-mute: #dbe4ff;
-  --board-text: #ffffff;
-  --board-deep: #0f2a80;
-  --board-ok: #ffc300;
-}
-:root[data-variant='e'][data-theme='dark'] {
-  --board-bg: #1a3fae;
-  --board-raised: #2450c8;
-  --board-line: #4f74e0;
-}
-:root[data-variant='f'] {
-  --board-bg: #1b1b1b;
-  --board-raised: #2b2b2b;
-  --board-line: #474747;
-  --board-mute: #cfc6b3;
-  --board-text: #fbf7ee;
-  --board-deep: #000000;
-  --board-ok: #e5322d;
-}
+
 /* Toggle chips on a board use the accent; keep their label dark enough. */
 :root[data-variant='f'] .on-slate [aria-pressed='true'],
 :root[data-variant='b'] .on-slate [aria-pressed='true'] {
@@ -1797,27 +1198,7 @@ a:hover > .brand-mark .brand-grip {
 .vy-blobs {
   opacity: var(--blob-o, 0.7);
 }
-:root[data-variant='a'] {
-  --blob-o: 0.8;
-}
-:root[data-variant='b'] {
-  --blob-o: 0.6;
-}
-:root[data-variant='c'] {
-  --blob-o: 0.45;
-}
-:root[data-variant='d'] {
-  --blob-o: 0.65;
-}
-:root[data-variant='e'] {
-  --blob-o: 0.55;
-}
-:root[data-variant='f'] {
-  --blob-o: 0.5;
-}
-:root[data-variant='g'] {
-  --blob-o: 0.75;
-}
+
 :root[data-scrolled] .vy-blobs {
   opacity: 0.16;
 }
@@ -1857,9 +1238,7 @@ a:hover > .brand-mark .brand-grip {
 :root[data-variant='f'] {
   --on-alert: #ffffff;
 }
-:root[data-variant='c'][data-theme='dark'] {
-  --on-alert: #111111;
-}
+
 :root[data-variant] [role='group'][aria-label='Redesigns'] button {
   background: var(--hero-box);
   color: var(--hero-ink);
@@ -2190,47 +1569,7 @@ header.vy-header-glass {
 }
 
 /* ---- G · Candy 3D: extruded glossy letters, pastel candy ground ---------- */
-:root[data-variant='g'] {
-  --panel: #f6f2ff;
-  --surface: #ffffff;
-  --rule: #ddd3fb;
-  --steel: #5b5280;
-  --ink: #1a1033;
-  --alert: #7c5cff;
-  --alert-hover: #9479ff;
-  --on-alert: #ffffff;
-  --hero-bg: #f1ebff;
-  --hero-ink: #1a1033;
-  --hero-mute: #5b5280;
-  --hero-line: #cfc2fa;
-  --hero-box: #ffffff;
-  --hero-face: var(--font-clay);
-  --title: #7c5cff;
-  --hero-alpha: 40%;
-  --board-bg: #1a1033;
-  --board-raised: #2a1c52;
-  --board-line: #43307a;
-  --board-mute: #c9bff0;
-  --board-text: #ffffff;
-  --board-deep: #0d0820;
-  --board-ok: #ff5fa2;
-  --flap-bg: #7c5cff;
-  --flap-ink: #ffffff;
-  --blob-o: 0.7;
-}
-:root[data-variant='g'][data-theme='dark'] {
-  --panel: #0f0a20;
-  --surface: #1a1236;
-  --rule: #33255f;
-  --steel: #b7aee0;
-  --ink: #f4f0ff;
-  --hero-bg: #130c29;
-  --hero-ink: #f4f0ff;
-  --hero-mute: #b7aee0;
-  --hero-line: #3d2c70;
-  --hero-box: #0b0718;
-  --title: #a58bff;
-}
+
 .vy-letters3d {
   pointer-events: none;
 }
@@ -2252,34 +1591,7 @@ header.vy-header-glass {
     color 0.6s ease-in,
     text-shadow 0.6s ease-in;
 }
-:root[data-variant='g'] main > div h2 {
-  text-transform: none;
-  text-shadow: 0 2px 0 color-mix(in srgb, currentColor 55%, #1a1033);
-}
-:root[data-variant='g'] main > div .bg-surface {
-  border: 0;
-  border-radius: 22px;
-  box-shadow:
-    0 1px 0 rgb(255 255 255 / 0.8) inset,
-    0 18px 40px -20px rgb(124 92 255 / 0.55);
-}
-:root[data-variant='g'] [data-hero-side] {
-  background: var(--hero-box);
-  border-radius: 22px;
-  padding: 22px;
-  box-shadow: 0 18px 40px -20px rgb(124 92 255 / 0.55);
-}
-:root[data-variant='g'] .flap-cell:nth-child(5n + 1) {
-  --flap-bg: #ff5fa2;
-}
-:root[data-variant='g'] .flap-cell:nth-child(5n + 3) {
-  --flap-bg: #22c3ee;
-  --flap-ink: #0d0820;
-}
-:root[data-variant='g'] .flap-cell:nth-child(5n + 4) {
-  --flap-bg: #ffb020;
-  --flap-ink: #0d0820;
-}
+
 .vy-swatch-g {
   background: conic-gradient(#ff5fa2, #7c5cff, #22c3ee, #ffb020, #ff5fa2);
 }
@@ -2351,20 +1663,8 @@ main > div p {
 .vy-backdrop {
   contain: strict;
 }
-/* The server-rendered art (BackdropPoster): only the current concept's shows,
-   and none on the agent view. */
-[data-art] {
-  display: none;
-}
-:root[data-variant='a'] [data-art='a'],
-:root[data-variant='b'] [data-art='b'],
-:root[data-variant='c'] [data-art='c'],
-:root[data-variant='d'] [data-art='d'],
-:root[data-variant='e'] [data-art='e'],
-:root[data-variant='f'] [data-art='f'],
-:root[data-variant='g'] [data-art='g'] {
-  display: block;
-}
+/* The server-rendered art (BackdropPoster) shows only the current concept's
+   piece through its own inline <style>, generated from the live concept list. */
 :root[data-audience='agent'] .vy-backdrop-art {
   display: none;
 }
@@ -2376,11 +1676,6 @@ main > div p {
   header.vy-header-glass {
     backdrop-filter: none;
     background: color-mix(in srgb, var(--panel) 94%, transparent) !important;
-  }
-  :root[data-variant='a'] .vy-title {
-    text-shadow:
-      0 4px 0 #d9502f,
-      0 8px 0 #b8391b;
   }
 }
 
@@ -2476,82 +1771,6 @@ main > div p {
 }
 
 /* ---- Backdrop art (BackdropArt.tsx): one look per concept ---------------- */
-:root[data-variant='a'] {
-  --art-1: #ffb59a;
-  --art-2: #ffd98a;
-  --art-3: #c9b8ff;
-  --art-hi: #fff6ef;
-  --art-shadow: #7a3a2a;
-}
-:root[data-variant='a'][data-theme='dark'] {
-  --art-1: #c86a55;
-  --art-2: #c99a4e;
-  --art-3: #7d68c9;
-  --art-hi: #f2c2ae;
-  --art-shadow: #000;
-}
-:root[data-variant='b'] {
-  --art-1: #ff4f9a;
-  --art-2: #2f5bff;
-  --art-ink: #2a2440;
-}
-:root[data-variant='b'][data-theme='dark'] {
-  --art-1: #ff5fa8;
-  --art-2: #5b7dff;
-  --art-ink: #f5efe0;
-}
-:root[data-variant='c'] {
-  --art-1: #1f6f6a;
-  --art-ink: #1d2a28;
-}
-:root[data-variant='c'][data-theme='dark'] {
-  --art-1: #ffb000;
-  --art-ink: #000;
-}
-:root[data-variant='d'] {
-  --art-1: #ff3d00;
-  --art-ink: #0a0a0a;
-}
-:root[data-variant='d'][data-theme='dark'] {
-  --art-1: #ff3d00;
-  --art-ink: #c6ff00;
-}
-:root[data-variant='e'] {
-  --art-1: #e63946;
-  --art-2: #1d4ed8;
-  --art-3: #ffc300;
-  --art-ink: #111;
-}
-:root[data-variant='e'][data-theme='dark'] {
-  --art-2: #3b6cff;
-  --art-ink: #f0ece2;
-}
-:root[data-variant='f'] {
-  --art-1: #f2c94c;
-  --art-2: #e5322d;
-  --art-3: #2346c8;
-  --art-tape: #fff7d6;
-  --art-shadow: #2a1a10;
-}
-:root[data-variant='f'][data-theme='dark'] {
-  --art-1: #c9a43a;
-  --art-2: #ff5a4f;
-  --art-3: #4a6cf0;
-  --art-tape: #e8dcb5;
-  --art-shadow: #000;
-}
-:root[data-variant='g'] {
-  --art-1: #ff5fa2;
-  --art-2: #22c3ee;
-  --art-3: #a78bfa;
-  --art-deep: #9d2a74;
-}
-:root[data-variant='g'][data-theme='dark'] {
-  --art-1: #ff4f9a;
-  --art-2: #22d3ee;
-  --art-3: #8b5cf6;
-  --art-deep: #2e0a40;
-}
 
 /* Riso paper fibre. */
 .vy-art-fibre {
@@ -2667,6 +1886,30 @@ main > div p {
     animation: none;
   }
 }
+/* Phones: only the cheapest layer (float-0) drifts; the rest hold still. */
+@media (pointer: coarse) {
+  .vy-art-float-1,
+  .vy-art-float-2,
+  .vy-art-sweep {
+    animation: none;
+  }
+  .vy-switcher,
+  .vy-switcher-pop {
+    backdrop-filter: none;
+    background: var(--surface);
+  }
+}
+/* Low perf tier (lib/perfTier.ts): every backdrop loop holds its poster frame
+   (0% = 100%, so the still is the loop's own start). While a concept swap
+   runs, loops pause so the wipe has the frame budget to itself. */
+:root[data-perf='low'] .vy-backdrop *,
+:root[data-perf='low'] .vy-backdrop *::before,
+:root[data-perf='low'] .vy-backdrop *::after {
+  animation: none !important;
+}
+:root[data-swapping] .vy-backdrop * {
+  animation-play-state: paused !important;
+}
 @keyframes vy-art-orbit {
   0%,
   100% {
@@ -2733,79 +1976,19 @@ main > div p {
   display: none;
 }
 /* Amber Terminal: a printed terminal bar. */
-:root[data-variant='c'] .vy-loadbar {
-  height: auto;
-  inset: auto auto 12px 12px;
-}
-:root[data-variant='c'] .vy-loadbar-fill {
-  display: none;
-}
-:root[data-variant='c'] .vy-loadbar-text {
-  display: block;
-  font:
-    600 12px/1 var(--font-martian),
-    monospace;
-  color: var(--art-1);
-  background: var(--panel);
-  padding: 6px 8px;
-  border: 1px solid var(--rule);
-}
+
 /* Candy: a fat, rounded gummy bar with a shine. */
-:root[data-variant='g'] .vy-loadbar {
-  height: 8px;
-  inset: 6px 12px auto;
-}
-:root[data-variant='g'] .vy-loadbar-fill {
-  border-radius: 99px;
-  background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.7), transparent 45%),
-    linear-gradient(90deg, var(--art-1), var(--art-3), var(--art-2));
-}
+
 /* Bauhaus: three primary segments. */
-:root[data-variant='e'] .vy-loadbar {
-  height: 6px;
-}
-:root[data-variant='e'] .vy-loadbar-fill {
-  background: linear-gradient(
-    90deg,
-    var(--art-1) 0 33.3%,
-    var(--art-3) 33.3% 66.6%,
-    var(--art-2) 66.6%
-  );
-}
+
 /* Clay: soft and pillowy. */
-:root[data-variant='a'] .vy-loadbar {
-  height: 6px;
-  inset: 6px 12px auto;
-}
-:root[data-variant='a'] .vy-loadbar-fill {
-  border-radius: 99px;
-  background: linear-gradient(90deg, var(--art-1), var(--art-2), var(--art-3));
-}
+
 /* Riso: halftone-dotted ink. */
-:root[data-variant='b'] .vy-loadbar {
-  height: 5px;
-}
-:root[data-variant='b'] .vy-loadbar-fill {
-  background: radial-gradient(circle, var(--art-1) 45%, transparent 50%) 0 0 / 5px 5px;
-}
+
 /* Zine: a stark black-and-acid bar. */
-:root[data-variant='d'] .vy-loadbar {
-  height: 6px;
-}
-:root[data-variant='d'] .vy-loadbar-fill {
-  background: repeating-linear-gradient(-45deg, var(--art-ink) 0 6px, var(--art-1) 6px 12px);
-}
+
 /* Cut & Paste: a strip of tape. */
-:root[data-variant='f'] .vy-loadbar {
-  height: 10px;
-  inset: 4px 10px auto;
-  rotate: -0.6deg;
-}
-:root[data-variant='f'] .vy-loadbar-fill {
-  background: color-mix(in srgb, var(--art-tape) 80%, var(--art-1));
-  opacity: 0.85;
-}
+
 @media (prefers-reduced-motion: reduce) {
   .vy-loadbar,
   .vy-loadbar-fill {
@@ -2910,5 +2093,156 @@ main > div p {
   :root.vy-reveal-ready .vy-rv-list > * {
     opacity: 1 !important;
     transform: none !important;
+  }
+}
+
+/* Tips ---------------------------------------------------------------------
+ * The bubble grows from the side facing its trigger. Calm or reduced motion
+ * keeps a plain, short fade: these selectors outrank the blanket rules that
+ * switch every other animation off. */
+.vy-tip[data-side='bottom'] {
+  --tip-from: -6px;
+}
+:root[data-motion='calm'] .vy-tip.animate-tip-in {
+  animation: tip-fade 140ms ease-out both !important;
+}
+:root[data-motion='calm'] .vy-tip.animate-tip-out {
+  animation: tip-fade-out 100ms ease-in both !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root .vy-tip.animate-tip-in {
+    animation: tip-fade 140ms ease-out both !important;
+  }
+  :root .vy-tip.animate-tip-out {
+    animation: tip-fade-out 100ms ease-in both !important;
+  }
+}
+
+/* A toast's life line is its timer, not decoration: calm and reduced motion
+   keep it running so the toast stays long enough to read, then leaves. */
+:root[data-motion='calm'] .animate-toast-life {
+  animation: toast-life 3200ms linear forwards !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root .animate-toast-life {
+    animation: toast-life 3200ms linear forwards !important;
+  }
+}
+
+/* A copy burst lifted into the top layer (from inside a tip): drop the
+   popover's own box so it stays a full-screen, see-through layer. */
+.vy-burst[popover] {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+/* Branch log: at noon and midnight each branch slides home into main. */
+@keyframes log-merge {
+  to {
+    translate: -2ch 0;
+    opacity: 0.55;
+  }
+}
+.vy-log-merge {
+  animation: log-merge 700ms var(--ease-spring) both;
+}
+
+/* ── Mobile menu ─────────────────────────────────────────────────────────
+   The button's three bars fold into an X on a spring: the outer bars slide
+   to the middle, then turn; the middle one shrinks away. The panel unrolls
+   under the header (grid rows 0fr → 1fr) and its links drop in one after
+   another; closing is quicker and all at once. Calm motion and reduced
+   motion get the end states without the travel (the global rules above). */
+.vy-burger:active {
+  transform: scale(0.88);
+}
+.vy-burger {
+  transition: transform 160ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+.vy-burger-box {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 14px;
+}
+.vy-burger-box > span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition:
+    transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    top 220ms cubic-bezier(0.2, 0.8, 0.2, 1) 180ms,
+    opacity 160ms ease;
+}
+.vy-burger-box > span:nth-child(1) {
+  top: 0;
+}
+.vy-burger-box > span:nth-child(2) {
+  top: 6px;
+}
+.vy-burger-box > span:nth-child(3) {
+  top: 12px;
+}
+/* Open: the bars meet first, then turn. */
+.vy-burger[aria-expanded='true'] .vy-burger-box > span {
+  top: 6px;
+  transition:
+    top 180ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 460ms cubic-bezier(0.34, 1.56, 0.64, 1) 140ms,
+    opacity 120ms ease 60ms;
+}
+.vy-burger[aria-expanded='true'] .vy-burger-box > span:nth-child(1) {
+  transform: rotate(45deg);
+}
+.vy-burger[aria-expanded='true'] .vy-burger-box > span:nth-child(2) {
+  transform: scaleX(0);
+  opacity: 0;
+}
+.vy-burger[aria-expanded='true'] .vy-burger-box > span:nth-child(3) {
+  transform: rotate(-45deg);
+}
+
+.vy-menu {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.vy-menu > div {
+  min-height: 0;
+  overflow: hidden;
+}
+.vy-menu[data-open='true'] {
+  grid-template-rows: 1fr;
+  transition-duration: 460ms;
+  transition-timing-function: cubic-bezier(0.22, 1.2, 0.36, 1);
+}
+.vy-menu li {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition:
+    opacity 140ms ease,
+    transform 160ms ease;
+}
+.vy-menu[data-open='true'] li {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 260ms ease calc(80ms + var(--i, 0) * 45ms),
+    transform 520ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(80ms + var(--i, 0) * 45ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .vy-burger,
+  .vy-burger-box > span,
+  .vy-menu,
+  .vy-menu li {
+    transition: none !important;
   }
 }
