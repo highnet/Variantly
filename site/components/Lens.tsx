@@ -857,7 +857,13 @@ export const Lens = () => {
             variant="lens"
             size="small"
             onClick={() => ctl.current?.commit()}
-            className={cn(!used && 'sr-only focus:not-sr-only')}
+            // A 32px chip with a 44px touch target: the hit area reaches 6px
+            // past it above and below, invisibly.
+            className={cn(
+              used
+                ? "relative before:absolute before:-inset-x-1 before:-inset-y-1.5 before:content-['']"
+                : 'sr-only focus:not-sr-only',
+            )}
           >
             Try {name}
           </Button>
