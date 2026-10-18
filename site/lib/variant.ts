@@ -18,7 +18,7 @@ import {
   swapDuration,
   type SwapOrigin,
 } from '@/lib/lensSwap';
-import { DUR, EASE } from '@/lib/motion';
+import { EASE } from '@/lib/motion';
 import { perfTier } from '@/lib/perfTier';
 import { calmMotion } from '@/lib/prefs';
 import { seekTime } from '@/lib/seek';
@@ -35,7 +35,8 @@ const apply = (v: ConceptId) => {
   flushSync(() => useSiteStore.getState().setVariant(v));
 };
 
-// The low tier skips the full-page snapshot: the hero just cross-fades in.
+// The low tier skips the full-page snapshot: the panel wipe instead. Touch
+// devices open the doorway too (shorter, lib/lensSwap).
 const cheapSwap = () => perfTier() === 'low';
 
 export type SwapOptions = {
@@ -45,6 +46,40 @@ export type SwapOptions = {
 };
 
 let swapId = 0;
+
+/*
+ * The low tier's wipe (and browsers without view transitions): no page snapshot, just one panel with a leaning edge in
+ * the outgoing concept's ink. It sweeps in, the concept swaps while the
+ * screen is covered, and it sweeps on off the other side. Transforms only,
+ * so it stays on the compositor.
+ */
+const panelWipe = (ready: Promise<unknown>, swap: () => void) => {
+  const panel = document.createElement('div');
+  panel.className = 'vy-wipe';
+  panel.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(panel);
+  const cover = panel.animate(
+    [{ transform: 'translateX(-115%)' }, { transform: 'translateX(0)' }],
+    { duration: 260, easing: 'cubic-bezier(0.65, 0, 0.35, 1)', fill: 'forwards' },
+  );
+  let swapped = false;
+  const once = () => {
+    if (!swapped) swap();
+    swapped = true;
+  };
+  // Covered and the concept loaded (or given up on): swap, then reveal.
+  return Promise.all([cover.finished, ready])
+    .then(() => {
+      once();
+      return panel.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(115%)' }], {
+        duration: 380,
+        easing: EASE.outExpo,
+        fill: 'forwards',
+      }).finished;
+    })
+    .catch(once)
+    .finally(() => panel.remove());
+};
 
 // The concept on screen: html[data-variant], set before first paint.
 export const currentVariant = (): ConceptId => {
@@ -66,17 +101,6 @@ export const setVariant = (v: ConceptId, opts: SwapOptions = {}) => {
     if (calmMotion() || seekTime() !== null) {
       apply(v);
       done();
-    } else if (cheapSwap() || !document.startViewTransition) {
-      apply(v);
-      // The hero copy cross-fades in; the title is left out: its letters
-      // morph into the new concept instead (VariantTitle).
-      const hero = document.querySelector('[data-hero-grid]');
-      const a = hero?.animate([{ opacity: 0.35 }, { opacity: 1 }], {
-        duration: DUR.fast,
-        easing: EASE.outExpo,
-      });
-      if (a) a.onfinish = a.oncancel = done;
-      else done();
     } else {
       // The new concept opens through a doorway from the trigger point
       // (lib/lensSwap, globals.css "Concept swap").
@@ -96,10 +120,19 @@ export const setVariant = (v: ConceptId, opts: SwapOptions = {}) => {
   };
   // Wait (briefly) for the concept's backdrop, look and (when it will run)
   // scene, so it lands whole instead of the old scene blanking first.
-  void Promise.race([
+  const loaded = Promise.race([
     prefetchConcept(v, !calmMotion()),
     new Promise((r) => setTimeout(r, 400)),
-  ]).then(go);
+  ]);
+  if (!calmMotion() && seekTime() === null && (cheapSwap() || !document.startViewTransition)) {
+    // The phone wipe starts on the tap and covers the load.
+    html.setAttribute('data-swapping', '');
+    void panelWipe(loaded, () => {
+      if (id === swapId) apply(v);
+    }).finally(() => {
+      if (id === swapId) html.removeAttribute('data-swapping');
+    });
+  } else void loaded.then(go);
   // Reflect it in the URL so the current concept can be shared.
   const url = new URL(location.href);
   url.searchParams.set('v', v);
