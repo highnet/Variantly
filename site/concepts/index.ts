@@ -136,10 +136,40 @@ export const prefetchConcept = (id: ConceptId, scene = false): Promise<unknown> 
   );
 };
 
-// The concept `by` steps from `id` among the shown ones (a draft being
-// previewed steps into the shown list from its own place).
+// The order the dock steps through, ordered so each step is a strong
+// contrast (material, screen, print, light...). The Lens door and the
+// headline's "You pick." offer the next one, so arrows, door and word agree.
+// Shown concepts not on the loop (drafts) follow in the switcher's order.
+const STEP_LOOP: ConceptId[] = [
+  'a',
+  'c',
+  'f',
+  'i',
+  'd',
+  't',
+  'h',
+  'g',
+  'o',
+  's',
+  'j',
+  'p',
+  'r',
+  'n',
+  'b',
+  'k',
+  'q',
+  'e',
+];
+export const stepIds = (): ConceptId[] => {
+  const shown = shownIds();
+  const loop = STEP_LOOP.filter((c) => shown.includes(c));
+  return [...loop, ...shown.filter((c) => !loop.includes(c))];
+};
+
+// The concept `by` steps from `id` along stepIds (a draft being previewed
+// steps into the list from outside it).
 export const conceptAt = (id: ConceptId, by: number) => {
-  const ids = shownIds();
+  const ids = stepIds();
   const at = ids.indexOf(id);
   if (at < 0) return ids[by > 0 ? 0 : ids.length - 1];
   return ids[(((at + by) % ids.length) + ids.length) % ids.length];

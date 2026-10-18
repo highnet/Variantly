@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button';
 import {
   CONCEPT_BY_ID,
   conceptAt,
+  stepIds,
   draftsShown,
   groupByFamily,
   prefetchConcept,
@@ -279,8 +280,9 @@ export const VariantSwitcher = () => {
   if (!current || seek !== null) return null;
 
   const meta = CONCEPT_BY_ID[current];
-  const at = list.findIndex((c) => c.id === current);
-  const count = list.length;
+  const steps = stepIds();
+  const at = current ? steps.indexOf(current) : -1;
+  const count = steps.length;
 
   const pick = (id: ConceptId, origin: SwapOrigin) => {
     setVariant(id, { origin });
