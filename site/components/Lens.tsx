@@ -181,7 +181,6 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   const glitchSeed = Math.floor(Math.random() * 1000);
   let lastRim = 0;
   let clipNow = '';
-  let suppressUntil = 0;
   let committing = false;
   let fixedOpen = false;
   let dragging = false;
@@ -445,21 +444,23 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     setTimeout(() => (committing = false), 1500);
   };
 
-  // The page took a concept (a commit or any switch): the door goes in the
-  // same task, so the switch's new snapshot has no door in it.
+  // The page took a concept (a commit or any switch). The door stays usable
+  // straight through the switch: it keeps following the pointer (or the
+  // finger mid-drag) and now shows the next concept. Only the still door
+  // closes, and a resting phone door re-seats in its corner.
   const html = document.documentElement;
   let was = html.dataset.variant;
   const mo = new MutationObserver(() => {
     if (html.dataset.variant === was) return;
     was = html.dataset.variant;
-    suppressUntil = performance.now() + 900;
     committing = false;
-    if (fixedOpen) ui.setFixed(false);
-    fixedOpen = false;
-    if (mode !== 'touch') show(false);
-    else {
+    if (fixedOpen) {
+      ui.setFixed(false);
+      fixedOpen = false;
+      if (mode !== 'touch') show(false);
+    }
+    if (mode === 'touch' && !dragging) {
       target = restRect();
-      rect = { ...target };
       wake();
     }
   });
@@ -473,9 +474,21 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
       const { w, h } = fitDoor();
       return { x: e.clientX - b.left - w / 2, y: e.clientY - b.top - h / 2, w, h };
     };
+    // Followed from the window, not the card: during a switch the view
+    // transition takes hit testing (events land on <html>), and the door
+    // should keep tracking straight through it.
+    const inside = (e: PointerEvent) => {
+      const b = card.getBoundingClientRect();
+      return (
+        e.clientX >= b.left && e.clientX <= b.right && e.clientY >= b.top && e.clientY <= b.bottom
+      );
+    };
     const onMove = (e: PointerEvent) => {
-      if (e.pointerType === 'touch' || fixedOpen) return;
-      if (performance.now() < suppressUntil || committing) return;
+      if (e.pointerType === 'touch' || fixedOpen || committing) return;
+      if (!inside(e)) {
+        if (shown) show(false);
+        return;
+      }
       // Over the Lens's own controls the door steps aside.
       if ((e.target as Element).closest('[data-lens-ui]')) return show(false);
       target = at(e);
@@ -488,18 +501,22 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     const onLeave = () => {
       if (!committing && !fixedOpen) show(false);
     };
+    // The pointer left the window altogether.
+    const onOut = (e: PointerEvent) => {
+      if (!e.relatedTarget) onLeave();
+    };
     const onClick = (e: MouseEvent) => {
       if (!shown || fixedOpen || (e.target as Element).closest('[data-lens-ui], a, button')) return;
       commit();
     };
     const onScroll = () => shown && placeRoot();
-    card.addEventListener('pointermove', onMove);
-    card.addEventListener('pointerleave', onLeave);
+    addEventListener('pointermove', onMove, { passive: true });
+    document.addEventListener('pointerout', onOut);
     card.addEventListener('click', onClick);
     addEventListener('scroll', onScroll, { passive: true });
     cleanups.push(() => {
-      card.removeEventListener('pointermove', onMove);
-      card.removeEventListener('pointerleave', onLeave);
+      removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerout', onOut);
       card.removeEventListener('click', onClick);
       removeEventListener('scroll', onScroll);
     });
@@ -802,14 +819,33 @@ export const Lens = () => {
         >
           <svg className="absolute top-0 left-0 overflow-visible" width="1" height="1">
             <defs>
+              {/* The door's outline, written each frame (lensController);
+                  the rim, its highlight and the inner shade all reuse it. */}
+              <path id="vy-lens-door" ref={front} />
               <radialGradient id="vy-lens-lum" cx="50%" cy="50%" r="72%">
                 <stop offset="58%" stopColor="var(--lens-light)" stopOpacity="0" />
                 <stop offset="100%" stopColor="var(--lens-light)" stopOpacity="0.3" />
               </radialGradient>
+              {/* The rim: lit from the top left, like the title's key light. */}
+              <linearGradient id="vy-lens-rim" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="var(--lens-rim-hi)" />
+                <stop offset="38%" stopColor="var(--lens-frame)" />
+                <stop offset="100%" stopColor="var(--lens-rim-lo)" />
+              </linearGradient>
+              <linearGradient id="vy-lens-side" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="var(--lens-edge)" />
+                <stop offset="100%" stopColor="var(--lens-rim-deep)" />
+              </linearGradient>
+              <clipPath id="vy-lens-inside">
+                <use href="#vy-lens-door" />
+              </clipPath>
             </defs>
             <path ref={lum} className="vy-lens-lum" fill="url(#vy-lens-lum)" />
-            <path ref={edge} className="fill-lens-edge" fillRule="evenodd" />
-            <path ref={front} className="vy-lens-front" fill="none" />
+            {/* Depth: a soft shade just inside the rim, clipped to the door. */}
+            <use href="#vy-lens-door" className="vy-lens-shade" clipPath="url(#vy-lens-inside)" />
+            <path ref={edge} className="vy-lens-side" fillRule="evenodd" />
+            <use href="#vy-lens-door" className="vy-lens-front" />
+            <use href="#vy-lens-door" className="vy-lens-bevel" />
           </svg>
           {id && (
             <span className="vy-lens-label">

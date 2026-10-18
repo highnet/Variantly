@@ -25,6 +25,9 @@
   --lens-edge: #a8611a;
   --lens-light: #ffc56b;
   --lens-ink: #2a1600;
+  --lens-rim-hi: #ffe4b0;
+  --lens-rim-lo: #d9862c;
+  --lens-rim-deep: #6e3a0c;
 }
 
 /* Dark theme: the light grounds go dark and ink goes light. The slate board
@@ -2401,9 +2404,31 @@ main > div p {
   will-change: transform;
 }
 .vy-lens-front {
-  stroke: var(--lens-frame);
-  stroke-width: 2.5px;
+  fill: none;
+  stroke: url(#vy-lens-rim);
+  stroke-width: 3px;
   stroke-linejoin: round;
+}
+/* The bevel: a hairline catching the light on the rim's inner face. */
+.vy-lens-bevel {
+  fill: none;
+  stroke: rgb(255 248 232 / 0.7);
+  stroke-width: 0.75px;
+  stroke-linejoin: round;
+  transform: translate(0.6px, 0.6px);
+}
+.vy-lens-side {
+  fill: url(#vy-lens-side);
+}
+/* Depth: a wide, faint stroke clipped to the inside reads as the doorway's
+   reveal, the other concept sitting a little behind the frame. */
+.vy-lens-shade {
+  fill: none;
+  stroke: rgb(40 20 0 / 0.22);
+  stroke-width: 14px;
+}
+.vy-lens-frame:not([data-glow]) .vy-lens-shade {
+  stroke-width: 8px;
 }
 .vy-lens-frame:not([data-glow]) .vy-lens-lum,
 .vy-lens:not([data-glow]) .vy-lens-glow {
@@ -2430,10 +2455,13 @@ main > div p {
   position: absolute;
   left: 28px;
   top: 28px;
-  translate: 0 calc(-100% - 4px);
-  padding: 2px 6px;
-  border-radius: 2px;
-  background: var(--lens-frame);
+  translate: 0 calc(-100% - 5px);
+  padding: 3px 7px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--lens-rim-hi), var(--lens-frame) 55%);
+  box-shadow:
+    inset 0 -1px 0 color-mix(in srgb, var(--lens-rim-lo) 70%, transparent),
+    0 1px 2px rgb(40 20 0 / 0.25);
   color: var(--lens-ink);
   font: 600 10px/1.3 var(--font-mono, ui-monospace, monospace);
   letter-spacing: 0.06em;
