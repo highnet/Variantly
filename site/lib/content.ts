@@ -485,7 +485,7 @@ export const TRUST_CAVEATS: string[] = [
   '**No commits yet?** The wizard offers to make the first one for you: it runs `git add -A` and commits **everything not gitignored** as “Before variantly”. Check your `.gitignore` covers secrets first.',
   '**Undoing a keep with `git restore` also discards your own uncommitted edits in those files.** Commit your work before you press Keep.',
   '**Agents run unattended.** By default they may edit files and run only a short list of read-only commands; the wizard’s full-permissions option drops those limits. A worktree keeps edits out of your folder, but it is not a sandbox for your machine.',
-  '**Builds from the main branch roll a kept design out to the rest of the site first** (one more agent run; `--no-rollout` skips it). The npm release 0.4.0 applies only the pages the variants redesigned.',
+  '**Keep rolls the design out to the rest of the site first** (one more agent run). Use `--no-rollout` to apply only the pages the variants redesigned.',
   '**Changed dependencies** (package.json, lockfiles…) are applied like any file; run your install command afterwards.',
   'Each design is **one session on your AI plan**. variantly brings no model and sends nothing to its own servers; the agent you choose talks to its provider as usual.',
 ];
