@@ -548,6 +548,15 @@ class Director {
     else if (step.hover) {
       const target = await this.box(step.hover).catch(() => null);
       if (target) await this.moveTo(target.x, target.y, 800);
+    } else if (step.glide) {
+      // The pointer drifts through points inside a target, given as [x, y]
+      // percentages of its box, without pressing (the Lens door follows it).
+      const { box } = await this.box(step.glide);
+      const per = (step.ms ?? 2400) / step.to.length;
+      for (const [px, py] of step.to) {
+        await this.moveTo(box.x + (box.width * px) / 100, box.y + (box.height * py) / 100, per);
+        await this.page.waitForTimeout(250);
+      }
     } else if (step.drag) await this.drag(step);
     else if (step.scroll !== undefined) await this.scroll(step.scroll, step.ms);
     else if (step.press) await this.all((page) => page.keyboard.press(step.press));

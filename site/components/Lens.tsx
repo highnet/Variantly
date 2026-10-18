@@ -539,7 +539,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   };
 
   // Escape closes the still door. (`[` / `]` stay the page's own keys: the
-  // door's concept is fixed by the page's, see LENS_LOOP.)
+  // door's concept is fixed by the page's, see stepIds in concepts/index.ts.)
   const onKey = (e: KeyboardEvent) => {
     if (!shown || e.metaKey || e.ctrlKey || e.altKey) return;
     if (mode === 'touch' && !fixedOpen) return;
@@ -590,7 +590,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
 /*
  * The Lens: a doorway over the hero that shows the hero in another concept.
  *
- * - The door always shows the page concept's fixed partner (LENS_LOOP); only
+ * - The door always shows the page concept's fixed partner (the next on stepIds); only
  *   keeping it changes what the door shows next.
  * - Desktop: the door follows the cursor over the title card with a slight
  *   lag, tilting a few degrees toward its motion, its concept named on its

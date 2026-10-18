@@ -875,6 +875,34 @@ const Showcase = () => {
   };
 
   // The goo hop between numbers: baked once per pick, played by WAAPI on
+  // "Many redesigns." never breaks, so in a wide display face on a narrow
+  // phone (or with larger text) it can run past the edge: shrink the title
+  // just enough for that line to fit, again on resize, font load or concept.
+  useLayoutEffect(() => {
+    const title = document.getElementById('hero-title');
+    const line = title?.querySelector<HTMLElement>('[data-title-line]');
+    if (!title || !line) return;
+    const fit = () => {
+      title.style.fontSize = '';
+      const room = title.clientWidth;
+      const need = line.getBoundingClientRect().width;
+      if (need > room) {
+        const px = parseFloat(getComputedStyle(title).fontSize);
+        title.style.fontSize = `${Math.floor((px * room) / need)}px`;
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(title.parentElement ?? title);
+    const mo = new MutationObserver(fit);
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-variant'] });
+    document.fonts.addEventListener('loadingdone', fit);
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+      document.fonts.removeEventListener('loadingdone', fit);
+    };
+  }, []);
   // transforms. Calm mode, a run switch or a first paint just moves the pill.
   const picker = useRef<HTMLDivElement>(null);
   const pill = useRef<HTMLSpanElement>(null);
@@ -959,7 +987,7 @@ const Showcase = () => {
         <VariantTitle />
         <div
           data-hero-grid
-          className="bg-slate border-slate-line mx-auto grid max-w-[1440px] gap-x-16 gap-y-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:py-16"
+          className="bg-slate border-slate-line mx-auto grid max-w-[1440px] grid-cols-[minmax(0,1fr)] gap-x-16 gap-y-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:py-16"
         >
           <div data-hero-copy className="grid content-start gap-6">
             <Typography
@@ -967,7 +995,10 @@ const Showcase = () => {
               id="hero-title"
               className="text-surface text-[clamp(2.25rem,4.2vw,4.25rem)]"
             >
-              One website. <span className="whitespace-nowrap">Many redesigns.</span>{' '}
+              One website.{' '}
+              <span data-title-line className="whitespace-nowrap">
+                Many redesigns.
+              </span>{' '}
               <FreshLook>You pick.</FreshLook>
             </Typography>
             <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">

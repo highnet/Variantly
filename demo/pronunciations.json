@@ -33,6 +33,7 @@
     { "word": "worktrees", "say": "work trees", "why": "Two words." },
     { "word": "localhost", "say": "local host", "why": "Two words." },
     { "word": "OpenRouter", "say": "Open Router", "case": true, "why": "Two words; 'router' as in network, the US reading." },
+    { "word": "OpenCode", "say": "Open Code", "case": true, "why": "Two words, like OpenRouter." },
     { "word": "Codex", "say": "Codex", "case": true, "why": "Listed for the lint." },
     { "word": "Gemini", "say": "Jem-in-eye", "case": true, "why": "Google's product is said JEM-in-eye." },
     { "word": "Copilot", "say": "Co-pilot", "case": true, "why": "Two parts." },
