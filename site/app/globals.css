@@ -161,6 +161,11 @@
   --color-fail: var(--fail);
   --color-fail-on-slate: var(--fail-on-slate);
   --color-ok-on-slate: var(--ok-on-slate);
+  /* The branch log's own ground and amber, the same in every theme. */
+  --color-log-ground: #15120c;
+  --color-log-line: #3a3020;
+  --color-log-amber: #ffb547;
+  --color-log-dim: #b98a3e;
 
   --font-mono: var(--font-martian), ui-monospace, 'Cascadia Mono', Consolas, monospace;
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -215,6 +220,45 @@
     }
   }
   --animate-stamp: stamp 520ms var(--ease-spring-pop);
+  /* A tip springs out of its trigger (a slight overshoot) and fades away. */
+  --animate-tip-in: tip-in 220ms var(--ease-spring) both;
+  --animate-tip-out: tip-out 120ms ease-in both;
+
+  @keyframes tip-in {
+    0% {
+      opacity: 0;
+      translate: 0 var(--tip-from, 6px);
+      scale: 0.88;
+    }
+    55% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+  }
+
+  @keyframes tip-out {
+    100% {
+      opacity: 0;
+      translate: 0 calc(var(--tip-from, 6px) / 2);
+      scale: 0.96;
+    }
+  }
+
+  @keyframes tip-fade {
+    0% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes tip-fade-out {
+    100% {
+      opacity: 0;
+    }
+  }
 
   /* A press that lands: a quick swell and settle. */
   @keyframes pop {
@@ -291,6 +335,14 @@
     scrollbar-gutter: stable;
   }
 
+  /* Decoration that pokes past the edge (backdrop blobs, concept art,
+     sparks) must never make the page pan sideways; iOS Safari pans on any
+     overflow the root does not clip. `clip`, unlike `hidden`, makes no
+     scroll container, so the sticky header keeps working. */
+  html,
+  body {
+    overflow-x: clip;
+  }
   body {
     display: flex;
     flex-direction: column;
@@ -1081,11 +1133,9 @@ a:hover > .brand-mark .brand-grip {
 
 /* ---- Before/after divider with a slight lean ----------------------------- */
 /* --lean is how far the line sits right of the split at the top (and left at
-   the bottom). One polygon edge drives the after pane, the shadow and the
-   line, so they always coincide; the grip sits on the midpoint. */
-.vy-split-clip,
-.vy-split-shade,
-.vy-split-line {
+   the bottom). The stage carries it; the after pane's clip and the divider
+   both read it, so they always coincide; the grip sits on the midpoint. */
+.vy-split {
   --lean: 28px;
 }
 .vy-split-clip {
@@ -1096,29 +1146,31 @@ a:hover > .brand-mark .brand-grip {
     calc(var(--split) - var(--lean)) 100%
   );
 }
-.vy-split-shade {
-  /* A soft band of shade the line casts on the after side. */
-  background: rgb(0 0 0 / 0.1);
-  clip-path: polygon(
-    calc(var(--split) + var(--lean)) 0,
-    calc(var(--split) + var(--lean) + 18px) 0,
-    calc(var(--split) - var(--lean) + 18px) 100%,
-    calc(var(--split) - var(--lean)) 100%
-  );
+/*
+ * The divider: a light core in a dark outline, with a soft shadow either
+ * side, so it reads on a white page, a black one and a busy photo alike.
+ * It is a thin element moved and tilted by transform (the tilt, --lean-a,
+ * is set from the stage height so it meets the clip's edge exactly), so a
+ * drag never repaints the stage; the shadow sits on the line alone.
+ */
+.vy-divider {
+  width: 2px;
+  margin-left: -1px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.62),
+    0 0 6px 1px rgb(0 0 0 / 0.38),
+    0 0 14px 2px rgb(0 0 0 / 0.16);
 }
-.vy-split-line {
-  background: var(--ink);
-  clip-path: polygon(
-    calc(var(--split) + var(--lean) - 1px) 0,
-    calc(var(--split) + var(--lean) + 1px) 0,
-    calc(var(--split) - var(--lean) + 1px) 100%,
-    calc(var(--split) - var(--lean) - 1px) 100%
-  );
+@media (pointer: coarse) {
+  /* Thicker under a thumb. */
+  .vy-divider {
+    width: 3px;
+    margin-left: -1.5px;
+  }
 }
 @media (max-width: 639px) {
-  .vy-split-clip,
-  .vy-split-shade,
-  .vy-split-line {
+  .vy-split {
     --lean: 14px;
   }
 }
@@ -2101,5 +2153,156 @@ main > div p {
   :root.vy-reveal-ready .vy-rv-list > * {
     opacity: 1 !important;
     transform: none !important;
+  }
+}
+
+/* Tips ---------------------------------------------------------------------
+ * The bubble grows from the side facing its trigger. Calm or reduced motion
+ * keeps a plain, short fade: these selectors outrank the blanket rules that
+ * switch every other animation off. */
+.vy-tip[data-side='bottom'] {
+  --tip-from: -6px;
+}
+:root[data-motion='calm'] .vy-tip.animate-tip-in {
+  animation: tip-fade 140ms ease-out both !important;
+}
+:root[data-motion='calm'] .vy-tip.animate-tip-out {
+  animation: tip-fade-out 100ms ease-in both !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root .vy-tip.animate-tip-in {
+    animation: tip-fade 140ms ease-out both !important;
+  }
+  :root .vy-tip.animate-tip-out {
+    animation: tip-fade-out 100ms ease-in both !important;
+  }
+}
+
+/* A toast's life line is its timer, not decoration: calm and reduced motion
+   keep it running so the toast stays long enough to read, then leaves. */
+:root[data-motion='calm'] .animate-toast-life {
+  animation: toast-life 3200ms linear forwards !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root .animate-toast-life {
+    animation: toast-life 3200ms linear forwards !important;
+  }
+}
+
+/* A copy burst lifted into the top layer (from inside a tip): drop the
+   popover's own box so it stays a full-screen, see-through layer. */
+.vy-burst[popover] {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+/* Branch log: at noon and midnight each branch slides home into main. */
+@keyframes log-merge {
+  to {
+    translate: -2ch 0;
+    opacity: 0.55;
+  }
+}
+.vy-log-merge {
+  animation: log-merge 700ms var(--ease-spring) both;
+}
+
+/* ── Mobile menu ─────────────────────────────────────────────────────────
+   The button's three bars fold into an X on a spring: the outer bars slide
+   to the middle, then turn; the middle one shrinks away. The panel unrolls
+   under the header (grid rows 0fr → 1fr) and its links drop in one after
+   another; closing is quicker and all at once. Calm motion and reduced
+   motion get the end states without the travel (the global rules above). */
+.vy-burger:active {
+  transform: scale(0.88);
+}
+.vy-burger {
+  transition: transform 160ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+.vy-burger-box {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 14px;
+}
+.vy-burger-box > span {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition:
+    transform 420ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    top 220ms cubic-bezier(0.2, 0.8, 0.2, 1) 180ms,
+    opacity 160ms ease;
+}
+.vy-burger-box > span:nth-child(1) {
+  top: 0;
+}
+.vy-burger-box > span:nth-child(2) {
+  top: 6px;
+}
+.vy-burger-box > span:nth-child(3) {
+  top: 12px;
+}
+/* Open: the bars meet first, then turn. */
+.vy-burger[aria-expanded='true'] .vy-burger-box > span {
+  top: 6px;
+  transition:
+    top 180ms cubic-bezier(0.4, 0, 0.2, 1),
+    transform 460ms cubic-bezier(0.34, 1.56, 0.64, 1) 140ms,
+    opacity 120ms ease 60ms;
+}
+.vy-burger[aria-expanded='true'] .vy-burger-box > span:nth-child(1) {
+  transform: rotate(45deg);
+}
+.vy-burger[aria-expanded='true'] .vy-burger-box > span:nth-child(2) {
+  transform: scaleX(0);
+  opacity: 0;
+}
+.vy-burger[aria-expanded='true'] .vy-burger-box > span:nth-child(3) {
+  transform: rotate(-45deg);
+}
+
+.vy-menu {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 260ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.vy-menu > div {
+  min-height: 0;
+  overflow: hidden;
+}
+.vy-menu[data-open='true'] {
+  grid-template-rows: 1fr;
+  transition-duration: 460ms;
+  transition-timing-function: cubic-bezier(0.22, 1.2, 0.36, 1);
+}
+.vy-menu li {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition:
+    opacity 140ms ease,
+    transform 160ms ease;
+}
+.vy-menu[data-open='true'] li {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 260ms ease calc(80ms + var(--i, 0) * 45ms),
+    transform 520ms cubic-bezier(0.34, 1.56, 0.64, 1) calc(80ms + var(--i, 0) * 45ms);
+}
+@media (prefers-reduced-motion: reduce) {
+  .vy-burger,
+  .vy-burger-box > span,
+  .vy-menu,
+  .vy-menu li {
+    transition: none !important;
   }
 }

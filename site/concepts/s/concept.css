@@ -1,20 +1,166 @@
-/* s · Lived-in Den: placeholder tokens from the roll's palette. */
+/* s · Lived-in Den: walnut, brass and one amber lamp lighting everything. */
 :root[data-variant='s'] {
-  --panel: color-mix(in srgb, #f4ead9 94%, #2a1d15); --surface: #f4ead9; --rule: color-mix(in srgb, #2a1d15 18%, #f4ead9); --steel: color-mix(in srgb, #2a1d15 66%, #f4ead9); --ink: #2a1d15;
-  --alert: #a0522d; --alert-hover: color-mix(in srgb, #a0522d 85%, #f4ead9); --on-alert: #ffffff;
-  --hero-bg: #f4ead9; --hero-ink: #2a1d15; --hero-mute: color-mix(in srgb, #2a1d15 66%, #f4ead9); --hero-line: color-mix(in srgb, #2a1d15 22%, #f4ead9); --hero-box: color-mix(in srgb, #f4ead9 96%, #2a1d15);
-  --title: #a0522d;
-  --flap-bg: #a0522d; --flap-ink: #ffffff;
-  --art-1: #a0522d; --art-2: #5b8a86; --art-3: #d9a441; --art-ink: #2a1d15; --art-shadow: #2a1d15;
-  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
-  --board-bg: #1a120c; --board-raised: color-mix(in srgb, #1a120c 88%, #f2e4cc); --board-line: color-mix(in srgb, #1a120c 70%, #f2e4cc);
-  --board-mute: color-mix(in srgb, #f2e4cc 72%, #1a120c); --board-text: #f2e4cc; --board-deep: color-mix(in srgb, #1a120c 80%, #000); --board-ok: #c8693a;
+  --panel: #efe3cf;
+  --surface: #fbf5ea;
+  --rule: #dccbb0;
+  --steel: #6b5443;
+  --ink: #2a1d15;
+  --alert: #a0522d;
+  --alert-hover: #b5643b;
+  --on-alert: #ffffff;
+  --hero-bg: #f4ead9;
+  --hero-ink: #2a1d15;
+  --hero-mute: #6b5443;
+  --hero-line: #dccbb0;
+  --hero-box: #fbf5ea;
+  --hero-face: var(--font-fraunces);
+  --title: #5a3420;
+  --hero-alpha: 80%;
+  --flap-bg: #5a3420;
+  --flap-ink: #f4ead9;
+  --blob-o: 1;
+  --board-bg: #2a1d15;
+  --board-raised: #3a2a1d;
+  --board-line: #4e3a2a;
+  --board-mute: #d6c3a5;
+  --board-text: #f4ead9;
+  --board-deep: #1a120c;
+  --board-ok: #d9a441;
+  --art-1: #a0522d;
+  --art-2: #5b8a86;
+  --art-3: #d9a441;
+  --art-ink: #2a1d15;
+  --art-paper: #efe1c6;
+  --art-wood: #6b4128;
+  --art-grain: #573220;
+  --art-glow: rgb(255 196 110 / 0.55);
+  --art-wall: #efe2cb;
+  --art-slat: rgb(107 65 40 / 0.07);
+  --s-brass: #b8893a;
+  --s-brass-deep: #8d6526;
+  background-color: var(--art-wall);
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0 6.2vw,
+    var(--art-slat) 6.2vw 6.35vw
+  );
 }
 :root[data-variant='s'][data-theme='dark'] {
-  --panel: color-mix(in srgb, #1a120c 94%, #f2e4cc); --surface: #1a120c; --rule: color-mix(in srgb, #f2e4cc 18%, #1a120c); --steel: color-mix(in srgb, #f2e4cc 66%, #1a120c); --ink: #f2e4cc;
-  --alert: #c8693a; --alert-hover: color-mix(in srgb, #c8693a 85%, #1a120c); --on-alert: #ffffff;
-  --hero-bg: #1a120c; --hero-ink: #f2e4cc; --hero-mute: color-mix(in srgb, #f2e4cc 66%, #1a120c); --hero-line: color-mix(in srgb, #f2e4cc 22%, #1a120c); --hero-box: color-mix(in srgb, #1a120c 96%, #f2e4cc);
-  --title: #c8693a;
-  --flap-bg: #c8693a; --flap-ink: #ffffff;
-  --art-1: #c8693a; --art-2: #6fa39e; --art-3: #e6b450; --art-ink: #f2e4cc; --art-shadow: #f2e4cc;
+  --panel: #1a120c; --surface: #241911; --rule: #3a2a1d; --steel: #c9b497; --ink: #f2e4cc;
+  --alert: #e6b450; --alert-hover: #f0c46a; --on-alert: #1a120c; --hero-bg: #1a120c; --hero-ink: #f2e4cc;
+  --hero-mute: #c9b497; --hero-line: #3a2a1d; --hero-box: #21170f; --title: #c98a55; --hero-alpha: 78%;
+  --art-1: #c8693a; --art-2: #6fa39e; --art-3: #e6b450; --art-ink: #120c08; --art-paper: #d9c6a3;
+  --art-wood: #3e2516; --art-grain: #2c190e; --art-glow: rgb(255 170 70 / 0.3); --art-wall: #160f0a; --art-slat: rgb(0 0 0 / 0.28);
+  --s-brass: #d9a441; --s-brass-deep: #a37a2c;
 }
+/* Walnut letters with brass inlay sides. */
+:root[data-variant='s'] .vy-title {
+  text-shadow:
+    0 3px 0 var(--s-brass),
+    0 6px 0 var(--s-brass-deep);
+}
+:root[data-variant='s'] [data-hero-title] { background: transparent; }
+:root[data-variant='s'] #hero-title { font-weight: 640; font-size: clamp(2.4rem, 4.6vw, 4.6rem); line-height: 1.02; letter-spacing: -0.02em; font-variation-settings:
+    'SOFT' 100,
+    'WONK' 1,
+    'opsz' 144; }
+:root[data-variant='s'] #hero-title .vy-fresh { color: var(--alert); font-weight: 760; }
+:root[data-variant='s'] main > div h2 { font-weight: 620; letter-spacing: -0.015em; text-transform: none; font-variation-settings:
+    'SOFT' 100,
+    'WONK' 1,
+    'opsz' 96; }
+:root[data-variant='s'] [data-hero-side],
+:root[data-variant='s'] main > div .bg-surface {
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  background: var(--hero-box);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.5) inset,
+    0 22px 34px -24px rgb(90 52 32 / 0.55);
+}
+:root[data-variant='s'] main > div .bg-surface { background: var(--surface); }
+:root[data-variant='s'] [data-hero-side] { padding: 22px; }
+:root[data-variant='s'][data-theme='dark'] [data-hero-side],
+:root[data-variant='s'][data-theme='dark'] main > div .bg-surface {
+  box-shadow:
+    0 1px 0 rgb(255 200 120 / 0.06) inset,
+    0 22px 34px -24px rgb(0 0 0 / 0.8);
+}
+:root[data-variant='s'] main > div .figure:not(h3) { font-family: var(--font-fraunces); color: var(--alert); }
+:root[data-variant='s'] .flap-cell { border-radius: 3px; box-shadow: inset 0 -2px 0 rgb(0 0 0 / 0.25); }
+:root[data-variant='s'] .flap-cell:nth-child(4n + 2) {
+  --flap-bg: var(--art-2); --flap-ink: #fffaf0;
+}
+:root[data-variant='s'][data-theme='dark'] .flap-cell:nth-child(4n + 2) {
+  --flap-ink: #120c08;
+}
+.vy-swatch-s { background: radial-gradient(circle at 30% 30%, #e6b450, #a0522d 55%, #5a3420); }
+:root[data-variant='s'] .vy-loadbar { height: 3px; }
+:root[data-variant='s'] .vy-loadbar-fill { background: linear-gradient(90deg, var(--s-brass-deep), var(--art-3)); }
+/* Backdrop: the lamp's glow pool breathes, the shelf's sleeves slide and settle. */
+.vy-s-glow {
+  background: radial-gradient(closest-side, var(--art-glow), transparent);
+  animation: vy-s-breathe 8s ease-in-out infinite;
+}
+.vy-s-shelf { background:
+    repeating-linear-gradient(
+      178deg,
+      transparent 0 3px,
+      color-mix(in srgb, var(--art-grain) 55%, transparent) 3px 4px,
+      transparent 4px 9px
+    ),
+    linear-gradient(var(--art-wood), var(--art-grain)); box-shadow: 0 1.6vh 2.4vh -1vh rgb(40 20 8 / 0.45); }
+.vy-s-row { animation: vy-s-slide 24s cubic-bezier(0.45, 0, 0.2, 1) infinite; }
+.vy-s-pull { animation: vy-s-pull 24s cubic-bezier(0.45, 0, 0.2, 1) infinite; }
+:root[data-scrolled] .vy-s-glow,
+:root[data-scrolled] .vy-s-row,
+:root[data-scrolled] .vy-s-pull {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .vy-s-glow,
+  .vy-s-row,
+  .vy-s-pull {
+    animation: none;
+  }
+}
+@media (pointer: coarse) {
+  .vy-s-row,
+  .vy-s-pull {
+    animation: none;
+  }
+}
+@keyframes vy-s-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+50% { opacity: 0.78; }
+}
+@keyframes vy-s-slide {
+  0%,
+  100% {
+    transform: none;
+  }
+  40%,
+  60% {
+    transform: translateX(3vh);
+  }
+}
+@keyframes vy-s-pull {
+  0%,
+  12%,
+  46%,
+  100% {
+    transform: none;
+  }
+  20%,
+  38% {
+    transform: translateY(-62%) rotate(-3deg);
+  }
+}
+
+:root[data-variant='s'] main .bg-slate .text-alert { color: #e6b450; }
+:root[data-variant='s'] .figure { font-variant-numeric: lining-nums; }
+/* Pages without the hero: the art steps back behind the reading. */
+:root[data-variant='s']:not(:has(#hero-title)) { --blob-o: 0.28; }

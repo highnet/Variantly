@@ -62,6 +62,7 @@ export const lookPool = (variant: VariantKey, ink: LetterInk, dark: boolean, pho
 export const disposePool = (pool: LetterLook[]) =>
   pool.forEach((l) => {
     l.body.forEach((m) => m.dispose());
+    l.extra?.dispose();
   });
 
 export const letterShadow = (variant: VariantKey, dark: boolean): LetterShadow =>

@@ -229,6 +229,21 @@ const GLITCH_BY_CONCEPT: Record<string, number> = {
   e: 0.35,
   f: 0.5,
   g: 0.3,
+  // Dither Machine and Instrument OS are screens; Swiss Punk and the
+  // Orientation Reel are loud; the crafted, quiet ones barely or never.
+  h: 0.9,
+  i: 0.25,
+  j: 0.8,
+  k: 0.15,
+  l: 0.3,
+  m: 0.5,
+  n: 0.6,
+  o: 0.6,
+  p: 0,
+  q: 0.4,
+  r: 0.5,
+  s: 0.1,
+  t: 0,
 };
 const GLITCH_DEFAULT = 0.35;
 export const glitchStrength = (concept: string | undefined) =>

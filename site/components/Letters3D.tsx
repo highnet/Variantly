@@ -77,6 +77,8 @@ type Letter = {
   // A flat, unlit copy in the 2D letter's colour over the lit letter: fully
   // opaque at the handover from the 2D word, fading as the letter extrudes.
   flat: THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>;
+  // A look's second layer (a reflection, lifted stitches), when it has one.
+  extra: THREE.Mesh;
   // The letter's outline track and its morphing mesh.
   track: MorphTrack;
   morph: ReturnType<typeof morphMesh>;
@@ -384,6 +386,11 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         flat.frustumCulled = false;
         flat.renderOrder = 1;
         mesh.add(flat);
+        const extra = new THREE.Mesh(morph.geo);
+        extra.frustumCulled = false;
+        extra.renderOrder = -1;
+        extra.visible = false;
+        mesh.add(extra);
         const holder = new THREE.Object3D();
         holder.matrixAutoUpdate = false;
         holder.add(mesh);
@@ -393,6 +400,7 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           holder,
           mesh,
           flat,
+          extra,
           track,
           morph,
           step: -1,
@@ -535,6 +543,9 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         const look = pools[i][k];
         l.look = k;
         l.mesh.material = look.body;
+        l.extra.visible = !!look.extra;
+        if (look.extra) l.extra.material = look.extra;
+        l.extra.position.set(...(look.offset ?? [0, 0, 0]));
       };
       // The 2D letter's colour for the face; a concept's stacked text-shadow
       // (a straight drop, like Soft Clay's extrusion) for the sides.
@@ -720,6 +731,7 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
             if (!l.glitching) return;
             l.mesh.layers.set(k);
             l.flat.layers.set(k);
+            l.extra.layers.set(k);
           });
         layer(1);
         renderer.render(scene, camera);

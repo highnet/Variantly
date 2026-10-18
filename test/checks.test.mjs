@@ -85,9 +85,10 @@ test('every agent gets a Playwright MCP that writes its output outside the workt
   const at = mcp.playwright.args.indexOf('--output-dir');
   assert.equal(mcp.playwright.args[at + 1], out);
   assert.ok(path.relative(cwd, out).startsWith('..'), 'output dir is outside the worktree');
-  for (const agent of AGENTS) {
+  // Agents that take MCP servers only from the user's own config run without a browser.
+  for (const agent of AGENTS.filter((a) => a.mcp !== false)) {
     const inv = agent.invocation({ cwd, briefPath: path.join(state, 'briefs', 'v1.md'), permissions: 'full', mcp });
-    const all = JSON.stringify([inv.args, inv.files ?? {}]);
+    const all = JSON.stringify([inv.args, inv.files ?? {}, inv.env ?? {}]);
     assert.ok(all.includes('--output-dir'), `${agent.id} passes --output-dir`);
     assert.ok(all.includes(JSON.stringify(JSON.stringify(out)).slice(2, -2)) || all.includes(JSON.stringify(out).slice(1, -1)), `${agent.id} passes the output dir`);
   }

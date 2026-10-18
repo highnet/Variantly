@@ -18,6 +18,10 @@ export type Style = 'clay' | 'riso' | 'crt' | 'toon' | 'facet' | 'paper' | 'flat
 export type LetterLook = {
   // Front/back faces, then the extruded sides and bevel (TextGeometry groups).
   body: [THREE.Material, THREE.Material];
+  // A second layer drawn from the same glyph (Uncanny Mirror's reflection,
+  // Ink & Stitch's lifted stitches), where it sits (letter units). Never a glow.
+  extra?: THREE.Material | null;
+  offset?: [number, number, number];
   // Lit by the studio environment (built only when a pool needs it).
   env?: boolean;
 };
