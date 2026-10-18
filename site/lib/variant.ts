@@ -11,21 +11,12 @@ import {
   shownIds,
   type ConceptId,
 } from '@/concepts';
-import {
-  heroOrigin,
-  mountSwapFrame,
-  openDoor,
-  swapDuration,
-  type SwapOrigin,
-} from '@/lib/lensSwap';
 import { EASE } from '@/lib/motion';
 import { perfTier } from '@/lib/perfTier';
 import { calmMotion } from '@/lib/prefs';
 import { seekTime } from '@/lib/seek';
+import { turnSlats } from '@/lib/slatSwap';
 import { useSiteStore } from '@/lib/store';
-
-export type { SwapOrigin } from '@/lib/lensSwap';
-export { pressOrigin } from '@/lib/lensSwap';
 
 export const VARIANT_KEYS = CONCEPT_IDS;
 
@@ -35,14 +26,13 @@ const apply = (v: ConceptId) => {
   flushSync(() => useSiteStore.getState().setVariant(v));
 };
 
-// The low tier skips the full-page snapshot: the panel wipe instead. Touch
-// devices open the doorway too (shorter, lib/lensSwap).
+// The low tier skips the full-page snapshot: the panel wipe instead.
 const cheapSwap = () => perfTier() === 'low';
 
 export type SwapOptions = {
-  // Where the doorway opens from: the click point, the focused control's
-  // centre for keyboard presses; the hero title's centre when left out.
-  origin?: SwapOrigin;
+  // Which way the slats turn: 1 left to right (a later concept), -1 right
+  // to left. Worked out from the concepts' order when left out.
+  dir?: 1 | -1;
 };
 
 let swapId = 0;
@@ -93,6 +83,8 @@ export const setVariant = (v: ConceptId, opts: SwapOptions = {}) => {
   if (!shownIds().includes(v)) return;
   const id = ++swapId;
   const html = document.documentElement;
+  const ids = shownIds();
+  const dir = opts.dir ?? (ids.indexOf(v) >= ids.indexOf(currentVariant()) ? 1 : -1);
   const go = () => {
     if (id !== swapId) return;
     // Backdrop loops and the 3D scene pause while the swap runs.
@@ -102,25 +94,11 @@ export const setVariant = (v: ConceptId, opts: SwapOptions = {}) => {
       apply(v);
       done();
     } else {
-      // The new concept opens through a doorway from the trigger point
-      // (lib/lensSwap, globals.css "Concept swap").
-      const origin = opts.origin ?? heroOrigin();
-      const duration = swapDuration();
-      let unmount = () => {};
-      const vt = document.startViewTransition(() => {
-        apply(v);
-        unmount = mountSwapFrame();
-      });
-      // The frame layers go the moment the rings have left the screen (and
-      // at the latest when the transition ends, if it was skipped).
-      void vt.ready
-        .then(() => openDoor(origin, duration, v))
-        .then(() => unmount())
-        .catch(() => unmount());
-      void vt.finished.finally(() => {
-        unmount();
-        done();
-      });
+      // The page turns over slat by slat, as the demo's after pane does
+      // (lib/slatSwap, globals.css "Concept swap").
+      const vt = document.startViewTransition(() => apply(v));
+      void vt.ready.then(() => turnSlats(dir)).catch(() => {});
+      void vt.finished.finally(done);
     }
   };
   // Wait (briefly) for the concept's backdrop, look and (when it will run)
@@ -144,12 +122,12 @@ export const setVariant = (v: ConceptId, opts: SwapOptions = {}) => {
   history.replaceState(history.state, '', url);
 };
 
-export const stepVariant = (from: ConceptId, by: number, opts?: SwapOptions) =>
-  setVariant(conceptAt(from, by), opts);
+export const stepVariant = (from: ConceptId, by: number) =>
+  setVariant(conceptAt(from, by), { dir: by < 0 ? -1 : 1 });
 
-export const shuffleVariant = (from: ConceptId, opts?: SwapOptions) => {
+export const shuffleVariant = (from: ConceptId) => {
   const others = shownIds().filter((k) => k !== from);
-  setVariant(others[Math.floor(Math.random() * others.length)], opts);
+  setVariant(others[Math.floor(Math.random() * others.length)]);
 };
 
 // The active concept on the client; null until persisted state is read.

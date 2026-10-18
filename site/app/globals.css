@@ -1299,16 +1299,18 @@ a:hover > .brand-mark .brand-grip {
   }
 }
 
-/* ---- Concept swap: the new page opens through a doorway ----------------- */
-/* lib/lensSwap drives it: the new page's clip-path grows from a door-sized
-   rounded rect at the trigger point to past the screen's edges, on a spring,
-   with the Lens's amber frame (.vy-swap-frame, three thin rings) riding the
-   edge. The old page stays put underneath. */
+/* ---- Concept swap: the page turns over slat by slat ---------------------- */
+/* lib/slatSwap drives it: the old and new pages' pictures are clipped to
+   vertical slats that narrow and widen as the demo's slats turn
+   (components/SlatFlip), over a dark board, like the demo's. */
+::view-transition {
+  background: var(--slate);
+}
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
 }
-/* The title card is left out of the doorway: it is its own layer, shown live
+/* The title card is left out of the turn: it is its own layer, shown live
    and in place throughout, so its letters' morph into the new concept carries
    the change (VariantTitle's swap timeline). */
 [data-hero-title] {
@@ -1323,49 +1325,6 @@ a:hover > .brand-mark .brand-grip {
 }
 ::view-transition-image-pair(root) {
   isolation: auto;
-}
-.vy-swap-frame {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-}
-/* Never paint the raw layer outside a transition: it is a full-screen amber
-   fill that only makes sense through its clipped snapshot. */
-:root:not(:active-view-transition) .vy-swap-frame {
-  display: none;
-}
-/* Lives only in the new state of a swap, as rings clipped by lib/lensSwap;
-   until its keyframes start it shows nothing. */
-::view-transition-new(vy-swap-frame-0),
-::view-transition-new(vy-swap-frame-1),
-::view-transition-new(vy-swap-frame-2) {
-  clip-path: inset(50%);
-}
-.vy-swap-frame[data-ring='0'] {
-  view-transition-name: vy-swap-frame-0;
-  background: var(--lens-frame);
-}
-/* The doorway's light, only while it opens: two faint stepped bands. */
-.vy-swap-frame[data-ring='1'] {
-  view-transition-name: vy-swap-frame-1;
-  background: color-mix(in srgb, var(--lens-light) 34%, transparent);
-}
-.vy-swap-frame[data-ring='2'] {
-  view-transition-name: vy-swap-frame-2;
-  background: color-mix(in srgb, var(--lens-light) 13%, transparent);
-}
-::view-transition-group(vy-swap-frame-0),
-::view-transition-group(vy-swap-frame-1),
-::view-transition-group(vy-swap-frame-2),
-::view-transition-new(vy-swap-frame-0),
-::view-transition-new(vy-swap-frame-1),
-::view-transition-new(vy-swap-frame-2) {
-  animation: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-new(root) {
-    animation: none;
-  }
 }
 
 /* ---- Boards: every slate surface follows the concept --------------------- */

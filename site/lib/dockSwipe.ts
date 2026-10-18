@@ -17,8 +17,6 @@ const FLICK = 0.45;
 // How far the face can be pulled before it resists (rubber band), px.
 const GIVE = 70;
 
-type Pt = { x: number; y: number };
-
 type DockSwipeOptions = {
   // The dock (lights the arrow it heads toward) and its moving face.
   dock: RefObject<HTMLElement | null>;
@@ -26,7 +24,7 @@ type DockSwipeOptions = {
   // The concept on screen: the face springs in when it changes after a swipe.
   current: string;
   // Step to the previous (-1) or next (1) concept.
-  step: (by: -1 | 1, origin: Pt) => void;
+  step: (by: -1 | 1) => void;
   // A swipe up opens the full picker.
   open: () => void;
 };
@@ -178,19 +176,15 @@ export const useDockSwipe = ({ dock, face, current, step, open }: DockSwipeOptio
     if (Math.abs(s.dx) < STEP_AT && !flick) return settle(dock.current, face.current);
     const by: -1 | 1 = s.dx < 0 ? 1 : -1;
     const f = face.current;
-    const r = dock.current?.getBoundingClientRect();
-    const origin = r
-      ? { x: r.left + r.width / 2, y: r.top + r.height / 2 }
-      : { x: innerWidth / 2, y: innerHeight - 40 };
     navigator.vibrate?.(8);
     entering.current = by;
     lean(dock.current, 0);
     if (!f || calmMotion()) {
       if (f) clear(f);
-      step(by, origin);
+      step(by);
       return;
     }
-    void flyOut(f, by).then(() => step(by, origin));
+    void flyOut(f, by).then(() => step(by));
   };
 
   useEffect(() => {

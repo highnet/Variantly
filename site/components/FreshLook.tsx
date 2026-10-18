@@ -9,7 +9,7 @@ import { burstStyle, type BurstStyle } from '@/lib/burstStyle';
 import { EASE } from '@/lib/motion';
 import { lensFor } from '@/lib/lensPair';
 import { calmMotion } from '@/lib/prefs';
-import { currentVariant, pressOrigin, setVariant, useConcept } from '@/lib/variant';
+import { currentVariant, setVariant, useConcept } from '@/lib/variant';
 
 const SPARKS = 26;
 
@@ -103,10 +103,8 @@ export const FreshLook = ({ children = 'a fresh look' }: FreshLookProps) => {
 
   const next = (e: MouseEvent<HTMLButtonElement>) => {
     // The same concept the Lens door offers ("Try ..."), so the word and the
-    // door always agree. The doorway opens from the press (or the word's
-    // centre from the keyboard).
-    const origin = pressOrigin(e);
-    const go = () => setVariant(lensFor(currentVariant()), { origin });
+    // door always agree.
+    const go = () => setVariant(lensFor(currentVariant()));
     if (calmMotion()) return go();
 
     const el = self.current;

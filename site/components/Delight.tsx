@@ -44,7 +44,7 @@ export const Delight = () => {
     const stops: (() => void)[] = [unsub];
 
     // 17 · glass header, 5 · steps progress, 10 · hero parallax
-    const steps = document.querySelector<HTMLElement>('main > div ol');
+    const steps = document.querySelector<HTMLElement>('[data-steps]');
     const items = steps ? ([...steps.children] as HTMLElement[]) : [];
     // Touch and low-power: no per-frame scrubbing of the line and no
     // parallax. The steps light up from an observer, applied once the scroll

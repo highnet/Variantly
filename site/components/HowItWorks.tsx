@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 import { LiquidNumeral } from '@/components/LiquidNumeral';
 import { Rich } from '@/components/ui/Rich';
 import { Typography } from '@/components/ui/Typography';
@@ -7,19 +5,15 @@ import { EXTRAS, STEPS } from '@/lib/content';
 
 /*
  * Three steps read like an instruction page: oversized step numbers carry
- * the sequence, a short sentence does the explaining.
+ * the sequence, a short sentence does the explaining. The summary at the top
+ * of the How it works page, ahead of the screens of a real run.
  */
 const HowItWorks = () => (
   <section aria-labelledby="how-title" className="grid gap-9">
     <Typography variant="headline" as="h2" id="how-title">
-      How it works
+      In three steps
     </Typography>
-    <p className="text-steel m-0 -mt-5 text-[16px]">
-      <Link href="/how-it-works" className="text-ink underline underline-offset-4">
-        See every screen of a real run
-      </Link>
-    </p>
-    <ol className="m-0 grid list-none gap-10 p-0 md:grid-cols-3 md:gap-8">
+    <ol data-steps className="m-0 grid list-none gap-10 p-0 md:grid-cols-3 md:gap-8">
       {STEPS.map((s, i) => (
         <li key={s.label} className="border-ink grid content-start gap-3 border-t-2 pt-5">
           <LiquidNumeral n={String(i + 1)} className="text-[clamp(4.5rem,8vw,7rem)]" />

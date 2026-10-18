@@ -2,6 +2,8 @@
 
 import { useLayoutEffect, useRef } from 'react';
 
+import { SLAT_GAP, SLAT_TURN, turnKeyframes } from '@/lib/slatTurn';
+
 /** One switch between redesigns, as the slats play it. */
 export type Flip = {
   id: number;
@@ -17,26 +19,13 @@ export type Flip = {
   w: number;
   h: number;
   count: number;
+  /** The posters span the stage's width, white below (a tall stage). */
+  contain: boolean;
 };
-
-/** Slats for a stage: fewer on phones and on the low power tier. */
-export const slatCount = (phone: boolean) =>
-  document.documentElement.dataset.perf === 'low' ? 6 : phone ? 9 : 14;
 
 // The posters are shot at the stage's own shape: 1440 x 702 on a desktop,
 // 390 x 523 on a phone; the slats crop them as the panes' object-cover does.
 const POSTER_RATIO = { desktop: 1440 / 702, phone: 390 / 523 };
-
-/*
- * A departures-board turn: each slat rotates on its vertical centre past
- * flat, then settles back. Keyframes, not a spring per frame.
- */
-const turn = (dir: 1 | -1): Keyframe[] => [
-  { transform: 'rotateY(0deg)', easing: 'cubic-bezier(0.45, 0, 0.3, 1)' },
-  { transform: `rotateY(${dir * 194}deg)`, offset: 0.74, easing: 'ease-in-out' },
-  { transform: `rotateY(${dir * 176}deg)`, offset: 0.89, easing: 'ease-in-out' },
-  { transform: `rotateY(${dir * 180}deg)` },
-];
 
 type SlatFlipProps = {
   flip: Flip | null;
@@ -63,12 +52,13 @@ const SlatFlip = ({ flip, phone, onLanded }: SlatFlipProps) => {
   useLayoutEffect(() => {
     if (!flip) return;
     const { count } = flip;
-    const dur = flip.fast ? 220 : 380;
-    const gap = flip.fast ? 10 : 30;
+    const dur = flip.fast ? SLAT_TURN.fast : SLAT_TURN.normal;
+    const gap = flip.fast ? SLAT_GAP.fast : SLAT_GAP.normal;
     const list = slats.current.slice(0, count);
     const anims = list.map((s, i) => {
       const order = flip.dir === 1 ? i : count - 1 - i;
-      return s?.animate(turn(flip.dir), {
+      // A departures-board turn (lib/slatTurn): keyframes, not a spring.
+      return s?.animate(turnKeyframes(flip.dir), {
         duration: dur,
         delay: order * gap,
         fill: 'forwards',
@@ -99,9 +89,11 @@ const SlatFlip = ({ flip, phone, onLanded }: SlatFlipProps) => {
 
   const { w, h, count } = flip;
   const ratio = phone ? POSTER_RATIO.phone : POSTER_RATIO.desktop;
-  // object-cover, anchored at the top centre.
-  const bw = w / h > ratio ? w : h * ratio;
-  const bh = w / h > ratio ? w / ratio : h;
+  // As the panes' posters: object-cover anchored at the top centre, or the
+  // stage's width on a tall stage the live pages are scaled to.
+  const wide = flip.contain || w / h > ratio;
+  const bw = wide ? w : h * ratio;
+  const bh = wide ? w / ratio : h;
   const face = (src: string, x: number) => ({
     backgroundImage: `url("${src}")`,
     backgroundSize: `${bw}px ${bh}px`,
