@@ -23,7 +23,8 @@
     "voice:local": "node voice.mjs --voice local",
     "voice:lint": "node voice.mjs --lint",
     "voice:dict": "node --env-file-if-exists=.env voice.mjs --dict",
-    "thumbnail": "node --env-file-if-exists=.env build.mjs thumbnail"
+    "thumbnail": "node --env-file-if-exists=.env build.mjs thumbnail",
+    "cuts": "node --env-file-if-exists=.env cuts.mjs"
   },
   "devDependencies": {
     "ffmpeg-static": "^5.2.0",

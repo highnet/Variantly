@@ -1,0 +1,85 @@
+{
+  "$comment": "The short cuts (cuts.mjs). Each beat is one voice line over shots taken from the full film's no-captions render: { scene, from } is seconds into that scene of timeline.<theme>.json, { key } is just after that compare key was pressed. Shots share the beat's length evenly unless they set `dur`. Lines take {{runMinutes}} and the same pronunciation rules as script.json.",
+  "cuts": [
+    {
+      "id": "90s",
+      "beats": [
+        {
+          "id": "hook",
+          "text": "Ten redesigns of one site, all running for real. Here's the whole run, in ninety seconds.",
+          "shots": [{ "scene": "compare", "from": 1 }, { "key": "0" }, { "key": "4" }, { "key": "3" }, { "key": "6" }]
+        },
+        {
+          "id": "command",
+          "text": "I'm Joaquin. I built Variantly so you don't have to bet on one direction. Run npx variantly. Next.js, Django, plain HTML: it finds them.",
+          "shots": [{ "scene": "need", "from": 0.5 }, { "scene": "stacks", "from": 0.5 }]
+        },
+        {
+          "id": "brief",
+          "text": "Pick how many, and give each one its own direction, or leave it blank and Impeccable picks. Then the review shows the cost first: ten variants, twenty sessions on your own plan.",
+          "shots": [{ "scene": "make", "from": 1 }, { "scene": "directions", "from": 4 }, { "scene": "brief", "from": 2 }]
+        },
+        {
+          "id": "run",
+          "text": "Real time, for the record: this run took {{runMinutes}} minutes. Here it is, sped up. Each variant gets its own git worktree, so your main branch is never touched.",
+          "shots": [{ "scene": "lapse", "from": 0 }, { "scene": "worktrees", "from": 1 }]
+        },
+        {
+          "id": "compare",
+          "text": "Then compare, on your real site, not screenshots. Drag for a before and after. Quiet minimalism. Maximalist collage. Cinematic drama. Expressive type. Press I: accessibility and Lighthouse scores against your original. Hate them all? Run it again. Nothing is kept until you press Keep.",
+          "shots": [{ "scene": "compare", "from": 2 }, { "key": "0", "dur": 2 }, { "key": "4", "dur": 2 }, { "key": "3", "dur": 2 }, { "key": "6", "dur": 2 }, { "scene": "scores", "from": 1 }, { "scene": "again", "from": 1 }]
+        },
+        {
+          "id": "keep",
+          "text": "Keep one, and a last pass rolls it out to every page. It lands in your working tree, so you review it like any other change. Nothing is committed.",
+          "shots": [{ "scene": "keep", "from": 0.5 }, { "scene": "sitewide", "from": 3 }]
+        },
+        {
+          "id": "try",
+          "text": "Free and open source. Run npx variantly. It's at variantly.style.",
+          "shots": [{ "scene": "wrap", "fromEnd": 7 }]
+        }
+      ]
+    },
+    {
+      "id": "60s",
+      "beats": [
+        {
+          "id": "hook",
+          "text": "Ten redesigns of one site, all running for real. Here's the whole run, in one minute.",
+          "shots": [{ "scene": "compare", "from": 1 }, { "key": "0" }, { "key": "4" }, { "key": "3" }]
+        },
+        {
+          "id": "command",
+          "text": "In your project, run npx variantly, and a wizard opens in your browser.",
+          "shots": [{ "scene": "need", "from": 0.5 }]
+        },
+        {
+          "id": "brief",
+          "text": "Pick how many, give each one a direction or let Impeccable pick, and see the cost before anything runs.",
+          "shots": [{ "scene": "make", "from": 1 }, { "scene": "directions", "from": 4 }, { "scene": "brief", "from": 2 }]
+        },
+        {
+          "id": "run",
+          "text": "This run took {{runMinutes}} minutes, here sped up. Each variant gets its own git worktree, so your main branch is never touched.",
+          "shots": [{ "scene": "lapse", "from": 0 }, { "scene": "worktrees", "from": 1 }]
+        },
+        {
+          "id": "compare",
+          "text": "Then compare, on your real site. Drag for a before and after, flip through all ten, and press I for accessibility and Lighthouse scores.",
+          "shots": [{ "scene": "compare", "from": 2 }, { "key": "6", "dur": 1.6 }, { "key": "4", "dur": 1.6 }, { "scene": "scores", "from": 1 }]
+        },
+        {
+          "id": "keep",
+          "text": "Keep one, and a last pass rolls it out to every page, uncommitted, for you to review.",
+          "shots": [{ "scene": "keep", "from": 0.5 }, { "scene": "sitewide", "from": 3 }]
+        },
+        {
+          "id": "try",
+          "text": "Free and open source. Run npx variantly.",
+          "shots": [{ "scene": "wrap", "fromEnd": 6 }]
+        }
+      ]
+    }
+  ]
+}
