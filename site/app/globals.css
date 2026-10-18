@@ -1889,6 +1889,12 @@ header.vy-header-glass {
 }
 :root[data-variant] [data-hero-title] {
   padding-block: clamp(4rem, 9vw, 8rem);
+  /* One size for every concept's hero (the Lens door lines the word up
+     across concepts): the word's line plus the padding, borders inside. */
+  box-sizing: border-box;
+  height: calc(clamp(2.5rem, 16vw, 11rem) * 1.4 + 2 * clamp(4rem, 9vw, 8rem));
+  min-height: 0;
+  margin: 0;
 }
 :root[data-variant] [data-hero-grid] {
   padding-block: clamp(3rem, 7vw, 6.5rem);
