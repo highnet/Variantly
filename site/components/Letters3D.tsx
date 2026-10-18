@@ -29,6 +29,7 @@ import {
   type LetterLook,
 } from '@/lib/letterLook';
 import { morphMesh } from '@/lib/morphMesh';
+import { aimAt, turnLight, type LightAim } from '@/lib/titleLight';
 import { colourAt, letterPalette, toRgb, type Lab, type LetterPalette } from '@/lib/titleColor';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
@@ -255,6 +256,8 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 400);
     const key = new THREE.DirectionalLight('#ffffff', 1.4);
     key.position.set(-4, 6, 8);
+    // Where the key rests; the moving light turns it from here.
+    const keyRest = key.position.clone();
     scene.add(key);
     const rim = new THREE.DirectionalLight('#22c3ee', 1.2);
     rim.position.set(6, -2, -4);
@@ -830,6 +833,41 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         return runMs / 1000;
       };
 
+      // The moving light (lib/titleLight): the pointer (a finger on phones)
+      // sets where it aims, and each frame eases the light toward it. Calm
+      // mode and seek renders keep it at rest.
+      const lightTo: LightAim = { yaw: 0, pitch: 0 };
+      const lightAim: LightAim = { yaw: 0, pitch: 0 };
+      let lightT = 0;
+      if (!still && seek === null) {
+        const onPoint = (e: PointerEvent) => {
+          aimAt(e.clientX, e.clientY, innerWidth, innerHeight, lightTo);
+          wake();
+        };
+        addEventListener('pointermove', onPoint, { passive: true });
+        addEventListener('pointerdown', onPoint, { passive: true });
+        cleanups.push(() => {
+          removeEventListener('pointermove', onPoint);
+          removeEventListener('pointerdown', onPoint);
+        });
+      }
+      // Moves the light one frame on; true while it is still travelling.
+      const glide = (stamp: number) => {
+        const dt = Math.min(64, lightT ? stamp - lightT : 16);
+        const k = 1 - Math.exp(-dt / 160);
+        lightAim.yaw += (lightTo.yaw - lightAim.yaw) * k;
+        lightAim.pitch += (lightTo.pitch - lightAim.pitch) * k;
+        const moving =
+          Math.abs(lightTo.yaw - lightAim.yaw) + Math.abs(lightTo.pitch - lightAim.pitch) > 0.0015;
+        if (!moving) {
+          lightAim.yaw = lightTo.yaw;
+          lightAim.pitch = lightTo.pitch;
+        }
+        lightT = moving ? stamp : 0;
+        key.position.copy(keyRest).applyQuaternion(turnLight(lightAim));
+        return moving;
+      };
+
       let last = 0;
       const frame = (stamp = performance.now()) => {
         raf = 0;
@@ -843,8 +881,15 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         const t = now();
         hand(performance.now());
         const settled = pose(t) && !handing;
+        // Only the light travelling: drawn like a moving word (no shadow
+        // update, the light casts none) but without claiming the GL, so the
+        // backdrop scene keeps running.
+        const gliding = glide(stamp) && seek === null && visible();
         const going = seek === null && !still && !settled && visible();
-        if (going && lite) {
+        if (gliding && !going) {
+          renderer.shadowMap.autoUpdate = false;
+          if (!lens?.render()) draw();
+        } else if (going && lite) {
           ratio(Math.min(fullRatio, 2));
           renderer.shadowMap.autoUpdate = false;
           if (stepped) renderer.shadowMap.needsUpdate = true;
@@ -854,7 +899,7 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           paint();
         }
         setBusy(going);
-        if (going) raf = requestAnimationFrame(frame);
+        if (going || gliding) raf = requestAnimationFrame(frame);
       };
       wake = () => {
         if (!raf && seek === null && (!still || handing)) raf = requestAnimationFrame(frame);

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 import { plain, type LetterLook } from '@/lib/lookKit';
 import type { ConceptLook } from '@/concepts/types';
+import { LIGHT_TURN } from '@/lib/titleLight';
 
 /*
  * k · Ink & Stitch: inked letterforms, sewn. Each face is a solid pass of
@@ -26,6 +27,7 @@ void main() {
 }`;
 
 const FRAG = /* glsl */ `
+uniform mat3 uLightTurn;
 uniform vec3 uFace;
 uniform vec3 uWall;
 uniform vec3 uT;
@@ -42,7 +44,7 @@ float vnoise(vec2 p) {
 void main() {
   vec3 n = normalize(vN);
   if (!gl_FrontFacing) n = -n;
-  vec3 L = normalize(vec3(-0.45, 0.6, 0.65));
+  vec3 L = normalize(uLightTurn * vec3(-0.45, 0.6, 0.65));
   float wrap = clamp((dot(n, L) + 0.55) / 1.55, 0.0, 1.0);
   float face = step(0.92, vFront);
   vec3 c;
@@ -85,6 +87,7 @@ const mat = (o: Opts) =>
     vertexShader: VERT,
     fragmentShader: FRAG,
     uniforms: {
+      uLightTurn: LIGHT_TURN,
       uFace: { value: new THREE.Color(o.face) },
       uWall: { value: new THREE.Color(o.wall) },
       uT: { value: new THREE.Color(o.thread) },

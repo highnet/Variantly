@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 import type { ConceptLook } from '@/concepts/types';
 import { plain, type LetterInk } from '@/lib/lookKit';
+import { LIGHT_TURN } from '@/lib/titleLight';
 
 /*
  * h · Dither Machine: dithered voxels. Unlit; each fragment is one of two
@@ -18,6 +19,7 @@ void main() {
 }`;
 
 const FRAG = /* glsl */ `
+uniform mat3 uLightTurn;
 uniform vec3 uA; uniform vec3 uB; uniform float uCell; uniform float uK; uniform float uC;
 varying vec3 vN;
 float b2(vec2 a){ a = floor(a); return fract(dot(a, vec2(0.5, a.y * 0.75))); }
@@ -25,7 +27,7 @@ float bayer(vec2 a){ return b2(0.5 * a) * 0.25 + b2(a); }
 void main() {
   vec3 n = normalize(vN);
   if (!gl_FrontFacing) n = -n;
-  float d = dot(n, normalize(vec3(-0.45, 0.6, 0.65)));
+  float d = dot(n, normalize(uLightTurn * vec3(-0.45, 0.6, 0.65)));
   float amt = clamp(d * uK + uC, 0.0, 1.0);
   gl_FragColor = vec4(mix(uA, uB, step(bayer(gl_FragCoord.xy / uCell) + 0.001, amt)), 1.0);
   #include <colorspace_fragment>
@@ -36,6 +38,7 @@ const dither = (a: string, b: string, cell: number, k: number, c: number) =>
     vertexShader: VERT,
     fragmentShader: FRAG,
     uniforms: {
+      uLightTurn: LIGHT_TURN,
       uA: { value: new THREE.Color(a) },
       uB: { value: new THREE.Color(b) },
       uCell: { value: cell },

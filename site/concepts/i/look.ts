@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 import { patch, plain } from '@/lib/lookKit';
 import type { ConceptLook } from '@/concepts/types';
+import { LIGHT_TURN } from '@/lib/titleLight';
 
 /*
  * i · Liquid Glass. The cheap looks (all phones get) fake the glass in one
@@ -21,6 +22,7 @@ void main() {
 }`;
 
 const GLASS_FRAG = /* glsl */ `
+uniform mat3 uLightTurn;
 uniform vec3 uTint;
 uniform vec3 uTop;
 uniform vec3 uBot;
@@ -53,7 +55,7 @@ void main() {
   float fres = pow(1.0 - ndv, 2.5);
   c = mix(c, uHi, fres * 0.55);
   c = mix(c, uTint * 0.55, smoothstep(0.35, 0.0, ndv) * 0.25);
-  vec3 L = normalize(vec3(-0.45, 0.6, 0.65));
+  vec3 L = normalize(uLightTurn * vec3(-0.45, 0.6, 0.65));
   float spec = pow(max(dot(reflect(-L, n), v), 0.0), 90.0);
   c += uHi * spec * 1.4;
   gl_FragColor = vec4(c, 1.0);
@@ -65,6 +67,7 @@ const glass = (tint: string, dark: boolean, clear: number) =>
     vertexShader: GLASS_VERT,
     fragmentShader: GLASS_FRAG,
     uniforms: {
+      uLightTurn: LIGHT_TURN,
       uTint: { value: new THREE.Color(tint) },
       uTop: { value: new THREE.Color(dark ? '#b8d0f2' : '#c9dcef') },
       uBot: { value: new THREE.Color(dark ? '#3c64a0' : '#1d4670') },

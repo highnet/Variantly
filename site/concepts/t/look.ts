@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 import { plain } from '@/lib/lookKit';
 import type { ConceptLook } from '@/concepts/types';
+import { LIGHT_TURN } from '@/lib/titleLight';
 
 /*
  * t · Stone & Linen: honed limestone. A matte face in the 2D letter's colour
@@ -19,6 +20,7 @@ void main() {
 }`;
 
 const FRAG = /* glsl */ `
+uniform mat3 uLightTurn;
 uniform vec3 uA; uniform float uSeed; uniform float uBump; uniform float uFleck;
 varying vec3 vN; varying vec3 vV; varying vec3 vObj;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
@@ -35,7 +37,7 @@ void main() {
   if (!gl_FrontFacing) n = -n;
   n = normalize(n + vec3(grad * uBump, 0.0) * abs(n.z));
   vec3 v = normalize(vV);
-  vec3 L = normalize(vec3(-0.55, 0.6, 0.6));
+  vec3 L = normalize(uLightTurn * vec3(-0.55, 0.6, 0.6));
   float wrap = clamp((dot(n, L) + 0.35) / 1.35, 0.0, 1.0);
   // A soft warm rim so the honed face separates from the linen in both themes.
   float rim = pow(1.0 - abs(dot(n, normalize(vV))), 3.0);
@@ -53,6 +55,7 @@ const stone = (a: string, seed: number, bump: number, fleck: number) =>
     vertexShader: VERT,
     fragmentShader: FRAG,
     uniforms: {
+      uLightTurn: LIGHT_TURN,
       uA: { value: new THREE.Color(a) },
       uSeed: { value: seed },
       uBump: { value: bump },

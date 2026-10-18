@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 import { NOISE } from '@/components/backdrop/sceneKit';
+import { LIGHT_TURN } from '@/lib/titleLight';
 
 /*
  * Chalky plaster with hairline cracks (thin isolines of a 3D noise), shared by
@@ -31,6 +32,7 @@ void main() {
 }`;
 
 const FRAG = /* glsl */ `
+uniform mat3 uLightTurn;
 ${NOISE}
 uniform vec3 uCol;
 uniform vec3 uShade;
@@ -47,7 +49,7 @@ void main() {
   vec3 nr = normalize(vN);
   if (!gl_FrontFacing) nr = -nr;
   vec3 v = normalize(vV);
-  vec3 L = normalize(vec3(-0.5, 0.75, 0.45));
+  vec3 L = normalize(uLightTurn * vec3(-0.5, 0.75, 0.45));
   float wrap = clamp((dot(nr, L) + 0.35) / 1.35, 0.0, 1.0);
   vec3 q = vP * uScale;
   // Chalk: two octaves of fine tooth.
@@ -84,6 +86,7 @@ export const plaster = (o: PlasterOpts) =>
     vertexShader: VERT,
     fragmentShader: FRAG,
     uniforms: {
+      uLightTurn: LIGHT_TURN,
       uCol: { value: new THREE.Color(o.col) },
       uShade: { value: new THREE.Color(o.shade) },
       uCrack: { value: o.crack ?? 0.55 },

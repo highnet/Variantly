@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 import { plain } from '@/lib/lookKit';
 import type { ConceptLook } from '@/concepts/types';
+import { LIGHT_TURN } from '@/lib/titleLight';
 
 /*
  * n · Orientation Reel: matte white title letters with soft grey sides, lit
@@ -27,6 +28,7 @@ void main() {
 }`;
 
 const FRAG = /* glsl */ `
+uniform mat3 uLightTurn;
 uniform vec3 uA;
 uniform float uFlick;
 uniform float uSeed;
@@ -37,7 +39,7 @@ void main() {
   vec3 n = normalize(vN);
   if (!gl_FrontFacing) n = -n;
   // one hard key from the projector, a dim fill
-  float d = max(dot(n, normalize(vec3(-0.35, 0.5, 0.8))), 0.0);
+  float d = max(dot(n, normalize(uLightTurn * vec3(-0.35, 0.5, 0.8))), 0.0);
   vec3 c = uA * (0.5 + 0.55 * d) * uFlick;
   c *= 0.95 + 0.05 * hash(floor(vObj.xy * 40.0) + uSeed);
   gl_FragColor = vec4(c, 1.0);
@@ -49,7 +51,12 @@ const mat = (a: string, seed: number) => {
   const m = new THREE.ShaderMaterial({
     vertexShader: VERT,
     fragmentShader: FRAG,
-    uniforms: { uA: { value: new THREE.Color(a) }, uFlick: flick, uSeed: { value: seed } },
+    uniforms: {
+      uLightTurn: LIGHT_TURN,
+      uA: { value: new THREE.Color(a) },
+      uFlick: flick,
+      uSeed: { value: seed },
+    },
     toneMapped: false,
   });
   m.onBeforeRender = () => {
