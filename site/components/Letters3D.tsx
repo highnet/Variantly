@@ -358,11 +358,12 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     const leanX = phone ? 16 : 5;
     const leanY = phone ? 24 : 7;
     const depth = phone ? 520 : 900;
-    const leanTo = (u: number, v: number) => {
+    // `w` in -1..1: the phone twisted about its screen (phones only).
+    const leanTo = (u: number, v: number, w = 0) => {
       // Phones shrink a little as they turn, so the near end of a full-width
       // word stays inside the card.
-      const k = phone ? 1 - 0.07 * Math.min(1, Math.hypot(u, v)) : 1;
-      const lean = `perspective(${depth}px) rotateX(${(-v * leanX).toFixed(2)}deg) rotateY(${(u * leanY).toFixed(2)}deg) scale(${k.toFixed(3)})`;
+      const k = phone ? 1 - 0.07 * Math.min(1, Math.hypot(u, v, w)) : 1;
+      const lean = `perspective(${depth}px) rotateX(${(-v * leanX).toFixed(2)}deg) rotateY(${(u * leanY).toFixed(2)}deg) rotateZ(${(w * 10).toFixed(2)}deg) scale(${k.toFixed(3)})`;
       const layers = [
         el,
         ...(el.parentElement?.querySelectorAll<HTMLElement>('[data-lens-lean]') ?? []),
@@ -888,7 +889,7 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
       // needs a tap: the first tap anywhere on the page asks (captured, so no
       // control can swallow it; touchend and click both count as the gesture).
       if (phone && !still && seek === null && typeof DeviceOrientationEvent !== 'undefined') {
-        let base: [number, number] | null = null;
+        let base: [number, number, number] | null = null;
         let baseT = 0;
         // ?tilt=debug: the raw sensor and the lean, on screen.
         const debug =
@@ -904,7 +905,10 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           const side = turned ? e.beta : e.gamma;
           const tip = turned ? -e.gamma : e.beta;
           const now = performance.now();
-          if (!base) base = [side, tip];
+          // Twist: alpha (rotation about the screen's normal), relative to
+          // the neutral pose and wrapped, so north or 359°→0° never jumps.
+          const twist = e.alpha ?? 0;
+          if (!base) base = [side, tip, twist];
           // The neutral pose drifts toward however the phone is held, over
           // ~15s: a held tilt keeps its lean; lying down or standing still
           // re-centres in a while.
@@ -912,13 +916,17 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           baseT = now;
           base[0] += (side - base[0]) * k;
           base[1] += (tip - base[1]) * k;
+          const dTwist = ((twist - base[2] + 540) % 360) - 180;
+          base[2] = (base[2] + dTwist * k + 360) % 360;
           // Full lean at ~22° of tilt: past it a phone soon flips to landscape,
           // so the lean builds across the whole usable range.
           const u = Math.max(-1, Math.min(1, (side - base[0]) / 22));
           const v = Math.max(-1, Math.min(1, (tip - base[1]) / 22));
-          leanTo(u, v);
+          // Full twist at ~25°: turning the phone like a wheel turns the word.
+          const w = Math.max(-1, Math.min(1, -dTwist / 25));
+          leanTo(u, v, w);
           if (debug)
-            debug.textContent = `beta ${e.beta.toFixed(1)}  gamma ${e.gamma.toFixed(1)}\nlean u ${u.toFixed(2)}  v ${v.toFixed(2)}`;
+            debug.textContent = `beta ${e.beta.toFixed(1)}  gamma ${e.gamma.toFixed(1)}  alpha ${twist.toFixed(1)}\nlean u ${u.toFixed(2)}  v ${v.toFixed(2)}  w ${w.toFixed(2)}`;
           const yaw = u * 0.8;
           const pitch = v * 0.55;
           if (Math.abs(yaw - lightTo.yaw) + Math.abs(pitch - lightTo.pitch) < 0.01) return;
