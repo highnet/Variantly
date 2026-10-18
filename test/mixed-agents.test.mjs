@@ -15,6 +15,13 @@ test('--agents takes agent, optional model and count; models keep their colons',
     { agent: 'codex', model: '', count: 1 },
   ]);
   assert.deepEqual(parseMix('codex:openrouter/qwen:free:3'), [{ agent: 'codex', model: 'openrouter/qwen:free', count: 3 }]);
+  assert.deepEqual(parseMix('opencode:opencode/big-pickle:2,grok:2,hermes:anthropic/claude-sonnet-4.6:1,pi,antigravity:1'), [
+    { agent: 'opencode', model: 'opencode/big-pickle', count: 2 },
+    { agent: 'grok', model: '', count: 2 },
+    { agent: 'hermes', model: 'anthropic/claude-sonnet-4.6', count: 1 },
+    { agent: 'pi', model: '', count: 1 },
+    { agent: 'antigravity', model: '', count: 1 },
+  ]);
   assert.throws(() => parseMix(':2'), /names no agent/);
   assert.throws(() => parseMix('claude:0'), /no variants/);
 });

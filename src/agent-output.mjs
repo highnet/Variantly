@@ -15,10 +15,21 @@
  *   tool_use, tool_result, error, result (packages/core/src/output/types.ts).
  * - Cursor CLI 2026.10 `cursor-agent -p --output-format stream-json`: system,
  *   user, assistant, thinking, tool_call (started/completed), result.
+ * - OpenCode 1.19 `opencode run --format json`: step_start, text, tool_use,
+ *   step_finish (tokens and dollar cost per step), error. Captured from a real run.
+ * - Grok Build 1.0.62 `grok -p --output-format streaming-messages-json`: Claude
+ *   Code's stream-json shape; a failed run's `result` carries `errors[]`.
+ * - Hermes Agent `hermes chat --oneshot -q --format stream-json`: system init,
+ *   text (deltas), tool_use, tool_result, result (hermes_cli/stream_json.py).
+ * - Pi 1.3 `pi -p --mode json`: session, message_end (assistant text, usage
+ *   with cost, stopReason/errorMessage), tool_execution_start/end, auto_retry_*.
+ * - Antigravity CLI 1.4 `agy -p --output-format stream-json`: objects keyed by
+ *   `event`: init, step_update (agent_response text deltas, tool steps with
+ *   tool_info, per-step usage), result (status, response, error, usage).
  */
 import path from 'node:path';
 
-/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'gemini-stream' | 'cursor-stream' | 'text'} OutputKind */
+/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'gemini-stream' | 'cursor-stream' | 'opencode-json' | 'grok-stream' | 'hermes-stream' | 'pi-json' | 'antigravity-stream' | 'text'} OutputKind */
 
 /**
  * Token counts as the agent reported them, summed over the session.
@@ -32,7 +43,7 @@ import path from 'node:path';
  * @typedef {object} OutputParser
  * @property {(line: string) => string[]} push  feed one stdout line, get log lines back
  * @property {() => string} text                the agent's own words, for the SUMMARY line
- * @property {() => number | undefined} costUsd  only Claude Code reports a dollar figure
+ * @property {() => number | undefined} costUsd  a dollar figure, when the agent reports one
  * @property {() => Usage | undefined} usage
  * @property {() => number | undefined} credits  Copilot's AI credits, when reported
  * @property {() => string | undefined} error   a fatal error the agent reported, if any
@@ -54,6 +65,8 @@ export const UNAVAILABLE = [
   /\bplease set an auth method\b/i,
   /\b401 Unauthorized\b/i,
   /\binvalid api key\b/i,
+  /\bincorrect api key\b/i,
+  /\bapi key not valid\b/i,
   /\bauthentication (?:is )?required\b/i,
   /\bno authentication information found\b/i,
 ];
@@ -102,7 +115,7 @@ export function createParser(kind, opts = {}) {
     u.cachedInputTokens += num(cached);
   };
   /** @type {Record<string, (event: any, state: ParseState, rel: Rel, addUsage: AddUsage) => string[]>} */
-  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot, 'gemini-stream': gemini, 'cursor-stream': cursor };
+  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot, 'gemini-stream': gemini, 'cursor-stream': cursor, 'opencode-json': opencode, 'grok-stream': grok, 'hermes-stream': hermes, 'pi-json': pi, 'antigravity-stream': antigravity };
   const describe = parsers[kind];
 
   return {
@@ -186,6 +199,17 @@ function claude(event, state, rel, addUsage) {
     return [`Finished in ${Math.round(num(event.duration_ms) / 1000)}s${cost}`];
   }
   return [];
+}
+
+/** Grok Build speaks Claude Code's stream-json, under its own name. @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function grok(event, state, rel, addUsage) {
+  if (event.type === 'system' && event.subtype === 'init') return [`Grok Build session started (${event.model ?? 'default model'})`];
+  const out = claude(event, state, rel, addUsage);
+  if (event.type === 'result' && event.is_error && Array.isArray(event.errors) && event.errors.length) {
+    state.error = String(event.errors[0]);
+    return [...out, `Error: ${clip(state.error, 300)}`];
+  }
+  return out;
 }
 
 /** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
@@ -382,6 +406,178 @@ function cursor(event, state, rel, addUsage) {
     }
     if (event.is_error) state.error = typeof event.result === 'string' && event.result ? event.result : 'Cursor CLI reported an error.';
     return [`Finished in ${Math.round(num(event.duration_ms) / 1000)}s${u ? `, ${tokens(state.usage)}` : ''}`];
+  }
+  return [];
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function opencode(event, state, rel, addUsage) {
+  const p = event.part ?? {};
+  switch (event.type) {
+    case 'text': {
+      // Some models leak reasoning tags into the text; they are not words.
+      const text = typeof p.text === 'string' ? p.text.replace(/<\/?think>/g, '') : '';
+      if (!text.trim()) return [];
+      state.text.push(text);
+      return [text.trim()];
+    }
+    case 'tool_use': {
+      const st = p.state ?? {};
+      const a = st.input && typeof st.input === 'object' ? st.input : {};
+      const file = a.filePath ?? a.file_path ?? a.path;
+      const target = file ? rel(file) : (a.command ?? a.pattern ?? a.url ?? a.name ?? a.query ?? '');
+      const name = String(p.tool ?? 'tool');
+      const line = tool(name.charAt(0).toUpperCase() + name.slice(1), target);
+      return st.status === 'error' ? [line, `  ✗ ${clip(st.error ?? 'tool failed', 140)}`] : [line];
+    }
+    case 'step_finish': {
+      const t = p.tokens ?? {};
+      addUsage(t.input, t.output, num(t.cache?.read) + num(t.cache?.write));
+      if (typeof p.cost === 'number') state.costUsd = num(state.costUsd) + p.cost;
+      return [];
+    }
+    case 'error': {
+      const e = event.error ?? {};
+      state.error = e.data?.message ?? e.message ?? e.name ?? 'OpenCode reported an error.';
+      return [`Error: ${state.error}`];
+    }
+    default:
+      return [];
+  }
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function hermes(event, state, rel, addUsage) {
+  // Text streams in deltas, like Gemini's: shown a whole line at a time.
+  if (event.type === 'text') {
+    if (typeof event.text !== 'string') return [];
+    state.text[0] = (state.text[0] ?? '') + event.text;
+    const lines = ((state.pending ?? '') + event.text).split(/\r?\n/);
+    state.pending = lines.pop();
+    return lines.map((l) => l.trim()).filter(Boolean);
+  }
+  const held = state.pending?.trim() ? [state.pending.trim()] : [];
+  state.pending = '';
+  return [...held, ...hermesEvent(event, state, rel, addUsage)];
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function hermesEvent(event, state, rel, addUsage) {
+  switch (event.type) {
+    case 'system':
+      return event.subtype === 'init' ? [`Hermes Agent session started (${event.model || 'default model'})`] : [];
+    case 'tool_use': {
+      const a = event.input && typeof event.input === 'object' ? event.input : {};
+      const target = a.path ? rel(a.path) : (a.command ?? a.pattern ?? a.name ?? a.query ?? a.url ?? '');
+      return [tool(event.name ?? 'tool', target)];
+    }
+    case 'tool_result':
+      return event.is_error ? [`  ✗ ${event.name ?? 'tool'}: ${clip(event.output ?? 'failed', 140)}`] : [];
+    case 'result': {
+      const t = event.tokens ?? {};
+      state.usage = undefined;
+      addUsage(t.input, t.output, num(t.cache_read) + num(t.cache_write));
+      // The final answer, whole; the deltas were the same words.
+      if (typeof event.text === 'string' && event.text.trim()) state.text = [event.text];
+      if (event.error) state.error = String(event.error);
+      else if (event.exit_code && event.exit_code !== 0) state.error = `Hermes Agent stopped with exit code ${event.exit_code}.`;
+      return [`Finished in ${Math.round(num(event.duration_ms) / 1000)}s, ${tokens(state.usage)}`];
+    }
+    default:
+      return [];
+  }
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function pi(event, state, rel, addUsage) {
+  switch (event.type) {
+    case 'session':
+      return ['Pi session started'];
+    case 'message_end': {
+      const m = event.message ?? {};
+      if (m.role !== 'assistant') return [];
+      const u = m.usage ?? {};
+      addUsage(u.input, u.output, num(u.cacheRead) + num(u.cacheWrite));
+      if (typeof u.cost?.total === 'number') state.costUsd = num(state.costUsd) + u.cost.total;
+      /** @type {string[]} */
+      const out = [];
+      for (const block of Array.isArray(m.content) ? m.content : []) {
+        if (block.type === 'text' && block.text?.trim()) {
+          state.text.push(block.text);
+          out.push(block.text.trim());
+        }
+      }
+      if (m.stopReason === 'error' || m.stopReason === 'aborted') {
+        const error = String(m.errorMessage || 'Pi reported an error.');
+        state.error = error;
+        out.push(`Error: ${clip(error, 300)}`);
+      }
+      return out;
+    }
+    case 'tool_execution_start': {
+      const a = event.args && typeof event.args === 'object' ? event.args : {};
+      const target = a.path ? rel(a.path) : (a.command ?? a.pattern ?? '');
+      return [tool(event.toolName ?? 'tool', target)];
+    }
+    case 'tool_execution_end': {
+      if (!event.isError) return [];
+      const text = (event.result?.content ?? []).map((/** @type {any} */ c) => c.text ?? '').join(' ');
+      return [`  ✗ ${event.toolName ?? 'tool'}: ${clip(text || 'failed', 140)}`];
+    }
+    case 'auto_retry_start':
+      return [`  ↻ retry ${event.attempt}/${event.maxAttempts}: ${clip(event.errorMessage ?? '', 120)}`];
+    case 'auto_retry_end':
+      if (event.success === false) state.error = event.finalError ?? state.error ?? 'Pi gave up retrying.';
+      return [];
+    default:
+      return [];
+  }
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function antigravity(event, state, rel, addUsage) {
+  const step = event.step_update ?? {};
+  if (event.event === 'step_update' && step.step_type === 'agent_response') {
+    if (step.state === 'DONE' && step.usage) addUsage(step.usage.input_tokens, step.usage.output_tokens, step.usage.cache_read_tokens);
+    if (typeof step.text_delta !== 'string') return [];
+    // Deltas, shown a whole line at a time.
+    state.text[0] = (state.text[0] ?? '') + step.text_delta;
+    const lines = ((state.pending ?? '') + step.text_delta).split(/\r?\n/);
+    state.pending = lines.pop();
+    return lines.map((l) => l.trim()).filter(Boolean);
+  }
+  const held = state.pending?.trim() ? [state.pending.trim()] : [];
+  state.pending = '';
+  return [...held, ...antigravityEvent(event, state, rel, addUsage)];
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function antigravityEvent(event, state, rel, addUsage) {
+  if (event.event === 'init') return [`Antigravity session started (${event.init?.model ?? 'default model'})`];
+  if (event.event === 'step_update') {
+    const step = event.step_update ?? {};
+    if (step.state === 'DONE' && step.usage) addUsage(step.usage.input_tokens, step.usage.output_tokens, step.usage.cache_read_tokens);
+    if (step.step_type !== 'tool' || step.state !== 'DONE') return [];
+    const info = step.tool_info ?? {};
+    const a = info.parameters && typeof info.parameters === 'object' ? info.parameters : {};
+    const fileKey = Object.keys(a).find((k) => /path|file/i.test(k) && typeof a[k] === 'string');
+    const target = fileKey ? rel(a[fileKey]) : (a.CommandLine ?? a.Query ?? a.Pattern ?? a.Url ?? '');
+    const line = tool(step.tool_name ?? info.name ?? 'tool', target);
+    return info.error ? [line, `  ✗ ${clip(info.error.message ?? info.error.type ?? 'tool failed', 140)}`] : [line];
+  }
+  if (event.event === 'result') {
+    const r = event.result ?? {};
+    const u = r.usage;
+    if (u && (u.input_tokens || u.output_tokens)) {
+      state.usage = undefined;
+      addUsage(u.input_tokens, u.output_tokens, u.cache_read_tokens);
+    }
+    if (typeof r.response === 'string' && r.response.trim()) state.text = [r.response];
+    if (r.status && r.status !== 'SUCCESS') state.error = r.error || `Antigravity finished with status ${r.status}.`;
+    return [
+      ...(state.error ? [`Error: ${clip(state.error, 300)}`] : []),
+      `Finished in ${Math.round(num(r.duration_seconds))}s, ${tokens(state.usage)}`,
+    ];
   }
   return [];
 }

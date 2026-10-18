@@ -8,6 +8,28 @@ with variantly's exact safe-mode arguments, an empty `CODEX_HOME` and no API
 key, so it starts a thread and fails on authentication. It proves the flags
 are accepted and shows how Codex reports retries.
 
+`opencode.jsonl` is a **real capture**: opencode-ai 1.19.3 run with
+variantly's safe-mode permission config and the free `opencode/big-pickle`
+model, on a one-line brief (make a colour blue, run `git status`, try `rm`).
+Paths were rewritten to the ones below.
+
+`grok-failed.jsonl` is a **real capture**: Grok Build 1.0.62 run with
+variantly's exact safe-mode arguments and an invalid `XAI_API_KEY`. It proves
+the flags are accepted and shows the error `result`. `grok.jsonl` is written
+by hand in the same (Claude Code stream-json) shape.
+
+`hermes.jsonl` is written by hand from `hermes_cli/stream_json.py` in the
+hermes-agent repository (commit e6cf2a9).
+
+`pi-failed.jsonl` is a **real capture**: Pi 1.3.0 run with variantly's exact
+safe-mode arguments and stale cloud credentials (the system prompt removed).
+`pi.jsonl` is written by hand from Pi's `docs/json.md`.
+
+`antigravity-failed.jsonl` is a **real capture**: Antigravity CLI 1.4.1 run
+with variantly's safe-mode arguments and an invalid Gemini API key.
+`antigravity.jsonl` is written by hand from the CLI's headless-mode docs
+(the tool parameter names in it are guesses; the parser doesn't depend on them).
+
 The other files were **written by hand from each CLI's published event
 schema**, not captured from a signed-in run (no agent was signed in where they
 were written). Field names and nesting follow:

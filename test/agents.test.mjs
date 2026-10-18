@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { AGENTS, agentById, binCandidates, codexProvider, hasSkill, skillLocations } from '../src/agents.mjs';
+import { AGENTS, agentById, binCandidates, codexProvider, hasSkill, impeccableSources, skillLocations } from '../src/agents.mjs';
 import { writeBrief } from '../src/brief.mjs';
 import { installSkill, parseProviders, SKILL_SOURCE } from '../src/install-skill.mjs';
 
@@ -104,6 +104,106 @@ test('Cursor CLI invocation: print mode, stream-json, trusted workspace, brief f
   assert.deepEqual(full.args.slice(-3), ['--force', '--sandbox', 'disabled']);
 });
 
+test('OpenCode invocation: run --format json, permissions and MCP in OPENCODE_CONFIG_CONTENT', () => {
+  const safe = agent('opencode').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', model: 'opencode/big-pickle', ...NO_HOME });
+  assert.equal(safe.file, 'opencode');
+  assert.equal(safe.output, 'opencode-json');
+  assert.deepEqual(safe.args, ['run', '--format', 'json', '-m', 'opencode/big-pickle', PROMPT]);
+  const cfg = JSON.parse(safe.env?.OPENCODE_CONFIG_CONTENT ?? '');
+  assert.deepEqual(cfg.permission, {
+    question: 'deny',
+    doom_loop: 'deny',
+    bash: { '*': 'deny', '*impeccable*': 'allow', 'git status*': 'allow', 'git diff*': 'allow', 'ls*': 'allow' },
+    external_directory: { '*': 'deny', [`${BRIEF_DIR.replace(/\\/g, '/')}/**`]: 'allow' },
+  });
+  assert.deepEqual(Object.keys(cfg.permission.bash)[0], '*', 'the catch-all comes first: the last matching rule wins');
+  assert.equal(cfg.mcp, undefined);
+
+  const full = agent('opencode').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'full', ...NO_HOME });
+  assert.deepEqual(full.args, ['run', '--format', 'json', '--auto', PROMPT]);
+  assert.deepEqual(JSON.parse(full.env?.OPENCODE_CONFIG_CONTENT ?? '').permission, { question: 'deny', doom_loop: 'deny' });
+
+  // User-wide skill folders that exist are readable outside the worktree.
+  const home = tmp();
+  try {
+    mkdirSync(path.join(home, '.config', 'opencode', 'skills', 'impeccable'), { recursive: true });
+    const inv = agent('opencode').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', home, env: {} });
+    const ext = JSON.parse(inv.env?.OPENCODE_CONFIG_CONTENT ?? '').permission.external_directory;
+    assert.equal(ext[`${path.join(home, '.config', 'opencode', 'skills').replace(/\\/g, '/')}/**`], 'allow');
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('Grok Build invocation: -p with Claude-style stream, dontAsk plus an allow list, trusted folder', () => {
+  const safe = agent('grok').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', model: 'grok-build' });
+  assert.equal(safe.file, 'grok');
+  assert.equal(safe.output, 'grok-stream');
+  assert.deepEqual(safe.args, [
+    '-p', PROMPT, '--output-format', 'streaming-messages-json', '--no-auto-update', '--trust',
+    '--permission-mode', 'dontAsk',
+    '--allow', 'Read', '--allow', 'Edit', '--allow', 'Grep',
+    '--allow', 'Bash(*impeccable*)', '--allow', 'Bash(git status*)', '--allow', 'Bash(git diff*)', '--allow', 'Bash(ls*)',
+    '-m', 'grok-build',
+  ]);
+  const full = agent('grok').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'full' });
+  assert.deepEqual(full.args, ['-p', PROMPT, '--output-format', 'streaming-messages-json', '--no-auto-update', '--trust', '--always-approve']);
+  assert.equal(agent('grok').mcp, false, 'MCP servers come only from Grok\'s config files');
+  const withMcp = agent('grok').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', mcp: { playwright: { command: 'npx', args: [] } } });
+  assert.deepEqual(withMcp.args, safe.args.slice(0, -2));
+});
+
+test('Hermes Agent invocation: one-shot chat with stream-json, narrowed toolsets in safe mode', () => {
+  const safe = agent('hermes').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', model: 'anthropic/claude-sonnet-4.6' });
+  assert.equal(safe.file, 'hermes');
+  assert.equal(safe.output, 'hermes-stream');
+  assert.deepEqual(safe.args, [
+    'chat', '--oneshot', '-q', PROMPT, '--format', 'stream-json', '--source', 'tool',
+    '-t', 'file,terminal,skills,todo',
+    '-m', 'anthropic/claude-sonnet-4.6',
+  ]);
+  const full = agent('hermes').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'full' });
+  assert.deepEqual(full.args, ['chat', '--oneshot', '-q', PROMPT, '--format', 'stream-json', '--source', 'tool', '--yolo']);
+  assert.equal(agent('hermes').mcp, false);
+});
+
+test('Pi invocation: print mode with JSON events; safe mode drops the shell and trusts only skill folders', () => {
+  const safe = agent('pi').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', model: 'anthropic/claude-sonnet-4-6' });
+  assert.equal(safe.file, 'pi');
+  assert.equal(safe.output, 'pi-json');
+  assert.deepEqual(safe.args, [
+    '-p', '--mode', 'json', '--no-session',
+    '--no-approve', '--tools', 'read,edit,write,grep,find,ls',
+    '--model', 'anthropic/claude-sonnet-4-6',
+    PROMPT,
+  ]);
+  assert.ok(!safe.args.join(',').includes('bash'));
+  const full = agent('pi').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'full' });
+  assert.deepEqual(full.args, ['-p', '--mode', 'json', '--no-session', '--approve', PROMPT]);
+  assert.equal(agent('pi').mcp, false);
+
+  // The worktree's skill folders are loaded explicitly, without trusting the project.
+  const wt = tmp();
+  try {
+    mkdirSync(path.join(wt, '.pi', 'skills', 'impeccable'), { recursive: true });
+    const inv = agent('pi').invocation({ cwd: wt, briefPath: BRIEF, permissions: 'safe' });
+    assert.deepEqual(inv.args.slice(inv.args.indexOf('--skill'), inv.args.indexOf('--skill') + 2), ['--skill', path.join(wt, '.pi/skills')]);
+    assert.equal(inv.args.filter((a) => a === '--skill').length, 1);
+  } finally {
+    rmSync(wt, { recursive: true, force: true });
+  }
+});
+
+test('Antigravity invocation: flags first, prompt last, brief folder added', () => {
+  const safe = agent('antigravity').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', model: 'gemini-3.6-flash' });
+  assert.equal(safe.file, 'agy');
+  assert.equal(safe.output, 'antigravity-stream');
+  assert.deepEqual(safe.args, ['--output-format', 'stream-json', '--add-dir', BRIEF_DIR, '--model', 'gemini-3.6-flash', '-p', PROMPT]);
+  const full = agent('antigravity').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'full' });
+  assert.deepEqual(full.args, ['--output-format', 'stream-json', '--add-dir', BRIEF_DIR, '--dangerously-skip-permissions', '-p', PROMPT]);
+  assert.equal(agent('antigravity').mcp, false);
+});
+
 test('Codex through OpenRouter: the configured provider and its key variable are read', () => {
   const home = tmp();
   try {
@@ -129,6 +229,20 @@ test('Codex through OpenRouter: the configured provider and its key variable are
     assert.deepEqual(codexProvider(home), { id: 'openrouter', envKey: 'OPENROUTER_API_KEY' });
     writeFileSync(path.join(home, 'config.toml'), '[profiles.x]\nmodel_provider = "openrouter"\n');
     assert.equal(codexProvider(home), null, 'a provider inside a table is not the default');
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('binCandidates also looks in ~/.grok/bin, where Grok Build installs', () => {
+  const home = tmp();
+  try {
+    const bin = path.join(home, '.grok', 'bin');
+    mkdirSync(bin, { recursive: true });
+    const file = path.join(bin, process.platform === 'win32' ? 'grok.CMD' : 'grok');
+    writeFileSync(file, '');
+    const found = binCandidates('grok', { PATH: '', HOME: home, USERPROFILE: home, PATHEXT: '.CMD' });
+    assert.deepEqual(found.map((f) => f.toLowerCase()), [file.toLowerCase()]);
   } finally {
     rmSync(home, { recursive: true, force: true });
   }
@@ -184,6 +298,50 @@ test('skill locations match where each agent reads skills', () => {
     path.join(home, '.agents', 'skills', 'impeccable'),
     path.join(home, '.claude', 'skills', 'impeccable'),
   ]);
+  assert.deepEqual(skillLocations(agent('opencode'), 'impeccable', where), [
+    path.join(project, '.opencode/skills', 'impeccable'),
+    path.join(project, '.agents/skills', 'impeccable'),
+    path.join(project, '.claude/skills', 'impeccable'),
+    path.join(home, '.config', 'opencode', 'skills', 'impeccable'),
+    path.join(home, '.agents', 'skills', 'impeccable'),
+    path.join(home, '.claude', 'skills', 'impeccable'),
+  ]);
+  assert.deepEqual(skillLocations(agent('grok'), 'impeccable', where), [
+    path.join(project, '.grok/skills', 'impeccable'),
+    path.join(project, '.agents/skills', 'impeccable'),
+    path.join(project, '.claude/skills', 'impeccable'),
+    path.join(home, '.grok', 'skills', 'impeccable'),
+    path.join(home, '.agents', 'skills', 'impeccable'),
+    path.join(home, '.claude', 'skills', 'impeccable'),
+  ]);
+  assert.equal(skillLocations(agent('grok'), 's', { home, env: { GROK_HOME: path.resolve('GH') } })[0], path.join(path.resolve('GH'), 'skills', 's'));
+  assert.deepEqual(skillLocations(agent('hermes'), 'impeccable', where), [
+    path.join(project, '.hermes/skills', 'impeccable'),
+    path.join(project, '.agents/skills', 'impeccable'),
+    path.join(home, '.hermes', 'skills', 'impeccable'),
+  ]);
+  assert.deepEqual(skillLocations(agent('hermes'), 's', { home, env: { HERMES_HOME: path.resolve('HH') } }), [
+    path.join(path.resolve('HH'), 'skills', 's'),
+    path.join(home, '.hermes', 'skills', 's'),
+  ]);
+  assert.deepEqual(skillLocations(agent('pi'), 'impeccable', where), [
+    path.join(project, '.pi/skills', 'impeccable'),
+    path.join(project, '.agents/skills', 'impeccable'),
+    path.join(home, '.pi', 'agent', 'skills', 'impeccable'),
+    path.join(home, '.agents', 'skills', 'impeccable'),
+  ]);
+  assert.equal(skillLocations(agent('pi'), 's', { home, env: { PI_CODING_AGENT_DIR: path.resolve('PA') } })[0], path.join(path.resolve('PA'), 'skills', 's'));
+  assert.deepEqual(skillLocations(agent('antigravity'), 'impeccable', where), [
+    path.join(project, '.agents/skills', 'impeccable'),
+    path.join(project, '.agent/skills', 'impeccable'),
+    path.join(home, '.gemini', 'antigravity-cli', 'skills', 'impeccable'),
+  ]);
+  // OpenCode's config folder follows OPENCODE_CONFIG_DIR, then XDG_CONFIG_HOME.
+  assert.equal(skillLocations(agent('opencode'), 's', { home, env: { XDG_CONFIG_HOME: path.resolve('XC') } })[0], path.join(path.resolve('XC'), 'opencode', 'skills', 's'));
+  assert.equal(
+    skillLocations(agent('opencode'), 's', { home, env: { XDG_CONFIG_HOME: path.resolve('XC'), OPENCODE_CONFIG_DIR: path.resolve('OC') } })[0],
+    path.join(path.resolve('OC'), 'skills', 's'),
+  );
   // Each CLI's home override is honoured.
   const env = { CLAUDE_CONFIG_DIR: path.resolve('C1'), CODEX_HOME: path.resolve('X1'), COPILOT_HOME: path.resolve('G1') };
   assert.equal(skillLocations(agent('claude'), 's', { home, env })[0], path.join(path.resolve('C1'), 'skills', 's'));
@@ -228,6 +386,7 @@ test('the brief names the skill the way each agent expects', () => {
   assert.match(writeBrief({ ...base, agent: 'copilot' }), /\(`\/impeccable`; load the skill/);
   assert.match(writeBrief({ ...base, agent: 'claude' }), /\(`\/impeccable`; load the skill/);
   assert.match(writeBrief(base), /\(`\/impeccable`; load the skill/);
+  assert.match(writeBrief({ ...base, agent: 'pi' }), /\(`\/skill:impeccable`; load the skill/);
 });
 
 test('install-skill writes the one SKILL.md into each agent\'s user-wide skills folder', async () => {
@@ -245,6 +404,8 @@ test('install-skill writes the one SKILL.md into each agent\'s user-wide skills 
       ],
     );
     for (const r of results) assert.equal(readFileSync(r.file, 'utf8'), source);
+    // Every agent sees it once installed for all of them.
+    await installSkill({ providers: AGENTS.map((a) => a.id), scope: 'global', home, env: {} });
     for (const a of AGENTS) assert.equal(hasSkill(a, 'variantly', { home, env: {} }), true, `${a.id} can now see it`);
 
     // Again: nothing to do. A stale copy is replaced.
@@ -304,11 +465,35 @@ test('every agent gets the Playwright MCP server when the browser check is on', 
   assert.deepEqual(JSON.parse(cursor.files?.[path.join(plugin, '.mcp.json')] ?? ''), { mcpServers: mcp });
   assert.equal(JSON.parse(cursor.files?.[path.join(plugin, '.cursor-plugin', 'plugin.json')] ?? '').name, 'variantly');
 
+  // OpenCode takes them in its inline config, as a command array.
+  const opencode = agent('opencode').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', mcp, ...NO_HOME });
+  assert.deepEqual(JSON.parse(opencode.env?.OPENCODE_CONFIG_CONTENT ?? '').mcp, {
+    playwright: { type: 'local', command: ['npx', ...mcp.playwright.args], enabled: true },
+  });
+
   // Without it, nothing changes.
   for (const id of ['claude', 'codex', 'copilot', 'gemini', 'cursor']) {
     const inv = agent(id).invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', ...NO_HOME });
     assert.doesNotMatch(inv.args.join(' '), /mcp/);
     assert.ok(!Object.keys(inv.files ?? {}).some((f) => /settings|plugin/.test(f)));
     assert.equal(inv.env, undefined);
+  }
+});
+
+test('Impeccable copies anywhere count as sources, including the Antigravity app\'s and OpenCode\'s', () => {
+  const home = tmp();
+  try {
+    assert.deepEqual(impeccableSources(home, {}), []);
+    for (const d of [path.join('.gemini', 'config', 'skills'), path.join('.config', 'opencode', 'skills'), path.join('.pi', 'agent', 'skills')]) {
+      mkdirSync(path.join(home, d, 'impeccable'), { recursive: true });
+      writeFileSync(path.join(home, d, 'impeccable', 'SKILL.md'), '---\nname: impeccable\n---\n');
+    }
+    assert.deepEqual(new Set(impeccableSources(home, {})), new Set([
+      path.join(home, '.gemini', 'config', 'skills', 'impeccable'),
+      path.join(home, '.config', 'opencode', 'skills', 'impeccable'),
+      path.join(home, '.pi', 'agent', 'skills', 'impeccable'),
+    ]));
+  } finally {
+    rmSync(home, { recursive: true, force: true });
   }
 });

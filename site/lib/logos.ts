@@ -7,6 +7,8 @@ import {
   siCursor,
   siGithubcopilot,
   siGooglegemini,
+  siOpencode,
+  siPi,
   siGo,
   siHtml5,
   siLaravel,
@@ -19,8 +21,8 @@ import {
   siVite,
 } from 'simple-icons';
 
-// Brand marks from simple-icons (CC0). Wasp and OpenAI have no entry there,
-// so they render as a name tile and a neutral terminal glyph respectively.
+// Brand marks from simple-icons (CC0). Wasp, OpenAI, Grok Build, Hermes Agent
+// (simple-icons' Hermes is the parcel firm) and Antigravity have no entry there, so they render as a name tile or a neutral terminal glyph.
 
 export type Logo = { title: string; path: string | null };
 
@@ -55,4 +57,24 @@ export const AGENT_LOGOS: (Logo & { name: string; install: string })[] = [
   { ...mark(siGithubcopilot), name: 'GitHub Copilot CLI', install: 'npm i -g @github/copilot' },
   { ...mark(siGooglegemini), name: 'Gemini CLI', install: 'npm i -g @google/gemini-cli' },
   { ...mark(siCursor), name: 'Cursor CLI', install: 'curl https://cursor.com/install -fsS | bash' },
+  { ...mark(siOpencode), name: 'OpenCode', install: 'npm i -g opencode-ai' },
+  {
+    title: 'Grok Build',
+    path: null,
+    name: 'Grok Build',
+    install: 'curl -fsSL https://x.ai/cli/install.sh | bash',
+  },
+  {
+    title: 'Hermes Agent',
+    path: null,
+    name: 'Hermes Agent',
+    install: 'curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash',
+  },
+  { ...mark(siPi), name: 'Pi', install: 'npm i -g @earendil-works/pi-coding-agent' },
+  {
+    title: 'Antigravity',
+    path: null,
+    name: 'Antigravity CLI',
+    install: 'curl -fsSL https://antigravity.google/cli/install.sh | bash',
+  },
 ];
