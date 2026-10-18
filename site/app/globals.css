@@ -734,8 +734,7 @@ a:hover > .brand-mark .brand-grip {
     0 2px 0 #e8603f,
     0 4px 0 #d9502f,
     0 6px 0 #c94322,
-    0 8px 0 #b8391b,
-    0 18px 30px rgb(120 40 20 / 0.35);
+    0 8px 0 #b8391b;
 }
 :root[data-variant='a'] [data-hero-grid] {
   grid-template-columns: minmax(0, 1fr);
@@ -869,7 +868,6 @@ a:hover > .brand-mark .brand-grip {
 }
 :root[data-variant='c'] .vy-title {
   text-shadow:
-    0 0 22px color-mix(in srgb, var(--title) 60%, transparent),
     2px 0 0 rgb(0 200 200 / 0.35),
     -2px 0 0 rgb(255 80 40 / 0.35);
   animation: vy-flicker 4s steps(1) infinite;
@@ -2217,12 +2215,18 @@ header.vy-header-glass {
   --hero-box: #0b0718;
   --title: #a58bff;
 }
+/* The title card is a picture of a word: dragging or double-clicking never
+   highlights its letters or tiles (screen readers still read its aria-label). */
+[data-hero-title] {
+  -webkit-user-select: none;
+  user-select: none;
+}
 .vy-letters3d {
   pointer-events: none;
 }
 /* The 3D word has taken over. It sits exactly over the 2D word with the same
    faces, sizes and colours, so the two crossfade: the 2D glyphs (and their
-   text-shadows, which the 3D word renders as extrusion, offset shadow or glow)
+   text-shadows, which the 3D word renders as extrusion or offset shadow)
    fade out while the concept's decorations (Cut & Paste's paper tiles, the
    Brutal highlighter) stay under the 3D letters. The HTML word stays for screen
    readers; its parallax and title animations stop so it holds still under the

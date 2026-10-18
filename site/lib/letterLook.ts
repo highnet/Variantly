@@ -8,7 +8,8 @@ import type { VariantKey } from '@/components/backdrop/variants';
  * concept's pool, and the lockup is mismatched in material too (a ransom note
  * of surfaces). Each concept has at most six looks (phones three, all cheap),
  * built once and swapped by reference, so the animation never recompiles.
- * A look may add an "extra" layer drawn from the same glyph (a phosphor glow).
+ * No look glows: no phosphor halo, emissive or fresnel rim, additive layer or
+ * blurred shadow; each concept's character is its colour and material.
  * Every look takes its colours from the 2D letter it stands in for (its CSS
  * colour on the face, the concept's stacked text-shadow on the extruded sides),
  * so looks differ in surface and light only and the colour scheme matches.
@@ -40,11 +41,10 @@ void main() {
 }`;
 
 const BODIES: Record<Style, string> = {
-  // Clay: wrapped diffuse, a warm subsurface-ish rim, and a glaze sheen.
+  // Clay: wrapped diffuse and a glaze sheen (matte edges, no glowing rim).
   clay: `
   float wrap = clamp((dot(n, L) + 0.6) / 1.6, 0.0, 1.0);
-  float rim = pow(1.0 - abs(dot(n, v)), 3.0);
-  c = uA * (0.32 + 0.78 * wrap) + uB * rim * 0.35
+  c = uA * (0.32 + 0.78 * wrap)
     + pow(max(dot(reflect(-L, n), v), 0.0), mix(8.0, 60.0, uSheen)) * mix(0.06, 0.5, uSheen);`,
   // Riso: solid ink overprinted by a 45° halftone of a second ink in the shade.
   riso: `
@@ -53,11 +53,11 @@ const BODIES: Record<Style, string> = {
   float rad = sqrt(clamp(t * 1.1 - 0.1, 0.0, 1.0)) * 0.62;
   float m = smoothstep(rad, rad - 0.12, length(fract(r) - 0.5));
   c = mix(uA, uB, m);`,
-  // Amber terminal: phosphor glow, hot fresnel edge, scanlines, optional static.
+  // Amber terminal: flat phosphor ink, crisp scanlines, optional static (no
+  // glow, no hot edge).
   crt: `
-  float fres = pow(1.0 - abs(dot(n, v)), 2.0);
   float d = clamp(dot(n, L), 0.0, 1.0);
-  c = uA * (0.55 + 0.45 * d) + uB * fres * 1.1;
+  c = uA * (0.55 + 0.45 * d);
   c *= 0.74 + 0.26 * step(0.5, fract(gl_FragCoord.y / uCell));
   c *= 1.0 + uNoise * (hash(floor(gl_FragCoord.xy / 2.0) + uSeed) - 0.5) * 1.4;`,
   // Brutal zine: hard cel bands, a clipped highlight, optional hatching.
@@ -152,22 +152,14 @@ const shader = (style: Style, o: ShaderOpts) =>
   });
 
 // Patches three's lit materials after their colour-space conversion: film
-// grain always, plus a fresnel rim with an iridescent hue shift (the cheap
-// stand-in for thin-film iridescence) or sugar-glitter sparkles.
-const patch = (key: string, rim: boolean, glitter: boolean) => (m: THREE.Material) => {
+// grain always, plus sugar-glitter sparkles.
+const patch = (key: string, glitter: boolean) => (m: THREE.Material) => {
   m.onBeforeCompile = (s) => {
     s.fragmentShader = s.fragmentShader.replace(
       '#include <dithering_fragment>',
       `#include <dithering_fragment>
       {
         float h = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
-        ${
-          rim
-            ? `float f = pow(1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition))), 2.2);
-        vec3 irid = 0.5 + 0.5 * cos(6.2831 * (f * 1.3 + vec3(0.0, 0.33, 0.67)));
-        gl_FragColor.rgb += irid * f * 0.5;`
-            : ''
-        }
         ${
           glitter
             ? `float g = fract(sin(dot(floor(vViewPosition.xy * 90.0), vec2(41.3, 289.1))) * 15731.7);
@@ -215,7 +207,6 @@ const pools: Record<VariantKey, Pool> = {
   },
   c: (ink, dark, phone) => {
     const px = phone ? 1 : Math.min(devicePixelRatio, 1.5);
-    const hot = dark ? '#ffe2a8' : '#5fd6cc';
     const tubes: [number, number][] = [
       [3, 0],
       [4, 0.5],
@@ -224,20 +215,11 @@ const pools: Record<VariantKey, Pool> = {
       [3, 0.3],
       [4, 0],
     ];
-    return tubes.map(([cell, noise], k) => ({
-      ...both(ink, (a) =>
-        shader('crt', { a, b: hot, cell: cell * px, noise, seed: k * 3.7, grain: 0.05 }),
+    return tubes.map(([cell, noise], k) =>
+      both(ink, (a) =>
+        shader('crt', { a, cell: cell * px, noise, seed: k * 3.7, grain: dark ? 0.05 : 0.04 }),
       ),
-      // The phosphor glow: a pushed-out back-face hull, added to the screen.
-      extra: shader('flat', {
-        a: ink.face,
-        opacity: dark ? 0.3 : 0.18,
-        push: 0.08,
-        back: true,
-        additive: true,
-        grain: 0,
-      }),
-    }));
+    );
   },
   d: (ink, _dark, phone) =>
     [0, 1, 0, 1, 0, 1].map((hatch) =>
@@ -259,19 +241,18 @@ const pools: Record<VariantKey, Pool> = {
       ] as Omit<ShaderOpts, 'a'>[]
     ).map((o) => both(ink, (a) => shader('paper', { a, ...o }))),
   g: (ink, _dark, phone) => {
-    const rim = patch('candy-rim', true, false);
-    const glitter = patch('candy-glitter', false, true);
-    const grain = patch('candy', false, false);
+    const glitter = patch('candy-glitter', true);
+    const grain = patch('candy', false);
     const std = (o: THREE.MeshStandardMaterialParameters) => (a: string) =>
       new THREE.MeshStandardMaterial({ ...o, color: a });
     const phys = (o: THREE.MeshPhysicalMaterialParameters) => (a: string) =>
       new THREE.MeshPhysicalMaterial({ ...o, color: a });
     const looks: ((a: string) => THREE.Material)[] = [
-      (a) => rim(std({ roughness: 0.2, metalness: 0.05 })(a)),
+      (a) => grain(std({ roughness: 0.2, metalness: 0.05 })(a)),
       (a) => glitter(std({ roughness: 0.45 })(a)),
-      (a) => rim(std({ roughness: 0.12, metalness: 0.05 })(a)),
+      (a) => grain(std({ roughness: 0.12, metalness: 0.05 })(a)),
     ];
-    // Phones: no clearcoat pass; the rim shader fakes the thin-film sheen.
+    // Phones: no clearcoat pass.
     if (!phone)
       looks.push(
         // Iridescent clear-coat: a thin film whose hue shifts with the angle.
@@ -318,16 +299,16 @@ export const disposePool = (pool: LetterLook[]) =>
 
 /*
  * The shadow the 3D letters cast on a backdrop plane just behind them, in
- * each concept's manner: a soft warm shadow under clay, hard offset ink for
- * riso (its blue offset print), brutal and cut & paste, a soft one under the
- * amber terminal glow and the candy.
+ * each concept's manner, always a crisp, unblurred offset: warm under clay,
+ * the blue offset print under riso, hard ink under brutal, cut & paste, the
+ * amber terminal and the candy.
  * `dir` points from the word toward the light (x right, y up, z toward the
  * viewer); smaller z throws the shadow further from the letters.
  */
 export type LetterShadow = {
   color: string;
   opacity: number;
-  // Blur radius in shadow-map texels (1 = hard edge).
+  // Filter radius in shadow-map texels (1 = a hard edge, no blur).
   radius: number;
   dir: [number, number, number];
 };
@@ -338,13 +319,13 @@ export const letterShadow = (variant: VariantKey, dark: boolean): LetterShadow =
       return {
         color: dark ? '#1a0408' : '#8a3a1c',
         opacity: dark ? 0.5 : 0.3,
-        radius: 8,
+        radius: 1,
         dir: [-0.3, 0.6, 1],
       };
     case 'b':
       return { color: '#2f5bff', opacity: 0.6, radius: 1, dir: [-0.42, 0.3, 1] };
     case 'c':
-      return { color: '#000000', opacity: dark ? 0.4 : 0.2, radius: 10, dir: [0, 0.45, 1] };
+      return { color: '#000000', opacity: dark ? 0.4 : 0.2, radius: 1, dir: [0, 0.45, 1] };
     case 'd':
       return {
         color: dark ? '#ff3d00' : '#000000',
@@ -353,14 +334,14 @@ export const letterShadow = (variant: VariantKey, dark: boolean): LetterShadow =
         dir: [-0.35, 0.35, 1],
       };
     case 'e':
-      return { color: '#000000', opacity: dark ? 0.45 : 0.2, radius: 2, dir: [-0.35, 0.35, 1] };
+      return { color: '#000000', opacity: dark ? 0.45 : 0.2, radius: 1, dir: [-0.35, 0.35, 1] };
     case 'f':
       return { color: '#000000', opacity: dark ? 0.55 : 0.35, radius: 1, dir: [-0.3, 0.42, 1] };
     default:
       return {
         color: dark ? '#05010f' : '#5b2fd6',
         opacity: dark ? 0.55 : 0.25,
-        radius: 8,
+        radius: 1,
         dir: [-0.25, 0.6, 1],
       };
   }
