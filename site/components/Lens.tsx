@@ -474,15 +474,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     const cur = ui.id();
     if (!cur || committing) return;
     committing = true;
-    const b = card.getBoundingClientRect();
-    setVariant(cur, {
-      origin: {
-        x: b.left + rect.x + rect.w / 2,
-        y: b.top + rect.y + rect.h / 2,
-        w: rect.w,
-        h: rect.h,
-      },
-    });
+    setVariant(cur);
     // A switch that does not happen frees it again.
     setTimeout(() => (committing = false), 1500);
   };
@@ -744,8 +736,8 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
  *   touching anywhere on the card (held just above it), tilting a few degrees
  *   toward its motion, its concept named on its top edge; it goes home when
  *   the cursor leaves or the finger lifts. "Try ...", a click while the door
- *   is out, or a tap on the resting tab keeps it: the door opens (setVariant
- *   with the door as the origin, the same doorway every switch opens).
+ *   is out, or a tap on the resting tab keeps it: the page turns over to it
+ *   (setVariant, the same split-flap turn every concept switch plays).
  * - Calm / reduced motion, and the keyboard: a "Peek another look" button
  *   opens a still door in the middle with its controls; keeping is instant
  *   in calm mode.

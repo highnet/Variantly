@@ -748,108 +748,55 @@ a:hover > .brand-mark .brand-grip {
   }
 }
 
-/* ---- Grainy gradients ----------------------------------------------------
- * Film grain on the page's large flat surfaces, the CSS twin of the backdrop's
- * grain (GlField, artKit). Three pre-baked tiles (scripts/build-grain.mjs:
- * 96px indexed PNGs, ~2.7 KB each, hashed and cached by the build) carry the
- * same noise at three strengths. A surface layers the active tile over a
- * gentle wash, as a static background-image under its text, so the grain
- * reads as a grainy gradient and never touches type. No filter, blend mode or
- * mask: it paints once with the surface.
+/* ---- Grain: entities only ------------------------------------------------
+ * Grain sits on entities, never on backgrounds: the page, cards, boards, the
+ * hero and the footer stay clean. The entities and their looks:
+ *
+ * - Backdrop shapes: a grainy halo and fine grain inside (GlField's grain
+ *   pass; the SVG art's grain pattern on the phone and low tiers).
+ * - Primary buttons (.vy-grain-light): a stippled gradient, a second tone
+ *   scattered pixel by pixel across a diagonal ramp, the transition made of
+ *   specks rather than a blend. feTurbulence noise thresholded against the
+ *   ramp, so each pixel is either toned or clean.
+ * - The liquid numerals (.vy-step-tone): film grain, fine dark and light
+ *   specks split from the same noise.
+ *
+ * Both CSS looks are SVG images with no size of their own, so each is drawn
+ * at its element's size and never tiles (the old 96px tile repeated). The
+ * browser generates them: no image to download, painted once per size, no
+ * CSS filter, blend mode or mask.
  *
  * Tokens (set per concept in concepts/<id>/concept.css):
- *   --grain-tile  the active tile: var(--grain-soft | --grain-mid |
- *                 --grain-strong), or none to turn surface grain off
- *   --grain-tile-light  the tile for the hero, primary buttons and footer
- *                 (soft by default; none with --grain-tile: none)
- *   --grain-o     0–1, for layers that hold the tile as their own element
- *                 and fade it with opacity (1 = as baked; 0 = off)
- *   --grain-size  tile size (96px: one noise pixel per device pixel, via the
- *                 1x/2x/3x tiles in image-set)
- *   --grain-wash  the gradient under the grain
- * Anything else that wants the grain (e.g. the liquid numerals) layers
- * var(--grain-tile) as a background-image inside its own clipped area.
+ *   --grain-tile  the film grain: var(--grain-soft | --grain-mid |
+ *                 --grain-strong), or none to turn it off
+ *   --grain-tile-light  the stipple (var(--stipple) by default; none turns
+ *                 it off)
+ *   --stipple     its tone: var(--stipple-dark) on light grounds,
+ *                 var(--stipple-light) on dark ones (the theme picks)
+ *   --grain-size  the film's size (100%: one image per element)
  * ------------------------------------------------------------------------- */
 :root {
-  --grain-soft: image-set(
-    url('./_grain/grain-soft.png') 1x,
-    url('./_grain/grain-soft@2x.png') 2x,
-    url('./_grain/grain-soft@3x.png') 3x
-  );
-  --grain-mid: image-set(
-    url('./_grain/grain-mid.png') 1x,
-    url('./_grain/grain-mid@2x.png') 2x,
-    url('./_grain/grain-mid@3x.png') 3x
-  );
-  --grain-strong: image-set(
-    url('./_grain/grain-strong.png') 1x,
-    url('./_grain/grain-strong@2x.png') 2x,
-    url('./_grain/grain-strong@3x.png') 3x
-  );
+  --grain-soft: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f' x='0' y='0' width='1' height='1' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='3' result='n'/%3E%3CfeColorMatrix in='n' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -0.55 0 0 0 0.275' result='d'/%3E%3CfeColorMatrix in='n' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.55 0 0 0 -0.275' result='l'/%3E%3CfeMerge%3E%3CfeMergeNode in='d'/%3E%3CfeMergeNode in='l'/%3E%3C/feMerge%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E");
+  --grain-mid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f' x='0' y='0' width='1' height='1' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='3' result='n'/%3E%3CfeColorMatrix in='n' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -0.85 0 0 0 0.425' result='d'/%3E%3CfeColorMatrix in='n' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0.85 0 0 0 -0.425' result='l'/%3E%3CfeMerge%3E%3CfeMergeNode in='d'/%3E%3CfeMergeNode in='l'/%3E%3C/feMerge%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E");
+  --grain-strong: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='f' x='0' y='0' width='1' height='1' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='3' result='n'/%3E%3CfeColorMatrix in='n' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.2 0 0 0 0.6' result='d'/%3E%3CfeColorMatrix in='n' values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 1.2 0 0 0 -0.6' result='l'/%3E%3CfeMerge%3E%3CfeMergeNode in='d'/%3E%3CfeMergeNode in='l'/%3E%3C/feMerge%3E%3C/filter%3E%3Crect width='100%' height='100%' filter='url(%23f)'/%3E%3C/svg%3E");
+  --stipple-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='.4' stop-opacity='0'/%3E%3Cstop offset='1'/%3E%3C/linearGradient%3E%3Cfilter id='s' x='0' y='0' width='1' height='1' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' seed='5'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0' result='n'/%3E%3CfeComposite in='SourceGraphic' in2='n' operator='arithmetic' k2='1' k3='-2.5' k4='1.1'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0' intercept='0'/%3E%3CfeFuncG type='linear' slope='0' intercept='0'/%3E%3CfeFuncB type='linear' slope='0' intercept='0'/%3E%3CfeFuncA type='discrete' tableValues='0 0.13'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%' height='100%' fill='url(%23g)' filter='url(%23s)'/%3E%3C/svg%3E");
+  --stipple-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='.4' stop-opacity='0'/%3E%3Cstop offset='1'/%3E%3C/linearGradient%3E%3Cfilter id='s' x='0' y='0' width='1' height='1' color-interpolation-filters='sRGB'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' seed='5'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0' result='n'/%3E%3CfeComposite in='SourceGraphic' in2='n' operator='arithmetic' k2='1' k3='-2.5' k4='1.1'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='0' intercept='1'/%3E%3CfeFuncG type='linear' slope='0' intercept='1'/%3E%3CfeFuncB type='linear' slope='0' intercept='1'/%3E%3CfeFuncA type='discrete' tableValues='0 0.1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%' height='100%' fill='url(%23g)' filter='url(%23s)'/%3E%3C/svg%3E");
   --grain-tile: var(--grain-mid);
-  /* Translucent or text-dense surfaces (the hero, primary buttons, the
-     footer) take a lighter tile and no wash, which keeps their text at AA.
-     The demo dock is all small controls and stays flat. */
-  --grain-tile-light: var(--grain-soft);
-  --grain-o: 1;
-  --grain-size: 96px;
-  --grain-wash: linear-gradient(165deg, rgb(255 255 255 / 0.1), transparent 50%, rgb(0 0 0 / 0.04));
+  --stipple: var(--stipple-dark);
+  --grain-tile-light: var(--stipple);
+  --grain-size: 100%;
 }
 :root[data-theme='dark'] {
-  --grain-wash: linear-gradient(
-    165deg,
-    rgb(255 255 255 / 0.05),
-    transparent 50%,
-    rgb(0 0 0 / 0.14)
-  );
+  --stipple: var(--stipple-light);
 }
-/* Surfaces: .vy-grain (tile + wash) and the top-level cards and boards in
-   the page body; .vy-grain-light (lighter tile, no wash) and the hero's side
-   card, whose concept backgrounds are shorthand, so these selectors outrank
-   them. Nested cards, buttons and links are left alone: they sit on a
-   grained surface already or are small controls. */
-.vy-grain-light,
-:root[data-variant] main [data-hero-side] {
+/* Primary buttons sit on the bright accent: a dark stipple in either theme. */
+.vy-grain-light.bg-alert {
+  --stipple: var(--stipple-dark);
+}
+.vy-grain-light {
   background-image: var(--grain-tile-light);
-  background-size: var(--grain-size) var(--grain-size);
-  background-repeat: repeat;
-}
-.vy-grain,
-:root[data-variant]
-  main
-  :is(.bg-surface, .on-slate):not(
-    button,
-    a,
-    section,
-    .bg-surface .bg-surface,
-    .on-slate .bg-surface,
-    .on-slate .on-slate,
-    .bg-surface .on-slate
-  ) {
-  background-image: var(--grain-tile), var(--grain-wash);
-  background-size:
-    var(--grain-size) var(--grain-size),
-    100% 100%;
-  background-repeat: repeat, no-repeat;
-}
-/* The hero: its title band takes the tile directly (it is translucent over
-   the backdrop, so no wash). The grid's tint runs past its 1440px cap to the
-   screen edges as a box-shadow; its grain does the same as a border-image
-   drawn 100vmax outside it, so wide screens show no seam. Soft Clay and
-   Amber Terminal frame the grid as a card and Brutal Zine draws its border,
-   so it is a plain background there. */
-:root[data-variant]:not([data-variant='a']) [data-hero-title] {
-  background-image: var(--grain-tile-light);
-  background-size: var(--grain-size) var(--grain-size);
-}
-:root[data-variant]:is([data-variant='a'], [data-variant='c'], [data-variant='d'])
-  [data-hero-grid] {
-  background-image: var(--grain-tile-light);
-  background-size: var(--grain-size) var(--grain-size);
-}
-:root[data-variant]:not([data-variant='a'], [data-variant='c'], [data-variant='d'])
-  [data-hero-grid] {
-  border-image: var(--grain-tile-light) 0 fill / 0 / 0 100vmax repeat;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
 
 /* =========================================================================
@@ -1299,16 +1246,18 @@ a:hover > .brand-mark .brand-grip {
   }
 }
 
-/* ---- Concept swap: the new page opens through a doorway ----------------- */
-/* lib/lensSwap drives it: the new page's clip-path grows from a door-sized
-   rounded rect at the trigger point to past the screen's edges, on a spring,
-   with the Lens's amber frame (.vy-swap-frame, three thin rings) riding the
-   edge. The old page stays put underneath. */
+/* ---- Concept swap: the page turns over slat by slat ---------------------- */
+/* lib/slatSwap drives it: the old and new pages' pictures are clipped to
+   vertical slats that narrow and widen as the demo's slats turn
+   (components/SlatFlip), over a dark board, like the demo's. */
+::view-transition {
+  background: var(--slate);
+}
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
 }
-/* The title card is left out of the doorway: it is its own layer, shown live
+/* The title card is left out of the turn: it is its own layer, shown live
    and in place throughout, so its letters' morph into the new concept carries
    the change (VariantTitle's swap timeline). */
 [data-hero-title] {
@@ -1323,49 +1272,6 @@ a:hover > .brand-mark .brand-grip {
 }
 ::view-transition-image-pair(root) {
   isolation: auto;
-}
-.vy-swap-frame {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-}
-/* Never paint the raw layer outside a transition: it is a full-screen amber
-   fill that only makes sense through its clipped snapshot. */
-:root:not(:active-view-transition) .vy-swap-frame {
-  display: none;
-}
-/* Lives only in the new state of a swap, as rings clipped by lib/lensSwap;
-   until its keyframes start it shows nothing. */
-::view-transition-new(vy-swap-frame-0),
-::view-transition-new(vy-swap-frame-1),
-::view-transition-new(vy-swap-frame-2) {
-  clip-path: inset(50%);
-}
-.vy-swap-frame[data-ring='0'] {
-  view-transition-name: vy-swap-frame-0;
-  background: var(--lens-frame);
-}
-/* The doorway's light, only while it opens: two faint stepped bands. */
-.vy-swap-frame[data-ring='1'] {
-  view-transition-name: vy-swap-frame-1;
-  background: color-mix(in srgb, var(--lens-light) 34%, transparent);
-}
-.vy-swap-frame[data-ring='2'] {
-  view-transition-name: vy-swap-frame-2;
-  background: color-mix(in srgb, var(--lens-light) 13%, transparent);
-}
-::view-transition-group(vy-swap-frame-0),
-::view-transition-group(vy-swap-frame-1),
-::view-transition-group(vy-swap-frame-2),
-::view-transition-new(vy-swap-frame-0),
-::view-transition-new(vy-swap-frame-1),
-::view-transition-new(vy-swap-frame-2) {
-  animation: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-new(root) {
-    animation: none;
-  }
 }
 
 /* ---- Boards: every slate surface follows the concept --------------------- */
@@ -1426,8 +1332,12 @@ a:hover > .brand-mark .brand-grip {
    there would outline their full geometry. A concept tunes it with
    --art-grain (0 turns it off). */
 .vy-art-grain {
-  opacity: var(--art-grain, 0.9);
+  /* Two layers (artKit GrainDefs): each a little lighter, the same grain. */
+  opacity: calc(var(--art-grain, 0.9) * 0.7);
   pointer-events: none;
+}
+.vy-art-grain.vy-art-grain-b * {
+  fill: url(#vy-art-grain-b);
 }
 .vy-art-grain * {
   fill: url(#vy-art-grain);
@@ -1658,7 +1568,7 @@ a:hover > .brand-mark .brand-grip {
    the bottom, clipped
    to the glyph (and to the liquid by the same mask as the fill). Neutral
    black and white over the theme's fill colour, so every concept keeps its
-   own ink. The grain is the page's shared tile (--grain-tile, see Grainy
+   own ink. The grain is the page's film grain (--grain-tile, see Grainy
    gradients), so a concept that turns surface grain off turns it off here. */
 .vy-step-tone {
   background:

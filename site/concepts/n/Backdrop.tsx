@@ -20,7 +20,6 @@ const DUST = [
 const Reel = () => (
   <>
     <div className="r-weave absolute inset-[-12px]">
-      <div className="r-grain absolute" />
       <i className="r-scratch r-scratch-0" />
       <i className="r-scratch r-scratch-1" />
       <i className="r-scratch r-scratch-2" />

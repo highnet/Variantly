@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 
 import { CommandCopy } from '@/components/CommandCopy';
+import { HowItWorks } from '@/components/HowItWorks';
 import { PageIntro } from '@/components/PageIntro';
 import { SiteShell } from '@/components/SiteShell';
 import { Tour } from '@/components/Tour';
@@ -39,6 +40,7 @@ const HowItWorksPage = () => (
           .
         </p>
       </div>
+      <HowItWorks />
       <Tour />
       <section aria-labelledby="try-title" className="border-ink grid gap-5 border-t-2 pt-6">
         <Typography variant="headline" as="h2" id="try-title">
