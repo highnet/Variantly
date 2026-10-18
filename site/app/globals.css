@@ -655,6 +655,85 @@ a:hover > .brand-mark .brand-grip {
   }
 }
 
+/* ---- Grainy gradients ----------------------------------------------------
+ * Film grain on the page's large flat surfaces, the CSS twin of the backdrop's
+ * grain (GlField, artKit). Three pre-baked tiles (scripts/build-grain.mjs:
+ * 96px indexed PNGs, ~2.7 KB each, hashed and cached by the build) carry the
+ * same noise at three strengths. A surface layers the active tile over a
+ * gentle wash, as a static background-image under its text, so the grain
+ * reads as a grainy gradient and never touches type. No filter, blend mode or
+ * mask: it paints once with the surface.
+ *
+ * Tokens (set per concept in concepts/<id>/concept.css):
+ *   --grain-tile  the active tile: var(--grain-soft | --grain-mid |
+ *                 --grain-strong), or none to turn surface grain off
+ *   --grain-o     0–1, for layers that hold the tile as their own element
+ *                 and fade it with opacity (1 = as baked; 0 = off)
+ *   --grain-size  tile size (96px: one noise pixel per CSS pixel)
+ *   --grain-wash  the gradient under the grain
+ * Anything else that wants the grain (e.g. the liquid numerals) layers
+ * var(--grain-tile) as a background-image inside its own clipped area.
+ * ------------------------------------------------------------------------- */
+:root {
+  --grain-soft: url('./_grain/grain-soft.png');
+  --grain-mid: url('./_grain/grain-mid.png');
+  --grain-strong: url('./_grain/grain-strong.png');
+  --grain-tile: var(--grain-mid);
+  --grain-o: 1;
+  --grain-size: 96px;
+  --grain-wash: linear-gradient(165deg, rgb(255 255 255 / 0.1), transparent 50%, rgb(0 0 0 / 0.04));
+}
+:root[data-theme='dark'] {
+  --grain-wash: linear-gradient(
+    165deg,
+    rgb(255 255 255 / 0.05),
+    transparent 50%,
+    rgb(0 0 0 / 0.14)
+  );
+}
+/* Surfaces: the utility, plus the top-level cards and boards in the page
+   body and the hero's side card (its concept backgrounds are shorthand, so
+   these selectors outrank them). Nested cards, buttons and links are left
+   alone: they sit on a grained surface already or are small controls. */
+.vy-grain,
+:root[data-variant] main [data-hero-side],
+:root[data-variant]
+  main
+  :is(.bg-surface, .on-slate):not(
+    button,
+    a,
+    section,
+    .bg-surface .bg-surface,
+    .on-slate .bg-surface,
+    .on-slate .on-slate,
+    .bg-surface .on-slate
+  ) {
+  background-image: var(--grain-tile), var(--grain-wash);
+  background-size:
+    var(--grain-size) var(--grain-size),
+    100% 100%;
+  background-repeat: repeat, no-repeat;
+}
+/* The hero: its title band takes the tile directly (it is translucent over
+   the backdrop, so no wash). The grid's tint runs past its 1440px cap to the
+   screen edges as a box-shadow; its grain does the same as a border-image
+   drawn 100vmax outside it, so wide screens show no seam. Soft Clay and
+   Amber Terminal frame the grid as a card and Brutal Zine draws its border,
+   so it is a plain background there. */
+:root[data-variant]:not([data-variant='a']) [data-hero-title] {
+  background-image: var(--grain-tile);
+  background-size: var(--grain-size) var(--grain-size);
+}
+:root[data-variant]:is([data-variant='a'], [data-variant='c'], [data-variant='d'])
+  [data-hero-grid] {
+  background-image: var(--grain-tile);
+  background-size: var(--grain-size) var(--grain-size);
+}
+:root[data-variant]:not([data-variant='a'], [data-variant='c'], [data-variant='d'])
+  [data-hero-grid] {
+  border-image: var(--grain-tile) 0 fill / 0 / 0 100vmax repeat;
+}
+
 /* =========================================================================
  * Homepage concepts. Each [data-variant] is its own direction: page tokens,
  * hero tokens (light hero in light theme, dark in dark), display face, hero
@@ -681,7 +760,11 @@ a:hover > .brand-mark .brand-grip {
   --rule: var(--hero-line);
   --surface: var(--hero-ink);
   --ink: var(--hero-box);
-  background: transparent;
+  background-color: transparent;
+}
+/* The footer is a band in the hero's tint (grained, see Grainy gradients). */
+:root[data-variant] footer.on-slate {
+  background-color: color-mix(in srgb, var(--hero-bg) var(--hero-alpha, 70%), transparent);
 }
 :root[data-variant] [data-hero-title],
 :root[data-variant] [data-hero-grid] {
@@ -1368,12 +1451,11 @@ a:hover > .brand-mark .brand-grip {
    the bottom, clipped
    to the glyph (and to the liquid by the same mask as the fill). Neutral
    black and white over the theme's fill colour, so every concept keeps its
-   own ink. The tile is a 2 kB bake (scripts/bake-liquid.mjs); switch to the
-   shared --grain-tile token once it lands on main. */
+   own ink. The grain is the page's shared tile (--grain-tile, see Grainy
+   gradients), so a concept that turns surface grain off turns it off here. */
 .vy-step-tone {
-  --liq-grain: url('/liquid/grain.png');
   background:
-    var(--grain-tile, var(--liq-grain)) 0 0 / 40px 40px,
+    var(--grain-tile) 0 0 / var(--grain-size) var(--grain-size),
     linear-gradient(
       to bottom,
       rgb(255 255 255 / 0.16),

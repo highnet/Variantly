@@ -123,3 +123,7 @@
 :root[data-variant='b'] .vy-loadbar-fill {
   background: radial-gradient(circle, var(--art-1) 45%, transparent 50%) 0 0 / 5px 5px;
 }
+/* Grain on surfaces (see Grainy gradients in app/globals.css). */
+:root[data-variant='b'] {
+  --grain-tile: var(--grain-strong);
+}

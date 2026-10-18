@@ -156,3 +156,7 @@
   padding: 6px 8px;
   border: 1px solid var(--rule);
 }
+/* Grain on surfaces (see Grainy gradients in app/globals.css). */
+:root[data-variant='c'] {
+  --grain-tile: var(--grain-soft);
+}

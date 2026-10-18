@@ -57,7 +57,7 @@ const DemoVideo = () => {
         </ol>
       )}
       {HAS_VIDEO && (
-        <div className="border-ink bg-slate relative aspect-video w-full max-w-[1100px] overflow-hidden rounded-md border-2">
+        <div className="vy-grain border-ink bg-slate relative aspect-video w-full max-w-[1100px] overflow-hidden rounded-md border-2">
           {videoId ? (
             <iframe
               className="absolute inset-0 size-full"

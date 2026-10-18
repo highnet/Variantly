@@ -1206,7 +1206,7 @@ const Showcase = () => {
         </div>
         <div
           data-keep-cycle
-          className="bg-slate border-slate-line sm:shadow-grip sm:rounded-chip flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t px-2 py-2 font-mono [font-stretch:87.5%] max-sm:pb-[calc(88px+env(safe-area-inset-bottom))] sm:absolute sm:inset-x-3 sm:bottom-3 sm:z-30 sm:mx-auto sm:w-fit sm:border-t-0"
+          className="vy-grain bg-slate border-slate-line sm:shadow-grip sm:rounded-chip flex flex-wrap items-center justify-center gap-x-4 gap-y-2 border-t px-2 py-2 font-mono [font-stretch:87.5%] max-sm:pb-[calc(88px+env(safe-area-inset-bottom))] sm:absolute sm:inset-x-3 sm:bottom-3 sm:z-30 sm:mx-auto sm:w-fit sm:border-t-0"
         >
           {DEMO_RUNS.length > 1 && (
             // Which batch of redesigns: a segmented switch in an ink well,

@@ -93,3 +93,7 @@
     linear-gradient(180deg, rgb(255 255 255 / 0.7), transparent 45%),
     linear-gradient(90deg, var(--art-1), var(--art-3), var(--art-2));
 }
+/* Grain on surfaces (see Grainy gradients in app/globals.css). */
+:root[data-variant='g'] {
+  --grain-tile: var(--grain-soft);
+}
