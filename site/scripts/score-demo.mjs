@@ -2,7 +2,7 @@
  * Re-measures the Showcase demo pages with variantly's own axe-core and
  * Lighthouse check and writes lib/demo-scores.json, so the scores on the
  * page always match the pages it shows. Every run folder under
- * public/demo (oak-and-iron, oak-and-iron-w26, ...) is scored, and results
+ * public/demo (oak-and-iron, ...) is scored, and results
  * are keyed by run, then variant. Run after changing any demo page:
  *
  *   npm run score-demo

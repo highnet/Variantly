@@ -1343,7 +1343,7 @@
         "source": "Mobile performance pass, PR #83, prompted by an iPhone screen recording of the lag.",
         "fromOn": "mobile"
       },
-      "text": "The website got the same care: twenty title concepts, twenty redesigns of one shop plus a Winter 2026 run, and a mobile pass that cut its transfer, font requests and blocking time on phones.",
+      "text": "The website got the same care: twenty title concepts, thirty redesigns of one shop, and a mobile pass that cut its transfer, font requests and blocking time on phones.",
       "actions": [
         {
           "goto": "{{web}}"
@@ -1376,7 +1376,7 @@
           "wait": 1800
         },
         {
-          "click": "role=button[name=/^Winter 2026/]",
+          "click": "[aria-label^=\"Redesigns\"] button >> nth=24",
           "zoom": true,
           "optional": true
         },
@@ -1384,21 +1384,7 @@
           "wait": 1200
         },
         {
-          "click": "[aria-label=\"Redesigns\"] button >> nth=4",
-          "optional": true
-        },
-        {
-          "wait": 1200
-        },
-        {
-          "click": "role=button[name=/^Classic/]",
-          "optional": true
-        },
-        {
-          "wait": 900
-        },
-        {
-          "click": "[aria-label=\"Redesigns\"] button >> nth=17",
+          "click": "[aria-label^=\"Redesigns\"] button >> nth=17",
           "optional": true
         },
         {

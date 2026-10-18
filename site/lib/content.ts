@@ -169,70 +169,70 @@ const DEMO_VARIANT_LIST: DemoVariant[] = [
 
 const W26_VARIANT_LIST: DemoVariant[] = [
   {
-    n: 1,
+    n: 21,
     direction: 'Hand-stitched ledger',
     summary:
       'A hand-bound workshop ledger: grainy ivory paper, rust stitching and stamps, masking tape, a brushed ochre underline and soft wonky Fraunces with handwritten Kalam notes, and one green scanner line drifting over an oak sample.',
     files: FILES,
   },
   {
-    n: 2,
+    n: 22,
     direction: 'Uncanny showroom',
     summary:
       'A showroom from a dream: an arched violet dusk room with a moon, a glowing door and a table on impossibly long legs; icy-blue and silver Instrument Serif headlines reflected in a black floor; stretched, mirrored product drawings.',
     files: FILES,
   },
   {
-    n: 3,
+    n: 23,
     direction: 'Noir film stills',
     summary:
       'Stills from a noir film about a furniture maker: a letterboxed hero with oxblood velvet curtains, a hard spotlight and venetian-blind shadows, italic Bodoni titles over Courier screenplay slugs, a burned-in REC timecode, ending on THE END.',
     files: FILES,
   },
   {
-    n: 4,
+    n: 24,
     direction: 'Scrapbook collage',
     summary:
       'A maximalist scrapbook: torn cream sheets with hard ink shadows, cut-out gingham, sunset and wood-grain pictures, taped cards on stripes, polka dots and checkerboard, round stickers, heavy Bricolage Grotesque with DM Serif italics and one holographic foil sticker.',
     files: FILES,
   },
   {
-    n: 5,
+    n: 25,
     direction: 'Workshop desktop',
     summary:
       'An early desktop OS, re-typeset: ivory windows with striped oxblood title bars on a dotted glacial-teal desktop, pixel-drawn table, stool and shelf, Bricolage Grotesque headlines, windows that zoom open.',
     files: FILES,
   },
   {
-    n: 6,
+    n: 26,
     direction: 'Puffed letters',
     summary:
       'Letters as the furniture: a giant inflated oxblood wordmark that breathes letter by letter, a handwritten arc of text, product names in puffy, wonky-serif and Caveat lettering, prices circled by hand.',
     files: FILES,
   },
   {
-    n: 7,
+    n: 27,
     direction: 'The front room',
     summary:
       'An inherited front room: teal damask wallpaper, a walnut wainscot, products hung in oval, arched and matted gilt frames with manila price tags, a postcard newsletter, and a lamp that warms as dusk falls on scroll.',
     files: FILES,
   },
   {
-    n: 8,
+    n: 28,
     direction: 'Dalarna kurbits',
     summary:
       'A painted Dalarna farmhouse cupboard: warm ivory, oxblood and muted teal, a kurbits bloom that paints itself in inside an arched door panel, Young Serif headings and pigment-tinted product cards.',
     files: FILES,
   },
   {
-    n: 9,
+    n: 29,
     direction: 'Inflated materials',
     summary:
       'A shop of soft, touchable objects: a slowly re-flowing liquid-chrome blob, a frosted glacial-glass slab, an oxblood cushion, inflated pill buttons and puffy tube-rendered furniture in rounded Unbounded type.',
     files: FILES,
   },
   {
-    n: 10,
+    n: 30,
     direction: 'Clay and linen',
     summary:
       'A calm, warm room: linen paper, a stacked cairn of clay, sage and mist stones, fine single-line drawings on pebble plinths, Instrument Serif and slow drifting window light.',
@@ -282,23 +282,13 @@ const makeRun = (run: Omit<DemoRun, 'base' | 'original' | 'variants'>, list: Dem
 export const DEMO_RUNS: DemoRun[] = [
   makeRun(
     {
-      id: 'classic',
+      id: 'oak-and-iron',
       folder: 'oak-and-iron',
-      label: 'Classic',
+      label: 'Oak & Iron',
       brief:
         'Redesign the home page from scratch, one pinned visual direction per design, keeping every word of the content.',
     },
-    DEMO_VARIANT_LIST,
-  ),
-  makeRun(
-    {
-      id: 'w26',
-      folder: 'oak-and-iron-w26',
-      label: 'Winter 2026',
-      brief:
-        'Redesign the shop in the Winter 2026–27 design trends: tactile imperfection, surrealism, cinematic drama, maximalist collage, retro-tech nostalgia, expressive typography, warm eclecticism, neo-folk craft, sensory 3D materials, quiet organic minimalism. Combine human-made texture with one unexpected digital effect.',
-    },
-    W26_VARIANT_LIST,
+    [...DEMO_VARIANT_LIST, ...W26_VARIANT_LIST],
   ),
 ];
 

@@ -1098,11 +1098,13 @@ const Showcase = () => {
                       <strong className="text-surface">Illustrative example:</strong> a made-up
                       shop, not customer work, redesigned{' '}
                       <strong className="text-surface">
-                        {r.variants.length === 20
-                          ? 'twenty'
-                          : r.variants.length === 10
-                            ? 'ten'
-                            : r.variants.length}{' '}
+                        {r.variants.length === 30
+                          ? 'thirty'
+                          : r.variants.length === 20
+                            ? 'twenty'
+                            : r.variants.length === 10
+                              ? 'ten'
+                              : r.variants.length}{' '}
                         ways
                       </strong>{' '}
                       by <GlossaryTip term="claude-code" />.{' '}
@@ -1374,10 +1376,10 @@ const Showcase = () => {
           )}
           <div className="flex items-center gap-1">
             <Button
-              variant="cell"
+              variant="cell-goo"
               size="cell"
               aria-label="Previous redesign"
-              className="hidden sm:inline-flex"
+              className="text-surface hidden sm:inline-flex [&_svg]:size-5"
               title="Previous"
               onClick={() => choose(prevN)}
             >
@@ -1398,7 +1400,7 @@ const Showcase = () => {
               ref={picker}
               id="demo-picker"
               role="radiogroup"
-              aria-label={`${run.label} redesigns, 1 to ${count}`}
+              aria-label={`Redesigns, 1 to ${count}`}
               onKeyDown={onCellsKey}
               className="relative isolate hidden gap-1 sm:grid sm:grid-cols-[repeat(10,2.5rem)]"
             >
@@ -1469,10 +1471,10 @@ const Showcase = () => {
               })}
             </div>
             <Button
-              variant="cell"
+              variant="cell-goo"
               size="cell"
               aria-label="Next redesign"
-              className="hidden sm:inline-flex"
+              className="text-surface hidden sm:inline-flex [&_svg]:size-5"
               title="Next"
               onClick={() => choose(nextN)}
             >
