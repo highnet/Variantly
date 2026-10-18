@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 import { plain } from '@/lib/lookKit';
 import type { ConceptLook } from '@/concepts/types';
+import { LIGHT_TURN } from '@/lib/titleLight';
 
 /*
  * s · Lived-in Den: oiled walnut faces (procedural grain and pores in the 2D
@@ -19,6 +20,7 @@ void main() {
 }`;
 
 const FRAG = /* glsl */ `
+uniform mat3 uLightTurn;
 uniform vec3 uA; uniform float uMetal; uniform float uScale; uniform float uSeed; uniform float uGloss;
 varying vec3 vN; varying vec3 vV; varying vec3 vObj;
 float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
@@ -30,7 +32,7 @@ void main() {
   vec3 n = normalize(vN);
   if (!gl_FrontFacing) n = -n;
   vec3 v = normalize(vV);
-  vec3 L = normalize(vec3(0.55, 0.65, 0.6));
+  vec3 L = normalize(uLightTurn * vec3(0.55, 0.65, 0.6));
   float d = max(dot(n, L), 0.0);
   vec3 h = normalize(L + v);
   vec3 c;
@@ -54,6 +56,7 @@ const mat = (a: string, metal: boolean, scale = 1, seed = 0, gloss = 0.55) =>
     vertexShader: VERT,
     fragmentShader: FRAG,
     uniforms: {
+      uLightTurn: LIGHT_TURN,
       uA: { value: new THREE.Color(a) },
       uMetal: { value: metal ? 1 : 0 },
       uScale: { value: scale },

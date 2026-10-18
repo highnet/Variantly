@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { LIGHT_TURN } from '@/lib/titleLight';
 
 /*
  * Per-concept surface pools for the 3D title. Like the typefaces, the surface
@@ -83,6 +84,7 @@ const BODIES: Record<Style, string> = {
 };
 
 const frag = (style: Style) => /* glsl */ `
+uniform mat3 uLightTurn;
 uniform vec3 uA;
 uniform vec3 uB;
 uniform float uCell;
@@ -101,7 +103,7 @@ void main() {
   vec3 n = normalize(vN);
   if (!gl_FrontFacing) n = -n;
   vec3 v = normalize(vV);
-  vec3 L = normalize(vec3(-0.45, 0.6, 0.65));
+  vec3 L = normalize(uLightTurn * vec3(-0.45, 0.6, 0.65));
   vec3 c = vec3(0.0);
   ${BODIES[style]}
   gl_FragColor = vec4(c, uOpacity);
@@ -131,6 +133,7 @@ export const shader = (style: Style, o: ShaderOpts) =>
     vertexShader: VERT,
     fragmentShader: frag(style),
     uniforms: {
+      uLightTurn: LIGHT_TURN,
       uA: { value: new THREE.Color(o.a) },
       uB: { value: new THREE.Color(o.b ?? o.a) },
       uCell: { value: o.cell ?? 6 },

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 import { plain } from '@/lib/lookKit';
 import type { ConceptLook } from '@/concepts/types';
+import { LIGHT_TURN } from '@/lib/titleLight';
 
 /*
  * p · Tenango Thread: each letter is one motif, filled with dense satin
@@ -28,6 +29,7 @@ void main() {
 }`;
 
 const FRAG = /* glsl */ `
+uniform mat3 uLightTurn;
 uniform vec3 uA;
 uniform vec4 uS; // angle, thread pitch, stitch length, seed
 varying vec3 vT;
@@ -39,7 +41,7 @@ void main() {
   vec3 n = normalize(vN);
   if (!gl_FrontFacing) n = -n;
   vec3 v = normalize(vV);
-  vec3 L = normalize(vec3(-0.45, 0.6, 0.65));
+  vec3 L = normalize(uLightTurn * vec3(-0.45, 0.6, 0.65));
   vec2 d = vec2(cos(uS.x), sin(uS.x));
   // across: which thread; along: where on its stitch
   float across = dot(vObj.xy, vec2(-d.y, d.x)) / uS.y;
@@ -67,6 +69,7 @@ const mat = (a: string, angle: number, pitch: number, len: number, seed: number)
     vertexShader: VERT,
     fragmentShader: FRAG,
     uniforms: {
+      uLightTurn: LIGHT_TURN,
       uA: { value: new THREE.Color(a) },
       uS: { value: new THREE.Vector4(angle, pitch, len, seed) },
     },

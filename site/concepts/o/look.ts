@@ -2,6 +2,7 @@ import * as THREE from 'three';
 
 import type { ConceptLook } from '@/concepts/types';
 import { plain, type LetterInk } from '@/lib/lookKit';
+import { LIGHT_TURN } from '@/lib/titleLight';
 
 /*
  * o · Swiss Punk: enamel signs. Flat matte colour lit per facet (so the
@@ -17,12 +18,13 @@ void main() {
 }`;
 
 const FRAG = /* glsl */ `
+uniform mat3 uLightTurn;
 uniform vec3 uA; uniform float uGloss; uniform float uFlat;
 varying vec3 vV;
 void main() {
   vec3 n = normalize(cross(dFdx(-vV), dFdy(-vV)));
   vec3 v = normalize(vV);
-  vec3 L = normalize(vec3(-0.45, 0.6, 0.65));
+  vec3 L = normalize(uLightTurn * vec3(-0.45, 0.6, 0.65));
   float d = clamp(dot(n, L), 0.0, 1.0);
   vec3 c = uA * mix(0.62 + 0.38 * d, 1.0, uFlat * step(0.98, abs(n.z)));
   c += step(0.9, dot(reflect(-L, n), v)) * uGloss;
@@ -35,6 +37,7 @@ const enamel = (a: string, gloss: number, flat: number) =>
     vertexShader: VERT,
     fragmentShader: FRAG,
     uniforms: {
+      uLightTurn: LIGHT_TURN,
       uA: { value: new THREE.Color(a) },
       uGloss: { value: gloss },
       uFlat: { value: flat },
