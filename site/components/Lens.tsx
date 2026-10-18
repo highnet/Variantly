@@ -181,8 +181,11 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   let shown = false;
   let target: Rect = { x: 0, y: 0, w: 180, h: 360 };
   let rect: Rect = { ...target };
-  // The spring's velocity per coordinate, px/s.
+  // The spring's velocity per coordinate, px/s, and whether the door has
+  // caught the pointer it follows (then it tracks it directly).
   const vel: Rect = { x: 0, y: 0, w: 0, h: 0 };
+  let snapped = false;
+  let followT0 = 0;
   const tilt = { rx: 0, ry: 0 };
   let last = 0;
   let glitchUntil = 0;
@@ -320,6 +323,18 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     if (mode === 'fixed' || fixedOpen) {
       rect = { ...target };
       KEYS.forEach((key) => (vel[key] = 0));
+    } else if (dragging && snapped) {
+      // Locked on: the door rides the pointer with a 25ms ease (no visible
+      // lag, no jump as it takes over from the magnet). Its velocity is kept,
+      // so letting go flings it home with the gesture's momentum.
+      const s = Math.max(0.001, dt / 1000);
+      const k = 1 - Math.exp(-dt / 25);
+      const next = { ...rect };
+      KEYS.forEach((key) => {
+        next[key] += (target[key] - rect[key]) * k;
+        vel[key] = Math.max(-4000, Math.min(4000, (next[key] - rect[key]) / s));
+      });
+      rect = next;
     } else {
       // Semi-implicit Euler in 8ms substeps (stable at any frame rate).
       const sp = dragging ? SNAP : HOME;
@@ -333,6 +348,13 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
         });
       }
       rect = next;
+      // The magnet has caught the pointer (or had its moment: a spring
+      // chasing a moving cursor trails it): track it directly from now on.
+      if (
+        dragging &&
+        (Math.hypot(target.x - rect.x, target.y - rect.y) < 6 || now - followT0 > 280)
+      )
+        snapped = true;
     }
     // Tilt toward the motion (desktop), eased.
     const vx = (rect.x + rect.w / 2 - px) / Math.max(1, dt);
@@ -525,6 +547,8 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     const follow = (on: boolean) => {
       if (dragging === on) return;
       dragging = on;
+      snapped = false;
+      followT0 = performance.now();
       ui.setDragging(on);
       if (!on) target = restRect();
       wake();
@@ -535,7 +559,12 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
       const touch = e.pointerType === 'touch';
       if (touch) {
         if (e.pointerId !== finger) return;
-      } else if (!inside(e) || (e.target as Element).closest('[data-lens-ui]')) {
+      } else if (
+        !inside(e) ||
+        // Over the Lens's controls (not its own drag handle, which rides the
+        // door and so is always under a following cursor).
+        (e.target as Element).closest('[data-lens-ui]:not(.vy-lens-handle)')
+      ) {
         follow(false);
         return;
       }
@@ -605,6 +634,8 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     if (!drag.moved) {
       drag.moved = true;
       dragging = true;
+      snapped = false;
+      followT0 = performance.now();
       ui.setDragging(true);
     }
     const b = card.getBoundingClientRect();
@@ -619,6 +650,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     // A tap on the door (no drag) keeps its concept, like a click on desktop.
     if (!drag.moved) commit();
     dragging = false;
+    snapped = false;
     ui.setDragging(false);
     target = restRect();
     wake();
