@@ -353,10 +353,16 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     // `u`, `v` in -1..1: toward the right, toward the bottom.
     // Phones lean further (a tipped phone is a bigger gesture than a cursor
     // drift) and follow faster (0.15s: the sensor already moves smoothly).
-    const leanX = phone ? 7 : 5;
-    const leanY = phone ? 10 : 7;
+    // Phones turn much further and with a closer perspective: on a narrow
+    // card a 10° turn at 900px barely changes the word's shape.
+    const leanX = phone ? 16 : 5;
+    const leanY = phone ? 24 : 7;
+    const depth = phone ? 520 : 900;
     const leanTo = (u: number, v: number) => {
-      const lean = `perspective(900px) rotateX(${(-v * leanX).toFixed(2)}deg) rotateY(${(u * leanY).toFixed(2)}deg)`;
+      // Phones shrink a little as they turn, so the near end of a full-width
+      // word stays inside the card.
+      const k = phone ? 1 - 0.07 * Math.min(1, Math.hypot(u, v)) : 1;
+      const lean = `perspective(${depth}px) rotateX(${(-v * leanX).toFixed(2)}deg) rotateY(${(u * leanY).toFixed(2)}deg) scale(${k.toFixed(3)})`;
       const layers = [
         el,
         ...(el.parentElement?.querySelectorAll<HTMLElement>('[data-lens-lean]') ?? []),
@@ -906,14 +912,15 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           baseT = now;
           base[0] += (side - base[0]) * k;
           base[1] += (tip - base[1]) * k;
-          // Full lean at ~12° of tilt.
-          const u = Math.max(-1, Math.min(1, (side - base[0]) / 12));
-          const v = Math.max(-1, Math.min(1, (tip - base[1]) / 12));
+          // Full lean at ~22° of tilt: past it a phone soon flips to landscape,
+          // so the lean builds across the whole usable range.
+          const u = Math.max(-1, Math.min(1, (side - base[0]) / 22));
+          const v = Math.max(-1, Math.min(1, (tip - base[1]) / 22));
           leanTo(u, v);
           if (debug)
             debug.textContent = `beta ${e.beta.toFixed(1)}  gamma ${e.gamma.toFixed(1)}\nlean u ${u.toFixed(2)}  v ${v.toFixed(2)}`;
-          const yaw = u * 0.55;
-          const pitch = v * 0.4;
+          const yaw = u * 0.8;
+          const pitch = v * 0.55;
           if (Math.abs(yaw - lightTo.yaw) + Math.abs(pitch - lightTo.pitch) < 0.01) return;
           sweepT0 = -1;
           swept = true;
