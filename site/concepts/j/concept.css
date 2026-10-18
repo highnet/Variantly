@@ -70,12 +70,8 @@
   background: var(--screw) 6px 6px / 12px 12px no-repeat, var(--screw) calc(100% - 6px) 6px / 12px 12px no-repeat, var(--screw) 6px calc(100% - 6px) / 12px 12px no-repeat, var(--screw) calc(100% - 6px) calc(100% - 6px) / 12px 12px no-repeat, var(--module, var(--surface));
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 18px 34px -26px rgb(0 0 0 / 0.55);
 }
-:root[data-variant='j'] [data-hero-side] { --module: var(--hero-box); position: relative; padding: 44px 24px 24px; }
+:root[data-variant='j'] [data-hero-side] { --module: var(--hero-box); position: relative; padding: 36px 24px 24px; }
 :root[data-variant='j'][data-theme='dark'] :is([data-hero-side], main > div .bg-surface) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 18px 34px -26px #000; }
-:root[data-variant='j'] [data-hero-side]::before {
-  content: 'PRESET J · INSTRUMENT OS'; position: absolute; top: 16px; left: 24px; font: 900 14px/1 var(--font-doto); letter-spacing: 0.1em;
-  color: var(--alert);
-}
 :root[data-variant='j'] [data-hero-side]::after {
   content: ''; position: absolute; top: 15px; right: 24px; width: 10px; height: 10px; border-radius: 50%; background: var(--art-3);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--art-3) 25%, #0000);
@@ -92,3 +88,9 @@
 :root[data-variant='j'] .vy-loadbar::after {
   content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, #0000 0 10px, var(--panel) 10px 13px);
 }
+/* Phones: the dot-matrix face drops to a solid grotesk so the headline reads. */
+@media (max-width: 639px) {
+  :root[data-variant='j'] #hero-title { font-family: var(--font-grotesk); font-weight: 800; letter-spacing: -0.03em; }
+}
+/* the hero's pressed toggles and up-deltas: readable on the light faceplate */
+:root[data-variant='j']:not([data-theme='dark']) section.on-slate { --ok-on-slate: #2f6467; }
