@@ -229,7 +229,9 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
       words.observe(lw);
       watched = lw;
     }
-    lw.style.removeProperty('translate');
+    const pls = [...pw.querySelectorAll('.vy-letter')];
+    const lls = [...lw.querySelectorAll<HTMLElement>('.vy-letter')];
+    for (const el of [lw, ...lls]) el.style.removeProperty('translate');
     lw.style.removeProperty('scale');
     const a = pw.getBoundingClientRect();
     const l = lw.getBoundingClientRect();
@@ -242,6 +244,17 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     // Important: the low tier's `translate: none !important` (meant for the
     // backdrop's drift) reaches the lens word through the rescoped sheet.
     lw.style.setProperty('translate', `${dx.toFixed(1)}px ${dy.toFixed(1)}px`, 'important');
+    // Then letter by letter: concepts' faces space their letters differently,
+    // so each lens letter sits on its page letter (centre, baseline side).
+    // Offsets are in the word's scaled space, hence / k.
+    if (pls.length !== lls.length) return;
+    lls.forEach((el, i) => {
+      const p = pls[i].getBoundingClientRect();
+      const q = el.getBoundingClientRect();
+      const x = (p.left + p.width / 2 - (q.left + q.width / 2)) / k;
+      const y = (p.bottom - q.bottom) / k;
+      el.style.setProperty('translate', `${x.toFixed(1)}px ${y.toFixed(1)}px`, 'important');
+    });
   };
 
   // A door for this screen, never taller than the card it shows (phones
