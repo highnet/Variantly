@@ -639,8 +639,13 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   const handleUp = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (drag.id !== e.pointerId) return;
     drag.id = -1;
-    // A tap on the door (no drag) keeps its concept, like a click on desktop.
-    if (!drag.moved) commit();
+    // A tap or click on the door (no drag) keeps its concept and changes
+    // nothing else: a door following the cursor stays on it through the
+    // switch, a resting tab stays put.
+    if (!drag.moved) {
+      commit();
+      return;
+    }
     dragging = false;
     snapped = false;
     ui.setDragging(false);
