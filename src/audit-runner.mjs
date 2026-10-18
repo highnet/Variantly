@@ -43,6 +43,22 @@ const main = async () => {
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
     await page.goto(url, { waitUntil: 'load', timeout: 60_000 });
+    // Let web fonts and entrance animations finish before axe looks: a
+    // fade-in caught halfway reads as low contrast, and how far it got
+    // depends on the machine, so the score would not be repeatable.
+    // Endless animations are skipped, and the wait is capped at 3 s.
+    await page.evaluate(() =>
+      Promise.race([
+        Promise.all([
+          document.fonts.ready,
+          ...document
+            .getAnimations()
+            .filter((a) => a.effect?.getComputedTiming().iterations !== Infinity)
+            .map((a) => a.finished.catch(() => {})),
+        ]),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]),
+    );
     await page.addScriptTag({ path: axePath });
     /** @type {any} */
     const axe = await page.evaluate(() =>
