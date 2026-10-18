@@ -1230,7 +1230,8 @@
           "spotlight": "text=/Restyle the rest of the site to match/",
           "ms": 3000,
           "pad": 30,
-          "point": true
+          "point": true,
+          "realOnly": true
         },
         {
           "click": "role=button[name=/^Apply V0/]",
