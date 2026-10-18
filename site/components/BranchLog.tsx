@@ -106,7 +106,7 @@ const BranchLog = ({ build, onClose }: BranchLogProps) => {
       aria-modal="true"
       aria-labelledby={id}
       onKeyDown={onKey}
-      className="animate-tip-in bg-log-ground text-log-amber border-log-line fixed bottom-4 left-1/2 z-70 grid w-[min(34rem,calc(100vw-2rem))] -translate-x-1/2 gap-3 rounded-[10px] border p-4 font-mono text-[12px] leading-relaxed tracking-normal normal-case"
+      className="animate-tip-in [&_:focus-visible]:outline-log-amber bg-log-ground text-log-amber border-log-line fixed inset-x-0 bottom-4 z-70 mx-auto grid w-[min(34rem,calc(100vw-2rem))] gap-3 rounded-[10px] border p-4 font-mono text-[12px] leading-relaxed tracking-normal normal-case"
     >
       <div className="flex items-center justify-between gap-3">
         <h2 id={id} className="m-0 text-[12px] font-bold tracking-[0.08em]">
