@@ -7,8 +7,10 @@ const PATHS: Record<string, string> = {
   copilot: siGithubcopilot.path,
   gemini: siGooglegemini.path,
   cursor: siCursor.path,
-  // From simple-icons 16 (CC0); this app pins 15, which still has OpenAI's mark.
+  // OpenCode and Pi: from simple-icons 16 (CC0); this app pins 15, which still
+  // has OpenAI's mark.
   opencode: 'M22 24H2V0h20zM17 4.8H7v14.4h10z',
+  pi: 'M0 0v24h6v-6h6v-6H6V6h6v6h6V0Zm18 12v12h6V12Z',
 };
 
 /** Agents with no mark in simple-icons get a plain initial, not a lookalike logo. */

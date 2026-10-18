@@ -249,3 +249,26 @@ test('Hermes Agent: a failed result is the error', () => {
   quiet.push(JSON.stringify({ type: 'result', exit_code: 1, text: '', tokens: {}, duration_ms: 10 }));
   assert.match(quiet.error() ?? '', /exit code 1/);
 });
+
+test('Pi --mode json: assistant text, tools, a failed edit, retries, dollars as reported', () => {
+  const { parser, lines } = feed('pi', 'pi-json');
+  assert.equal(lines[0], 'Pi session started');
+  assert.ok(lines.includes('Reading the brief.'));
+  assert.ok(!lines.includes('Reading'), 'streaming deltas are not logged');
+  assert.ok(lines.includes('→ read C:/home/.variantly/site-1a2b3c4d/briefs/v1.md'));
+  assert.ok(lines.includes('→ edit src/styles/global.css'));
+  assert.ok(lines.includes('  ✗ edit: Could not find the exact text in src/styles/global.css.'));
+  assert.ok(lines.includes('  ↻ retry 1/3: 529 overloaded'));
+  assert.deepEqual(parser.usage(), { inputTokens: 4500, outputTokens: 480, cachedInputTokens: 17500 });
+  assert.equal(parser.costUsd()?.toFixed(4), '0.0356');
+  assert.match(extractSummary(parser.text()), /^Swiss precision/);
+  assert.equal(parser.error(), undefined);
+});
+
+test('Pi, real run whose provider refused: exit 0 but the error is reported', () => {
+  const { parser, lines } = feed('pi-failed', 'pi-json');
+  assert.equal(lines[0], 'Pi session started');
+  assert.match(parser.error() ?? '', /security token included in the request is invalid/);
+  assert.ok(lines.some((l) => l.startsWith('Error: UnrecognizedClientException')));
+  assert.equal(parser.text(), '');
+});

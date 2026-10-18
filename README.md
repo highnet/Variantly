@@ -60,6 +60,7 @@ and can install one and open its sign-in for you:
 | OpenCode | `npm install -g opencode-ai` |
 | Grok Build | `curl -fsSL https://x.ai/cli/install.sh \| bash` (Windows: `irm https://x.ai/cli/install.ps1 \| iex`) |
 | Hermes Agent | `curl -fsSL https://hermes-agent.nousresearch.com/install.sh \| bash` (Windows: `iex (irm https://hermes-agent.nousresearch.com/install.ps1)`) |
+| Pi | `npm install -g --ignore-scripts @earendil-works/pi-coding-agent` |
 
 The agent has to be the **command-line** one: variantly runs it headless.
 Lovable, Bolt, v0 and other browser builders can't run on your machine.
@@ -91,7 +92,7 @@ commands for 10–20 minutes per variant.
 and Impeccable installed for it (the wizard offers to run this for you):
 
 ```sh
-npx impeccable install --providers=claude --scope=global --yes --no-hooks   # or codex, copilot, gemini, cursor, opencode, grok, hermes
+npx impeccable install --providers=claude --scope=global --yes --no-hooks   # or codex, copilot, gemini, cursor, opencode, grok, hermes, pi
 ```
 
 **Mix agents in one run.** Split the variants across agents and models, say
@@ -128,6 +129,7 @@ npx variantly install-skill --scope=project              # into this repo, for e
 | OpenCode | `~/.config/opencode/skills/variantly/` | `.opencode/skills/variantly/` | "redesign my site with variantly" |
 | Grok Build | `~/.grok/skills/variantly/` | `.grok/skills/variantly/` | "redesign my site with variantly" or `/variantly` |
 | Hermes Agent | `~/.hermes/skills/variantly/` | `.hermes/skills/variantly/` (after `hermes skills trust`) | "redesign my site with variantly" or `/variantly` |
+| Pi | `~/.pi/agent/skills/variantly/` | `.pi/skills/variantly/` | "redesign my site with variantly" or `/skill:variantly` |
 
 **Claude Code plugin** alternative:
 
@@ -221,14 +223,14 @@ Then, under the hood:
 ## Agents and cost
 
 - **variantly never sees a model.** It starts `claude -p`, `codex exec`,
-  `copilot -p`, `gemini -p`, `cursor-agent -p`, `opencode run`, `grok -p` or
-  `hermes chat --oneshot` per worktree, on **your account** (or your OpenRouter key).
+  `copilot -p`, `gemini -p`, `cursor-agent -p`, `opencode run`, `grok -p`,
+  `hermes chat --oneshot` or `pi -p` per worktree, on **your account** (or your OpenRouter key).
 - **One variant = one full agent session.** Ten variants cost ten sessions.
   **Default: four.**
 - **Live board** from each agent's structured events: files read/edited,
   commands, skills, summaries.
-- **Usage as reported:** Claude Code, OpenCode and Grok Build show
-  **dollars**, Codex, Gemini, Cursor, OpenCode and Hermes Agent show
+- **Usage as reported:** Claude Code, OpenCode, Grok Build and Pi show
+  **dollars**, Codex, Gemini, Cursor, OpenCode, Hermes Agent and Pi show
   **tokens**, Copilot shows **premium
   requests**. variantly **never estimates** a price.
 
@@ -261,18 +263,23 @@ Then, under the hood:
   skills and todo tools; one-shot runs deny dangerous shell commands. It
   reads project skills only in repositories you trusted, so install
   Impeccable for it **user-wide**.
+- **Pi** runs `pi -p --mode json`. Pi has no approvals at all, so safe mode
+  takes its shell away (`--tools read,edit,write,grep,find,ls`; Impeccable's
+  command-line checks don't run) and loads only the worktree's skill folders,
+  not the rest of the project's Pi files (`--no-approve --skill`).
 
 - **"Full auto"** removes those limits (`--dangerously-skip-permissions`,
   `--dangerously-bypass-approvals-and-sandbox`, `--allow-all`,
-  `--approval-mode yolo`, `--sandbox disabled`, `--auto`, `--always-approve`, `--yolo`). **Trusted projects only.**
+  `--approval-mode yolo`, `--sandbox disabled`, `--auto`, `--always-approve`, `--yolo`, Pi's
+  shell and `--approve`). **Trusted projects only.**
 - **Browser check on:** each agent gets the `playwright` MCP server
   (`--mcp-config` + `mcp__playwright` allowed for Claude Code;
   `-c mcp_servers.playwright.*` for Codex; `--additional-mcp-config` for
   Copilot; a settings file via `GEMINI_CLI_SYSTEM_SETTINGS_PATH` for Gemini;
   a `--plugin-dir` with `--approve-mcps` for Cursor; `mcp` in
   `OPENCODE_CONFIG_CONTENT` for OpenCode), **headless** and `--isolated`: **no shared browser profile**.
-  Grok Build and Hermes Agent read MCP servers only from their own config
-  files, so they run without the browser check.
+  Grok Build, Hermes Agent and Pi read MCP servers only from their own
+  config files, so they run without the browser check.
 
 ## Commands
 
@@ -285,7 +292,7 @@ variantly keep <n> [dir]   roll variant n's style out to every page, then apply 
 variantly clean [dir]      remove every worktree, branch and state file
 variantly install-skill    put the variantly skill where your agents read skills
 
-  --agent <id>   claude | codex | copilot | gemini | cursor | opencode | grok | hermes | demo
+  --agent <id>   claude | codex | copilot | gemini | cursor | opencode | grok | hermes | pi | demo
   --agents <mix> split the variants: agent[:model]:count,… e.g. claude:opus:2,gemini:2
   --blind        hide which agent made each variant until you keep one
   --count <n>    1–10

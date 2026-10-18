@@ -21,6 +21,10 @@ by hand in the same (Claude Code stream-json) shape.
 `hermes.jsonl` is written by hand from `hermes_cli/stream_json.py` in the
 hermes-agent repository (commit e6cf2a9).
 
+`pi-failed.jsonl` is a **real capture**: Pi 1.3.0 run with variantly's exact
+safe-mode arguments and stale cloud credentials (the system prompt removed).
+`pi.jsonl` is written by hand from Pi's `docs/json.md`.
+
 The other files were **written by hand from each CLI's published event
 schema**, not captured from a signed-in run (no agent was signed in where they
 were written). Field names and nesting follow:

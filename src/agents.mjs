@@ -444,6 +444,43 @@ export const AGENTS = [
       output: "hermes-stream",
     }),
   },
+  {
+    // `pi -p --mode json`, checked against @earendil-works/pi-coding-agent
+    // 1.3.0 (flags, skill loading and the error path run here). Pi asks for no
+    // approvals at all, so safe mode can only take tools away: no shell
+    // (Impeccable's command-line checks don't run), and project files stay
+    // untrusted except the worktree's skill folders, passed with --skill.
+    // MCP servers come only from Pi's mcp.json files, so no browser.
+    id: "pi",
+    name: "Pi",
+    bin: "pi",
+    install: "npm install -g --ignore-scripts @earendil-works/pi-coding-agent",
+    mcp: false,
+    skills: {
+      global: (home, env) => [path.join(dirFrom(env, "PI_CODING_AGENT_DIR", path.join(home, ".pi", "agent")), "skills"), path.join(home, ".agents", "skills")],
+      project: [".pi/skills", ".agents/skills"],
+    },
+    invocation: ({ cwd, briefPath, model, permissions }) => ({
+      file: "pi",
+      args: [
+        "-p",
+        "--mode",
+        "json",
+        "--no-session",
+        ...(permissions === "full"
+          ? ["--approve"]
+          : [
+              "--no-approve",
+              "--tools",
+              "read,edit,write,grep,find,ls",
+              ...[".pi/skills", ".agents/skills"].map((d) => path.join(cwd, d)).filter((d) => existsSync(d)).flatMap((d) => ["--skill", d]),
+            ]),
+        ...(model ? ["--model", model] : []),
+        pointer(briefPath),
+      ],
+      output: "pi-json",
+    }),
+  },
 ];
 
 /**
@@ -621,6 +658,7 @@ const LOGIN = /** @type {Record<string, string>} */ ({
   opencode: "opencode auth login",
   grok: "grok login",
   hermes: "hermes setup",
+  pi: "pi",
 });
 
 /**
@@ -635,7 +673,8 @@ const LOGIN = /** @type {Record<string, string>} */ ({
  * Cursor CLI takes CURSOR_API_KEY or its own auth.json. OpenCode keeps
  * provider keys in its auth.json. Grok Build takes XAI_API_KEY or the login
  * it caches in ~/.grok/auth.json. Hermes Agent keeps keys in its home's .env
- * and auth.json. null = unknown.
+ * and auth.json. Pi saves /login in ~/.pi/agent/auth.json or reads provider
+ * keys from the environment. null = unknown.
  * @param {string} id
  * @returns {Promise<boolean | null>}
  */
@@ -679,6 +718,10 @@ const isSignedIn = async (id) => {
   if (id === "hermes") {
     const dir = hermesHome(home, process.env);
     return fs.existsSync(path.join(dir, "auth.json")) || fs.existsSync(path.join(dir, ".env")) || null;
+  }
+  if (id === "pi") {
+    if (process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY || process.env.OPENROUTER_API_KEY) return true;
+    return fs.existsSync(path.join(dirFrom(process.env, "PI_CODING_AGENT_DIR", path.join(home, ".pi", "agent")), "auth.json")) || null;
   }
   if (id === "opencode") {
     // Its free OpenCode Zen models need no sign-in, so a missing auth.json

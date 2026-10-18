@@ -8,6 +8,7 @@ import {
   siGithubcopilot,
   siGooglegemini,
   siOpencode,
+  siPi,
   siGo,
   siHtml5,
   siLaravel,
@@ -69,4 +70,5 @@ export const AGENT_LOGOS: (Logo & { name: string; install: string })[] = [
     name: 'Hermes Agent',
     install: 'curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash',
   },
+  { ...mark(siPi), name: 'Pi', install: 'npm i -g @earendil-works/pi-coding-agent' },
 ];

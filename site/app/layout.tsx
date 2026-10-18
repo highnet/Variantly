@@ -42,6 +42,7 @@ export const metadata: Metadata = {
     'OpenCode',
     'Grok Build',
     'Hermes Agent',
+    'Pi coding agent',
     'OpenRouter',
     'Impeccable',
     'before/after slider',

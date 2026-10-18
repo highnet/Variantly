@@ -167,6 +167,33 @@ test('Hermes Agent invocation: one-shot chat with stream-json, narrowed toolsets
   assert.equal(agent('hermes').mcp, false);
 });
 
+test('Pi invocation: print mode with JSON events; safe mode drops the shell and trusts only skill folders', () => {
+  const safe = agent('pi').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', model: 'anthropic/claude-sonnet-4-6' });
+  assert.equal(safe.file, 'pi');
+  assert.equal(safe.output, 'pi-json');
+  assert.deepEqual(safe.args, [
+    '-p', '--mode', 'json', '--no-session',
+    '--no-approve', '--tools', 'read,edit,write,grep,find,ls',
+    '--model', 'anthropic/claude-sonnet-4-6',
+    PROMPT,
+  ]);
+  assert.ok(!safe.args.join(',').includes('bash'));
+  const full = agent('pi').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'full' });
+  assert.deepEqual(full.args, ['-p', '--mode', 'json', '--no-session', '--approve', PROMPT]);
+  assert.equal(agent('pi').mcp, false);
+
+  // The worktree's skill folders are loaded explicitly, without trusting the project.
+  const wt = tmp();
+  try {
+    mkdirSync(path.join(wt, '.pi', 'skills', 'impeccable'), { recursive: true });
+    const inv = agent('pi').invocation({ cwd: wt, briefPath: BRIEF, permissions: 'safe' });
+    assert.deepEqual(inv.args.slice(inv.args.indexOf('--skill'), inv.args.indexOf('--skill') + 2), ['--skill', path.join(wt, '.pi/skills')]);
+    assert.equal(inv.args.filter((a) => a === '--skill').length, 1);
+  } finally {
+    rmSync(wt, { recursive: true, force: true });
+  }
+});
+
 test('Codex through OpenRouter: the configured provider and its key variable are read', () => {
   const home = tmp();
   try {
@@ -287,6 +314,13 @@ test('skill locations match where each agent reads skills', () => {
     path.join(path.resolve('HH'), 'skills', 's'),
     path.join(home, '.hermes', 'skills', 's'),
   ]);
+  assert.deepEqual(skillLocations(agent('pi'), 'impeccable', where), [
+    path.join(project, '.pi/skills', 'impeccable'),
+    path.join(project, '.agents/skills', 'impeccable'),
+    path.join(home, '.pi', 'agent', 'skills', 'impeccable'),
+    path.join(home, '.agents', 'skills', 'impeccable'),
+  ]);
+  assert.equal(skillLocations(agent('pi'), 's', { home, env: { PI_CODING_AGENT_DIR: path.resolve('PA') } })[0], path.join(path.resolve('PA'), 'skills', 's'));
   // OpenCode's config folder follows OPENCODE_CONFIG_DIR, then XDG_CONFIG_HOME.
   assert.equal(skillLocations(agent('opencode'), 's', { home, env: { XDG_CONFIG_HOME: path.resolve('XC') } })[0], path.join(path.resolve('XC'), 'opencode', 'skills', 's'));
   assert.equal(
@@ -337,6 +371,7 @@ test('the brief names the skill the way each agent expects', () => {
   assert.match(writeBrief({ ...base, agent: 'copilot' }), /\(`\/impeccable`; load the skill/);
   assert.match(writeBrief({ ...base, agent: 'claude' }), /\(`\/impeccable`; load the skill/);
   assert.match(writeBrief(base), /\(`\/impeccable`; load the skill/);
+  assert.match(writeBrief({ ...base, agent: 'pi' }), /\(`\/skill:impeccable`; load the skill/);
 });
 
 test('install-skill writes the one SKILL.md into each agent\'s user-wide skills folder', async () => {

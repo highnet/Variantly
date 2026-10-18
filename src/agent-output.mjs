@@ -21,10 +21,12 @@
  *   Code's stream-json shape; a failed run's `result` carries `errors[]`.
  * - Hermes Agent `hermes chat --oneshot -q --format stream-json`: system init,
  *   text (deltas), tool_use, tool_result, result (hermes_cli/stream_json.py).
+ * - Pi 1.3 `pi -p --mode json`: session, message_end (assistant text, usage
+ *   with cost, stopReason/errorMessage), tool_execution_start/end, auto_retry_*.
  */
 import path from 'node:path';
 
-/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'gemini-stream' | 'cursor-stream' | 'opencode-json' | 'grok-stream' | 'hermes-stream' | 'text'} OutputKind */
+/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'gemini-stream' | 'cursor-stream' | 'opencode-json' | 'grok-stream' | 'hermes-stream' | 'pi-json' | 'text'} OutputKind */
 
 /**
  * Token counts as the agent reported them, summed over the session.
@@ -109,7 +111,7 @@ export function createParser(kind, opts = {}) {
     u.cachedInputTokens += num(cached);
   };
   /** @type {Record<string, (event: any, state: ParseState, rel: Rel, addUsage: AddUsage) => string[]>} */
-  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot, 'gemini-stream': gemini, 'cursor-stream': cursor, 'opencode-json': opencode, 'grok-stream': grok, 'hermes-stream': hermes };
+  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot, 'gemini-stream': gemini, 'cursor-stream': cursor, 'opencode-json': opencode, 'grok-stream': grok, 'hermes-stream': hermes, 'pi-json': pi };
   const describe = parsers[kind];
 
   return {
@@ -477,6 +479,52 @@ function hermesEvent(event, state, rel, addUsage) {
       else if (event.exit_code && event.exit_code !== 0) state.error = `Hermes Agent stopped with exit code ${event.exit_code}.`;
       return [`Finished in ${Math.round(num(event.duration_ms) / 1000)}s, ${tokens(state.usage)}`];
     }
+    default:
+      return [];
+  }
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function pi(event, state, rel, addUsage) {
+  switch (event.type) {
+    case 'session':
+      return ['Pi session started'];
+    case 'message_end': {
+      const m = event.message ?? {};
+      if (m.role !== 'assistant') return [];
+      const u = m.usage ?? {};
+      addUsage(u.input, u.output, num(u.cacheRead) + num(u.cacheWrite));
+      if (typeof u.cost?.total === 'number') state.costUsd = num(state.costUsd) + u.cost.total;
+      /** @type {string[]} */
+      const out = [];
+      for (const block of Array.isArray(m.content) ? m.content : []) {
+        if (block.type === 'text' && block.text?.trim()) {
+          state.text.push(block.text);
+          out.push(block.text.trim());
+        }
+      }
+      if (m.stopReason === 'error' || m.stopReason === 'aborted') {
+        const error = String(m.errorMessage || 'Pi reported an error.');
+        state.error = error;
+        out.push(`Error: ${clip(error, 300)}`);
+      }
+      return out;
+    }
+    case 'tool_execution_start': {
+      const a = event.args && typeof event.args === 'object' ? event.args : {};
+      const target = a.path ? rel(a.path) : (a.command ?? a.pattern ?? '');
+      return [tool(event.toolName ?? 'tool', target)];
+    }
+    case 'tool_execution_end': {
+      if (!event.isError) return [];
+      const text = (event.result?.content ?? []).map((/** @type {any} */ c) => c.text ?? '').join(' ');
+      return [`  ✗ ${event.toolName ?? 'tool'}: ${clip(text || 'failed', 140)}`];
+    }
+    case 'auto_retry_start':
+      return [`  ↻ retry ${event.attempt}/${event.maxAttempts}: ${clip(event.errorMessage ?? '', 120)}`];
+    case 'auto_retry_end':
+      if (event.success === false) state.error = event.finalError ?? state.error ?? 'Pi gave up retrying.';
+      return [];
     default:
       return [];
   }

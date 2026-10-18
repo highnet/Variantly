@@ -111,8 +111,8 @@ const verifyRule = (previewUrl, shots) =>
     : `7. Verify by reading your code, not by screenshots: there is no browser for
    you here. Run the project's type check or linter if it is quick.`;
 
-/** How each agent's prompt names a skill. Codex mentions skills with a dollar sign. */
-const SKILL_CALL = /** @type {Record<string, string>} */ ({ codex: "$impeccable" });
+/** How each agent's prompt names a skill. Codex mentions skills with a dollar sign, Pi as /skill:name. */
+const SKILL_CALL = /** @type {Record<string, string>} */ ({ codex: "$impeccable", pi: "/skill:impeccable" });
 
 /** @param {BriefInput} b */
 export const writeBrief = (b) => {
