@@ -871,7 +871,8 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
       // desktop) and steers the light, so highlights slide as the phone tips.
       // The neutral pose is however the phone is held, drifting slowly, so
       // lying down or standing up reads the same. iOS asks permission, which
-      // needs a tap: the first tap on the title card asks.
+      // needs a tap: the first tap anywhere on the page asks (captured, so no
+      // control can swallow it; touchend and click both count as the gesture).
       if (phone && !still && seek === null && typeof DeviceOrientationEvent !== 'undefined') {
         let base: [number, number] | null = null;
         const onTilt = (e: DeviceOrientationEvent) => {
@@ -898,18 +899,25 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         const ask = (
           DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }
         ).requestPermission;
-        const card = el.parentElement;
+        let asked = false;
         const onTap = () => {
+          if (asked) return;
+          asked = true;
+          document.removeEventListener('touchend', onTap, true);
+          document.removeEventListener('click', onTap, true);
           void ask
             ?.call(DeviceOrientationEvent)
             .then((r) => r === 'granted' && listen())
             .catch(() => {});
         };
-        if (typeof ask === 'function') card?.addEventListener('click', onTap, { once: true });
-        else listen();
+        if (typeof ask === 'function') {
+          document.addEventListener('touchend', onTap, true);
+          document.addEventListener('click', onTap, true);
+        } else listen();
         cleanups.push(() => {
           removeEventListener('deviceorientation', onTilt);
-          card?.removeEventListener('click', onTap);
+          document.removeEventListener('touchend', onTap, true);
+          document.removeEventListener('click', onTap, true);
         });
       }
       // Once, as the first reveal settles: the light sweeps across the word
