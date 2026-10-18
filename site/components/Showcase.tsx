@@ -967,38 +967,39 @@ const Showcase = () => {
               id="hero-title"
               className="text-surface text-[clamp(2.25rem,4.2vw,4.25rem)]"
             >
-              One website. Four redesigns. <FreshLook>You pick.</FreshLook>
+              One website. <span className="whitespace-nowrap">Ten redesigns.</span>{' '}
+              <FreshLook>You pick.</FreshLook>
             </Typography>
             <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">
-              Your AI coding agent redesigns your{' '}
-              <strong className="text-surface">actual site</strong>{' '}
-              <strong className="text-surface">in parallel</strong>. Compare{' '}
+              Your <GlossaryTip term="agent" /> redesigns your{' '}
+              <strong className="text-surface">actual site</strong>, up to ten different ways. Click
+              through each one{' '}
               <strong className="text-surface">
-                <GlossaryTip term="live">live versions</GlossaryTip>
+                <GlossaryTip term="live">running live</GlossaryTip>
               </strong>
-              , <GlossaryTip term="keep">keep the best</GlossaryTip>, and{' '}
-              <strong className="text-surface">review the code</strong> before it ships.
+              , compare it with what you have now, and{' '}
+              <GlossaryTip term="keep">keep the one you like</GlossaryTip>.
             </p>
-            <ul className="text-steel-on-slate m-0 grid list-none gap-1.5 p-0 text-[15px] leading-snug">
+            <ul className="text-steel-on-slate m-0 grid list-none gap-1.5 p-0 text-[15px] leading-snug text-pretty">
               <li>
-                <span className="text-surface font-semibold">Real code:</span> each design is a git{' '}
-                <GlossaryTip term="branch" /> in its own{' '}
-                <GlossaryTip term="worktree">worktree</GlossaryTip>, made by the agent you already
-                use.
+                <span className="text-surface font-semibold">Real code, not mockups:</span> the AI
+                you already use builds each redesign in a <GlossaryTip term="worktree" /> of your
+                project.
               </li>
               <li>
-                <span className="text-surface font-semibold">Your call:</span> nothing touches your
-                files until you press Keep, and then it lands as an unstaged diff.
+                <span className="text-surface font-semibold">Your files stay put:</span> nothing
+                changes until you press Keep, and you check every change before you{' '}
+                <GlossaryTip term="commit" /> it.
               </li>
               <li>
-                <span className="text-surface font-semibold">Free and MIT-licensed:</span> the AI
-                work runs on your own plan.{' '}
+                <span className="text-surface font-semibold">Free and open source:</span> you pay
+                only for your own AI plan, one session per redesign.{' '}
                 <a href="#demo-stage" className="text-surface underline underline-offset-2">
                   Try the comparison below
                 </a>{' '}
                 or{' '}
                 <a href="/safety" className="text-surface underline underline-offset-2">
-                  see what it does to your repo
+                  see exactly what it changes
                 </a>
                 .
               </li>
