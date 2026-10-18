@@ -565,7 +565,10 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         setColour(l.flat.material, f);
         l.ink = [f[0], f[1], f[2]];
       };
-      const wear = (l: Letter, i: number, k: number) => {
+      const wear = (l: Letter, i: number, at: number) => {
+        // A concept may offer fewer looks than the pool size (Kinetic Type's
+        // dark print has two): wrap rather than read past the end.
+        const k = at % pools[i].length;
         if (l.look === k) return;
         const look = pools[i][k];
         l.look = k;
