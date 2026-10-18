@@ -35,6 +35,10 @@ import {
   stepAt,
   SWAP,
   titleColorOn,
+  titleGlitchOn,
+  glitchAt,
+  glitchBuffer,
+  glitchStrength,
   type MorphPhase,
   type Timeline,
 } from '@/lib/titleTiming';
@@ -223,6 +227,16 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
     };
     measure();
     let lastStep = -1;
+    let lastG = -1;
+    // The glitch: how hard this concept glitches, and its two accent colours.
+    const strength = titleGlitchOn() ? glitchStrength(variant ?? undefined) : 0;
+    const glitchy = strength > 0;
+    const glitch = glitchBuffer();
+    const rootCss = getComputedStyle(document.documentElement);
+    const splits = ['--art-1', '--art-2', '--alert', '--title']
+      .map((t) => rootCss.getPropertyValue(t).trim())
+      .filter(Boolean)
+      .slice(0, 2);
     let lastE = -1;
     let lastFrom = -1;
     let lastTo = -1;
@@ -236,14 +250,18 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
         phase.c = 1;
       }
       planStep(morph, track, phase, seq, low);
+      // The glitch accent (lib/titleTiming): its beat, or -1 when quiet.
+      const g = glitchy && glitchAt(ms, index, glitch, tl) ? glitch.seed : -1;
       if (
         !force &&
         phase.step === lastStep &&
         phase.e === lastE &&
         track.from === lastFrom &&
-        track.to === lastTo
+        track.to === lastTo &&
+        g === lastG
       )
         return;
+      lastG = g;
       lastStep = phase.step;
       lastE = phase.e;
       lastFrom = track.from;
@@ -255,17 +273,20 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
       const oy = pad + h / 2 + pose.y;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w + pad * 2, h + pad * 2);
-      ctx.beginPath();
       const out = track.out;
       const n = track.n;
-      for (let s = 0; s < track.slots; s++) {
-        if (!track.live[s]) continue;
-        const at = s * n * 2;
-        ctx.moveTo(ox + out[at] * k, oy - out[at + 1] * k);
-        for (let i = 1; i < n; i++)
-          ctx.lineTo(ox + out[at + i * 2] * k, oy - out[at + i * 2 + 1] * k);
-        ctx.closePath();
-      }
+      const trace = (p: CanvasPath) => {
+        for (let s = 0; s < track.slots; s++) {
+          if (!track.live[s]) continue;
+          const at = s * n * 2;
+          p.moveTo(ox + out[at] * k, oy - out[at + 1] * k);
+          for (let i = 1; i < n; i++)
+            p.lineTo(ox + out[at + i * 2] * k, oy - out[at + i * 2 + 1] * k);
+          p.closePath();
+        }
+      };
+      ctx.beginPath();
+      trace(ctx);
       if (pal) {
         colourAt(
           pal,
@@ -294,7 +315,38 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
         ctx.fill();
       }
       ctx.shadowColor = 'transparent';
-      ctx.fill();
+      if (g < 0) {
+        ctx.fill();
+        return;
+      }
+      // Glitching: two hard-edged copies in the concept's accents pulled
+      // apart sideways (a channel split), then the letter sliced into bands
+      // nudged sideways, with a dropped scanline between bands. No blur.
+      const fill = ctx.fillStyle;
+      const glyph = new Path2D();
+      trace(glyph);
+      const W = w + pad * 2;
+      const H = h + pad * 2;
+      const shove = fontPx * strength;
+      ctx.clearRect(0, 0, W, H);
+      splits.forEach((c, j) => {
+        ctx.save();
+        ctx.translate((j ? 1 : -1) * glitch.split * shove, 0);
+        ctx.fillStyle = c;
+        ctx.fill(glyph);
+        ctx.restore();
+      });
+      const band = H / glitch.bands;
+      for (let b = 0; b < glitch.bands; b++) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, b * band, W, band - Math.max(1, fontPx * 0.012));
+        ctx.clip();
+        ctx.translate(glitch.shift[b] * shove, 0);
+        ctx.fillStyle = fill;
+        ctx.fill(glyph);
+        ctx.restore();
+      }
     };
     const resize = () => {
       measure();

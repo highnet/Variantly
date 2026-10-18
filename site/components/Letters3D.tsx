@@ -37,6 +37,11 @@ import {
   spring,
   stepAt,
   titleColorOn,
+  titleGlitchOn,
+  glitchAt,
+  glitchBuffer,
+  glitchStrength,
+  type Glitch,
   type MorphPhase,
   type Timeline,
 } from '@/lib/titleTiming';
@@ -83,6 +88,9 @@ type Letter = {
   locked: boolean;
   // The face colour it last wore (OKLab), when palette colours are on.
   ink: Lab | null;
+  // Its glitch accent this frame (on: drawn sliced and split).
+  glitch: Glitch;
+  glitching: boolean;
 };
 
 // Where a 2D slot sits, in px of the card (y down), relative to the slot centre.
@@ -259,11 +267,14 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     const group = new THREE.Group();
     scene.add(group);
 
+    // Draws the scene (the letters replace it with one that also draws the
+    // glitch accent).
+    let draw = () => renderer.render(scene, camera);
     // A one-off paint (resize, new look): full density, fresh shadow.
     const paint = () => {
       ratio(fullRatio);
       renderer.shadowMap.needsUpdate = true;
-      renderer.render(scene, camera);
+      draw();
     };
 
     // Pause for real (no idle rAF) when the tab hides or the card leaves the screen.
@@ -389,6 +400,8 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           look: -1,
           locked: true,
           ink: null,
+          glitch: glitchBuffer(),
+          glitching: false,
         };
       });
       const phase: MorphPhase = { step: 0, e: 0, c: 0 };
@@ -622,8 +635,13 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           done();
         }
       };
+      // The glitch accent (lib/titleTiming): how hard this concept glitches
+      // (none on the low power tier), drawn by `draw` below.
+      let strength = 0;
       const pose = (t: number) => {
         stepped = false;
+        strength =
+          titleGlitchOn() && !lowRef.current && !still ? glitchStrength(html.dataset.variant) : 0;
         letters.forEach((l, i) => {
           const ms = t * 1000;
           // Before its start delay a letter rests on its final face, like the
@@ -680,8 +698,77 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           l.mesh.position.y = -y / unit;
           l.flat.material.opacity = flatness;
           l.flat.visible = flatness > 0.002;
+          l.glitching = live && strength > 0 && glitchAt(ms, i, l.glitch, tl) > 0;
+          if (l.glitching) stepped = true;
         });
         return letters.every((l) => l.locked) && t * 1000 > tlRef.current.end;
+      };
+      // A glitching letter is drawn apart from the rest (camera layer 1):
+      // two hard-edged copies in the concept's accents pulled apart sideways
+      // (a channel split), then the letter in horizontal bands (scissored),
+      // each nudged sideways, a dropped scanline between them. No blur.
+      const splitMat = new THREE.MeshBasicMaterial({ toneMapped: false });
+      cleanups.push(() => splitMat.dispose());
+      [key, rim, sun].forEach((o) => o.layers.enable(1));
+      draw = () => {
+        if (!letters.some((l) => l.glitching)) {
+          renderer.render(scene, camera);
+          return;
+        }
+        const layer = (k: number) =>
+          letters.forEach((l) => {
+            if (!l.glitching) return;
+            l.mesh.layers.set(k);
+            l.flat.layers.set(k);
+          });
+        layer(1);
+        renderer.render(scene, camera);
+        const autoClear = renderer.autoClear;
+        const autoShadow = renderer.shadowMap.autoUpdate;
+        renderer.autoClear = false;
+        renderer.shadowMap.autoUpdate = false;
+        camera.layers.set(1);
+        const shove = (fontPx * strength) / unit;
+        const css = getComputedStyle(html);
+        const accents = ['--art-1', '--art-2', '--alert', '--title']
+          .map((v) => css.getPropertyValue(v).trim())
+          .filter(Boolean);
+        scene.overrideMaterial = splitMat;
+        [-1, 1].forEach((dir, j) => {
+          splitMat.color.set(accents[j] ?? accents[0] ?? '#ffffff');
+          letters.forEach((l) => {
+            if (l.glitching) l.mesh.position.x = dir * l.glitch.split * shove;
+          });
+          renderer.render(scene, camera);
+        });
+        scene.overrideMaterial = null;
+        renderer.setScissorTest(true);
+        const H = el.clientHeight;
+        letters.forEach((l, i) => {
+          if (!l.glitching) return;
+          const sl = slots[i];
+          const top = sl.cy - sl.h * 0.75;
+          const band = (sl.h * 1.5) / l.glitch.bands;
+          const gap = Math.max(1, fontPx * 0.012);
+          for (let b = 0; b < l.glitch.bands; b++) {
+            renderer.setScissor(
+              sl.cx - sl.w,
+              H - (top + band * (b + 1)) + gap,
+              sl.w * 2,
+              band - gap,
+            );
+            letters.forEach((o) => {
+              if (o.glitching) o.mesh.position.x = o === l ? l.glitch.shift[b] * shove : 1e4;
+            });
+            renderer.render(scene, camera);
+          }
+        });
+        renderer.setScissorTest(false);
+        letters.forEach((l) => (l.mesh.position.x = 0));
+        camera.layers.set(0);
+        layer(0);
+        renderer.autoClear = autoClear;
+        renderer.shadowMap.autoUpdate = autoShadow;
       };
       const now = () => seek ?? (still ? 30 : (performance.now() - clock.current) / 1000);
 
@@ -703,7 +790,7 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           ratio(Math.min(fullRatio, 2));
           renderer.shadowMap.autoUpdate = false;
           if (stepped) renderer.shadowMap.needsUpdate = true;
-          renderer.render(scene, camera);
+          draw();
         } else {
           renderer.shadowMap.autoUpdate = true;
           paint();

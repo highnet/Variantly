@@ -217,3 +217,19 @@ export const glitchAt = (ms: number, index: number, out: Glitch, tl = REVEAL) =>
   out.split = 0.025 + unit(out.seed, 20) * 0.03;
   return 1;
 };
+
+// How hard each concept glitches (0 = never): screen-like concepts (the
+// amber terminal) the most, print-like ones a little, the soft ones not at
+// all. Concepts not listed take the default.
+const GLITCH_BY_CONCEPT: Record<string, number> = {
+  a: 0,
+  b: 0.6,
+  c: 1,
+  d: 0.7,
+  e: 0.35,
+  f: 0.5,
+  g: 0.3,
+};
+const GLITCH_DEFAULT = 0.35;
+export const glitchStrength = (concept: string | undefined) =>
+  concept === undefined ? 0 : (GLITCH_BY_CONCEPT[concept] ?? GLITCH_DEFAULT);
