@@ -11,6 +11,7 @@ import { releaseFrame, seekTime } from '@/lib/seek';
 import { CONCEPT_LOADERS, type ConceptId } from '@/concepts';
 import type { ConceptScene } from '@/concepts/types';
 import { perfTier } from '@/lib/perfTier';
+import { sceneBsdf } from '@/lib/sceneBsdf';
 
 type GlFieldProps = {
   concept: ConceptId;
@@ -223,6 +224,9 @@ const run = (
   el.appendChild(canvas);
   const scene = new THREE.Scene();
   const { camera, update } = def.build(scene, colors);
+  // The scene's lit meshes on the Principled BSDF, in the title's photo
+  // studio (lib/sceneBsdf); hand-written shaders are left as authored.
+  const bsdf = sceneBsdf(renderer, scene);
   const film = grain > 0 ? grainPass(grain, chroma) : null;
 
   // Phones get one painted frame of the scene: a moving full-screen WebGL
@@ -376,6 +380,7 @@ const run = (
     document.removeEventListener('vy:perf', sync);
     removeEventListener('resize', resize);
     removeEventListener('pointermove', move);
+    bsdf?.();
     [scene, film?.scene].forEach((sc) =>
       sc?.traverse((o) => {
         const m = o as THREE.Mesh;
