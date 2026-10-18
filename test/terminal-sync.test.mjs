@@ -52,6 +52,9 @@ const makeRun = async () => {
   const gen = await api('POST', 'generate', normalizeConfig({ ...info.suggested, agent: 'demo', count: 2, audit: false, review: false }));
   assert.equal(gen.status, 200, JSON.stringify(gen.json));
   await until(() => app.session.state.phase === 'ready');
+  // The terminal reads the state file, so wait for the app's pending writes
+  // to land (slow runners lag behind the in-memory phase).
+  await app.session.saveQueue;
   // A preview is up, as it would be while someone compares.
   await app.session.pool.ensure('v2');
 };
