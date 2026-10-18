@@ -36,7 +36,7 @@ const HowItWorks = () => (
             </span>
           </span>
           <Typography variant="title" as="h3">
-            {s.title}
+            <Rich text={s.title} />
           </Typography>
           <p className="text-steel m-0 max-w-[40ch] text-[16px] leading-relaxed">
             <Rich text={s.body} />

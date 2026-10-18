@@ -6,6 +6,9 @@ import {
   Jost,
   Doto,
   IBM_Plex_Mono,
+  Inter_Tight,
+  Italiana,
+  Major_Mono_Display,
   Monoton,
   Orbitron,
   Press_Start_2P,
@@ -14,6 +17,7 @@ import {
   Silkscreen,
   Space_Grotesk,
   Special_Elite,
+  Syne,
 } from 'next/font/google';
 import localFont from 'next/font/local';
 
@@ -132,7 +136,41 @@ const plex = IBM_Plex_Mono({
 });
 const hjo = [silk, doto, archivoVar, grotesk, plex];
 
-export const HERO_FONT_VARS = [abril, elite, orbitron, fredoka, jost, archivo, rubik, ...hjo]
+// i Liquid Glass, l Inflated Chrome (+ its captions), m Uncanny Mirror.
+const interTight = Inter_Tight({
+  weight: '600',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-glass',
+});
+const syne = Syne({ weight: '800', subsets: ['latin'], preload: false, variable: '--font-chrome' });
+const majorMono = Major_Mono_Display({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-caption',
+});
+const italiana = Italiana({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-mirror',
+});
+
+export const HERO_FONT_VARS = [
+  abril,
+  elite,
+  orbitron,
+  fredoka,
+  jost,
+  archivo,
+  rubik,
+  interTight,
+  syne,
+  majorMono,
+  italiana,
+  ...hjo,
+]
   .map((f) => f.variable)
   .join(' ');
 
