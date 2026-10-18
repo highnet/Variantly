@@ -18,6 +18,9 @@ variantly's exact safe-mode arguments and an invalid `XAI_API_KEY`. It proves
 the flags are accepted and shows the error `result`. `grok.jsonl` is written
 by hand in the same (Claude Code stream-json) shape.
 
+`hermes.jsonl` is written by hand from `hermes_cli/stream_json.py` in the
+hermes-agent repository (commit e6cf2a9).
+
 The other files were **written by hand from each CLI's published event
 schema**, not captured from a signed-in run (no agent was signed in where they
 were written). Field names and nesting follow:

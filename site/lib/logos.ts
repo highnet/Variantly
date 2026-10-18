@@ -20,8 +20,8 @@ import {
   siVite,
 } from 'simple-icons';
 
-// Brand marks from simple-icons (CC0). Wasp, OpenAI and Grok Build have no
-// entry there, so they render as a name tile or a neutral terminal glyph.
+// Brand marks from simple-icons (CC0). Wasp, OpenAI, Grok Build and Hermes
+// Agent (simple-icons' Hermes is the parcel firm) have no entry there, so they render as a name tile or a neutral terminal glyph.
 
 export type Logo = { title: string; path: string | null };
 
@@ -62,5 +62,11 @@ export const AGENT_LOGOS: (Logo & { name: string; install: string })[] = [
     path: null,
     name: 'Grok Build',
     install: 'curl -fsSL https://x.ai/cli/install.sh | bash',
+  },
+  {
+    title: 'Hermes Agent',
+    path: null,
+    name: 'Hermes Agent',
+    install: 'curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash',
   },
 ];

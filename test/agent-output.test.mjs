@@ -225,3 +225,27 @@ test('Grok Build, not signed in: unavailable', () => {
   parser.note('Error: Not signed in. To authenticate without a browser, run:');
   assert.match(parser.unavailable() ?? '', /Not signed in/);
 });
+
+test('Hermes Agent stream-json: text deltas joined, tools, a blocked command, tokens', () => {
+  const { parser, lines } = feed('hermes', 'hermes-stream');
+  assert.equal(lines[0], 'Hermes Agent session started (anthropic/claude-sonnet-4.6)');
+  assert.ok(lines.includes('Reading the brief first.'), 'deltas are shown a whole line at a time');
+  assert.ok(lines.includes('→ read_file C:/home/.variantly/site-1a2b3c4d/briefs/v1.md'));
+  assert.ok(lines.includes('→ skill_view impeccable'));
+  assert.ok(lines.includes('→ patch src/styles/global.css'));
+  assert.ok(lines.includes('  ✗ terminal: BLOCKED: dangerous command denied in single-query mode'));
+  assert.equal(lines.at(-1), 'Finished in 305s, 90k in / 7k out tokens');
+  assert.deepEqual(parser.usage(), { inputTokens: 90000, outputTokens: 7000, cachedInputTokens: 61000 });
+  assert.equal(parser.costUsd(), undefined, 'stream-json carries no price');
+  assert.match(extractSummary(parser.text()), /^Editorial world: Fraunces display, ink on cream/);
+  assert.equal(parser.error(), undefined);
+});
+
+test('Hermes Agent: a failed result is the error', () => {
+  const parser = createParser('hermes-stream');
+  parser.push(JSON.stringify({ type: 'result', exit_code: 1, text: '', tokens: {}, duration_ms: 10, error: 'No inference provider configured.' }));
+  assert.equal(parser.error(), 'No inference provider configured.');
+  const quiet = createParser('hermes-stream');
+  quiet.push(JSON.stringify({ type: 'result', exit_code: 1, text: '', tokens: {}, duration_ms: 10 }));
+  assert.match(quiet.error() ?? '', /exit code 1/);
+});

@@ -62,6 +62,8 @@ import { run } from "./proc.mjs";
  * @property {SkillHomes} skills
  * @property {false} [mcp]        false: the CLI takes MCP servers only from the
  *                                user's own config, so runs get no browser
+ * @property {false} [worktreeSkills]  false: headless runs don't read the project's
+ *                                skills (untrusted), so Impeccable must be user-wide
  * @property {(o: InvocationInput) => AgentRun} invocation
  */
 
@@ -81,6 +83,14 @@ const opencodeConfigDir = (home, env) =>
   env.OPENCODE_CONFIG_DIR
     ? path.resolve(String(env.OPENCODE_CONFIG_DIR))
     : path.join(env.XDG_CONFIG_HOME ? path.resolve(String(env.XDG_CONFIG_HOME)) : path.join(home, ".config"), "opencode");
+
+/** Hermes Agent's home: $HERMES_HOME, else ~/.hermes (%LOCALAPPDATA%\\hermes on Windows). @param {string} home @param {NodeJS.ProcessEnv} env */
+const hermesHome = (home, env) =>
+  env.HERMES_HOME
+    ? path.resolve(String(env.HERMES_HOME))
+    : process.platform === "win32" && env.LOCALAPPDATA
+      ? path.join(String(env.LOCALAPPDATA), "hermes")
+      : path.join(home, ".hermes");
 
 /** Shell commands Gemini CLI may run unasked in safe mode (its policy engine's TOML). */
 const GEMINI_POLICY = `[[rule]]
@@ -395,6 +405,45 @@ export const AGENTS = [
       output: "grok-stream",
     }),
   },
+  {
+    // `hermes chat --oneshot -q`, checked against the hermes-agent source
+    // (hermes_cli/_parser.py, stream_json.py). One-shot runs deny dangerous
+    // shell commands on their own (approvals.single_query_mode); safe mode
+    // also narrows the tools to files, terminal, skills and todo. Project
+    // skills load only in a repository the user trusted with `hermes skills
+    // trust`, so Impeccable has to be installed user-wide. MCP servers come
+    // only from config.yaml, so no browser.
+    id: "hermes",
+    name: "Hermes Agent",
+    bin: "hermes",
+    worktreeSkills: false,
+    install:
+      process.platform === "win32"
+        ? `powershell -NoProfile -Command "iex (irm https://hermes-agent.nousresearch.com/install.ps1)"`
+        : "curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash",
+    mcp: false,
+    skills: {
+      global: (home, env) => [...new Set([path.join(hermesHome(home, env), "skills"), path.join(home, ".hermes", "skills")])],
+      project: [".hermes/skills", ".agents/skills"],
+    },
+    invocation: ({ briefPath, model, permissions }) => ({
+      file: "hermes",
+      args: [
+        "chat",
+        "--oneshot",
+        "-q",
+        pointer(briefPath),
+        "--format",
+        "stream-json",
+        // Keeps these runs out of the person's own session lists.
+        "--source",
+        "tool",
+        ...(permissions === "full" ? ["--yolo"] : ["-t", "file,terminal,skills,todo"]),
+        ...(model ? ["-m", model] : []),
+      ],
+      output: "hermes-stream",
+    }),
+  },
 ];
 
 /**
@@ -571,6 +620,7 @@ const LOGIN = /** @type {Record<string, string>} */ ({
   cursor: "cursor-agent login",
   opencode: "opencode auth login",
   grok: "grok login",
+  hermes: "hermes setup",
 });
 
 /**
@@ -584,7 +634,8 @@ const LOGIN = /** @type {Record<string, string>} */ ({
  * API key, Vertex AI, or its Google sign-in (~/.gemini/oauth_creds.json).
  * Cursor CLI takes CURSOR_API_KEY or its own auth.json. OpenCode keeps
  * provider keys in its auth.json. Grok Build takes XAI_API_KEY or the login
- * it caches in ~/.grok/auth.json. null = unknown.
+ * it caches in ~/.grok/auth.json. Hermes Agent keeps keys in its home's .env
+ * and auth.json. null = unknown.
  * @param {string} id
  * @returns {Promise<boolean | null>}
  */
@@ -625,6 +676,10 @@ const isSignedIn = async (id) => {
     if (process.env.XAI_API_KEY) return true;
     return fs.existsSync(path.join(dirFrom(process.env, "GROK_HOME", path.join(home, ".grok")), "auth.json")) || null;
   }
+  if (id === "hermes") {
+    const dir = hermesHome(home, process.env);
+    return fs.existsSync(path.join(dir, "auth.json")) || fs.existsSync(path.join(dir, ".env")) || null;
+  }
   if (id === "opencode") {
     // Its free OpenCode Zen models need no sign-in, so a missing auth.json
     // doesn't mean it can't run.
@@ -661,8 +716,9 @@ export async function detectAgents(projectRoot) {
       // variantly copies the skill into each worktree from any of these, so
       // a copy in any of them counts.
       const impeccable =
-        hasSkill(agent, "impeccable", { projectRoot }) ||
-        impeccableSources().length > 0;
+        agent.worktreeSkills === false
+          ? hasSkill(agent, "impeccable")
+          : hasSkill(agent, "impeccable", { projectRoot }) || impeccableSources().length > 0;
       const variantlySkill = hasSkill(agent, "variantly", { projectRoot });
       const signedIn = binPath ? await isSignedIn(agent.id) : false;
       return { id: agent.id, name: agent.name, installed: Boolean(binPath), path: binPath, note, version, impeccable, variantlySkill, signedIn, install: agent.install, login: LOGIN[agent.id] ?? null };

@@ -153,6 +153,20 @@ test('Grok Build invocation: -p with Claude-style stream, dontAsk plus an allow 
   assert.deepEqual(withMcp.args, safe.args.slice(0, -2));
 });
 
+test('Hermes Agent invocation: one-shot chat with stream-json, narrowed toolsets in safe mode', () => {
+  const safe = agent('hermes').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', model: 'anthropic/claude-sonnet-4.6' });
+  assert.equal(safe.file, 'hermes');
+  assert.equal(safe.output, 'hermes-stream');
+  assert.deepEqual(safe.args, [
+    'chat', '--oneshot', '-q', PROMPT, '--format', 'stream-json', '--source', 'tool',
+    '-t', 'file,terminal,skills,todo',
+    '-m', 'anthropic/claude-sonnet-4.6',
+  ]);
+  const full = agent('hermes').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'full' });
+  assert.deepEqual(full.args, ['chat', '--oneshot', '-q', PROMPT, '--format', 'stream-json', '--source', 'tool', '--yolo']);
+  assert.equal(agent('hermes').mcp, false);
+});
+
 test('Codex through OpenRouter: the configured provider and its key variable are read', () => {
   const home = tmp();
   try {
@@ -264,6 +278,15 @@ test('skill locations match where each agent reads skills', () => {
     path.join(home, '.claude', 'skills', 'impeccable'),
   ]);
   assert.equal(skillLocations(agent('grok'), 's', { home, env: { GROK_HOME: path.resolve('GH') } })[0], path.join(path.resolve('GH'), 'skills', 's'));
+  assert.deepEqual(skillLocations(agent('hermes'), 'impeccable', where), [
+    path.join(project, '.hermes/skills', 'impeccable'),
+    path.join(project, '.agents/skills', 'impeccable'),
+    path.join(home, '.hermes', 'skills', 'impeccable'),
+  ]);
+  assert.deepEqual(skillLocations(agent('hermes'), 's', { home, env: { HERMES_HOME: path.resolve('HH') } }), [
+    path.join(path.resolve('HH'), 'skills', 's'),
+    path.join(home, '.hermes', 'skills', 's'),
+  ]);
   // OpenCode's config folder follows OPENCODE_CONFIG_DIR, then XDG_CONFIG_HOME.
   assert.equal(skillLocations(agent('opencode'), 's', { home, env: { XDG_CONFIG_HOME: path.resolve('XC') } })[0], path.join(path.resolve('XC'), 'opencode', 'skills', 's'));
   assert.equal(
@@ -331,6 +354,8 @@ test('install-skill writes the one SKILL.md into each agent\'s user-wide skills 
       ],
     );
     for (const r of results) assert.equal(readFileSync(r.file, 'utf8'), source);
+    // Every agent sees it once installed for all of them.
+    await installSkill({ providers: AGENTS.map((a) => a.id), scope: 'global', home, env: {} });
     for (const a of AGENTS) assert.equal(hasSkill(a, 'variantly', { home, env: {} }), true, `${a.id} can now see it`);
 
     // Again: nothing to do. A stale copy is replaced.

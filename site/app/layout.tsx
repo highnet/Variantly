@@ -41,6 +41,7 @@ export const metadata: Metadata = {
     'Cursor CLI',
     'OpenCode',
     'Grok Build',
+    'Hermes Agent',
     'OpenRouter',
     'Impeccable',
     'before/after slider',

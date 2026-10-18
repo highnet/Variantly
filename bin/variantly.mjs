@@ -25,7 +25,7 @@ Usage
 Options
   -p, --port <n>             port for the variantly app (default 4477)
       --agent <id>           claude | codex | copilot | gemini | cursor |
-                             opencode | grok | demo
+                             opencode | grok | hermes | demo
       --agents <mix>         split the variants across agents and models, as
                              agent[:model]:count, e.g. claude:opus:2,gemini:2
       --blind                hide which agent made each variant until you keep one
@@ -38,7 +38,7 @@ Options
       --no-review            skip the Impeccable critique and audit pass
       --no-audit             skip the axe-core and Lighthouse scores
       --providers <ids>      install-skill: claude,codex,copilot,gemini,cursor,
-                             opencode,grok
+                             opencode,grok,hermes
                              (default: the agents on your PATH)
       --scope <s>            install-skill: global (default, your user) or
                              project (dir, for everyone who clones it)

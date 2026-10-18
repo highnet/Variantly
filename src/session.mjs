@@ -575,7 +575,8 @@ export class Session extends EventEmitter {
     // Impeccable's global installs land in different home folders per agent
     // (and Copilot doesn't read every one of them). Put the skill where this
     // agent reads project skills, inside the worktree, so it is always found.
-    const projectSkillDir = agentById(agentId)?.skills.project[0];
+    const runner = agentById(agentId);
+    const projectSkillDir = runner?.worktreeSkills === false ? undefined : runner?.skills.project[0];
     if (projectSkillDir && !existsSync(path.join(wt, projectSkillDir, 'impeccable', 'SKILL.md'))) {
       const source = impeccableSources()[0];
       if (source) {

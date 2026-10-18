@@ -19,10 +19,12 @@
  *   step_finish (tokens and dollar cost per step), error. Captured from a real run.
  * - Grok Build 1.0.62 `grok -p --output-format streaming-messages-json`: Claude
  *   Code's stream-json shape; a failed run's `result` carries `errors[]`.
+ * - Hermes Agent `hermes chat --oneshot -q --format stream-json`: system init,
+ *   text (deltas), tool_use, tool_result, result (hermes_cli/stream_json.py).
  */
 import path from 'node:path';
 
-/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'gemini-stream' | 'cursor-stream' | 'opencode-json' | 'grok-stream' | 'text'} OutputKind */
+/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'gemini-stream' | 'cursor-stream' | 'opencode-json' | 'grok-stream' | 'hermes-stream' | 'text'} OutputKind */
 
 /**
  * Token counts as the agent reported them, summed over the session.
@@ -107,7 +109,7 @@ export function createParser(kind, opts = {}) {
     u.cachedInputTokens += num(cached);
   };
   /** @type {Record<string, (event: any, state: ParseState, rel: Rel, addUsage: AddUsage) => string[]>} */
-  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot, 'gemini-stream': gemini, 'cursor-stream': cursor, 'opencode-json': opencode, 'grok-stream': grok };
+  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot, 'gemini-stream': gemini, 'cursor-stream': cursor, 'opencode-json': opencode, 'grok-stream': grok, 'hermes-stream': hermes };
   const describe = parsers[kind];
 
   return {
@@ -432,6 +434,48 @@ function opencode(event, state, rel, addUsage) {
       const e = event.error ?? {};
       state.error = e.data?.message ?? e.message ?? e.name ?? 'OpenCode reported an error.';
       return [`Error: ${state.error}`];
+    }
+    default:
+      return [];
+  }
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function hermes(event, state, rel, addUsage) {
+  // Text streams in deltas, like Gemini's: shown a whole line at a time.
+  if (event.type === 'text') {
+    if (typeof event.text !== 'string') return [];
+    state.text[0] = (state.text[0] ?? '') + event.text;
+    const lines = ((state.pending ?? '') + event.text).split(/\r?\n/);
+    state.pending = lines.pop();
+    return lines.map((l) => l.trim()).filter(Boolean);
+  }
+  const held = state.pending?.trim() ? [state.pending.trim()] : [];
+  state.pending = '';
+  return [...held, ...hermesEvent(event, state, rel, addUsage)];
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function hermesEvent(event, state, rel, addUsage) {
+  switch (event.type) {
+    case 'system':
+      return event.subtype === 'init' ? [`Hermes Agent session started (${event.model || 'default model'})`] : [];
+    case 'tool_use': {
+      const a = event.input && typeof event.input === 'object' ? event.input : {};
+      const target = a.path ? rel(a.path) : (a.command ?? a.pattern ?? a.name ?? a.query ?? a.url ?? '');
+      return [tool(event.name ?? 'tool', target)];
+    }
+    case 'tool_result':
+      return event.is_error ? [`  ✗ ${event.name ?? 'tool'}: ${clip(event.output ?? 'failed', 140)}`] : [];
+    case 'result': {
+      const t = event.tokens ?? {};
+      state.usage = undefined;
+      addUsage(t.input, t.output, num(t.cache_read) + num(t.cache_write));
+      // The final answer, whole; the deltas were the same words.
+      if (typeof event.text === 'string' && event.text.trim()) state.text = [event.text];
+      if (event.error) state.error = String(event.error);
+      else if (event.exit_code && event.exit_code !== 0) state.error = `Hermes Agent stopped with exit code ${event.exit_code}.`;
+      return [`Finished in ${Math.round(num(event.duration_ms) / 1000)}s, ${tokens(state.usage)}`];
     }
     default:
       return [];
