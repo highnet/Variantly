@@ -13,7 +13,9 @@
   --hero-line: #f3c9b4;
   --hero-box: #fffaf6;
   --hero-face: var(--font-clay);
-  --title: #ff7a59;
+  /* The wordmark and accent headings: a deeper coral that holds 4:1 on the
+     peach paper; the bright coral stays for fills and the dark theme. */
+  --title: #c4441f;
   --hero-alpha: 55%;
 }
 :root[data-variant='a'][data-theme='dark'] {
@@ -27,6 +29,7 @@
   --hero-mute: #cfa9bb;
   --hero-line: #4a2d52;
   --hero-box: #120a15;
+  --title: #ff7a59;
 }
 :root[data-variant='a'] .vy-title {
   text-shadow:

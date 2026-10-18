@@ -13,7 +13,8 @@
   --hero-line: #1b1a3a;
   --hero-box: #fffdf6;
   --hero-face: var(--font-poster);
-  --title: #ff4f9a;
+  /* Accent headings in a deeper magenta that holds 4.8:1 on the cream. */
+  --title: #c81e64;
   --hero-alpha: 40%;
 }
 :root[data-variant='b'][data-theme='dark'] {
@@ -27,6 +28,7 @@
   --hero-mute: #b7b3d6;
   --hero-line: #f6f1e4;
   --hero-box: #0d0d22;
+  --title: #ff4f9a;
 }
 :root[data-variant='b'] [data-hero-title] {
   background-image: radial-gradient(
@@ -79,7 +81,7 @@
   transform: rotate(0.6deg);
 }
 :root[data-variant='b'] main > div .figure:not(h3) {
-  color: #ff4f9a;
+  color: var(--title);
   text-shadow: 4px 3px 0 rgb(47 91 255 / 0.8);
 }
 @media (max-width: 639px) {

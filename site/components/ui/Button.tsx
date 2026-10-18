@@ -19,9 +19,10 @@ const buttonVariants = cva(
         // Round header control (theme, accessibility); lit while its menu is open.
         'header-icon':
           'text-steel hover:bg-surface hover:text-ink aria-expanded:bg-surface aria-expanded:text-ink [&_svg]:size-4.5',
-        // One option of a segmented control on slate; the pressed one glows green.
+        // One option of a segmented control on slate; the pressed one glows in the
+        // board accent, its label black or white by that accent's luminance (globals.css).
         segment:
-          'normal-case tracking-normal font-sans text-steel-on-slate hover:text-surface aria-pressed:bg-ok-on-slate aria-pressed:text-ink',
+          'normal-case tracking-normal font-sans text-steel-on-slate hover:text-surface aria-pressed:bg-ok-on-slate aria-pressed:text-ink vy-on-ok-pressed',
         // A small on/off switch in the slate dock.
         'toggle-slate':
           'text-steel-on-slate hover:text-surface aria-pressed:bg-surface aria-pressed:text-ink',
@@ -31,7 +32,7 @@ const buttonVariants = cva(
         'prompt-slate':
           'border border-slate-line bg-transparent text-surface normal-case tracking-normal font-sans hover:bg-ink active:translate-y-px',
         // A numbered cell on the slate dock; the current one lifts, white.
-        cell: 'relative bg-slate-raised text-surface opacity-55 tracking-normal tabular-nums [font-stretch:75%] hover:opacity-90 aria-[current=true]:bg-surface aria-[current=true]:text-ink aria-[current=true]:opacity-100 aria-[current=true]:-translate-y-0.5 aria-[current=true]:shadow-cell aria-checked:bg-surface aria-checked:text-ink aria-checked:opacity-100 aria-checked:-translate-y-0.5 aria-checked:shadow-cell',
+        cell: 'relative bg-slate-raised text-surface opacity-75 tracking-normal tabular-nums [font-stretch:75%] hover:opacity-90 aria-[current=true]:bg-surface aria-[current=true]:text-ink aria-[current=true]:opacity-100 aria-[current=true]:-translate-y-0.5 aria-[current=true]:shadow-cell aria-checked:bg-surface aria-checked:text-ink aria-checked:opacity-100 aria-checked:-translate-y-0.5 aria-checked:shadow-cell',
         // A cell in the goo picker: the lit pill is a separate layer that
         // travels between cells (lib/goo.ts), so the cell itself never lifts
         // or fades (either would trap its number under the pill); the number
@@ -71,7 +72,7 @@ const buttonVariants = cva(
         round: 'size-9 rounded-full',
         none: '',
         segment: 'rounded-[8px] px-2 py-2.5 text-[13px] font-semibold',
-        toggle: 'rounded px-1.5 py-1 text-[10px] gap-1.5 [&_svg]:size-3.5',
+        toggle: 'rounded px-1.5 py-1 text-[11px] gap-1.5 [&_svg]:size-3.5',
         // Wraps on narrow screens instead of running off the edge.
         prompt:
           'min-h-8 rounded-control px-2.5 py-1.5 text-left text-[13px] leading-tight font-semibold whitespace-normal',
@@ -87,7 +88,7 @@ const buttonVariants = cva(
           'h-32 w-40 shrink-0 snap-start flex-col items-start justify-between rounded-pass p-3 text-lg whitespace-normal',
         // Phone dock arrows: at least 44px to hit.
         touch: 'size-11 rounded-full',
-        grip: 'h-11 rounded-full px-2 text-[10px] gap-1 tracking-[0.08em]',
+        grip: 'h-11 rounded-full px-2 text-[11px] gap-1 tracking-[0.08em]',
       },
     },
     defaultVariants: {
