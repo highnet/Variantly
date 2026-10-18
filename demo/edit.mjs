@@ -44,6 +44,12 @@ const round3 = (n) => Math.round(n * 1000) / 1000;
 const TIGHTEN_MIN = 1.5;
 const TIGHTEN_MAX = 3;
 const TIGHTEN_KEEP = 0.5;
+// A long overrun that would still run past TIGHTEN_LONG s at TIGHTEN_MAX× may go
+// up to TIGHTEN_LONG_MAX× to fit TIGHTEN_LONG s (the website beat's concept swaps).
+const TIGHTEN_LONG = 8;
+const TIGHTEN_LONG_MAX = 5;
+// The other way: a line longer than its footage slows the scene, down to this.
+const STRETCH_MIN = 0.8;
 // A timelapse with `realHead` (ms) first plays that long at real speed, under
 // a real clock, and only then speeds up: the viewer sees the honest time
 // before the fast part. The fast part is a second clip labelled "<id>+".
@@ -63,11 +69,18 @@ const clips = raw.scenes.flatMap((scene) => {
     // Dead air: when a scene's actions ran past its line, play the overrun
     // faster (up to TIGHTEN_MAX×) so the scene ends just after the voice.
     // The line's own part stays at real speed, so the words still match.
-    const spoken = byId[scene.id]?.text ? lineSeconds(scene.id) + PAD_MS / 1000 : 0;
+    // A scene's `rest` (a deliberate silent hold, like the pause countdown) counts as its line.
+    const spoken = byId[scene.id]?.text ? lineSeconds(scene.id) + PAD_MS / 1000 + (byId[scene.id].rest ?? 0) / 1000 : 0;
+    // A line longer than its footage: play the scene a little slower (at
+    // least STRETCH_MIN×), so the picture lasts as long as the voice.
+    if (spoken && spoken > length + 0.2) return [{ ...clip, speed: Number(Math.max(STRETCH_MIN, length / spoken).toFixed(4)) }];
     const slack = length - spoken - TIGHTEN_KEEP;
     if (!spoken || slack <= TIGHTEN_MIN) return [clip];
     const cut = round3(from + spoken);
-    const speed = Number(Math.min(TIGHTEN_MAX, (length - spoken) / TIGHTEN_KEEP).toFixed(4));
+    const over = length - spoken;
+    let fast = Math.min(TIGHTEN_MAX, over / TIGHTEN_KEEP);
+    if (over / fast > TIGHTEN_LONG) fast = Math.min(TIGHTEN_LONG_MAX, over / TIGHTEN_LONG);
+    const speed = Number(fast.toFixed(4));
     return [
       { ...clip, to: cut },
       { label: `${scene.id}+`, src: clip.src, from: cut, to: clip.to, speed },

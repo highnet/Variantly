@@ -1491,7 +1491,7 @@
         "fromOn": "try",
         "stamp": "Variant record VY-001 · kept"
       },
-      "text": "I designed and directed Variantly, working with Claude Code and Impeccable. I chose the direction, made the decisions, and tested it on a real iPhone. It's free and open source, and it runs on your computer. You need no account, and nothing goes to our servers. To try it, run npx variantly in your project. Docs at variantly.style. Thanks for watching.",
+      "text": "I designed and directed Variantly with Claude Code and Impeccable. I chose the direction, made the decisions, and tested it on a real iPhone. It's free, open source, and runs on your computer. To try it, run npx variantly in your project. Docs at variantly.style. Thanks for watching.",
       "actions": [
         {
           "goto": "{{site}}"
