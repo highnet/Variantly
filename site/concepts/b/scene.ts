@@ -23,11 +23,21 @@ void main(){
 }`,
   });
   const knot = new THREE.Mesh(new THREE.TorusKnotGeometry(2.1, 0.62, 260, 40, 2, 3), mat);
-  knot.position.set(3.2, 0.6, 0);
   scene.add(knot);
+  // Wide screens: the knot stands at the right edge, clear of the title.
+  // Phones: a small knot in the band between the title card and the headline.
+  const hh = 10 * Math.tan((20 * Math.PI) / 180);
   return {
     camera,
     update: (t, px) => {
+      const aspect = (camera as THREE.PerspectiveCamera).aspect || 1.6;
+      const wide = aspect > 1;
+      knot.scale.setScalar(wide ? 0.85 : 0.12);
+      knot.position.set(
+        wide ? 1.13 * hh * aspect : 0.12 * hh * aspect,
+        (wide ? 0.15 : 0.44) * hh,
+        0,
+      );
       knot.rotation.set(t * 0.15, t * 0.22 + px * 0.6, 0);
     },
   };

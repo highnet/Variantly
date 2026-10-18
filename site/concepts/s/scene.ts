@@ -159,13 +159,11 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
       const wide = aspect > 1;
       const k = wide ? 0.78 : 0.28;
       den.scale.setScalar(k);
-      // Phones: no room beside the title, and nothing may sit behind it, so
-      // the shelf's objects stay off (the lamp's glow still warms the room).
-      den.visible = wide;
-      // On the Backdrop's shelf: 55% down the screen, 32% on phones.
+      // On the Backdrop's shelf: 62% down the screen, 32% on phones; under
+      // the title card and above the headline, never behind either.
       den.position.set(
         wide ? hh * aspect * 0.64 : hh * aspect * 0.58,
-        (wide ? -0.1 : 0.36) * hh,
+        (wide ? -0.24 : 0.36) * hh,
         0,
       );
       den.rotation.y = -0.18;

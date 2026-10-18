@@ -19,6 +19,21 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
   const camera = persp(9);
   const uT = { value: 0 };
   const uA = { value: Number(strength) };
+  // The title's box in NDC (minX, minY, maxX, maxY), kept clear of dust.
+  const uClear = { value: new THREE.Vector4(2, 2, 2, 2) };
+  const clearOfTitle = () => {
+    const title = document.querySelector('[data-hero-title] .vy-title');
+    const gl = [...document.querySelectorAll('canvas')].find(
+      (c) => !c.closest('[data-hero-title]'),
+    );
+    if (!title || !gl) return;
+    const r = title.getBoundingClientRect();
+    const c = gl.getBoundingClientRect();
+    if (!c.width || !c.height) return;
+    const nx = (x: number) => ((x - c.left) / c.width) * 2 - 1;
+    const ny = (y: number) => 1 - ((y - c.top) / c.height) * 2;
+    uClear.value.set(nx(r.left), ny(r.bottom), nx(r.right), ny(r.top));
+  };
 
   // The beam: a flat fan from the lens to the frame, soft at its edges, fading
   // toward the lens, flickering a little.
@@ -69,8 +84,8 @@ void main(){
     new THREE.ShaderMaterial({
       transparent: true,
       depthWrite: false,
-      uniforms: { uT, uC: { value: new THREE.Color(mote) } },
-      vertexShader: `attribute vec3 aSeed; uniform float uT; varying float vA;
+      uniforms: { uT, uC: { value: new THREE.Color(mote) }, uClear },
+      vertexShader: `attribute vec3 aSeed; uniform float uT; uniform vec4 uClear; varying float vA;
 void main(){
   float laps = 1.0 + floor(aSeed.z * 2.0);
   float s = fract(aSeed.x + uT / 24.0 * laps * (aSeed.z > 0.5 ? 1.0 : -1.0));
@@ -83,6 +98,12 @@ void main(){
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
   gl_PointSize = 1.5 + 2.5 * aSeed.z;
   gl_Position = projectionMatrix * mv;
+  // No mote crosses the title: they fade out over its box (uClear, in NDC).
+  vec2 nd = gl_Position.xy / gl_Position.w;
+  vec2 m = vec2(0.04, 0.06);
+  float inX = smoothstep(uClear.x - m.x, uClear.x, nd.x) * (1.0 - smoothstep(uClear.z, uClear.z + m.x, nd.x));
+  float inY = smoothstep(uClear.y - m.y, uClear.y, nd.y) * (1.0 - smoothstep(uClear.w, uClear.w + m.y, nd.y));
+  vA *= 1.0 - inX * inY;
 }`,
       fragmentShader: `uniform vec3 uC; varying float vA;
 void main(){ float r = length(gl_PointCoord - 0.5); if (r > 0.5) discard;
@@ -99,6 +120,7 @@ void main(){ float r = length(gl_PointCoord - 0.5); if (r > 0.5) discard;
     camera,
     update: (t) => {
       uT.value = t;
+      clearOfTitle();
       const aspect = (camera as THREE.PerspectiveCamera).aspect || 1.6;
       const halfW = halfH * aspect;
       // From the booth (just off the top right corner) down to the frame.

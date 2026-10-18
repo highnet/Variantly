@@ -93,7 +93,7 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
     update: (t) => {
       const aspect = camera.right / 5;
       const narrow = aspect < 1;
-      camera.zoom = narrow ? 0.26 : 0.8;
+      camera.zoom = narrow ? 0.17 : 0.8;
       camera.top = 5;
       camera.bottom = -5;
       camera.updateProjectionMatrix();
@@ -101,12 +101,13 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
       const a = (step / FRAMES) * Math.PI * 2 + 0.6;
       camera.position.set(Math.cos(a) * 40, centre.y + 22, Math.sin(a) * 40);
       camera.lookAt(centre);
-      // The range sits in front of the sun: right of centre on wide screens,
-      // under the title on phones.
+      // The range stands at the right edge below the title on wide screens,
+      // and small at the left of the band between the title card and the
+      // headline on phones: never behind either.
       const halfW = (5 * aspect) / camera.zoom;
       const halfH = 5 / camera.zoom;
-      camera.translateX(narrow ? -halfW * 0.62 : -halfW * 0.57);
-      camera.translateY(narrow ? -halfH * 0.62 : halfH * 0.09);
+      camera.translateX(narrow ? halfW * 0.32 : -halfW * 0.9);
+      camera.translateY(narrow ? -halfH * 0.42 : halfH * 0.2);
       const span = halfW + 4;
       sweep.value = -span + (((2 * span * step) / FRAMES + span * 0.6) % (2 * span));
     },

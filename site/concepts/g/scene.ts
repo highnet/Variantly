@@ -35,6 +35,23 @@ void main(){
     [4.4, 1.9, -1, 1.2],
     [2.2, -2.2, 0.5, 0.9],
   ];
+  /* Where each pebble sits, as a share of the half-width/half-height seen at
+     z = 0, and its scale. Wide screens: two pebbles frame the title from the
+     sides, a third sits low right beside the headline. Phones: a small row in
+     the band between the title card and the headline. Never behind either. */
+  const hh = 9 * Math.tan((20 * Math.PI) / 180);
+  const layout = (wide: boolean): [number, number, number][] =>
+    wide
+      ? [
+          [-1.16, 0.32, 1],
+          [1.12, 0.62, 1],
+          [0.72, -0.62, 1],
+        ]
+      : [
+          [-0.7, 0.45, 0.17],
+          [0.72, 0.44, 0.18],
+          [0.02, 0.42, 0.2],
+        ];
   const meshes = spots.map(([x, y, z, r], i) => {
     const m = new THREE.Mesh(new THREE.IcosahedronGeometry(r, 48), mats[i % mats.length]);
     m.position.set(x, y, z);
@@ -44,9 +61,16 @@ void main(){
   return {
     camera,
     update: (t, px) => {
+      const aspect = (camera as THREE.PerspectiveCamera).aspect || 1.6;
+      const wide = aspect > 1;
+      const spot = layout(wide);
       meshes.forEach((m, i) => {
+        const [fx, fy, k] = spot[i];
         (m.material as THREE.ShaderMaterial).uniforms.uTime.value = t + i * 3;
-        m.position.y = spots[i][1] + Math.sin(t * 0.5 + i * 2) * 0.35;
+        m.scale.setScalar(k);
+        m.position.x = fx * hh * aspect;
+        m.position.z = wide ? spots[i][2] : 0;
+        m.position.y = fy * hh + Math.sin(t * 0.5 + i * 2) * (wide ? 0.35 : 0.04);
         m.rotation.set(t * 0.1 + i, t * 0.13, 0);
       });
       camera.position.x = px * 0.8;

@@ -23,13 +23,15 @@ const SUN = [16, 16, 12, 8, 8, 4, 2, 1];
 // sits around the title).
 const PROOFS: number[][] = [[12, 8, 4, 2, 1, 1, 0, 0], SUN, [16, 16, 16, 16, 12, 8, 4, 2]];
 
+// The sun rises at the right edge beside the title (desktop), or small in the
+// band between the title card and the headline (phones): never behind either.
 const Dither = () => (
   <>
     <div className="vy-h-tooth absolute inset-0" />
     <Disc
       levels={SUN}
       sweep
-      className="top-[7vh] right-[-7vmax] size-[46vmax] max-sm:top-[3vh] max-sm:right-[-18vmax] max-sm:size-[50vmax]"
+      className="top-[7vh] right-[-38vmax] size-[46vmax] max-sm:top-[22vh] max-sm:right-[-3vmax] max-sm:size-[11vmax]"
     />
     <div className="vy-h-proofs absolute top-[12vh] left-[2.5vw] grid gap-3 max-xl:hidden">
       {PROOFS.map((levels, i) => (

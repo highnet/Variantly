@@ -45,14 +45,20 @@ const paper = (scene: THREE.Scene, colors: string[]): Built => {
     new THREE.Float32BufferAttribute([-1, -0.8, 0, 1.1, -0.6, 0, 0, 1, 0], 3),
   );
   tri.computeVertexNormals();
+  // Wide screens: scraps frame the title from the sides, above and below it,
+  // clear of the headline.
   const shapes: [THREE.BufferGeometry, number, number, number, number][] = [
-    [folded(2.6, 3.4, 0.5), -6.5, 2.2, -1, 0],
-    [folded(2, 2.6, -0.4), 6.2, 2.8, -2, 1],
+    [folded(2.6, 3.4, 0.5), -7.6, 2.2, -1, 0],
+    [folded(2, 2.6, -0.4), 7.6, 2.8, -2, 1],
     [tri, 4.8, -2.6, 0, 2],
-    [folded(1.6, 2, 0.3), -4.2, -3, 0.5, 3],
-    [tri, -1.5, 3.6, -3, 1],
+    [folded(1.6, 2, 0.3), -6.6, -0.6, 0.5, 3],
+    [tri, -1.5, 4.6, -3, 1],
     [folded(1.2, 1.6, -0.3), 1.8, -3.8, -1, 0],
   ];
+  // Phones: a small row in the band between the title card and the headline
+  // (x as a share of the half-width).
+  const hh = 12 * Math.tan((20 * Math.PI) / 180);
+  const row = [-0.8, 0.8, 0.48, -0.48, 0.16, -0.16];
   const meshes = shapes.map(([geo, x, y, z, c]) => {
     const m = new THREE.Mesh(
       geo,
@@ -69,10 +75,17 @@ const paper = (scene: THREE.Scene, colors: string[]): Built => {
   return {
     camera,
     update: (t, px) => {
+      const aspect = (camera as THREE.PerspectiveCamera).aspect || 1.6;
+      const wide = aspect > 1;
       meshes.forEach((m, i) => {
-        const [, x, y] = shapes[i];
-        m.position.x = x + Math.sin(t * 0.2 + i) * 0.3;
-        m.position.y = y + Math.sin(t * 0.35 + i * 1.7) * 0.4;
+        const [, x, y, z] = shapes[i];
+        const sx = wide ? x : row[i] * hh * aspect;
+        const sy = wide ? y : 0.45 * hh;
+        const k = wide ? 1 : 0.26;
+        m.scale.setScalar(k);
+        m.position.z = wide ? z : 0;
+        m.position.x = sx + Math.sin(t * 0.2 + i) * 0.3 * k;
+        m.position.y = sy + Math.sin(t * 0.35 + i * 1.7) * 0.4 * k;
         m.rotation.set(
           0.4 + Math.sin(t * 0.3 + i) * 0.5,
           t * 0.25 + i,
