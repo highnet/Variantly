@@ -1,51 +1,46 @@
 import * as THREE from 'three';
 
-import type { ConceptLook } from '@/concepts/types';
+import { bsdf } from '@/lib/bsdf';
 import { plain, type LetterInk } from '@/lib/lookKit';
-import { LIGHT_TURN } from '@/lib/titleLight';
+import type { ConceptLook } from '@/concepts/types';
 
 /*
- * h · Dither Machine: dithered voxels. Unlit; each fragment is one of two
- * inks, picked by a Bayer 4×4 threshold on how much light its facet takes.
- * Faces are the letter's ink, holed by paper where the light blows out (light
- * theme) or where the shade falls (dark theme); the extruded sides are the
- * rust, dithered into ink as they turn from the light.
+ * h · Dither Machine: dithered voxels. The letter is lit physically (a satin
+ * body), then reduced to two inks by a Bayer 4×4 threshold on how lit each
+ * fragment is: faces are the letter's ink, holed by paper where the light
+ * blows out (light theme) or where the shade falls (dark theme); the sides
+ * are the rust, dithered into ink as they turn from the light. As the light
+ * moves, the dither pattern crawls across the letters with it.
  */
-const VERT = /* glsl */ `
-varying vec3 vN;
-void main() {
-  vN = normalize(normalMatrix * normal);
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}`;
-
-const FRAG = /* glsl */ `
-uniform mat3 uLightTurn;
-uniform vec3 uA; uniform vec3 uB; uniform float uCell; uniform float uK; uniform float uC;
-varying vec3 vN;
-float b2(vec2 a){ a = floor(a); return fract(dot(a, vec2(0.5, a.y * 0.75))); }
-float bayer(vec2 a){ return b2(0.5 * a) * 0.25 + b2(a); }
-void main() {
-  vec3 n = normalize(vN);
-  if (!gl_FrontFacing) n = -n;
-  float d = dot(n, normalize(uLightTurn * vec3(-0.45, 0.6, 0.65)));
-  float amt = clamp(d * uK + uC, 0.0, 1.0);
-  gl_FragColor = vec4(mix(uA, uB, step(bayer(gl_FragCoord.xy / uCell) + 0.001, amt)), 1.0);
-  #include <colorspace_fragment>
-}`;
+const POST = /* glsl */ `
+  vec2 a = floor(gl_FragCoord.xy / uCell);
+  float b2a = fract(dot(floor(0.5 * a), vec2(0.5, floor(0.5 * a).y * 0.75)));
+  float b2b = fract(dot(a, vec2(0.5, a.y * 0.75)));
+  float bayer = b2a * 0.25 + b2b;
+  float amt = clamp(vyLit * uK + uC, 0.0, 1.0);
+  vec3 inkA = sRGBTransferOETF(vec4(uA, 1.0)).rgb;
+  vec3 inkB = sRGBTransferOETF(vec4(uB, 1.0)).rgb;
+  gl_FragColor.rgb = mix(inkA, inkB, step(bayer + 0.001, amt));
+`;
 
 const dither = (a: string, b: string, cell: number, k: number, c: number) =>
-  new THREE.ShaderMaterial({
-    vertexShader: VERT,
-    fragmentShader: FRAG,
+  bsdf({
+    key: 'h-dither',
+    color: a,
+    roughness: 0.42,
+    clearcoat: 0.3,
+    grain: 0,
+    hooks: {
+      decl: 'uniform vec3 uA; uniform vec3 uB; uniform float uCell; uniform float uK; uniform float uC;',
+      post: POST,
+    },
     uniforms: {
-      uLightTurn: LIGHT_TURN,
       uA: { value: new THREE.Color(a) },
       uB: { value: new THREE.Color(b) },
       uCell: { value: cell },
       uK: { value: k },
       uC: { value: c },
     },
-    toneMapped: false,
   });
 
 // [extra paper in the face, cell size in CSS px]; phones take the first three.
@@ -63,12 +58,13 @@ const pool = (ink: LetterInk, dark: boolean) => {
   const paper = dark ? '#0e0e0e' : '#efe7d6';
   return LOOKS.map(([bias, cell]) => {
     const c = Math.round(cell * px);
-    // Light theme: paper where the light is strongest. Dark: where it is weakest.
+    // Light: paper where the light is strongest (lit past the ink). Dark:
+    // paper where it is weakest.
     const face = dark
-      ? dither(ink.face, paper, c, -2.4, 0.9 + bias)
-      : dither(ink.face, paper, c, 2.2, -1.75 + bias);
-    const side = dither(ink.side, dark ? paper : ink.face, c, -0.9, 0.45);
-    return plain(face, side);
+      ? dither(ink.face, paper, c, -1.6, 1.25 + bias)
+      : dither(ink.face, paper, c, 1.8, -1.75 + bias);
+    const side = dither(ink.side, dark ? paper : ink.face, c, -1.1, 1.0);
+    return plain(face, side, true);
   });
 };
 

@@ -1,76 +1,59 @@
 import * as THREE from 'three';
 
+import { bsdf } from '@/lib/bsdf';
 import { plain, type LetterLook } from '@/lib/lookKit';
 import type { ConceptLook } from '@/concepts/types';
-import { LIGHT_TURN } from '@/lib/titleLight';
 
 /*
  * k · Ink & Stitch: inked letterforms, sewn. Each face is a solid pass of
- * brush ink (bristle streaks inside it, never gaps), and a running stitch of
- * thread follows the letter's rim (the bevel and the top of its wall), so
- * every glyph reads as an appliqué sewn down around its own outline.
+ * brush ink (bristle streaks in the colour and the gloss: wet ink shines along
+ * the stroke, never gaps); the walls are matte cotton (a soft fibre sheen) and
+ * a running stitch of thread follows the rim, so every glyph reads as an
+ * appliqué sewn down around its own outline.
  * Glyph units: 1em = 2, baseline y = 0, front face at z = 0, walls to -0.4.
  */
-
-const VERT = /* glsl */ `
-varying vec3 vN;
-varying vec3 vV;
-varying vec3 vObj;
-varying float vFront;
-void main() {
-  vObj = position;
-  vFront = normal.z;
-  vec4 mv = modelViewMatrix * vec4(position, 1.0);
-  vV = -mv.xyz;
-  vN = normalize(normalMatrix * normal);
-  gl_Position = projectionMatrix * mv;
-}`;
-
-const FRAG = /* glsl */ `
-uniform mat3 uLightTurn;
-uniform vec3 uFace;
-uniform vec3 uWall;
-uniform vec3 uT;
+const DECL = /* glsl */ `
+uniform vec3 uFace; uniform vec3 uWall; uniform vec3 uT;
 uniform vec4 uStitch; // pitch, bristle strength, seed, stroke angle
-varying vec3 vN;
-varying vec3 vV;
-varying vec3 vObj;
-varying float vFront;
-float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
-float vnoise(vec2 p) {
-  vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);
-  return mix(mix(hash(i), hash(i + vec2(1, 0)), f.x), mix(hash(i + vec2(0, 1)), hash(i + vec2(1, 1)), f.x), f.y);
+float vyStreak() {
+  vec2 d = vec2(cos(uStitch.w), sin(uStitch.w));
+  vec2 q = vec2(dot(vObj.xy, d), dot(vObj.xy, vec2(-d.y, d.x)));
+  return vyNoise(vec2(q.x * 1.2 + uStitch.z, q.y * 42.0));
 }
-void main() {
-  vec3 n = normalize(vN);
-  if (!gl_FrontFacing) n = -n;
-  vec3 L = normalize(uLightTurn * vec3(-0.45, 0.6, 0.65));
-  float wrap = clamp((dot(n, L) + 0.55) / 1.55, 0.0, 1.0);
-  float face = step(0.92, vFront);
-  vec3 c;
-  if (face > 0.5) {
-    // Brush ink: bristle streaks along one stroke direction, a gentle sheen.
-    vec2 d = vec2(cos(uStitch.w), sin(uStitch.w));
-    vec2 q = vec2(dot(vObj.xy, d), dot(vObj.xy, vec2(-d.y, d.x)));
-    float streak = vnoise(vec2(q.x * 1.2 + uStitch.z, q.y * 42.0));
-    c = uFace * (0.82 + 0.22 * wrap) * (1.0 - uStitch.y * (streak - 0.5));
+float vyRim() { return 1.0 - smoothstep(0.1, 0.14, -vObj.z); }
+float vyDash() {
+  float k = fract((vObj.x + vObj.y) / uStitch.x);
+  return smoothstep(0.0, 0.06, k) * (1.0 - smoothstep(0.56, 0.62, k));
+}
+`;
+
+const ALBEDO = /* glsl */ `
+  if (vyFront > 0.5) {
+    diffuseColor.rgb = uFace * (1.0 - uStitch.y * (vyStreak() - 0.5));
   } else {
-    // The wall: matte cotton with a running stitch around the rim.
-    float fibre = hash(floor(vObj.xy * 70.0) + uStitch.z);
-    c = uWall * (0.55 + 0.5 * wrap) * (0.95 + 0.05 * fibre);
-    float rim = 1.0 - smoothstep(0.1, 0.14, -vObj.z);
-    float s = (vObj.x + vObj.y) / uStitch.x;
-    float k = fract(s);
-    float dash = smoothstep(0.0, 0.06, k) * (1.0 - smoothstep(0.56, 0.62, k));
-    float hole = (1.0 - smoothstep(0.0, 0.05, abs(k - 0.78))) * rim;
-    c *= 1.0 - 0.45 * hole;
-    vec3 cord = uT * (0.6 + 0.5 * wrap);
-    c = mix(c, cord, rim * dash);
+    float fibre = vyHash(floor(vObj.xy * 70.0) + uStitch.z);
+    vec3 wall = uWall * (0.95 + 0.05 * fibre);
+    float k = fract((vObj.x + vObj.y) / uStitch.x);
+    float hole = (1.0 - smoothstep(0.0, 0.05, abs(k - 0.78))) * vyRim();
+    wall *= 1.0 - 0.45 * hole;
+    diffuseColor.rgb = mix(wall, uT, vyRim() * vyDash());
   }
-  gl_FragColor = vec4(c, 1.0);
-  #include <colorspace_fragment>
-  gl_FragColor.rgb += (hash(gl_FragCoord.xy + uStitch.z) - 0.5) * 0.025;
-}`;
+`;
+
+const ROUGH = /* glsl */ `
+  roughnessFactor = vyFront > 0.5
+    ? mix(0.55, 0.22, smoothstep(0.45, 0.8, vyStreak()))
+    : mix(0.95, 0.5, vyRim() * vyDash());
+`;
+
+// The thread's cord: the stitch dash bends the normal up into a rounded strand.
+const NORMAL = /* glsl */ `
+  if (vyFront < 0.5) {
+    float k = fract((vObj.x + vObj.y) / uStitch.x);
+    float f = (k / 0.6) * 2.0 - 1.0;
+    normal = normalize(normal + vec3(0.0, 0.0, 0.6) * vyRim() * vyDash() * sqrt(max(0.0, 1.0 - f * f)));
+  }
+`;
 
 type Opts = {
   face: string;
@@ -83,17 +66,21 @@ type Opts = {
 };
 
 const mat = (o: Opts) =>
-  new THREE.ShaderMaterial({
-    vertexShader: VERT,
-    fragmentShader: FRAG,
+  bsdf({
+    key: 'k-stitch',
+    color: '#ffffff',
+    roughness: 0.6,
+    sheen: 0.7,
+    sheenColor: new THREE.Color(o.wall),
+    sheenRoughness: 0.7,
+    grain: 0.025,
+    hooks: { decl: DECL, albedo: ALBEDO, rough: ROUGH, normal: NORMAL },
     uniforms: {
-      uLightTurn: LIGHT_TURN,
       uFace: { value: new THREE.Color(o.face) },
       uWall: { value: new THREE.Color(o.wall) },
       uT: { value: new THREE.Color(o.thread) },
       uStitch: { value: new THREE.Vector4(o.pitch, o.bristle, o.seed, o.angle) },
     },
-    toneMapped: false,
   });
 
 export const look: ConceptLook = {
@@ -115,7 +102,7 @@ export const look: ConceptLook = {
     ];
     return looks.map((o): LetterLook => {
       const m = mat(o);
-      return plain(m, m);
+      return { body: [m, m], env: true };
     });
   },
   shadow: (dark) => ({

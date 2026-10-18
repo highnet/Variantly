@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, type RefObject } from 'react';
 import * as THREE from 'three';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 import type { VariantKey } from '@/components/backdrop/variants';
 import { glTier, markFallback } from '@/lib/glTier';
@@ -29,6 +28,7 @@ import {
   type LetterLook,
 } from '@/lib/letterLook';
 import { morphMesh } from '@/lib/morphMesh';
+import { studioScene } from '@/lib/studioEnv';
 import { aimAt, turnLight, type LightAim } from '@/lib/titleLight';
 import { colourAt, letterPalette, toRgb, type Lab, type LetterPalette } from '@/lib/titleColor';
 import { calmMotion } from '@/lib/prefs';
@@ -228,6 +228,8 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
       document.dispatchEvent(new CustomEvent('vy:gl-busy', { detail: { busy: b } }));
     };
     // Neutral tone mapping keeps the candy colours saturated under the studio light.
+    // Glass letters' transmission pass: half resolution on phones.
+    if (phone) renderer.transmissionResolutionScale = 0.5;
     renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.toneMappingExposure = 0.9;
     renderer.shadowMap.enabled = true;
@@ -242,19 +244,21 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     renderer.domElement.addEventListener('webglcontextlost', lost);
     cleanups.push(() => renderer.domElement.removeEventListener('webglcontextlost', lost));
     const scene = new THREE.Scene();
-    // The studio environment only lights three's PBR looks (candy); it is
-    // built the first time a pool needs it.
+    // The photo studio every BSDF letter reflects (lib/studioEnv), built the
+    // first time a pool needs it.
     let envMap: THREE.Texture | null = null;
     const lightStudio = () => {
       if (envMap) return;
       const pmrem = new THREE.PMREMGenerator(renderer);
-      envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      const studio = studioScene();
+      envMap = pmrem.fromScene(studio.scene, 0.02).texture;
+      studio.dispose();
       pmrem.dispose();
       scene.environment = envMap;
-      scene.environmentIntensity = 0.55;
+      scene.environmentIntensity = 0.8;
     };
     const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 400);
-    const key = new THREE.DirectionalLight('#ffffff', 1.4);
+    const key = new THREE.DirectionalLight('#ffffff', 1.8);
     key.position.set(-4, 6, 8);
     // Where the key rests; the moving light turns it from here.
     const keyRest = key.position.clone();
@@ -841,6 +845,8 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
       let lightT = 0;
       if (!still && seek === null) {
         const onPoint = (e: PointerEvent) => {
+          sweepT0 = -1;
+          swept = true;
           aimAt(e.clientX, e.clientY, innerWidth, innerHeight, lightTo);
           wake();
         };
@@ -851,13 +857,27 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           removeEventListener('pointerdown', onPoint);
         });
       }
+      // Once, as the first reveal settles: the light sweeps across the word
+      // and back (right, left, rest), so the materials show themselves before
+      // anyone moves the pointer. Any pointer input takes over at once.
+      const SWEEP_MS = 2400;
+      let sweepT0 = -1;
+      let swept = false;
+      const sweepAt = (stamp: number) => {
+        const u = Math.min(1, (stamp - sweepT0) / SWEEP_MS);
+        lightTo.yaw = 0.5 * Math.sin(u * Math.PI * 2);
+        lightTo.pitch = -0.16 * Math.sin(u * Math.PI);
+        if (u >= 1) sweepT0 = -1;
+      };
       // Moves the light one frame on; true while it is still travelling.
       const glide = (stamp: number) => {
+        if (sweepT0 >= 0) sweepAt(stamp);
         const dt = Math.min(64, lightT ? stamp - lightT : 16);
         const k = 1 - Math.exp(-dt / 160);
         lightAim.yaw += (lightTo.yaw - lightAim.yaw) * k;
         lightAim.pitch += (lightTo.pitch - lightAim.pitch) * k;
         const moving =
+          sweepT0 >= 0 ||
           Math.abs(lightTo.yaw - lightAim.yaw) + Math.abs(lightTo.pitch - lightAim.pitch) > 0.0015;
         if (!moving) {
           lightAim.yaw = lightTo.yaw;
@@ -881,6 +901,10 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         const t = now();
         hand(performance.now());
         const settled = pose(t) && !handing;
+        if (settled && !swept && !still && seek === null) {
+          swept = true;
+          sweepT0 = stamp;
+        }
         // Only the light travelling: drawn like a moving word (no shadow
         // update, the light casts none) but without claiming the GL, so the
         // backdrop scene keeps running.
