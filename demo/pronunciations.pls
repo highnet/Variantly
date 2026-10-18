@@ -114,6 +114,10 @@
     <alias>Open Router</alias>
   </lexeme>
   <lexeme>
+    <grapheme>OpenCode</grapheme>
+    <alias>Open Code</alias>
+  </lexeme>
+  <lexeme>
     <grapheme>Gemini</grapheme>
     <alias>Jem-in-eye</alias>
   </lexeme>

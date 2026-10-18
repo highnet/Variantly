@@ -319,7 +319,7 @@
         "title": "Setup"
       },
       "step": "Setup",
-      "text": "Setup finds your app and checks your agent. Each card says if it's ready, and if not, the fix is right on the card. I'm using Claude Code. You could pick Codex, Copilot, Gemini, Cursor, or any OpenRouter model, and mix them in one run.",
+      "text": "Setup finds your app and checks your agent. Each card says if it's ready, and if not, the fix is right on the card. I'm using Claude Code. You could pick Codex, Copilot, Gemini, Cursor, OpenCode, Grok Build, Antigravity, Pi, Hermes Agent, or any OpenRouter model, and mix them in one run.",
       "actions": [
         {
           "spotlight": "text=/app found/",
@@ -981,6 +981,12 @@
           "wait": 400
         },
         {
+          "wait": 400
+        },
+        {
+          "key": "s"
+        },
+        {
           "key": "s"
         },
         {
@@ -1010,6 +1016,56 @@
         },
         {
           "key": "s"
+        },
+        {
+          "waitPanes": true
+        }
+      ]
+    },
+    {
+      "id": "lens",
+      "step": "Compare",
+      "afterTake": true,
+      "text": "Or press L for the lens. One design fills the screen, and the next one shows through a door that follows your mouse. Click, and you keep the one in the door.",
+      "actions": [
+        {
+          "key": "l"
+        },
+        {
+          "waitPanes": true
+        },
+        {
+          "glide": ".lens-pad",
+          "to": [
+            [
+              50,
+              45
+            ],
+            [
+              28,
+              35
+            ],
+            [
+              68,
+              58
+            ],
+            [
+              45,
+              50
+            ]
+          ],
+          "ms": 3600,
+          "zoom": true
+        },
+        {
+          "spotlight": ".lens-hint",
+          "ms": 1600,
+          "pad": 12,
+          "optional": true,
+          "callout": "The next design, through the door."
+        },
+        {
+          "click": "role=button[name=\"Slider\"]"
         },
         {
           "waitPanes": true

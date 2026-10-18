@@ -181,6 +181,7 @@ and the Playwright `actions` that happen while it is spoken:
 | `hover`, `press`, `wait`, `waitFor` | `{ "wait": 800 }`, `{ "waitFor": "body[data-view=\"compare\"]" }` |
 | `scroll` | `{ "scroll": 700, "ms": 1800 }` |
 | `drag` | the compare slider: `{ "drag": "role=slider[…]", "to": [20, 80, 50] }` (percentages) |
+| `glide` | the pointer drifts through points in a target without pressing (the Lens door follows it): `{ "glide": ".lens-pad", "to": [[50, 45], [28, 35]] }` ([x, y] percentages of its box) |
 | `waitPanes` | wait until both compare panes have loaded |
 | `waitApi` | `{ "waitApi": "allDone" }` waits on `/api/state` until every variant is built and scored |
 | `key` | `{ "key": "0" }` presses a key on every page; in compare, `0` is V10 |
