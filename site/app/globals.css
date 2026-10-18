@@ -1681,12 +1681,16 @@ a:hover > .brand-mark .brand-grip {
   text-shadow: none !important;
   opacity: 0.6;
 }
-.vy-steps > li {
+:is(.vy-steps > li, .vy-pour) {
   --frame: 0;
+}
+/* The tour's numerals (components/Tour.tsx) name their own sprite. */
+.vy-pour.vy-liquid {
+  --liq: var(--liq-src);
 }
 /* Masks load once the steps come near the viewport (Delight adds .vy-liquid);
    until then a numeral that is not full shows only its outline. */
-.vy-steps:not(.vy-liquid) > li:not(.vy-step-full) .vy-step-liq {
+:is(.vy-steps:not(.vy-liquid) > li, .vy-pour:not(.vy-liquid)):not(.vy-step-full) .vy-step-liq {
   opacity: 0;
 }
 .vy-steps.vy-liquid > li:nth-child(1) {
@@ -1698,7 +1702,8 @@ a:hover > .brand-mark .brand-grip {
 .vy-steps.vy-liquid > li:nth-child(3) {
   --liq: url('/liquid/step-3.svg');
 }
-.vy-steps.vy-liquid > li:not(.vy-step-full) :is(.vy-step-fill, .vy-step-tone, .vy-step-line) {
+:is(.vy-steps.vy-liquid > li, .vy-pour.vy-liquid):not(.vy-step-full)
+  :is(.vy-step-fill, .vy-step-tone, .vy-step-line) {
   -webkit-mask: var(--liq) no-repeat;
   mask: var(--liq) no-repeat;
   -webkit-mask-size: 4800% 200%;
@@ -1706,7 +1711,7 @@ a:hover > .brand-mark .brand-grip {
   -webkit-mask-position: calc(var(--frame) * 100% / 47) var(--row, 0%);
   mask-position: calc(var(--frame) * 100% / 47) var(--row, 0%);
 }
-.vy-steps.vy-liquid > li:not(.vy-step-full) .vy-step-line {
+:is(.vy-steps.vy-liquid > li, .vy-pour.vy-liquid):not(.vy-step-full) .vy-step-line {
   --row: 100%;
   display: block;
 }
@@ -1714,12 +1719,13 @@ a:hover > .brand-mark .brand-grip {
    once its step lights up and the scroll has settled; it pauses while a
    scroll is under way. */
 :root.vy-steps-touch
-  .vy-steps.vy-liquid
-  > li.vy-step-on:not(.vy-step-full)
+  :is(.vy-steps.vy-liquid > li, .vy-pour.vy-liquid).vy-step-on:not(.vy-step-full)
   :is(.vy-step-fill, .vy-step-tone) {
   animation: vy-liq-pour 1.5s steps(48, jump-none) forwards;
 }
-:root.vy-steps-touch .vy-steps.vy-liquid > li.vy-step-on:not(.vy-step-full) .vy-step-line {
+:root.vy-steps-touch
+  :is(.vy-steps.vy-liquid > li, .vy-pour.vy-liquid).vy-step-on:not(.vy-step-full)
+  .vy-step-line {
   animation: vy-liq-pour-line 1.5s steps(48, jump-none) forwards;
 }
 :root.vy-steps-touch[data-scrolling] .vy-step-liq > * {
@@ -1745,7 +1751,7 @@ a:hover > .brand-mark .brand-grip {
     mask-position: 100% 100%;
   }
 }
-.vy-steps > li.vy-step-done .vy-step-num {
+:is(.vy-steps > li, .vy-pour).vy-step-done .vy-step-num {
   animation: vy-step-pop 620ms var(--ease-spring-pop);
 }
 @keyframes vy-step-pop {
@@ -1806,19 +1812,19 @@ header.vy-header-glass {
   .vy-steps > li {
     opacity: 1;
   }
-  .vy-steps > li .vy-step-num,
+  :is(.vy-steps > li, .vy-pour) .vy-step-num,
   .vy-sheen::after {
     animation: none !important;
   }
   /* A still frame at the target level: a lit numeral is simply full. */
-  .vy-steps > li.vy-step-on .vy-step-liq {
+  :is(.vy-steps > li, .vy-pour).vy-step-on .vy-step-liq {
     opacity: 1 !important;
   }
-  .vy-steps > li.vy-step-on :is(.vy-step-fill, .vy-step-tone) {
+  :is(.vy-steps > li, .vy-pour).vy-step-on :is(.vy-step-fill, .vy-step-tone) {
     mask: none !important;
     -webkit-mask: none !important;
   }
-  .vy-steps > li.vy-step-on .vy-step-line {
+  :is(.vy-steps > li, .vy-pour).vy-step-on .vy-step-line {
     display: none !important;
   }
 }
@@ -1834,8 +1840,8 @@ header.vy-header-glass {
 }
 /* Calm and seek: no pour, every numeral is full. Low power: no pour either,
    a numeral is outlined until its step lights, then full. */
-:root:is([data-seek], [data-motion='calm']) .vy-steps > li,
-:root[data-perf='low'] .vy-steps > li.vy-step-on {
+:root:is([data-seek], [data-motion='calm']) :is(.vy-steps > li, .vy-pour),
+:root[data-perf='low'] :is(.vy-steps > li, .vy-pour).vy-step-on {
   & .vy-step-liq {
     opacity: 1 !important;
   }
