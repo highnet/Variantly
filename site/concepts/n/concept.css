@@ -1,0 +1,20 @@
+/* n · Noir Velvet: placeholder tokens from the roll's palette. */
+:root[data-variant='n'] {
+  --panel: color-mix(in srgb, #efe7dc 94%, #140d0c); --surface: #efe7dc; --rule: color-mix(in srgb, #140d0c 18%, #efe7dc); --steel: color-mix(in srgb, #140d0c 66%, #efe7dc); --ink: #140d0c;
+  --alert: #6e1420; --alert-hover: color-mix(in srgb, #6e1420 85%, #efe7dc); --on-alert: #ffffff;
+  --hero-bg: #efe7dc; --hero-ink: #140d0c; --hero-mute: color-mix(in srgb, #140d0c 66%, #efe7dc); --hero-line: color-mix(in srgb, #140d0c 22%, #efe7dc); --hero-box: color-mix(in srgb, #efe7dc 96%, #140d0c);
+  --title: #6e1420;
+  --flap-bg: #6e1420; --flap-ink: #ffffff;
+  --art-1: #6e1420; --art-2: #c79a5b; --art-3: #3a2e2b; --art-ink: #140d0c; --art-shadow: #140d0c;
+  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
+  --board-bg: #080506; --board-raised: color-mix(in srgb, #080506 88%, #f1e6d8); --board-line: color-mix(in srgb, #080506 70%, #f1e6d8);
+  --board-mute: color-mix(in srgb, #f1e6d8 72%, #080506); --board-text: #f1e6d8; --board-deep: color-mix(in srgb, #080506 80%, #000); --board-ok: #9b1c2c;
+}
+:root[data-variant='n'][data-theme='dark'] {
+  --panel: color-mix(in srgb, #080506 94%, #f1e6d8); --surface: #080506; --rule: color-mix(in srgb, #f1e6d8 18%, #080506); --steel: color-mix(in srgb, #f1e6d8 66%, #080506); --ink: #f1e6d8;
+  --alert: #9b1c2c; --alert-hover: color-mix(in srgb, #9b1c2c 85%, #080506); --on-alert: #ffffff;
+  --hero-bg: #080506; --hero-ink: #f1e6d8; --hero-mute: color-mix(in srgb, #f1e6d8 66%, #080506); --hero-line: color-mix(in srgb, #f1e6d8 22%, #080506); --hero-box: color-mix(in srgb, #080506 96%, #f1e6d8);
+  --title: #f1e6d8;
+  --flap-bg: #9b1c2c; --flap-ink: #ffffff;
+  --art-1: #9b1c2c; --art-2: #d4a96a; --art-3: #231a19; --art-ink: #f1e6d8; --art-shadow: #f1e6d8;
+}

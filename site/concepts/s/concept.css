@@ -1,0 +1,20 @@
+/* s · Lived-in Den: placeholder tokens from the roll's palette. */
+:root[data-variant='s'] {
+  --panel: color-mix(in srgb, #f4ead9 94%, #2a1d15); --surface: #f4ead9; --rule: color-mix(in srgb, #2a1d15 18%, #f4ead9); --steel: color-mix(in srgb, #2a1d15 66%, #f4ead9); --ink: #2a1d15;
+  --alert: #a0522d; --alert-hover: color-mix(in srgb, #a0522d 85%, #f4ead9); --on-alert: #ffffff;
+  --hero-bg: #f4ead9; --hero-ink: #2a1d15; --hero-mute: color-mix(in srgb, #2a1d15 66%, #f4ead9); --hero-line: color-mix(in srgb, #2a1d15 22%, #f4ead9); --hero-box: color-mix(in srgb, #f4ead9 96%, #2a1d15);
+  --title: #a0522d;
+  --flap-bg: #a0522d; --flap-ink: #ffffff;
+  --art-1: #a0522d; --art-2: #5b8a86; --art-3: #d9a441; --art-ink: #2a1d15; --art-shadow: #2a1d15;
+  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
+  --board-bg: #1a120c; --board-raised: color-mix(in srgb, #1a120c 88%, #f2e4cc); --board-line: color-mix(in srgb, #1a120c 70%, #f2e4cc);
+  --board-mute: color-mix(in srgb, #f2e4cc 72%, #1a120c); --board-text: #f2e4cc; --board-deep: color-mix(in srgb, #1a120c 80%, #000); --board-ok: #c8693a;
+}
+:root[data-variant='s'][data-theme='dark'] {
+  --panel: color-mix(in srgb, #1a120c 94%, #f2e4cc); --surface: #1a120c; --rule: color-mix(in srgb, #f2e4cc 18%, #1a120c); --steel: color-mix(in srgb, #f2e4cc 66%, #1a120c); --ink: #f2e4cc;
+  --alert: #c8693a; --alert-hover: color-mix(in srgb, #c8693a 85%, #1a120c); --on-alert: #ffffff;
+  --hero-bg: #1a120c; --hero-ink: #f2e4cc; --hero-mute: color-mix(in srgb, #f2e4cc 66%, #1a120c); --hero-line: color-mix(in srgb, #f2e4cc 22%, #1a120c); --hero-box: color-mix(in srgb, #1a120c 96%, #f2e4cc);
+  --title: #c8693a;
+  --flap-bg: #c8693a; --flap-ink: #ffffff;
+  --art-1: #c8693a; --art-2: #6fa39e; --art-3: #e6b450; --art-ink: #f2e4cc; --art-shadow: #f2e4cc;
+}
