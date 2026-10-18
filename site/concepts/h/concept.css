@@ -1,20 +1,81 @@
-/* h · Dither Machine: placeholder tokens from the roll's palette. */
+/* h · Dither Machine: two inks and one rust, every tone an ordered dither on an 8px grid. */
 :root[data-variant='h'] {
-  --panel: color-mix(in srgb, #efe7d6 94%, #1b1915); --surface: #efe7d6; --rule: color-mix(in srgb, #1b1915 18%, #efe7d6); --steel: color-mix(in srgb, #1b1915 66%, #efe7d6); --ink: #1b1915;
-  --alert: #b5482a; --alert-hover: color-mix(in srgb, #b5482a 85%, #efe7d6); --on-alert: #ffffff;
-  --hero-bg: #efe7d6; --hero-ink: #1b1915; --hero-mute: color-mix(in srgb, #1b1915 66%, #efe7d6); --hero-line: color-mix(in srgb, #1b1915 22%, #efe7d6); --hero-box: color-mix(in srgb, #efe7d6 96%, #1b1915);
-  --title: #b5482a;
-  --flap-bg: #b5482a; --flap-ink: #ffffff;
-  --art-1: #b5482a; --art-2: #b5482a; --art-3: #b5482a; --art-ink: #1b1915; --art-shadow: #1b1915;
-  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
-  --board-bg: #0e0e0e; --board-raised: color-mix(in srgb, #0e0e0e 88%, #e9e2cf); --board-line: color-mix(in srgb, #0e0e0e 70%, #e9e2cf);
-  --board-mute: color-mix(in srgb, #e9e2cf 72%, #0e0e0e); --board-text: #e9e2cf; --board-deep: color-mix(in srgb, #0e0e0e 80%, #000); --board-ok: #d0623f;
+  --panel: #efe7d6; --surface: #f6f1e6; --rule: #c9c0ae; --steel: #4f4a42; --ink: #1b1915; --alert: #ad4227; --alert-hover: #94381f;
+  --on-alert: #ffffff; --hero-bg: #efe7d6; --hero-ink: #1b1915; --hero-mute: #4f4a42; --hero-line: #1b1915; --hero-box: #f6f1e6;
+  --hero-face: var(--font-silk); --title: #1b1915; --hero-alpha: 10%; --blob-o: 1; --flap-bg: #1b1915; --flap-ink: #efe7d6; --board-bg: #1b1915;
+  --board-raised: #262420; --board-line: #3d3a34; --board-mute: #c9c0ae; --board-text: #efe7d6; --board-deep: #0e0e0e; --board-ok: #d0623f;
+  --art-1: #b5482a; --art-2: #1b1915; --art-3: #b5482a; --art-hi: #efe7d6; --art-ink: #1b1915;
+  --font-sans: var(--font-grotesk), system-ui, sans-serif;
 }
 :root[data-variant='h'][data-theme='dark'] {
-  --panel: color-mix(in srgb, #0e0e0e 94%, #e9e2cf); --surface: #0e0e0e; --rule: color-mix(in srgb, #e9e2cf 18%, #0e0e0e); --steel: color-mix(in srgb, #e9e2cf 66%, #0e0e0e); --ink: #e9e2cf;
-  --alert: #d0623f; --alert-hover: color-mix(in srgb, #d0623f 85%, #0e0e0e); --on-alert: #ffffff;
-  --hero-bg: #0e0e0e; --hero-ink: #e9e2cf; --hero-mute: color-mix(in srgb, #e9e2cf 66%, #0e0e0e); --hero-line: color-mix(in srgb, #e9e2cf 22%, #0e0e0e); --hero-box: color-mix(in srgb, #0e0e0e 96%, #e9e2cf);
-  --title: #d0623f;
-  --flap-bg: #d0623f; --flap-ink: #ffffff;
-  --art-1: #d0623f; --art-2: #d0623f; --art-3: #d0623f; --art-ink: #e9e2cf; --art-shadow: #e9e2cf;
+  --panel: #0e0e0e; --surface: #161514; --rule: #36332d; --steel: #b5ae9c; --ink: #e9e2cf; --alert: #d0623f; --alert-hover: #dd7a5a;
+  --on-alert: #0e0e0e; --hero-bg: #0e0e0e; --hero-ink: #e9e2cf; --hero-mute: #b5ae9c; --hero-line: #e9e2cf; --hero-box: #161514; --title: #e9e2cf;
+  --flap-bg: #e9e2cf; --flap-ink: #0e0e0e; --board-bg: #161514; --board-raised: #201e1b; --board-line: #3a3731; --board-mute: #b5ae9c;
+  --board-text: #e9e2cf; --board-deep: #000000; --art-1: #d0623f; --art-2: #e9e2cf; --art-3: #d0623f; --art-hi: #e9e2cf; --art-ink: #e9e2cf;
 }
+/* Bayer 4×4 levels (n/16 of the cells inked), 2px cells in an 8px tile. */
+:root[data-variant='h'] .vy-h-d1 { background: conic-gradient(from 270deg at 2px 2px, var(--dc) 25%, #0000 0) 0 0 / 8px 8px; }
+:root[data-variant='h'] .vy-h-d2 {
+  background: conic-gradient(from 270deg at 2px 2px, var(--dc) 25%, #0000 0) 0 0 / 8px 8px, conic-gradient(from 270deg at 2px 2px, var(--dc) 25%, #0000 0) 4px 4px / 8px 8px;
+}
+:root[data-variant='h'] .vy-h-d4 { background: conic-gradient(from 270deg at 2px 2px, var(--dc) 25%, #0000 0) 0 0 / 4px 4px; }
+:root[data-variant='h'] .vy-h-d8 { background: repeating-conic-gradient(var(--dc) 0 25%, #0000 0 50%) 0 0 / 4px 4px; }
+:root[data-variant='h'] .vy-h-d12 {
+  background: conic-gradient(from 270deg at 2px 2px, var(--dc) 25%, #0000 0) 0 0 / 4px 4px, repeating-conic-gradient(var(--dc) 0 25%, #0000 0 50%) 0 0 / 4px 4px;
+}
+:root[data-variant='h'] .vy-h-d16 { background: var(--dc); }
+:root[data-variant='h'] .vy-h-tooth {
+  background: radial-gradient( circle at 1px 1px, color-mix(in srgb, var(--art-ink) 10%, #0000) 0.7px, #0000 1.1px ) 0 0 / 7px 7px, radial-gradient( circle at 1px 1px, color-mix(in srgb, var(--art-ink) 8%, #0000) 0.7px, #0000 1.1px ) 3px 2px / 11px 11px, radial-gradient( circle at 1px 1px, color-mix(in srgb, var(--art-ink) 7%, #0000) 0.7px, #0000 1.1px ) 5px 7px / 13px 13px;
+}
+:root[data-variant='h'] .vy-h-disc { --dc: var(--art-1); display: grid; grid-template-rows: repeat(8, 1fr); border-radius: 50%; overflow: hidden; }
+:root[data-variant='h'] .vy-h-disc > i { display: block; }
+:root[data-variant='h'] .vy-h-sweep, :root[data-variant='h'] .vy-h-sweep::before, :root[data-variant='h'] .vy-h-sweep::after {
+  --dc: var(--art-hi); position: absolute; inset-block: 0; width: 12%;
+  background: repeating-conic-gradient(var(--dc) 0 25%, #0000 0 50%) 0 0 / 4px 4px;
+}
+:root[data-variant='h'] .vy-h-sweep { left: 0; will-change: transform; animation: vy-h-sweep 24s infinite; }
+:root[data-variant='h'] .vy-h-sweep::before, :root[data-variant='h'] .vy-h-sweep::after { content: ''; width: 50%; background: conic-gradient(from 270deg at 2px 2px, var(--dc) 25%, #0000 0) 0 0 / 4px 4px; }
+:root[data-variant='h'] .vy-h-sweep::before { right: 100%; }
+:root[data-variant='h'] .vy-h-sweep::after { left: 100%; }
+/* 48 held frames per loop; 0% (the poster) has the light on the crown. */
+@keyframes vy-h-sweep {
+  0% { transform: translateX(260%); animation-timing-function: steps(27); }
+  57.5% { transform: translateX(840%); animation-timing-function: step-end; }
+  57.6% { transform: translateX(-160%); animation-timing-function: steps(21); }
+  100% { transform: translateX(260%); }
+}
+:root[data-scrolled][data-variant='h'] .vy-h-sweep { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce), (pointer: coarse) {
+  :root[data-variant='h'] .vy-h-sweep { animation: none; }
+}
+:root[data-variant='h'] .vy-h-proofs figcaption { font: 400 16px/1 var(--font-silk); color: var(--art-ink); }
+:root[data-variant='h'] .vy-scene canvas { image-rendering: pixelated; }
+
+/* The page: Silkscreen heads, square corners, 2px rules, rust only where it matters. */
+:root[data-variant='h'] .vy-title { text-shadow: 0 6px 0 var(--alert); }
+:root[data-variant='h'] #hero-title { font-weight: 400; text-transform: uppercase; font-size: clamp(2rem, 3.6vw, 3.5rem); line-height: 1.14; letter-spacing: 0; }
+:root[data-variant='h'] #hero-title .vy-fresh {
+  color: var(--alert); text-decoration: none; padding-bottom: 0.12em;
+  background: repeating-conic-gradient(var(--alert) 0 25%, #0000 0 50%) 0 100% / 4px 4px repeat-x;
+}
+:root[data-variant='h'] [data-hero-grid] { border-top: 2px solid var(--hero-line); }
+:root[data-variant='h'] [data-hero-side] { position: relative; padding: 24px; border: 2px solid var(--hero-line); background: var(--hero-box); }
+:root[data-variant='h'] [data-hero-side]::after {
+  content: ''; position: absolute; inset: 8px -10px -10px 8px; z-index: -1;
+  background: repeating-conic-gradient(var(--hero-line) 0 25%, #0000 0 50%) 0 0 / 4px 4px;
+}
+:root[data-variant='h'] .rounded-md, :root[data-variant='h'] .rounded-lg { border-radius: 0; }
+:root[data-variant='h'] main > div h2 { font-weight: 400; text-transform: uppercase; letter-spacing: 0; }
+:root[data-variant='h'] main > div h2::before {
+  content: ''; display: inline-block; width: 0.5em; height: 0.5em; margin-right: 0.4em; vertical-align: 0.12em;
+  background: conic-gradient(from 270deg at 2px 2px, var(--alert) 25%, #0000 0) 0 0 / 4px 4px, repeating-conic-gradient(var(--alert) 0 25%, #0000 0 50%) 0 0 / 4px 4px;
+}
+:root[data-variant='h'] main > div .bg-surface {
+  border: 2px solid var(--ink); border-radius: 0; box-shadow: none;
+  background: repeating-conic-gradient(var(--ink) 0 25%, #0000 0 50%) 0 0 / 4px 4px repeat-x, var(--surface);
+}
+:root[data-variant='h'] main > div .figure:not(h3) { font-family: var(--font-silk); color: var(--alert); }
+:root[data-variant='h'] .flap-cell { border-radius: 0; box-shadow: none; }
+:root[data-variant='h'] .vy-loadbar { height: 8px; }
+:root[data-variant='h'] .vy-loadbar-fill { background: var(--art-1); }
+:root[data-variant='h'] .vy-loadbar::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, #0000 0 8px, var(--panel) 8px 10px); }

@@ -1,13 +1,10 @@
 import type { ConceptMeta } from '@/concepts/types';
 
-// Placeholder from .impeccable/decision/concepts-13.json (scripts/scaffold-concept.mjs).
 export const meta: ConceptMeta = {
   id: 'j',
   name: 'Instrument OS',
   family: 'Screen & Signal',
-  swatch: { light: ['#c4462a', '#9a978f', '#161514'], dark: ['#e0583a', '#3a3936', '#efebe3'] },
-  font: "'Doto', var(--font-martian)",
-  grain: 0.12,
-  // Hidden from the switcher until it is built; preview with ?drafts=1.
-  status: 'draft',
+  swatch: { light: ['#c4462a', '#e9e6df', '#3c6e71'], dark: ['#e0583a', '#111111', '#5a9a9d'] },
+  font: 'var(--font-doto)',
+  grain: 0.05,
 };

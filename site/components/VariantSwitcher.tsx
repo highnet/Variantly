@@ -143,9 +143,17 @@ const Tile = ({ meta, selected, active, large, onPick, onFocusTile }: TileProps)
     className={cn(large && 'border-rule bg-surface border')}
   >
     <Chip meta={meta} size={large ? 'lg' : 'sm'} />
-    <span className="flex min-w-0 items-baseline gap-1.5">
+    {/* Held to the tile's width: wide display faces (Cut & Paste) wrap onto
+        a second line on the large tiles instead of spilling out. */}
+    <span className="flex max-w-full min-w-0 items-baseline gap-1.5">
       <span className="font-mono text-[10px] opacity-60">{meta.id.toUpperCase()}</span>
-      <span className="truncate" style={{ fontFamily: meta.font }}>
+      <span
+        className={cn(
+          'min-w-0',
+          large ? 'line-clamp-2 leading-tight [overflow-wrap:anywhere]' : 'truncate',
+        )}
+        style={{ fontFamily: meta.font }}
+      >
         {meta.name}
       </span>
       {meta.status === 'draft' && <span className="vy-draft">Draft</span>}
