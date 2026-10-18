@@ -893,7 +893,8 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           ratio(Math.min(fullRatio, 2));
           renderer.shadowMap.autoUpdate = false;
           if (stepped) renderer.shadowMap.needsUpdate = true;
-          draw();
+          // The Lens door, when up, is drawn in the same pass.
+          if (!lens?.render()) draw();
         } else {
           renderer.shadowMap.autoUpdate = true;
           paint();
