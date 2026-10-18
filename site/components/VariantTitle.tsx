@@ -98,6 +98,25 @@ const shadowLayers = (el: Element) => {
     .reverse();
 };
 
+// Resolves once html[data-swapping] (set while a concept swap runs, see
+// lib/variant) is gone, or after SWAP_WAIT ms at the latest.
+const SWAP_WAIT = 2500;
+const swapSettled = () =>
+  new Promise<void>((done) => {
+    const html = document.documentElement;
+    if (!html.hasAttribute('data-swapping')) return done();
+    const finish = () => {
+      mo.disconnect();
+      clearTimeout(timer);
+      done();
+    };
+    const mo = new MutationObserver(() => {
+      if (!html.hasAttribute('data-swapping')) finish();
+    });
+    mo.observe(html, { attributes: true, attributeFilter: ['data-swapping'] });
+    const timer = setTimeout(finish, SWAP_WAIT);
+  });
+
 type LetterProps = {
   char: string;
   index: number;
@@ -425,7 +444,11 @@ export const VariantTitle = () => {
     const seek = seekTime() !== null;
     const wait = new Promise<null>((done) => setTimeout(() => done(null), MORPH_WAIT));
     const data = loadMorph().catch(() => null);
-    void (seek ? data : Promise.race([data, wait])).then((morph) => {
+    // A concept change morphs once its swap (the doorway, or the low tier's
+    // wipe) has left the screen: started underneath, the quick morph is over
+    // before the hero is uncovered.
+    const settled = run > 0 && !seek ? swapSettled() : Promise.resolve();
+    void Promise.all([seek ? data : Promise.race([data, wait]), settled]).then(([morph]) => {
       if (!live) return;
       clock.current = performance.now();
       const low = !seek && document.documentElement.dataset.perf === 'low';
