@@ -132,6 +132,11 @@
   --color-fail: var(--fail);
   --color-fail-on-slate: var(--fail-on-slate);
   --color-ok-on-slate: var(--ok-on-slate);
+  /* The branch log's own ground and amber, the same in every theme. */
+  --color-log-ground: #15120c;
+  --color-log-line: #3a3020;
+  --color-log-amber: #ffb547;
+  --color-log-dim: #b98a3e;
 
   --font-mono: var(--font-martian), ui-monospace, 'Cascadia Mono', Consolas, monospace;
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -186,6 +191,45 @@
     }
   }
   --animate-stamp: stamp 520ms var(--ease-spring-pop);
+  /* A tip springs out of its trigger (a slight overshoot) and fades away. */
+  --animate-tip-in: tip-in 220ms var(--ease-spring) both;
+  --animate-tip-out: tip-out 120ms ease-in both;
+
+  @keyframes tip-in {
+    0% {
+      opacity: 0;
+      translate: 0 var(--tip-from, 6px);
+      scale: 0.88;
+    }
+    55% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+  }
+
+  @keyframes tip-out {
+    100% {
+      opacity: 0;
+      translate: 0 calc(var(--tip-from, 6px) / 2);
+      scale: 0.96;
+    }
+  }
+
+  @keyframes tip-fade {
+    0% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes tip-fade-out {
+    100% {
+      opacity: 0;
+    }
+  }
 
   /* A press that lands: a quick swell and settle. */
   @keyframes pop {
@@ -2042,4 +2086,61 @@ main > div p {
     opacity: 1 !important;
     transform: none !important;
   }
+}
+
+/* Tips ---------------------------------------------------------------------
+ * The bubble grows from the side facing its trigger. Calm or reduced motion
+ * keeps a plain, short fade: these selectors outrank the blanket rules that
+ * switch every other animation off. */
+.vy-tip[data-side='bottom'] {
+  --tip-from: -6px;
+}
+:root[data-motion='calm'] .vy-tip.animate-tip-in {
+  animation: tip-fade 140ms ease-out both !important;
+}
+:root[data-motion='calm'] .vy-tip.animate-tip-out {
+  animation: tip-fade-out 100ms ease-in both !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root .vy-tip.animate-tip-in {
+    animation: tip-fade 140ms ease-out both !important;
+  }
+  :root .vy-tip.animate-tip-out {
+    animation: tip-fade-out 100ms ease-in both !important;
+  }
+}
+
+/* A toast's life line is its timer, not decoration: calm and reduced motion
+   keep it running so the toast stays long enough to read, then leaves. */
+:root[data-motion='calm'] .animate-toast-life {
+  animation: toast-life 3200ms linear forwards !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root .animate-toast-life {
+    animation: toast-life 3200ms linear forwards !important;
+  }
+}
+
+/* A copy burst lifted into the top layer (from inside a tip): drop the
+   popover's own box so it stays a full-screen, see-through layer. */
+.vy-burst[popover] {
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+
+/* Branch log: at noon and midnight each branch slides home into main. */
+@keyframes log-merge {
+  to {
+    translate: -2ch 0;
+    opacity: 0.55;
+  }
+}
+.vy-log-merge {
+  animation: log-merge 700ms var(--ease-spring) both;
 }

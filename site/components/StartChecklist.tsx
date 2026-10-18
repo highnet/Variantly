@@ -38,7 +38,9 @@ const StartChecklist = () => (
             </span>
             <div className="grid max-w-[52ch] justify-items-start gap-3">
               <div className="grid gap-1.5">
-                <span className="text-[17px] font-semibold">{c.need}</span>
+                <span className="text-[17px] font-semibold">
+                  <Rich text={c.need} />
+                </span>
                 <span className="text-steel text-[15px] leading-relaxed">
                   <Rich text={c.how} />
                 </span>

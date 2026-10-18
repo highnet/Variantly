@@ -5,7 +5,7 @@ import { useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 
 import { Button } from '@/components/ui/Button';
 import { animateHeight, revealText, squash } from '@/lib/disclose';
-import { toast } from '@/lib/toast';
+import { copyPrompt } from '@/lib/copy';
 import { cn } from '@/lib/utils';
 
 type PromptCopyProps = {
@@ -60,15 +60,10 @@ const PromptCopy = ({
     setOpen((o) => !o);
   };
 
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(prompt);
-      setCopied(true);
-      toast('Prompt copied', { body: 'Paste it into your AI assistant.' });
-      setTimeout(() => setCopied(false), 1600);
-    } catch {
-      toast('Couldn’t copy', { body: 'Select the text and copy it yourself.', tone: 'warn' });
-    }
+  const copy = async (e: MouseEvent<HTMLButtonElement>) => {
+    const ok = await copyPrompt(prompt, e.currentTarget);
+    setCopied(ok);
+    if (ok) setTimeout(() => setCopied(false), 1600);
   };
 
   const slate = tone === 'slate';

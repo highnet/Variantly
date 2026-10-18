@@ -13,6 +13,7 @@ import {
 
 import { CommandCopy } from '@/components/CommandCopy';
 import { FreshLook } from '@/components/FreshLook';
+import { GlossaryTip } from '@/components/GlossaryTip';
 import { PageSkeleton } from '@/components/PageSkeleton';
 import { PromptCopy } from '@/components/PromptCopy';
 import { RollingNumber } from '@/components/RollingNumber';
@@ -847,13 +848,18 @@ const Showcase = () => {
               Your AI coding agent redesigns your{' '}
               <strong className="text-surface">actual site</strong>{' '}
               <strong className="text-surface">in parallel</strong>. Compare{' '}
-              <strong className="text-surface">live versions</strong>, keep the best, and{' '}
+              <strong className="text-surface">
+                <GlossaryTip term="live">live versions</GlossaryTip>
+              </strong>
+              , <GlossaryTip term="keep">keep the best</GlossaryTip>, and{' '}
               <strong className="text-surface">review the code</strong> before it ships.
             </p>
             <ul className="text-steel-on-slate m-0 grid list-none gap-1.5 p-0 text-[15px] leading-snug">
               <li>
-                <span className="text-surface font-semibold">Real code:</span> each design is a git
-                branch in its own worktree, made by the agent you already use.
+                <span className="text-surface font-semibold">Real code:</span> each design is a git{' '}
+                <GlossaryTip term="branch" /> in its own{' '}
+                <GlossaryTip term="worktree">worktree</GlossaryTip>, made by the agent you already
+                use.
               </li>
               <li>
                 <span className="text-surface font-semibold">Your call:</span> nothing touches your
@@ -973,8 +979,8 @@ const Showcase = () => {
                             : r.variants.length}{' '}
                         ways
                       </strong>{' '}
-                      by Claude Code. <strong className="text-surface">Drag the line</strong> or
-                      pick a number.
+                      by <GlossaryTip term="claude-code" />.{' '}
+                      <strong className="text-surface">Drag the line</strong> or pick a number.
                     </p>
                   </div>
                 ))}
