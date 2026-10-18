@@ -1467,7 +1467,7 @@ a:hover > .brand-mark .brand-grip {
   box-shadow: none;
 }
 
-/* ---- Agent mark: the split folds into a terminal prompt ------------------ */
+/* ---- Agent mark: the split folds into a wall clock ------------------------ */
 .brand-node {
   display: none;
 }
@@ -1484,38 +1484,50 @@ a:hover > .brand-mark .brand-grip {
   transform: none;
   transition-delay: 80ms;
 }
-.brand-prompt {
+.brand-dial {
   fill: none;
   stroke: #ffffff;
-  stroke-width: 2.6;
+  stroke-width: 2;
+}
+.brand-ticks {
+  fill: none;
+  stroke: var(--alert);
+  stroke-width: 1.6;
   stroke-linecap: round;
-  stroke-linejoin: round;
 }
-.brand-cursor {
+.brand-hour {
+  fill: none;
+  stroke: #ffffff;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+}
+.brand-tick-hand {
+  fill: none;
+  stroke: var(--alert);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  transform-origin: 16px 16px;
+}
+.brand-pin {
   fill: var(--alert);
 }
-.brand-spark {
-  fill: var(--alert);
-  opacity: 0.85;
+/* The thin hand ticks once a second, round in a minute. */
+[data-audience='agent'] .brand-tick-hand {
+  animation: brand-tick 60s steps(60) infinite;
 }
-[data-audience='agent'] .brand-cursor {
-  animation: brand-blink 1.1s steps(1) infinite;
-}
-[data-audience='agent'] .brand-spark {
-  animation: brand-breathe 2.4s ease-in-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-@keyframes brand-blink {
-  50% {
-    opacity: 0;
+@keyframes brand-tick {
+  to {
+    transform: rotate(360deg);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .brand-cursor,
-  .brand-spark {
+  .brand-tick-hand {
     animation: none !important;
+    transform: rotate(130deg);
   }
+}
+:root[data-motion='calm'] .brand-tick-hand {
+  transform: rotate(130deg);
 }
 
 /* ---- Delights ------------------------------------------------------------- */
