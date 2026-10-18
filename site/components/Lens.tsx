@@ -817,8 +817,12 @@ export const Lens = () => {
           onPointerMove={(e) => ctl.current?.handleMove(e)}
           onPointerUp={(e) => ctl.current?.handleUp(e)}
           onPointerCancel={(e) => ctl.current?.handleUp(e)}
-          className="vy-lens-handle absolute top-0 left-0 z-4 touch-none"
-        />
+          className="vy-lens-handle absolute top-0 left-0 z-4 grid touch-none place-items-center"
+        >
+          {/* At rest the door peeks in from the edge: a chevron says it is a
+              tab to pull, not a stray frame. */}
+          {peek && <ChevronLeft className="vy-lens-grip size-5" strokeWidth={2.75} />}
+        </div>
       )}
       {!fixedOpen && (
         <div data-lens-ui className="absolute bottom-3 left-3 z-4 flex items-center gap-2">
