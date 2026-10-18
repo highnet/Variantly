@@ -44,6 +44,8 @@ import { setVariant, useConcept } from '@/lib/variant';
 import { Button } from '@/components/ui/Button';
 
 const WORD = 'variantly';
+// The resting tab's inset from the hero's bottom-right corner, px.
+const REST_INSET = 14;
 // Room around the door for its glitch slices, tilt and side edge, px.
 const M = 28;
 // The door's motion: a damped spring per coordinate (x, y, w, h). Coming
@@ -277,23 +279,20 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     return { w: Math.round(h / 2), h };
   };
 
-  // The resting door (phones): in the card's corner, in the strip below (or,
-  // failing room, above) the word, sized so it never covers a letter; the
-  // "Try ..." chip sits beside it in the same strip.
+  // The resting door: the same size in the same place on every concept, the
+  // hero's bottom-right corner, inset by REST_INSET; the "Try ..." chip sits
+  // to its left, centred on it. Only a card too short for the full tab
+  // shrinks it.
   const restRect = (): Rect => {
-    const W = card.offsetWidth;
-    const H = card.offsetHeight;
-    const cb = card.getBoundingClientRect();
-    const wb = card.querySelector('.vy-title')?.getBoundingClientRect();
-    const top = wb ? wb.top - cb.top : H / 2;
-    const bottom = wb ? wb.bottom - cb.top : H / 2;
-    const below = H - bottom - 14;
-    const above = top - 14;
-    const room = Math.max(below, above);
-    const h = Math.round(Math.min(PEEK.h, Math.max(32, room)));
+    // Measured to the card's outer corner: the door is placed from inside
+    // its border (clientLeft/Top), so a bordered card (Brutal Zine's) keeps
+    // the same inset as the rest.
+    const W = card.offsetWidth - card.clientLeft;
+    const H = card.offsetHeight - card.clientTop;
+    const h = Math.round(Math.min(PEEK.h, Math.max(32, H - 2 * REST_INSET)));
     const w = Math.round(h / 2);
-    const y = below >= above ? H - 6 - h : 6 + Math.max(0, above - h - 8);
-    const r = { x: W - w - 14, y, w, h };
+    const y = H - REST_INSET - h;
+    const r = { x: W - w - REST_INSET, y, w, h };
     const chip = els.chip();
     if (chip) {
       const cy = Math.max(
