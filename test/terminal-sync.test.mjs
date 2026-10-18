@@ -122,7 +122,7 @@ test('cleaned from the terminal: Keep in the stale app refuses plainly, and its 
   const fin = await api('POST', 'finalize/1', { sitewide: false });
   assert.equal(fin.status, 400);
   assert.equal(fin.json.error, 'This run was cleaned up from the terminal. Start a new one when you’re ready.');
-  assert.equal(readFileSync(path.join(repo, 'style.css'), 'utf8'), 'body { font-family: sans-serif; }\n');
+  assert.equal(readFileSync(path.join(repo, 'style.css'), 'utf8').replace(/\r\n/g, '\n'), 'body { font-family: sans-serif; }\n');
 });
 
 test('Keep checks the run is still there: a missing branch is a plain error, not git\'s', async () => {
