@@ -211,7 +211,9 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     // Phones and the low power tier (html[data-perf='low']) animate at 2x at
     // most, 30fps, with the shadow map redrawn only when a letter steps,
     // then repaint once at full density, shadow and all, when the word settles.
-    const dpr = () => Math.min(devicePixelRatio || 1, 3);
+    // Phones hold one density (2x) for every frame, moving or settled: a
+    // settle that jumped to the screen's 3x read as a flicker as it landed.
+    const dpr = () => Math.min(devicePixelRatio || 1, phone ? 2 : 3);
     // Re-read on resize: browser zoom or a move to another screen changes it.
     let fullRatio = dpr();
     renderer.setPixelRatio(fullRatio);
@@ -911,6 +913,9 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         const gliding = glide(stamp) && seek === null && visible();
         const going = seek === null && !still && !settled && visible();
         if (gliding && !going) {
+          // Full density from the first frame, so the light settling does not
+          // sharpen the word a second time.
+          ratio(fullRatio);
           renderer.shadowMap.autoUpdate = false;
           if (!lens?.render()) draw();
         } else if (going && lite) {

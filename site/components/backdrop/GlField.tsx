@@ -227,9 +227,13 @@ const run = (
 
   // Phones get one painted frame of the scene: a moving full-screen WebGL
   // layer behind scrolling content is the costliest thing on the page there.
-  const t0 = performance.now();
+  // The scene's clock runs only while the loop does: paused (the title
+  // morphing, a swap, scrolled away) it holds, so resuming carries on from the
+  // same frame instead of jumping ahead by the pause.
+  let t0 = performance.now();
+  let pausedAt = 0;
   const draw = () => {
-    update(seek ?? (still ? 6 : (performance.now() - t0) / 1000), 0);
+    update(seek ?? (still ? 6 : ((pausedAt || performance.now()) - t0) / 1000), 0);
     renderer.render(scene, camera);
     if (film) {
       renderer.autoClear = false;
@@ -323,10 +327,15 @@ const run = (
       !html.hasAttribute('data-swapping') &&
       !busy &&
       perfTier() !== 'low';
-    if (visible && !raf) raf = requestAnimationFrame(tick);
+    if (visible && !raf) {
+      if (pausedAt) t0 += performance.now() - pausedAt;
+      pausedAt = 0;
+      raf = requestAnimationFrame(tick);
+    }
     if (!visible && raf) {
       cancelAnimationFrame(raf);
       raf = 0;
+      pausedAt = performance.now();
     }
   };
   draw();
