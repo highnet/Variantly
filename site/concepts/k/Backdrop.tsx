@@ -20,14 +20,14 @@ const brush = (p: Pt[], w: number, n: number, seed: number) => {
     const o = j / (n - 1) - 0.5;
     const end = 1 - Math.abs(o) * 0.55 - r() * 0.18;
     const pts: string[] = [];
-    for (let i = 0; i <= 28; i++) {
-      const s = (i / 28) * end + r() * 0.004;
+    for (let i = 0; i <= 14; i++) {
+      const s = (i / 14) * end;
       const [x, y] = at(s);
       const [x2, y2] = at(Math.min(1, s + 0.01));
       const len = Math.hypot(x2 - x, y2 - y) || 1;
       const off = o * w * Math.pow(Math.sin(Math.PI * (0.12 + 0.88 * s)), 0.35);
       pts.push(
-        `${(x - ((y2 - y) / len) * off).toFixed(1)} ${(y + ((x2 - x) / len) * off).toFixed(1)}`,
+        `${(x - ((y2 - y) / len) * off).toFixed(0)} ${(y + ((x2 - x) / len) * off).toFixed(0)}`,
       );
     }
     // A loaded core; the outer bristles thin out and skip as the brush runs dry.
@@ -53,12 +53,12 @@ const fibres = (size: number, n: number, seed: number) => {
     const bend = (r() - 0.5) * 8;
     const ex = x + Math.cos(a) * l;
     const ey = y + Math.sin(a) * l;
-    return `M${x.toFixed(1)} ${y.toFixed(1)}Q${((x + ex) / 2 - Math.sin(a) * bend).toFixed(1)} ${((y + ey) / 2 + Math.cos(a) * bend).toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`;
+    return `M${x.toFixed(0)} ${y.toFixed(0)}Q${((x + ex) / 2 - Math.sin(a) * bend).toFixed(0)} ${((y + ey) / 2 + Math.cos(a) * bend).toFixed(0)} ${ex.toFixed(0)} ${ey.toFixed(0)}`;
   }).join('');
 };
 
 // A pinked fabric swatch: zigzag edges all round.
-const pinked = (w: number, h: number, t = 3) => {
+const pinked = (w: number, h: number, t = 4) => {
   const side = (x0: number, y0: number, dx: number, dy: number, len: number) =>
     Array.from({ length: Math.round(len / t) }, (_, i) => {
       const s = (i + 0.5) * t;
@@ -75,7 +75,7 @@ const STROKE_A = brush(
     [380, 40],
   ],
   54,
-  14,
+  11,
   11,
 );
 
@@ -149,7 +149,7 @@ const Ink = () => (
       <defs>
         <pattern id="k-fib-a" width="180" height="180" patternUnits="userSpaceOnUse">
           <path
-            d={fibres(180, 34, 7)}
+            d={fibres(180, 14, 7)}
             fill="none"
             className="stroke-(--art-ink)"
             strokeOpacity="0.09"
@@ -164,7 +164,7 @@ const Ink = () => (
           patternTransform="rotate(37)"
         >
           <path
-            d={fibres(263, 30, 19)}
+            d={fibres(263, 12, 19)}
             fill="none"
             className="stroke-(--art-2)"
             strokeOpacity="0.16"

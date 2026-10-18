@@ -164,12 +164,12 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
         // Lift off, hover, settle: a soft bump once per loop.
         const u = (((t / 24 + m.phase) % 1) + 1) % 1;
         const lift = 0.5 - 0.5 * Math.cos(u * Math.PI * 2);
-        const s = narrow ? 0.62 : isBird ? 2.1 : 2.2;
+        const s = narrow ? 0.62 : isBird ? 2.1 : 1.6;
         m.g.visible = isBird || !narrow;
         m.g.scale.set(-m.side * s, s, s);
         m.g.position.set(
           m.side * (halfW - (narrow ? 0.38 : isBird ? 1.45 : 0.75)),
-          narrow ? halfH - 0.95 : isBird ? halfH - 1.3 : -halfH + 0.7,
+          narrow ? halfH - 0.95 : isBird ? halfH - 1.3 : -halfH + 0.5,
           -0.5,
         );
         m.body.position.set(0.03 * lift, 0.05 * lift, 0.28 * lift);

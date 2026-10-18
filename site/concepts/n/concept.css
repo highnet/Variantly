@@ -30,7 +30,13 @@
   29% { transform: translate(0.5px, 0.2px); } 41% { transform: translate(-0.6px, -0.5px); } 52% { transform: translate(0.2px, 0.8px); }
   63% { transform: translate(-0.4px, 0.1px); } 75% { transform: translate(0.7px, -0.6px); } 88% { transform: translate(-0.5px, 0.4px); }
 }
-:root[data-variant='n'] .r-grain { inset: -60px; width: calc(100% + 120px); height: calc(100% + 120px); will-change: transform; animation: r-grain 0.5s steps(3) infinite; }
+:root[data-variant='n'] .r-grain {
+  inset: -60px; will-change: transform;
+  background:
+    radial-gradient(circle at 30% 40%, rgb(0 0 0 / 0.16) 0.8px, transparent 1.3px) 0 0 / 7px 11px,
+    radial-gradient(circle at 70% 20%, rgb(255 255 255 / 0.22) 0.8px, transparent 1.3px) 3px 5px / 13px 7px,
+    radial-gradient(circle at 50% 60%, rgb(0 0 0 / 0.12) 1px, transparent 1.5px) 5px 2px / 17px 19px,
+    radial-gradient(circle at 20% 80%, rgb(255 255 255 / 0.14) 1px, transparent 1.5px) 9px 4px / 23px 29px; animation: r-grain 0.5s steps(3) infinite; }
 @keyframes r-grain { 0%, 100% { transform: none; } 33% { transform: translate(41px, 23px); } 66% { transform: translate(-29px, 53px); } }
 /* scratches: a hairline down the frame for a moment, then gone */
 :root[data-variant='n'] .r-scratch { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--art-hi); opacity: 0; will-change: transform, opacity; animation: r-scratch 24s steps(1) infinite; }

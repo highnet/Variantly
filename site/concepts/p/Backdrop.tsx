@@ -73,6 +73,9 @@ const Tenango = () => (
             <rect x="0.55" width="0.3" height="10" fill="#fff" fillOpacity="0.3" />
           </pattern>
         ))}
+        <symbol id="p-rosette" viewBox="0 0 100 100" overflow="visible">
+          <Rosette />
+        </symbol>
       </defs>
     </svg>
     <Pair
@@ -82,7 +85,7 @@ const Tenango = () => (
       ]}
       colour="fill-(--art-3)"
     >
-      <Rosette />
+      <use href="#p-rosette" />
     </Pair>
     {/* the thread that runs round the panel's border */}
     <div className="p-run p-run-t" />
