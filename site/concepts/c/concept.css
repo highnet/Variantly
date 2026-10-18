@@ -41,18 +41,10 @@
 :root[data-variant='c'] #hero-title::before { content: '> '; color: var(--title); }
 :root[data-variant='c'] [data-hero-side] {
   border: 1px solid var(--hero-line);
-  padding: 34px 18px 18px;
+  /* A solid amber bar across the top of the frame, no label. */
+  border-top-width: 8px;
+  padding: 18px;
   position: relative;
-}
-:root[data-variant='c'] [data-hero-side]::before {
-  content: 'TVA // MISCELLANEOUS EXPENSES · FORM 7-B';
-  position: absolute;
-  inset: 0 0 auto;
-  padding: 5px 10px;
-  font: 600 10px/1.2 var(--font-martian);
-  letter-spacing: 0.12em;
-  background: var(--hero-line);
-  color: var(--hero-bg);
 }
 :root[data-variant='c'] body {
   background-image: repeating-linear-gradient(to bottom, transparent 0 31px, color-mix(in srgb, var(--rule) 45%, transparent) 31px 32px);

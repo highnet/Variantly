@@ -94,6 +94,8 @@ export const meta: ConceptMeta = {
   swatch: { light: ${q(sw(L))}, dark: ${q(sw(D))} },
   font: "${face ? `'${face}', ` : ''}var(--font-martian)",
   grain: 0.2,
+  // Hidden from the switcher until it is built; preview with ?drafts=1.
+  status: 'draft',
 };
 `,
   );

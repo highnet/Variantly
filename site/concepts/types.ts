@@ -29,6 +29,11 @@ export type ConceptMeta = {
   // Share of that grain that is per-channel colour noise (default 0.35;
   // 0 = monochrome grain).
   grainChroma?: number;
+  // 'draft' keeps a concept out of the switcher, the cycle order, shuffle and
+  // the saved pick until it is finished; `?v=<id>` opens one directly and
+  // `?drafts=1` lists every draft for review (concepts/README.md).
+  // Omitted means 'live'.
+  status?: 'live' | 'draft';
 };
 
 // Backdrop.tsx default export: the concept's 2D background composition.

@@ -54,12 +54,12 @@ const clips = raw.scenes.map((scene) => {
   };
 });
 
-// The cold open: the payoff first. Four quick cuts of the variants from the
+// The cold open: the payoff first. Quick cuts (up to ten; key 0 is V10) of the variants from the
 // compare chapter (just after each number key), then a hold under the title.
 const cold = film.scenes.find((s) => s.montage);
-const shown = (raw.keys ?? []).filter((k) => /^[1-9]$/.test(k.key)).slice(0, 4);
+const shown = (raw.keys ?? []).filter((k) => /^[0-9]$/.test(k.key)).slice(0, 10);
 if (cold && shown.length) {
-  const cut = 0.9;
+  const cut = shown.length > 4 ? 0.6 : 0.9;
   const montage = shown.map((k, i) => ({
     label: `cold${i}`,
     src: `video/${THEME}/raw.mp4`,
@@ -119,6 +119,41 @@ function wordsFor(id, voiceAt) {
   return words.map((word, i) => ({ word, start: voiceAt + i * each, end: voiceAt + (i + 1) * each }));
 }
 
+/**
+ * A card or diagram with its reveals in film time: each item, node or row
+ * with `on` appears when the voice says that word (the first match after the
+ * previous one); items without `on` follow the one before by 0.35 s.
+ */
+function synced(spec, id, voiceAt, start) {
+  if (!spec) return null;
+  const words = byId[id].text ? wordsFor(id, voiceAt) : [];
+  const norm = (w) => w.toLowerCase().replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+  let cursor = 0;
+  let last = start + 0.6;
+  const place = (list) =>
+    list?.map((item, i) => {
+      let at = i ? last + 0.35 : last;
+      if (item.on) {
+        const k = words.findIndex((w, j) => j >= cursor && norm(w.word) === norm(item.on));
+        if (k > -1) {
+          at = words[k].start;
+          cursor = k + 1;
+        } else log('edit', `${id}: no word "${item.on}" in the line; revealing in sequence`);
+      }
+      last = at;
+      return { ...item, at: round3(at) };
+    });
+  // A card's window can open on a word, and a countdown can start when one ends.
+  const find = (word, end) => {
+    const w = words.find((x) => norm(x.word) === norm(word));
+    if (!w) log('edit', `${id}: no word "${word}" in the line`);
+    return w ? round3(end ? w.end : w.start) : undefined;
+  };
+  const fromAt = spec.fromOn ? find(spec.fromOn) : undefined;
+  const countAt = spec.countOn ? find(spec.countOn, true) : undefined;
+  return { ...spec, fromAt, countAt, nodes: place(spec.nodes), rows: place(spec.rows), items: place(spec.items) };
+}
+
 /** Words → caption cues: at most ~42 characters, broken at sentence ends. */
 function cuesFrom(words) {
   const out = [];
@@ -162,7 +197,8 @@ const scenes = sceneClips.map((clip, i) => {
     chapter: def.chapter ?? null,
     lower: def.lower ?? null,
     kinetic: def.kinetic ?? null,
-    diagram: def.diagram ?? null,
+    diagram: typeof def.diagram === 'object' ? synced(def.diagram, clip.label, voiceAt, start) : def.diagram ?? null,
+    card: synced(def.card, clip.label, voiceAt, start),
     terminal: def.terminal ?? null,
     cta: def.cta ?? null,
     montage: !!def.montage,

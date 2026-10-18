@@ -64,12 +64,20 @@ export const findChrome = (env = process.env, home = os.homedir()) => {
 /**
  * The Playwright MCP server an agent gets when the browser check is on.
  * Headless and isolated, so parallel variants never share a profile.
+ * Its screenshots, snapshots and console logs go to `outputDir` (a folder in
+ * the run's state dir), never the agent's cwd: that is the variant worktree,
+ * and anything left there would be committed and applied on keep.
  * @param {string} [chrome]
+ * @param {string} [outputDir]
  * @returns {{ command: string, args: string[] }}
  */
-export const playwrightMcp = (chrome = findChrome()) => ({
+export const playwrightMcp = (chrome = findChrome(), outputDir) => ({
   command: 'npx',
-  args: ['--yes', PLAYWRIGHT_MCP, '--headless', '--isolated', ...(chrome ? ['--executable-path', chrome] : [])],
+  args: [
+    '--yes', PLAYWRIGHT_MCP, '--headless', '--isolated',
+    ...(outputDir ? ['--output-dir', outputDir] : []),
+    ...(chrome ? ['--executable-path', chrome] : []),
+  ],
 });
 
 /**

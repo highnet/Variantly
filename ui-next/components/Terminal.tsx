@@ -11,7 +11,7 @@ import clsx from 'clsx';
 import { act, goCompare } from './Board';
 import { Segments } from './Progress';
 import { fetchLog } from '@/lib/live';
-import { LIVE, STATUS, STEPS, directionLabel, elapsed, stepAt, statusKey, usageText, vname } from '@/lib/format';
+import { LIVE, STATUS, STEPS, directionLabel, elapsed, stepAt, statusKey, usageText, usageTitle, vname, errorHeadline } from '@/lib/format';
 import { useStore } from '@/lib/store';
 import type { Variant } from '@/lib/types';
 
@@ -84,9 +84,31 @@ const Line = ({ text, n, fresh }: LineProps) => {
 
 type TerminalProps = {
   v: Variant;
+  /** On the board: the table row already shows progress, status and time. */
+  compact?: boolean;
 };
 
-const Terminal = ({ v }: TerminalProps) => {
+const TermActions = ({ v }: { v: Variant }) => (
+        <span className="t-actions">
+          {v.status === 'done' && (
+            <button className="btn primary small" type="button" onClick={() => goCompare(v.n)}>
+              Compare {vname(v.n)}
+            </button>
+          )}
+          {['failed', 'cancelled'].includes(v.status) && (
+            <button className="btn primary small" type="button" onClick={() => act('retry', v.n)}>
+              Retry
+            </button>
+          )}
+          {['queued', 'preparing', 'running', 'reviewing'].includes(v.status) && (
+            <button className="btn outline small" type="button" onClick={() => act('cancel', v.n)}>
+              Stop
+            </button>
+          )}
+        </span>
+);
+
+const Terminal = ({ v, compact = false }: TerminalProps) => {
   const lines = useStore((s) => s.logs[`v${v.n}`]);
   const total = useStore((s) => s.logTotal[`v${v.n}`] ?? s.logs[`v${v.n}`]?.length ?? 0);
   const scroller = useRef<HTMLDivElement>(null);
@@ -133,6 +155,16 @@ const Terminal = ({ v }: TerminalProps) => {
           <span className="figure">{vname(v.n)}</span>
           <span className="t-dir">{directionLabel(v.direction, v.picked)}</span>
         </span>
+        {compact ? (
+          <span className="t-meta">
+            {v.status === 'done' && (
+              <span className="data" title={usageTitle(v)}>
+                {[v.files?.length ? `${v.files.length} files` : '', usageText(v) !== '—' ? usageText(v) : ''].filter(Boolean).join(' · ')}
+              </span>
+            )}
+            <TermActions v={v} />
+          </span>
+        ) : (
         <span className="t-meta">
           <span className="data">{elapsed(v, now)}</span>
           <span className="data">{usageText(v)}</span>
@@ -141,16 +173,17 @@ const Terminal = ({ v }: TerminalProps) => {
             {STATUS[v.status]}
           </span>
         </span>
+        )}
       </header>
 
-      <div className="t-steps">
+      {!compact && <div className="t-steps">
         <Segments v={v} size="large" />
         <AnimatePresence mode="wait" initial={false}>
           <motion.span key={stepLabel} className="t-step" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.18 }}>
             {stepLabel}
           </motion.span>
         </AnimatePresence>
-      </div>
+      </div>}
 
       <div
         ref={scroller}
@@ -163,7 +196,7 @@ const Terminal = ({ v }: TerminalProps) => {
           if (stick.current) setBehind(0);
         }}
       >
-        {list.length === 0 && <div className="t-line t-text t-empty">{v.status === 'queued' ? 'Waiting for a free slot…' : 'No output yet.'}</div>}
+        {list.length === 0 && <div className="t-line t-text t-empty" style={{ whiteSpace: 'pre-wrap' }}>{v.status === 'queued' ? 'Waiting for a free slot…' : v.error ? v.error : 'No output yet.'}</div>}
         {list.map((text, i) => (
           <Line key={first + i} n={first + i + 1} text={text} fresh={first + i >= (seenCount.current ?? Infinity)} />
         ))}
@@ -194,26 +227,10 @@ const Terminal = ({ v }: TerminalProps) => {
         )}
       </AnimatePresence>
 
-      <footer className="t-foot">
-        {v.error && <span className="t-error">{v.error.split('\n')[0]}</span>}
-        <span className="t-actions">
-          {v.status === 'done' && (
-            <button className="btn primary small" type="button" onClick={() => goCompare(v.n)}>
-              Compare {vname(v.n)}
-            </button>
-          )}
-          {['failed', 'cancelled'].includes(v.status) && (
-            <button className="btn primary small" type="button" onClick={() => act('retry', v.n)}>
-              Retry
-            </button>
-          )}
-          {['queued', 'preparing', 'running', 'reviewing'].includes(v.status) && (
-            <button className="btn outline small" type="button" onClick={() => act('cancel', v.n)}>
-              Stop
-            </button>
-          )}
-        </span>
-      </footer>
+      {(!compact || v.error) && <footer className="t-foot">
+        {v.error && <span className="t-error" title={v.error}>{errorHeadline(v.error)}</span>}
+        {!compact && <TermActions v={v} />}
+      </footer>}
     </motion.section>
   );
 };
