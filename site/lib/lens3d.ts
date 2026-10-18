@@ -16,7 +16,6 @@ import {
   type LetterLook,
 } from '@/lib/letterLook';
 import { morphMesh } from '@/lib/morphMesh';
-import { perfTier } from '@/lib/perfTier';
 import { lookAt } from '@/lib/titleTiming';
 
 /*
@@ -31,10 +30,11 @@ import { lookAt } from '@/lib/titleTiming';
  * (with the glitch's band slices and dropouts, from components/Lens.tsx) is
  * the stencil, so the 2D layer and the 3D letters are cut identically.
  *
- * Attached by Letters3D (attachLens); renders only while the door is shown,
- * outside the low perf tier, and the title is not mid-reveal. Phones get it
- * too (with the phone pools and coarser morph stride), so the word through
- * the door is the peeked concept's 3D title there as well.
+ * Attached by Letters3D (attachLens); renders while the door is shown, in
+ * every perf tier. Phones get it too (with the phone pools and coarser morph
+ * stride), so the word through the door is the peeked concept's 3D title
+ * there as well. While a page letter morphs (the reveal, a swap) its lens
+ * twin wears that same live outline, so the morph plays through the door.
  */
 
 export type LensHostLetter = {
@@ -42,6 +42,8 @@ export type LensHostLetter = {
   holder: THREE.Object3D;
   mesh: THREE.Mesh;
   extra: THREE.Mesh;
+  // Resting on its final face (false while it morphs: the reveal or a swap).
+  locked: boolean;
 };
 
 export type LensHost = {
@@ -468,8 +470,6 @@ export const attachLens = (host: LensHost): LensPass => {
   const active = () =>
     !disposed &&
     lensLive.shown &&
-    !busy &&
-    perfTier() !== 'low' &&
     ready &&
     replicaIs(id) &&
     id === lensLive.id &&
@@ -512,6 +512,38 @@ export const attachLens = (host: LensHost): LensPass => {
       const hl = host.letters[i];
       const ps = pageSlots[i];
       const ls = lensSlots[i] ?? ps;
+      // A page letter mid-morph: through the door it is that same morphing
+      // outline, posed as the page letter, in the lens concept's materials,
+      // so the morph plays on across the door's edge.
+      const live = !hl.locked;
+      const geo = live ? hl.mesh.geometry : l.morph.geo;
+      if (l.inner.geometry !== geo) {
+        [l.outer, l.inner, l.outerExtra, l.innerExtra, ...l.split].forEach(
+          (m) => (m.geometry = geo),
+        );
+        // Back on its own outline: rewrite the blend below.
+        if (!live) l.e = -1;
+      }
+      if (live) {
+        moved = true;
+        l.holder.matrix.copy(hl.holder.matrix);
+        l.holder.matrixWorldNeedsUpdate = true;
+        [l.outer, l.inner, ...l.split].forEach((mesh) => {
+          mesh.scale.copy(hl.mesh.scale);
+          mesh.position.copy(hl.mesh.position);
+        });
+        const crossing = cover(ps.box) > 0;
+        l.holder.visible = crossing;
+        if (crossing) {
+          hide(hl.mesh);
+          l.outer.material = hl.mesh.material;
+          l.outerExtra.visible = hl.extra.visible;
+          l.outerExtra.material = hl.extra.material;
+          l.outerExtra.position.copy(hl.extra.position);
+        }
+        if (glitch.flicker) hide(l.inner);
+        return;
+      }
       const raw = smooth((cover(ps.box) - 0.04) / 0.92);
       const e = Math.round(raw * 48) / 48;
       if (l.e >= 0 && l.e < 0.5 !== e < 0.5 && glitchOn()) kickGlitch('rim');
@@ -648,6 +680,7 @@ export const attachLens = (host: LensHost): LensPass => {
   // Repaint in the same frame the door moved (the UI's loop calls lensTick).
   let wasShown = false;
   const offTick = onLensTick(() => {
+    // Mid-morph the title's own loop paints every frame, door and all.
     if (disposed || busy) return;
     const shown = lensLive.shown;
     const changed = shown !== wasShown;
