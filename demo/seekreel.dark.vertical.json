@@ -1,0 +1,26 @@
+{
+  "name": "variantly-demo-dark",
+  "stage": "stage/vertical-dark.html",
+  "duration": 588.0166666666667,
+  "width": 1080,
+  "height": 1920,
+  "out": "build/dark/frames-9x16",
+  "fps": 60,
+  "background": "#0d0d10",
+  "audio": {
+    "engine": "cues",
+    "cues": "build/dark/cues.json",
+    "wav": "build/dark/soundtrack.wav"
+  },
+  "probe": "probe",
+  "deliver": "out",
+  "encode": {
+    "crf": 18,
+    "keyint": 60
+  },
+  "variants": [
+    {
+      "name": "vertical"
+    }
+  ]
+}

@@ -1,0 +1,257 @@
+[
+  {
+    "word": "First,",
+    "start": 0,
+    "end": 0.476
+  },
+  {
+    "word": "the",
+    "start": 0.511,
+    "end": 0.615
+  },
+  {
+    "word": "mental",
+    "start": 0.685,
+    "end": 1.033
+  },
+  {
+    "word": "model.",
+    "start": 1.103,
+    "end": 1.544
+  },
+  {
+    "word": "Your",
+    "start": 1.614,
+    "end": 1.776
+  },
+  {
+    "word": "project",
+    "start": 1.846,
+    "end": 2.276
+  },
+  {
+    "word": "stays",
+    "start": 2.31,
+    "end": 2.717
+  },
+  {
+    "word": "where",
+    "start": 2.786,
+    "end": 3.007
+  },
+  {
+    "word": "it",
+    "start": 3.053,
+    "end": 3.123
+  },
+  {
+    "word": "is.",
+    "start": 3.181,
+    "end": 3.506
+  },
+  {
+    "word": "Each",
+    "start": 3.634,
+    "end": 3.866
+  },
+  {
+    "word": "variant",
+    "start": 3.947,
+    "end": 4.505
+  },
+  {
+    "word": "is",
+    "start": 4.586,
+    "end": 4.748
+  },
+  {
+    "word": "its",
+    "start": 4.818,
+    "end": 4.957
+  },
+  {
+    "word": "own",
+    "start": 5.016,
+    "end": 5.201
+  },
+  {
+    "word": "copy:",
+    "start": 5.271,
+    "end": 5.875
+  },
+  {
+    "word": "a",
+    "start": 5.968,
+    "end": 6.026
+  },
+  {
+    "word": "git",
+    "start": 6.153,
+    "end": 6.409
+  },
+  {
+    "word": "worktree",
+    "start": 6.49,
+    "end": 7.152
+  },
+  {
+    "word": "on",
+    "start": 7.221,
+    "end": 7.407
+  },
+  {
+    "word": "its",
+    "start": 7.465,
+    "end": 7.616
+  },
+  {
+    "word": "own",
+    "start": 7.674,
+    "end": 7.872
+  },
+  {
+    "word": "branch,",
+    "start": 7.941,
+    "end": 8.51
+  },
+  {
+    "word": "a",
+    "start": 8.557,
+    "end": 8.626
+  },
+  {
+    "word": "little",
+    "start": 8.707,
+    "end": 8.998
+  },
+  {
+    "word": "timeline",
+    "start": 9.033,
+    "end": 9.671
+  },
+  {
+    "word": "of",
+    "start": 9.729,
+    "end": 9.857
+  },
+  {
+    "word": "your",
+    "start": 9.927,
+    "end": 10.077
+  },
+  {
+    "word": "site,",
+    "start": 10.147,
+    "end": 10.623
+  },
+  {
+    "word": "with",
+    "start": 10.716,
+    "end": 10.913
+  },
+  {
+    "word": "a",
+    "start": 10.96,
+    "end": 10.995
+  },
+  {
+    "word": "preview.",
+    "start": 11.076,
+    "end": 11.726
+  },
+  {
+    "word": "You",
+    "start": 11.773,
+    "end": 11.889
+  },
+  {
+    "word": "compare",
+    "start": 11.97,
+    "end": 12.399
+  },
+  {
+    "word": "them",
+    "start": 12.446,
+    "end": 12.596
+  },
+  {
+    "word": "side",
+    "start": 12.678,
+    "end": 12.956
+  },
+  {
+    "word": "by",
+    "start": 13.003,
+    "end": 13.13
+  },
+  {
+    "word": "side,",
+    "start": 13.223,
+    "end": 13.653
+  },
+  {
+    "word": "keep",
+    "start": 13.723,
+    "end": 13.966
+  },
+  {
+    "word": "one,",
+    "start": 14.094,
+    "end": 14.454
+  },
+  {
+    "word": "and",
+    "start": 14.489,
+    "end": 14.651
+  },
+  {
+    "word": "a",
+    "start": 14.733,
+    "end": 14.768
+  },
+  {
+    "word": "last",
+    "start": 14.849,
+    "end": 15.093
+  },
+  {
+    "word": "pass",
+    "start": 15.174,
+    "end": 15.464
+  },
+  {
+    "word": "rolls",
+    "start": 15.534,
+    "end": 15.824
+  },
+  {
+    "word": "it",
+    "start": 15.882,
+    "end": 15.975
+  },
+  {
+    "word": "out",
+    "start": 16.045,
+    "end": 16.242
+  },
+  {
+    "word": "to",
+    "start": 16.288,
+    "end": 16.37
+  },
+  {
+    "word": "the",
+    "start": 16.451,
+    "end": 16.532
+  },
+  {
+    "word": "whole",
+    "start": 16.579,
+    "end": 16.811
+  },
+  {
+    "word": "site.",
+    "start": 16.857,
+    "end": 17.368
+  }
+]

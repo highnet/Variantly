@@ -1,0 +1,187 @@
+[
+  {
+    "word": "Will",
+    "start": 0,
+    "end": 0.221
+  },
+  {
+    "word": "it",
+    "start": 0.279,
+    "end": 0.36
+  },
+  {
+    "word": "work",
+    "start": 0.418,
+    "end": 0.627
+  },
+  {
+    "word": "on",
+    "start": 0.697,
+    "end": 0.778
+  },
+  {
+    "word": "yours?",
+    "start": 0.836,
+    "end": 1.358
+  },
+  {
+    "word": "Here's",
+    "start": 1.521,
+    "end": 1.823
+  },
+  {
+    "word": "variantly",
+    "start": 1.916,
+    "end": 2.554
+  },
+  {
+    "word": "doctor",
+    "start": 2.612,
+    "end": 3.065
+  },
+  {
+    "word": "on",
+    "start": 3.146,
+    "end": 3.274
+  },
+  {
+    "word": "a",
+    "start": 3.344,
+    "end": 3.367
+  },
+  {
+    "word": "Next.js",
+    "start": 3.448,
+    "end": 4.331
+  },
+  {
+    "word": "app,",
+    "start": 4.493,
+    "end": 4.83
+  },
+  {
+    "word": "a",
+    "start": 4.853,
+    "end": 4.923
+  },
+  {
+    "word": "Django",
+    "start": 5.016,
+    "end": 5.364
+  },
+  {
+    "word": "site,",
+    "start": 5.445,
+    "end": 5.828
+  },
+  {
+    "word": "and",
+    "start": 5.863,
+    "end": 6.026
+  },
+  {
+    "word": "plain",
+    "start": 6.095,
+    "end": 6.455
+  },
+  {
+    "word": "HTML.",
+    "start": 6.594,
+    "end": 7.93
+  },
+  {
+    "word": "It",
+    "start": 8.185,
+    "end": 8.348
+  },
+  {
+    "word": "finds",
+    "start": 8.417,
+    "end": 8.766
+  },
+  {
+    "word": "the",
+    "start": 8.824,
+    "end": 8.928
+  },
+  {
+    "word": "stack,",
+    "start": 8.986,
+    "end": 9.578
+  },
+  {
+    "word": "and",
+    "start": 9.648,
+    "end": 9.822
+  },
+  {
+    "word": "the",
+    "start": 9.868,
+    "end": 9.938
+  },
+  {
+    "word": "command",
+    "start": 10.008,
+    "end": 10.437
+  },
+  {
+    "word": "that",
+    "start": 10.484,
+    "end": 10.635
+  },
+  {
+    "word": "serves",
+    "start": 10.704,
+    "end": 11.018
+  },
+  {
+    "word": "it,",
+    "start": 11.088,
+    "end": 11.204
+  },
+  {
+    "word": "every",
+    "start": 11.238,
+    "end": 11.494
+  },
+  {
+    "word": "time.",
+    "start": 11.552,
+    "end": 11.97
+  },
+  {
+    "word": "And",
+    "start": 12.04,
+    "end": 12.202
+  },
+  {
+    "word": "you",
+    "start": 12.272,
+    "end": 12.353
+  },
+  {
+    "word": "can",
+    "start": 12.411,
+    "end": 12.562
+  },
+  {
+    "word": "always",
+    "start": 12.632,
+    "end": 12.957
+  },
+  {
+    "word": "type",
+    "start": 13.015,
+    "end": 13.328
+  },
+  {
+    "word": "your",
+    "start": 13.375,
+    "end": 13.502
+  },
+  {
+    "word": "own.",
+    "start": 13.572,
+    "end": 14.071
+  }
+]

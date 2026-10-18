@@ -1,0 +1,907 @@
+1
+00:00:09,250 --> 00:00:10,875
+This is Variantly.
+
+2
+00:00:10,875 --> 00:00:13,267
+In the next ten minutes, I'll show you one
+
+3
+00:00:13,267 --> 00:00:15,891
+whole run, including what it costs and how
+
+4
+00:00:15,891 --> 00:00:16,680
+to undo it.
+
+5
+00:00:16,680 --> 00:00:20,047
+I'm Joaquin, and I built Variantly because
+
+6
+00:00:20,047 --> 00:00:22,752
+redesigning a site usually means betting
+
+7
+00:00:22,752 --> 00:00:24,204
+on one direction.
+
+8
+00:00:24,204 --> 00:00:26,143
+If it's wrong, you start over.
+
+9
+00:00:26,143 --> 00:00:29,242
+Here, your agent builds several complete
+
+10
+00:00:29,242 --> 00:00:31,982
+redesigns at once, each one running as
+
+11
+00:00:31,982 --> 00:00:34,026
+your real site, and you keep the one you
+
+12
+00:00:34,026 --> 00:00:34,767
+like.
+
+13
+00:00:34,767 --> 00:00:37,565
+Here's what we'll cover: setting up a run,
+
+14
+00:00:37,565 --> 00:00:40,282
+giving each variant its own direction,
+
+15
+00:00:40,282 --> 00:00:42,569
+comparing them on your real site, and
+
+16
+00:00:42,569 --> 00:00:43,841
+keeping one.
+
+17
+00:00:44,333 --> 00:00:45,947
+First, the mental model.
+
+18
+00:00:45,947 --> 00:00:47,967
+Your project stays where it is.
+
+19
+00:00:47,967 --> 00:00:50,823
+Each variant is its own copy: a git
+
+20
+00:00:50,823 --> 00:00:53,366
+worktree on its own branch, a little
+
+21
+00:00:53,366 --> 00:00:56,106
+timeline of your site, with a preview.
+
+22
+00:00:56,106 --> 00:00:58,822
+You compare them side by side, keep one,
+
+23
+00:00:58,822 --> 00:01:01,190
+and a last pass rolls it out to the whole
+
+24
+00:01:01,190 --> 00:01:01,951
+site.
+
+25
+00:01:02,433 --> 00:01:05,103
+You need two things: Node, and a coding
+
+26
+00:01:05,103 --> 00:01:06,851
+agent you already use.
+
+27
+00:01:07,135 --> 00:01:11,779
+In your project folder, run npx variantly,
+
+28
+00:01:11,779 --> 00:01:14,577
+and a wizard opens in your browser.
+
+29
+00:01:14,577 --> 00:01:17,689
+The design work is done by Impeccable, an
+
+30
+00:01:17,689 --> 00:01:19,871
+open-source design skill.
+
+31
+00:01:19,871 --> 00:01:22,669
+One catch: it has to be the command-line
+
+32
+00:01:22,669 --> 00:01:25,282
+agent, not a browser builder like Lovable
+
+33
+00:01:25,282 --> 00:01:26,321
+or Bolt.
+
+34
+00:01:26,817 --> 00:01:28,338
+Will it work on yours?
+
+35
+00:01:28,338 --> 00:01:31,670
+Here's variantly doctor on a Next.js app,
+
+36
+00:01:31,670 --> 00:01:35,002
+a Django site, and plain HTML.
+
+37
+00:01:35,002 --> 00:01:37,521
+It finds the stack, and the command that
+
+38
+00:01:37,521 --> 00:01:38,857
+serves it, every time.
+
+39
+00:01:38,857 --> 00:01:41,138
+And you can always type your own.
+
+40
+00:01:41,633 --> 00:01:44,176
+Here's a rough edge, on purpose.
+
+41
+00:01:44,176 --> 00:01:47,032
+This folder has no commit yet, so doctor
+
+42
+00:01:47,032 --> 00:01:48,808
+marks it with a cross.
+
+43
+00:01:48,808 --> 00:01:51,293
+Variantly can make that first commit for
+
+44
+00:01:51,293 --> 00:01:54,933
+you, or you fix it and run doctor again.
+
+45
+00:01:55,433 --> 00:01:56,687
+Not a developer?
+
+46
+00:01:56,687 --> 00:01:59,450
+If you can paste a command, you're set.
+
+47
+00:01:59,450 --> 00:02:01,668
+On variantly.style, there's a
+
+48
+00:02:01,668 --> 00:02:02,921
+walk-me-through prompt.
+
+49
+00:02:02,921 --> 00:02:05,603
+Paste it into any AI chat, and it takes
+
+50
+00:02:05,603 --> 00:02:08,500
+you through it one small step at a time.
+
+51
+00:02:12,500 --> 00:02:14,532
+Setup finds your app and checks your
+
+52
+00:02:14,532 --> 00:02:15,217
+agent.
+
+53
+00:02:15,217 --> 00:02:17,980
+Each card says if it's ready, and if not,
+
+54
+00:02:17,980 --> 00:02:20,041
+the fix is right on the card.
+
+55
+00:02:20,197 --> 00:02:21,904
+I'm using Claude Code.
+
+56
+00:02:21,904 --> 00:02:24,923
+You could pick Codex, Copilot, Gemini,
+
+57
+00:02:24,923 --> 00:02:29,149
+Cursor, OpenCode, Grok Build, Antigravity,
+
+58
+00:02:29,149 --> 00:02:32,702
+Pi, Hermes Agent, or any OpenRouter model,
+
+59
+00:02:32,702 --> 00:02:34,763
+and mix them in one run.
+
+60
+00:02:35,250 --> 00:02:36,423
+Why mix them?
+
+61
+00:02:36,423 --> 00:02:39,766
+Each model has its own design instincts.
+
+62
+00:02:39,766 --> 00:02:42,680
+So you get more varied directions, you see
+
+63
+00:02:42,680 --> 00:02:45,653
+which model designs best for your site,
+
+64
+00:02:45,653 --> 00:02:47,858
+and you spread the work across accounts
+
+65
+00:02:47,858 --> 00:02:49,391
+you already pay for.
+
+66
+00:02:49,391 --> 00:02:52,119
+Add --blind, and you won't see who made
+
+67
+00:02:52,119 --> 00:02:54,308
+each one until you've kept it.
+
+68
+00:02:54,783 --> 00:02:56,176
+Next, what to make.
+
+69
+00:02:56,176 --> 00:02:59,323
+The quick picks are two, four or six.
+
+70
+00:02:59,323 --> 00:03:01,923
+I'll pick six, then step it up to ten
+
+71
+00:03:01,923 --> 00:03:05,174
+under More settings, with five agents at a
+
+72
+00:03:05,174 --> 00:03:07,368
+time, so it runs in two waves.
+
+73
+00:03:07,368 --> 00:03:09,644
+The rarer settings stay back there.
+
+74
+00:03:09,644 --> 00:03:12,117
+That's progressive disclosure: the common
+
+75
+00:03:12,117 --> 00:03:13,888
+path stays short.
+
+76
+00:03:15,833 --> 00:03:17,331
+Now, your own directions.
+
+77
+00:03:17,331 --> 00:03:19,804
+Every slot starts blank, and blank means
+
+78
+00:03:19,804 --> 00:03:21,046
+Impeccable picks.
+
+79
+00:03:21,046 --> 00:03:23,647
+To pin one, type it in your own words.
+
+80
+00:03:23,647 --> 00:03:26,061
+Tactile imperfection: raw paper,
+
+81
+00:03:26,061 --> 00:03:27,535
+brushstrokes, stitching.
+
+82
+00:03:27,535 --> 00:03:29,602
+Surreal distortion: impossible
+
+83
+00:03:29,602 --> 00:03:31,686
+proportions, dreamlike light.
+
+84
+00:03:31,843 --> 00:03:33,758
+These are the trends I'm watching this
+
+85
+00:03:33,758 --> 00:03:36,823
+winter: human-made texture meeting digital
+
+86
+00:03:36,823 --> 00:03:38,101
+surrealism.
+
+87
+00:03:38,101 --> 00:03:40,690
+One per variant, and any slot you leave
+
+88
+00:03:40,690 --> 00:03:43,111
+blank, Impeccable picks.
+
+89
+00:04:00,783 --> 00:04:03,639
+A few words about your site, and what must
+
+90
+00:04:03,639 --> 00:04:07,354
+stay: here, the prices, the sign-up button
+
+91
+00:04:07,354 --> 00:04:08,956
+and the FAQ.
+
+92
+00:04:08,956 --> 00:04:10,222
+Then the review.
+
+93
+00:04:10,222 --> 00:04:12,486
+I designed this screen to show exactly
+
+94
+00:04:12,486 --> 00:04:14,790
+what will run, and what it costs.
+
+95
+00:04:14,947 --> 00:04:18,337
+Variantly is free and open source; each
+
+96
+00:04:18,337 --> 00:04:21,495
+variant is one session on your own plan,
+
+97
+00:04:21,495 --> 00:04:23,573
+plus one for its review.
+
+98
+00:04:23,573 --> 00:04:26,092
+Ten variants, twenty sessions.
+
+99
+00:04:26,092 --> 00:04:27,288
+Trying it out?
+
+100
+00:04:27,288 --> 00:04:28,896
+Start with four.
+
+101
+00:04:29,400 --> 00:04:31,281
+Can this break your site?
+
+102
+00:04:31,281 --> 00:04:31,850
+No.
+
+103
+00:04:31,850 --> 00:04:34,636
+Each variant runs in an isolated git
+
+104
+00:04:34,636 --> 00:04:36,946
+worktree, outside your project, so your
+
+105
+00:04:36,946 --> 00:04:38,938
+main branch is never touched.
+
+106
+00:04:39,152 --> 00:04:41,683
+And agents change presentation, never
+
+107
+00:04:41,683 --> 00:04:42,618
+behaviour.
+
+108
+00:04:42,774 --> 00:04:46,002
+Ten worktrees, ten dev servers, five
+
+109
+00:04:46,002 --> 00:04:47,854
+agents at a time.
+
+110
+00:04:48,333 --> 00:04:51,119
+The board shows each variant's direction,
+
+111
+00:04:51,119 --> 00:04:53,383
+progress and time, live.
+
+112
+00:04:53,383 --> 00:04:54,811
+Let's follow one.
+
+113
+00:04:54,811 --> 00:04:57,238
+It reads your site, builds its direction,
+
+114
+00:04:57,238 --> 00:04:59,873
+then opens it in a real browser, at
+
+115
+00:04:59,873 --> 00:05:02,706
+desktop and phone width, and fixes what it
+
+116
+00:05:02,706 --> 00:05:03,507
+sees.
+
+117
+00:05:03,507 --> 00:05:06,271
+A second pass critiques and audits it,
+
+118
+00:05:06,271 --> 00:05:08,320
+keeping the direction.
+
+119
+00:05:08,817 --> 00:05:11,696
+Real time, for the record: the whole run
+
+120
+00:05:11,696 --> 00:05:15,028
+took about 60 minutes, start to finish, so
+
+121
+00:05:15,028 --> 00:05:17,194
+here's the rest, sped up.
+
+122
+00:05:17,417 --> 00:05:20,761
+If a variant fails, the board says why, in
+
+123
+00:05:20,761 --> 00:05:23,675
+the agent's own words, and you retry just
+
+124
+00:05:23,675 --> 00:05:24,668
+that one.
+
+125
+00:05:24,824 --> 00:05:28,005
+And if one comes out broken, like a layout
+
+126
+00:05:28,005 --> 00:05:30,838
+that falls apart on a phone, tell the
+
+127
+00:05:30,838 --> 00:05:33,717
+agent to fix it, retry it, or just don't
+
+128
+00:05:33,717 --> 00:05:34,710
+keep it.
+
+129
+00:05:35,200 --> 00:05:36,257
+Then, compare.
+
+130
+00:05:36,257 --> 00:05:38,161
+This is your real site running, not
+
+131
+00:05:38,161 --> 00:05:40,192
+screenshots, so you're judging the real
+
+132
+00:05:40,192 --> 00:05:42,584
+thing: real type, real layout, real
+
+133
+00:05:42,584 --> 00:05:43,582
+interactions.
+
+134
+00:05:43,582 --> 00:05:46,583
+Drag the divider for a before and after.
+
+135
+00:05:46,583 --> 00:05:50,054
+One: tactile imperfection, paper grain and
+
+136
+00:05:50,054 --> 00:05:51,355
+stitched rules.
+
+137
+00:05:51,355 --> 00:05:54,733
+Two: surreal distortion, cold light and
+
+138
+00:05:54,733 --> 00:05:56,266
+impossible scale.
+
+139
+00:05:56,266 --> 00:05:59,261
+Three: cinematic drama, deep shadow and
+
+140
+00:05:59,261 --> 00:06:00,254
+oxblood.
+
+141
+00:06:00,399 --> 00:06:03,661
+Four: maximalist collage, cut-outs that
+
+142
+00:06:03,661 --> 00:06:04,520
+still read.
+
+143
+00:06:04,520 --> 00:06:07,411
+Five: retro-tech, an early desktop with
+
+144
+00:06:07,411 --> 00:06:08,618
+modern type.
+
+145
+00:06:08,618 --> 00:06:11,486
+Six: expressive typography, where the type
+
+146
+00:06:11,486 --> 00:06:12,723
+is the event.
+
+147
+00:06:12,937 --> 00:06:15,863
+Seven: warm eclecticism, wood and mixed
+
+148
+00:06:15,863 --> 00:06:16,728
+eras.
+
+149
+00:06:16,943 --> 00:06:19,392
+Eight: neo-folk craft, one named
+
+150
+00:06:19,392 --> 00:06:20,432
+tradition.
+
+151
+00:06:20,646 --> 00:06:23,183
+Nine: soft chrome and glass.
+
+152
+00:06:23,339 --> 00:06:26,846
+Ten: quiet organic minimalism, space and
+
+153
+00:06:26,846 --> 00:06:28,025
+earth tones.
+
+154
+00:06:28,239 --> 00:06:30,909
+S puts them side by side, both panes
+
+155
+00:06:30,909 --> 00:06:33,191
+labelled, on one scrollbar.
+
+156
+00:06:33,347 --> 00:06:35,455
+M is the phone layout.
+
+157
+00:06:35,967 --> 00:06:37,941
+Or press L for the lens.
+
+158
+00:06:37,941 --> 00:06:40,321
+One design fills the screen, and the next
+
+159
+00:06:40,321 --> 00:06:42,724
+one shows through a door that follows your
+
+160
+00:06:42,724 --> 00:06:43,455
+mouse.
+
+161
+00:06:43,455 --> 00:06:45,969
+Click, and you keep the one in the door.
+
+162
+00:06:46,733 --> 00:06:49,299
+Pause the video for a moment, and think:
+
+163
+00:06:49,299 --> 00:06:51,505
+which of these ten would you keep for your
+
+164
+00:06:51,505 --> 00:06:52,649
+own site?
+
+165
+00:06:58,133 --> 00:06:59,747
+Here's how I decide.
+
+166
+00:06:59,747 --> 00:07:02,185
+First, does it still read clearly?
+
+167
+00:07:02,185 --> 00:07:04,600
+Second, does it fit the people who use the
+
+168
+00:07:04,600 --> 00:07:05,029
+site?
+
+169
+00:07:05,029 --> 00:07:07,607
+And third, would it hold up on every other
+
+170
+00:07:07,607 --> 00:07:08,234
+page?
+
+171
+00:07:08,234 --> 00:07:11,665
+Today, I'm keeping tactile imperfection.
+
+172
+00:07:12,150 --> 00:07:14,669
+Every variant is scored against your
+
+173
+00:07:14,669 --> 00:07:17,049
+original, right on your machine, with
+
+174
+00:07:17,049 --> 00:07:18,582
+axe-core and Lighthouse.
+
+175
+00:07:18,582 --> 00:07:20,741
+You only see the change: how many
+
+176
+00:07:20,741 --> 00:07:23,365
+accessibility points it gained, and how
+
+177
+00:07:23,365 --> 00:07:25,490
+many axe issues it fixed.
+
+178
+00:07:25,490 --> 00:07:27,957
+So it's evidence, not just a look.
+
+179
+00:07:28,450 --> 00:07:30,203
+And if you hate all ten?
+
+180
+00:07:30,203 --> 00:07:32,281
+Run it again with a sharper brief.
+
+181
+00:07:32,281 --> 00:07:34,940
+Nothing is kept unless you press Keep, and
+
+182
+00:07:34,940 --> 00:07:38,887
+npx variantly clean removes every worktree
+
+183
+00:07:38,887 --> 00:07:40,264
+and branch it made.
+
+184
+00:07:40,750 --> 00:07:42,155
+Keep the one you like.
+
+185
+00:07:42,155 --> 00:07:45,092
+Notice this checkbox: one last agent pass
+
+186
+00:07:45,092 --> 00:07:47,379
+carries the look to every other page.
+
+187
+00:07:47,379 --> 00:07:49,307
+That's why we only previewed the home
+
+188
+00:07:49,307 --> 00:07:49,957
+page.
+
+189
+00:07:49,957 --> 00:07:52,139
+You judge one page, and the rest of the
+
+190
+00:07:52,139 --> 00:07:53,539
+site follows.
+
+191
+00:07:59,717 --> 00:08:02,202
+It lands in your working tree, merged with
+
+192
+00:08:02,202 --> 00:08:04,112
+anything you've changed since.
+
+193
+00:08:04,268 --> 00:08:07,089
+The last commit is still yours: nothing is
+
+194
+00:08:07,089 --> 00:08:07,943
+committed.
+
+195
+00:08:08,099 --> 00:08:10,572
+So you review it like any other change,
+
+196
+00:08:10,572 --> 00:08:12,500
+and undo it the same way.
+
+197
+00:08:12,500 --> 00:08:15,263
+You keep one timeline; the others stay as
+
+198
+00:08:15,263 --> 00:08:18,595
+branches until you run npx variantly
+
+199
+00:08:18,595 --> 00:08:19,658
+clean.
+
+200
+00:08:20,150 --> 00:08:22,379
+Then hand off to your own agent.
+
+201
+00:08:22,379 --> 00:08:24,771
+Open your site, and this prompt gives it
+
+202
+00:08:24,771 --> 00:08:27,116
+the local address, the design notes, and
+
+203
+00:08:27,116 --> 00:08:28,434
+what to check.
+
+204
+00:08:38,767 --> 00:08:41,635
+The website got the same care: twenty
+
+205
+00:08:41,635 --> 00:08:44,735
+title concepts, thirty redesigns of one
+
+206
+00:08:44,735 --> 00:08:47,776
+shop, and a mobile pass that cut its
+
+207
+00:08:47,776 --> 00:08:50,807
+transfer, font requests and blocking time
+
+208
+00:08:50,807 --> 00:08:52,299
+on phones.
+
+209
+00:09:07,367 --> 00:09:10,444
+To recap: each variant is an isolated
+
+210
+00:09:10,444 --> 00:09:13,044
+copy, its own branch of your site.
+
+211
+00:09:13,044 --> 00:09:15,529
+You can pin a direction per variant, and
+
+212
+00:09:15,529 --> 00:09:16,934
+mix agents.
+
+213
+00:09:16,934 --> 00:09:19,407
+You compare on your real site, with real
+
+214
+00:09:19,407 --> 00:09:20,196
+scores.
+
+215
+00:09:20,196 --> 00:09:22,204
+And you keep one, and it rolls out
+
+216
+00:09:22,204 --> 00:09:23,267
+site-wide.
+
+217
+00:09:23,767 --> 00:09:26,669
+I designed and directed Variantly with
+
+218
+00:09:26,669 --> 00:09:29,293
+Claude Code and Impeccable: I set the
+
+219
+00:09:29,293 --> 00:09:32,045
+direction, made the calls, and tested it
+
+220
+00:09:32,045 --> 00:09:33,357
+on a real iPhone.
+
+221
+00:09:33,357 --> 00:09:35,946
+It's free and open source, and it runs on
+
+222
+00:09:35,946 --> 00:09:36,910
+your machine.
+
+223
+00:09:36,910 --> 00:09:39,278
+No account, no server of ours.
+
+224
+00:09:39,278 --> 00:09:42,912
+To try it, run npx variantly in your
+
+225
+00:09:42,912 --> 00:09:43,760
+project.
+
+226
+00:09:43,760 --> 00:09:46,140
+Docs at variantly.style.
+
+227
+00:09:46,140 --> 00:09:47,748
+Thanks for watching.

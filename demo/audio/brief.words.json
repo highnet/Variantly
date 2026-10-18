@@ -1,0 +1,332 @@
+[
+  {
+    "word": "A",
+    "start": 0,
+    "end": 0.093
+  },
+  {
+    "word": "few",
+    "start": 0.221,
+    "end": 0.453
+  },
+  {
+    "word": "words",
+    "start": 0.522,
+    "end": 0.882
+  },
+  {
+    "word": "about",
+    "start": 0.94,
+    "end": 1.312
+  },
+  {
+    "word": "your",
+    "start": 1.358,
+    "end": 1.498
+  },
+  {
+    "word": "site,",
+    "start": 1.567,
+    "end": 1.95
+  },
+  {
+    "word": "and",
+    "start": 2.02,
+    "end": 2.183
+  },
+  {
+    "word": "what",
+    "start": 2.252,
+    "end": 2.473
+  },
+  {
+    "word": "must",
+    "start": 2.554,
+    "end": 2.798
+  },
+  {
+    "word": "stay:",
+    "start": 2.856,
+    "end": 3.367
+  },
+  {
+    "word": "here,",
+    "start": 3.622,
+    "end": 4.098
+  },
+  {
+    "word": "the",
+    "start": 4.261,
+    "end": 4.377
+  },
+  {
+    "word": "prices,",
+    "start": 4.458,
+    "end": 5.236
+  },
+  {
+    "word": "the",
+    "start": 5.306,
+    "end": 5.422
+  },
+  {
+    "word": "sign-up",
+    "start": 5.492,
+    "end": 5.944
+  },
+  {
+    "word": "button",
+    "start": 6.014,
+    "end": 6.49
+  },
+  {
+    "word": "and",
+    "start": 6.571,
+    "end": 6.745
+  },
+  {
+    "word": "the",
+    "start": 6.78,
+    "end": 6.885
+  },
+  {
+    "word": "FAQ.",
+    "start": 6.966,
+    "end": 8.011
+  },
+  {
+    "word": "Then",
+    "start": 8.173,
+    "end": 8.382
+  },
+  {
+    "word": "the",
+    "start": 8.44,
+    "end": 8.522
+  },
+  {
+    "word": "review.",
+    "start": 8.603,
+    "end": 9.183
+  },
+  {
+    "word": "I",
+    "start": 9.439,
+    "end": 9.497
+  },
+  {
+    "word": "designed",
+    "start": 9.625,
+    "end": 10.043
+  },
+  {
+    "word": "this",
+    "start": 10.066,
+    "end": 10.228
+  },
+  {
+    "word": "screen",
+    "start": 10.263,
+    "end": 10.6
+  },
+  {
+    "word": "to",
+    "start": 10.67,
+    "end": 10.739
+  },
+  {
+    "word": "show",
+    "start": 10.82,
+    "end": 11.064
+  },
+  {
+    "word": "exactly",
+    "start": 11.157,
+    "end": 11.645
+  },
+  {
+    "word": "what",
+    "start": 11.703,
+    "end": 11.877
+  },
+  {
+    "word": "will",
+    "start": 11.935,
+    "end": 12.132
+  },
+  {
+    "word": "run,",
+    "start": 12.202,
+    "end": 12.585
+  },
+  {
+    "word": "and",
+    "start": 12.608,
+    "end": 12.771
+  },
+  {
+    "word": "what",
+    "start": 12.841,
+    "end": 13.003
+  },
+  {
+    "word": "it",
+    "start": 13.05,
+    "end": 13.119
+  },
+  {
+    "word": "costs.",
+    "start": 13.188,
+    "end": 13.757
+  },
+  {
+    "word": "Variantly",
+    "start": 14.164,
+    "end": 14.976
+  },
+  {
+    "word": "is",
+    "start": 15.034,
+    "end": 15.209
+  },
+  {
+    "word": "free",
+    "start": 15.302,
+    "end": 15.615
+  },
+  {
+    "word": "and",
+    "start": 15.673,
+    "end": 15.801
+  },
+  {
+    "word": "open",
+    "start": 15.882,
+    "end": 16.219
+  },
+  {
+    "word": "source;",
+    "start": 16.288,
+    "end": 16.846
+  },
+  {
+    "word": "each",
+    "start": 17.252,
+    "end": 17.473
+  },
+  {
+    "word": "variant",
+    "start": 17.554,
+    "end": 18.088
+  },
+  {
+    "word": "is",
+    "start": 18.158,
+    "end": 18.343
+  },
+  {
+    "word": "one",
+    "start": 18.436,
+    "end": 18.668
+  },
+  {
+    "word": "session",
+    "start": 18.715,
+    "end": 19.191
+  },
+  {
+    "word": "on",
+    "start": 19.319,
+    "end": 19.493
+  },
+  {
+    "word": "your",
+    "start": 19.562,
+    "end": 19.725
+  },
+  {
+    "word": "own",
+    "start": 19.795,
+    "end": 20.004
+  },
+  {
+    "word": "plan,",
+    "start": 20.073,
+    "end": 20.584
+  },
+  {
+    "word": "plus",
+    "start": 20.712,
+    "end": 20.99
+  },
+  {
+    "word": "one",
+    "start": 21.13,
+    "end": 21.362
+  },
+  {
+    "word": "for",
+    "start": 21.408,
+    "end": 21.571
+  },
+  {
+    "word": "its",
+    "start": 21.652,
+    "end": 21.838
+  },
+  {
+    "word": "review.",
+    "start": 21.919,
+    "end": 22.453
+  },
+  {
+    "word": "Ten",
+    "start": 22.79,
+    "end": 23.069
+  },
+  {
+    "word": "variants,",
+    "start": 23.15,
+    "end": 23.8
+  },
+  {
+    "word": "twenty",
+    "start": 23.846,
+    "end": 24.253
+  },
+  {
+    "word": "sessions.",
+    "start": 24.311,
+    "end": 25.019
+  },
+  {
+    "word": "Trying",
+    "start": 25.309,
+    "end": 25.681
+  },
+  {
+    "word": "it",
+    "start": 25.739,
+    "end": 25.809
+  },
+  {
+    "word": "out?",
+    "start": 25.878,
+    "end": 26.285
+  },
+  {
+    "word": "Start",
+    "start": 26.505,
+    "end": 26.83
+  },
+  {
+    "word": "with",
+    "start": 26.877,
+    "end": 27.039
+  },
+  {
+    "word": "four.",
+    "start": 27.12,
+    "end": 27.863
+  }
+]

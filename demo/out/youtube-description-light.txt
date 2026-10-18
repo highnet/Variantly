@@ -1,0 +1,26 @@
+N redesigns of your site, side by side. Keep one. All you need is Node and Claude Code: npx variantly
+
+variantly.style
+Designs by Impeccable · impeccable.style
+
+Chapters
+0:00 Intro
+0:09 Why
+1:02 What you need
+1:26 Will it work on yours?
+2:12 Setup
+2:54 What to make
+3:15 Your own directions
+4:00 Review and go
+4:29 The run
+5:34 Compare
+7:40 Keep
+8:38 Wrap
+
+Commands shown
+node -v
+npx variantly
+npx variantly doctor
+npx variantly clean
+
+Music: generated with SeekReel

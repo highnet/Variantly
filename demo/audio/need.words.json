@@ -1,0 +1,272 @@
+[
+  {
+    "word": "You",
+    "start": 0,
+    "end": 0.174
+  },
+  {
+    "word": "need",
+    "start": 0.232,
+    "end": 0.418
+  },
+  {
+    "word": "two",
+    "start": 0.453,
+    "end": 0.615
+  },
+  {
+    "word": "things:",
+    "start": 0.697,
+    "end": 1.254
+  },
+  {
+    "word": "Node,",
+    "start": 1.474,
+    "end": 1.916
+  },
+  {
+    "word": "and",
+    "start": 1.939,
+    "end": 2.101
+  },
+  {
+    "word": "a",
+    "start": 2.159,
+    "end": 2.183
+  },
+  {
+    "word": "coding",
+    "start": 2.241,
+    "end": 2.601
+  },
+  {
+    "word": "agent",
+    "start": 2.67,
+    "end": 3.053
+  },
+  {
+    "word": "you",
+    "start": 3.1,
+    "end": 3.193
+  },
+  {
+    "word": "already",
+    "start": 3.262,
+    "end": 3.657
+  },
+  {
+    "word": "use.",
+    "start": 3.727,
+    "end": 4.168
+  },
+  {
+    "word": "In",
+    "start": 4.702,
+    "end": 4.853
+  },
+  {
+    "word": "your",
+    "start": 4.911,
+    "end": 5.039
+  },
+  {
+    "word": "project",
+    "start": 5.097,
+    "end": 5.573
+  },
+  {
+    "word": "folder,",
+    "start": 5.619,
+    "end": 6.246
+  },
+  {
+    "word": "run",
+    "start": 6.467,
+    "end": 6.757
+  },
+  {
+    "word": "npx",
+    "start": 6.838,
+    "end": 7.732
+  },
+  {
+    "word": "variantly,",
+    "start": 7.918,
+    "end": 9.009
+  },
+  {
+    "word": "and",
+    "start": 9.346,
+    "end": 9.555
+  },
+  {
+    "word": "a",
+    "start": 9.613,
+    "end": 9.636
+  },
+  {
+    "word": "wizard",
+    "start": 9.706,
+    "end": 10.112
+  },
+  {
+    "word": "opens",
+    "start": 10.182,
+    "end": 10.67
+  },
+  {
+    "word": "in",
+    "start": 10.739,
+    "end": 10.844
+  },
+  {
+    "word": "your",
+    "start": 10.913,
+    "end": 11.041
+  },
+  {
+    "word": "browser.",
+    "start": 11.111,
+    "end": 11.807
+  },
+  {
+    "word": "The",
+    "start": 12.144,
+    "end": 12.283
+  },
+  {
+    "word": "design",
+    "start": 12.353,
+    "end": 12.759
+  },
+  {
+    "word": "work",
+    "start": 12.829,
+    "end": 13.073
+  },
+  {
+    "word": "is",
+    "start": 13.142,
+    "end": 13.27
+  },
+  {
+    "word": "done",
+    "start": 13.351,
+    "end": 13.63
+  },
+  {
+    "word": "by",
+    "start": 13.677,
+    "end": 13.816
+  },
+  {
+    "word": "Impeccable,",
+    "start": 13.874,
+    "end": 14.768
+  },
+  {
+    "word": "an",
+    "start": 14.989,
+    "end": 15.163
+  },
+  {
+    "word": "open-source",
+    "start": 15.256,
+    "end": 16.057
+  },
+  {
+    "word": "design",
+    "start": 16.092,
+    "end": 16.509
+  },
+  {
+    "word": "skill.",
+    "start": 16.591,
+    "end": 17.218
+  },
+  {
+    "word": "One",
+    "start": 17.438,
+    "end": 17.694
+  },
+  {
+    "word": "catch:",
+    "start": 17.74,
+    "end": 18.274
+  },
+  {
+    "word": "it",
+    "start": 18.495,
+    "end": 18.669
+  },
+  {
+    "word": "has",
+    "start": 18.739,
+    "end": 18.959
+  },
+  {
+    "word": "to",
+    "start": 19.029,
+    "end": 19.11
+  },
+  {
+    "word": "be",
+    "start": 19.18,
+    "end": 19.284
+  },
+  {
+    "word": "the",
+    "start": 19.319,
+    "end": 19.389
+  },
+  {
+    "word": "command-line",
+    "start": 19.447,
+    "end": 20.19
+  },
+  {
+    "word": "agent,",
+    "start": 20.236,
+    "end": 20.689
+  },
+  {
+    "word": "not",
+    "start": 20.712,
+    "end": 20.886
+  },
+  {
+    "word": "a",
+    "start": 20.933,
+    "end": 20.956
+  },
+  {
+    "word": "browser",
+    "start": 21.014,
+    "end": 21.421
+  },
+  {
+    "word": "builder",
+    "start": 21.49,
+    "end": 21.85
+  },
+  {
+    "word": "like",
+    "start": 21.931,
+    "end": 22.129
+  },
+  {
+    "word": "Lovable",
+    "start": 22.187,
+    "end": 22.79
+  },
+  {
+    "word": "or",
+    "start": 22.849,
+    "end": 23.011
+  },
+  {
+    "word": "Bolt.",
+    "start": 23.092,
+    "end": 23.638
+  }
+]
