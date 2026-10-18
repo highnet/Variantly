@@ -36,9 +36,31 @@ export function writeJson(file, value) {
 
 // A scene marked pending waits on an unmerged feature: it is left out of the
 // voice, the take and the cut until the flag is dropped.
+//
+// Lines can name facts that only the take knows, as {{name}}: {{runMinutes}}
+// is how long the run really took, from the last take's raw-timeline.json
+// (marks.runStart to marks.runEnd). Before any take it reads
+// script.json `estimates`. After a take, `node voice.mjs lapse` re-voices
+// that one line with the real number.
+export function takeFacts(film = readJson(at('script.json'))) {
+  const raw = readJson(at('video', 'raw-timeline.json'), {});
+  const facts = { ...(film.estimates ?? {}) };
+  const { runStart, runEnd } = raw.marks ?? {};
+  if (runStart != null && runEnd > runStart) facts.runMinutes = String(Math.max(1, Math.round((runEnd - runStart) / 60)));
+  return facts;
+}
+
 export const script = () => {
   const film = readJson(at('script.json'));
-  return { ...film, scenes: film.scenes.filter((s) => !s.pending) };
+  const facts = takeFacts(film);
+  const fill = (text) => (typeof text === 'string' ? text.replace(/\{\{(\w+)\}\}/g, (m, k) => facts[k] ?? m) : text);
+  // Chapters are numbered in order over the scenes that are filmed, so a
+  // pending chapter leaves no gap in the corner label or the YouTube list.
+  let n = 0;
+  const scenes = film.scenes
+    .filter((s) => !s.pending)
+    .map((s) => ({ ...s, text: fill(s.text), say: fill(s.say), ...(s.chapter ? { chapter: { ...s.chapter, n: ++n } } : {}) }));
+  return { ...film, scenes };
 };
 
 /** ffmpeg/ffprobe: $FFMPEG/$FFPROBE, else the static builds from npm. */

@@ -31,7 +31,7 @@ const buttonVariants = cva(
         'prompt-slate':
           'border border-slate-line bg-transparent text-surface normal-case tracking-normal font-sans hover:bg-ink active:translate-y-px',
         // A numbered cell on the slate dock; the current one lifts, white.
-        cell: 'relative bg-slate-raised text-surface opacity-55 tracking-normal tabular-nums [font-stretch:75%] hover:opacity-90 aria-[current=true]:bg-surface aria-[current=true]:text-ink aria-[current=true]:opacity-100 aria-[current=true]:-translate-y-0.5 aria-[current=true]:shadow-cell',
+        cell: 'relative bg-slate-raised text-surface opacity-55 tracking-normal tabular-nums [font-stretch:75%] hover:opacity-90 aria-[current=true]:bg-surface aria-[current=true]:text-ink aria-[current=true]:opacity-100 aria-[current=true]:-translate-y-0.5 aria-[current=true]:shadow-cell aria-checked:bg-surface aria-checked:text-ink aria-checked:opacity-100 aria-checked:-translate-y-0.5 aria-checked:shadow-cell',
         // A word inside a headline that is also a button (the hero's "a fresh look").
         'headline-word':
           'inline normal-case tracking-[inherit] font-[inherit] [font-stretch:inherit] text-[length:inherit] leading-[inherit] text-inherit whitespace-normal',
@@ -66,6 +66,10 @@ const buttonVariants = cva(
         prompt:
           'min-h-8 rounded-control px-2.5 py-1.5 text-left text-[13px] leading-tight font-semibold whitespace-normal',
         cell: 'h-10 min-w-11 rounded-control px-2 text-[15px] aria-[current=true]:min-w-15 aria-[current=true]:text-2xl',
+        // A cell in a fixed grid of them (twenty redesigns, ten to a row): the
+        // grid sets the width, so the current one lifts and grows its figure
+        // without pushing its neighbours.
+        'cell-grid': 'h-9 w-full min-w-0 rounded-control px-0 text-[15px] aria-checked:text-2xl',
         pill: 'h-8 rounded-full px-4 text-[13px] font-semibold',
         // Desktop picker row and the phone sheet's large strip tile.
         tile: 'h-11 w-full rounded-control px-2 text-[13px] gap-2.5',

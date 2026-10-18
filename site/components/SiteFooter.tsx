@@ -16,7 +16,7 @@ const items = [
   { label: '© variantly' },
   { label: `Release notes v${VERSION}`, href: `${REPO_URL}/releases` },
   { label: `Build ${BUILD}`, href: `${REPO_URL}/commit/${BUILD}` },
-  { label: 'Designed by highnet', href: 'https://github.com/highnet', strong: true },
+  { label: 'Designed by highnet', href: 'https://highnet.at/', strong: true },
   { label: HOST, href: SITE_URL, strong: true },
 ];
 

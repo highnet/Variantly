@@ -1,12 +1,32 @@
+/* Concept d: every rule is scoped to :root[data-variant='d'] (concepts/README.md). */
 :root[data-variant='d'] {
-  --panel: #f2f2ec; --surface: #ffffff; --rule: #0a0a0a; --steel: #3a3a3a; --ink: #0a0a0a;
-  --alert: #c6ff00; --alert-hover: #d8ff4d;
-  --hero-bg: #ffffff; --hero-ink: #0a0a0a; --hero-mute: #3a3a3a; --hero-line: #0a0a0a; --hero-box: #ffffff;
-  --hero-face: var(--font-brutal); --title: #0a0a0a; --hero-alpha: 82%;
+  --panel: #f2f2ec;
+  --surface: #ffffff;
+  --rule: #0a0a0a;
+  --steel: #3a3a3a;
+  --ink: #0a0a0a;
+  --alert: #c6ff00;
+  --alert-hover: #d8ff4d;
+  --hero-bg: #ffffff;
+  --hero-ink: #0a0a0a;
+  --hero-mute: #3a3a3a;
+  --hero-line: #0a0a0a;
+  --hero-box: #ffffff;
+  --hero-face: var(--font-brutal);
+  --title: #0a0a0a;
+  --hero-alpha: 82%;
 }
 :root[data-variant='d'][data-theme='dark'] {
-  --panel: #0a0a0a; --surface: #151515; --rule: #f2f2ec; --steel: #b5b5a8; --ink: #f2f2ec;
-  --hero-bg: #0a0a0a; --hero-ink: #f2f2ec; --hero-mute: #b5b5a8; --hero-line: #f2f2ec; --hero-box: #0a0a0a;
+  --panel: #0a0a0a;
+  --surface: #151515;
+  --rule: #f2f2ec;
+  --steel: #b5b5a8;
+  --ink: #f2f2ec;
+  --hero-bg: #0a0a0a;
+  --hero-ink: #f2f2ec;
+  --hero-mute: #b5b5a8;
+  --hero-line: #f2f2ec;
+  --hero-box: #0a0a0a;
   --title: #c6ff00;
 }
 :root[data-variant='d'] [data-hero-title] {
@@ -25,7 +45,9 @@
   line-height: 0.9;
   text-shadow: 4px 4px 0 #ff3d00;
 }
-:root[data-variant='d'] [data-hero-grid] { border-bottom: 4px solid var(--hero-line); }
+:root[data-variant='d'] [data-hero-grid] {
+  border-bottom: 4px solid var(--hero-line);
+}
 :root[data-variant='d'] [data-hero-side] {
   border: 4px solid var(--hero-line);
   padding: 20px;
@@ -39,24 +61,64 @@
   justify-self: start;
   background: linear-gradient(transparent 55%, #c6ff00 55% 92%, transparent 92%);
 }
-:root[data-variant='d'][data-theme='dark'] main > div h2 { background: linear-gradient(transparent 55%, #ff3d00 55% 92%, transparent 92%); }
+:root[data-variant='d'][data-theme='dark'] main > div h2 {
+  background: linear-gradient(transparent 55%, #ff3d00 55% 92%, transparent 92%);
+}
 :root[data-variant='d'] main > div .bg-surface {
   border: 3px solid var(--ink);
   border-radius: 0;
   box-shadow: 8px 8px 0 var(--ink);
 }
-:root[data-variant='d'] main > div .border-rule { border-color: var(--ink); border-width: 3px; }
-:root[data-variant='d'] main > div .figure:not(h3) { text-shadow: 4px 4px 0 #ff3d00; }
-.vy-swatch-d { background: #c6ff00; box-shadow: inset 0 0 0 2px #0a0a0a; }
-@media (max-width: 639px) {
-:root[data-variant='d'] [data-hero-side] { box-shadow: 6px 6px 0 var(--hero-line); transform: none; }
+:root[data-variant='d'] main > div .border-rule {
+  border-color: var(--ink);
+  border-width: 3px;
 }
-:root[data-variant='d'] { --flap-bg: #0a0a0a; --flap-ink: #c6ff00; }
-:root[data-variant='d'] .flap-cell { border-radius: 0; }
-:root[data-variant='d'][data-theme='dark'] { --flap-bg: #c6ff00; --flap-ink: #0a0a0a; }
-:root[data-variant='d'] { --board-bg: #0a0a0a; --board-raised: #1c1c1c; --board-line: #3a3a3a; --board-mute: #b5b5a8; --board-text: #f2f2ec; --board-deep: #000000; --board-ok: #c6ff00; }
-:root[data-variant='d'] { --blob-o: 0.65; }
-:root[data-variant='d'] { --art-1: #ff3d00; --art-ink: #0a0a0a; }
-:root[data-variant='d'][data-theme='dark'] { --art-1: #ff3d00; --art-ink: #c6ff00; }
-:root[data-variant='d'] .vy-loadbar { height: 6px; }
-:root[data-variant='d'] .vy-loadbar-fill { background: repeating-linear-gradient(-45deg, var(--art-ink) 0 6px, var(--art-1) 6px 12px); }
+:root[data-variant='d'] main > div .figure:not(h3) {
+  text-shadow: 4px 4px 0 #ff3d00;
+}
+@media (max-width: 639px) {
+  :root[data-variant='d'] [data-hero-side] {
+    box-shadow: 6px 6px 0 var(--hero-line);
+    transform: none;
+  }
+}
+:root[data-variant='d'] {
+  --flap-bg: #0a0a0a;
+  --flap-ink: #c6ff00;
+}
+:root[data-variant='d'] .flap-cell {
+  border-radius: 0;
+}
+:root[data-variant='d'][data-theme='dark'] {
+  --flap-bg: #c6ff00;
+  --flap-ink: #0a0a0a;
+}
+:root[data-variant='d'] main > div .bg-surface .bg-surface {
+  border-color: var(--ink);
+}
+:root[data-variant='d'] {
+  --board-bg: #0a0a0a;
+  --board-raised: #1c1c1c;
+  --board-line: #3a3a3a;
+  --board-mute: #b5b5a8;
+  --board-text: #f2f2ec;
+  --board-deep: #000000;
+  --board-ok: #c6ff00;
+}
+:root[data-variant='d'] {
+  --blob-o: 0.65;
+}
+:root[data-variant='d'] {
+  --art-1: #ff3d00;
+  --art-ink: #0a0a0a;
+}
+:root[data-variant='d'][data-theme='dark'] {
+  --art-1: #ff3d00;
+  --art-ink: #c6ff00;
+}
+:root[data-variant='d'] .vy-loadbar {
+  height: 6px;
+}
+:root[data-variant='d'] .vy-loadbar-fill {
+  background: repeating-linear-gradient(-45deg, var(--art-ink) 0 6px, var(--art-1) 6px 12px);
+}

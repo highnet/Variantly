@@ -3,28 +3,24 @@ import {
   Archivo_Black,
   Fredoka,
   Jost,
-  Bungee,
-  Cinzel,
-  Great_Vibes,
   Monoton,
   Orbitron,
-  Pacifico,
   Press_Start_2P,
   Righteous,
   Rubik_Mono_One,
   Special_Elite,
-  UnifrakturMaguntia,
 } from 'next/font/google';
 import localFont from 'next/font/local';
 
 // The title's first paint is its final lockup (the still poster the reveal
 // starts from), so those nine faces are preloaded and block rather than swap:
 // a fallback word that then jumps into nine faces would be a flash of its own.
+// All nine are self-hosted and subset to the letters of "variantly"
+// (scripts/build-3d-fonts.mjs), about 25 KB together instead of ~115 KB.
 // The rest of the wardrobe only shows once the reveal runs: not preloaded.
 // The intro's wardrobe: runes-ish, blackletter, scripts, typewriter, retro block.
-const fraktur = UnifrakturMaguntia({
-  weight: '400',
-  subsets: ['latin'],
+const fraktur = localFont({
+  src: '../app/fonts/wild/fraktur.woff2',
   preload: true,
   display: 'block',
 });
@@ -34,9 +30,21 @@ const abril = Abril_Fatface({
   preload: false,
   variable: '--font-poster',
 });
-const cinzel = Cinzel({ weight: '900', subsets: ['latin'], preload: true, display: 'block' });
-const vibes = Great_Vibes({ weight: '400', subsets: ['latin'], preload: true, display: 'block' });
-const pacifico = Pacifico({ weight: '400', subsets: ['latin'], preload: true, display: 'block' });
+const cinzel = localFont({
+  src: '../app/fonts/wild/cinzel.woff2',
+  preload: true,
+  display: 'block',
+});
+const vibes = localFont({
+  src: '../app/fonts/wild/great-vibes.woff2',
+  preload: true,
+  display: 'block',
+});
+const pacifico = localFont({
+  src: '../app/fonts/wild/pacifico.woff2',
+  preload: true,
+  display: 'block',
+});
 const elite = Special_Elite({
   weight: '400',
   subsets: ['latin'],
@@ -50,7 +58,11 @@ const orbitron = Orbitron({
   variable: '--font-arcade',
 });
 const monoton = Monoton({ weight: '400', subsets: ['latin'], preload: false });
-const bungee = Bungee({ weight: '400', subsets: ['latin'], preload: true, display: 'block' });
+const bungee = localFont({
+  src: '../app/fonts/wild/bungee.woff2',
+  preload: true,
+  display: 'block',
+});
 const rubik = Rubik_Mono_One({
   weight: '400',
   subsets: ['latin'],

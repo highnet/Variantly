@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Schibsted+Grotesk:wght@500;800&display=swap');
+
+/* One ink: a deep oxblood printed on newsprint-white. Everything is that ink at full or reduced weight. */
+:root {
+  color-scheme: light;
+  --paper: #f7f3ec;
+  --ink: #5a1418;
+  --ink-2: #6e2a2d;
+  --tint: #ecdfd6;
+  --display: 'Bodoni Moda', 'Didot', Georgia, serif;
+  --text: 'Newsreader', Georgia, serif;
+  --grot: 'Schibsted Grotesk', 'Helvetica Neue', Arial, sans-serif;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #1c1213;
+  --ink: #f1d9d2;
+  --ink-2: #d9b9b1;
+  --tint: #2c1c1d;
+}
+* { box-sizing: border-box; }
+::selection { background: var(--ink); color: var(--paper); }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 1.1875rem/1.6 var(--text); overflow-x: hidden; }
+a { color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+.topbar { margin: 0; padding: .5rem 1rem; text-align: center; font-size: .9rem; font-style: italic; border-bottom: 1px solid var(--ink); }
+.navbar { max-width: 1180px; margin: 0 auto; padding: 1.25rem 1.5rem; display: flex; align-items: baseline; gap: 2rem; flex-wrap: wrap; border-bottom: 3px double var(--ink); }
+.logo { font: 700 1.9rem/1 var(--display); text-decoration: none; letter-spacing: -.01em; }
+.logo i { font-weight: 400; }
+.navbar ul { display: flex; gap: 1.5rem; list-style: none; margin: 0; padding: 0; flex: 1; font-variant: small-caps; letter-spacing: .06em; }
+.navbar ul a { text-decoration: none; }
+.navbar ul a[aria-current] { text-decoration: underline; text-underline-offset: .3em; }
+.cart { text-decoration: none; font-style: italic; }
+
+main { max-width: 1180px; margin: 0 auto; padding: 0 1.5rem; }
+.hero { padding: 4rem 0 5rem; display: grid; grid-template-columns: 1.3fr 1fr; gap: 1rem 4rem; border-bottom: 1px solid var(--ink); }
+.folio { grid-column: 1 / -1; display: flex; justify-content: space-between; margin: 0 0 2rem; font-size: .85rem; font-variant: small-caps; letter-spacing: .12em; border-bottom: 1px solid var(--ink); padding-bottom: .5rem; }
+.hero h1 { grid-column: 1 / -1; margin: 0; font: 400 clamp(3rem, 9vw, 6rem)/.95 var(--display); letter-spacing: -.03em; text-wrap: balance; }
+.hero h1 i { font-weight: 400; }
+.standfirst { margin: 2rem 0 0; font-size: 1.45rem; line-height: 1.45; font-style: italic; max-width: 34ch; }
+.byline { margin: 1rem 0 0; font-size: .85rem; font-variant: small-caps; letter-spacing: .1em; }
+.hero-art { grid-column: 2; grid-row: 3 / span 3; margin: 2rem 0 0; color: var(--ink); }
+.hero-art svg { width: 100%; height: auto; }
+.ctas { display: flex; gap: 1.5rem; align-items: center; margin: 2rem 0 0; }
+.btn, button { font: 600 1rem var(--text); background: var(--ink); color: var(--paper); border: 1px solid var(--ink); padding: .7rem 1.4rem; cursor: pointer; text-decoration: none; letter-spacing: .02em; transition: background .2s, color .2s; }
+.btn:hover, button:hover { background: transparent; color: var(--ink); }
+.link { font-style: italic; text-underline-offset: .25em; }
+
+.feature { padding: 5rem 0; border-bottom: 1px solid var(--ink); }
+.feature h2, .shop h2, .newsletter h2 { margin: 0 0 2.5rem; font: 400 clamp(2.2rem, 5vw, 3.75rem)/1 var(--display); letter-spacing: -.02em; }
+.columns { columns: 3 16rem; column-gap: 3rem; column-rule: 1px solid var(--tint); }
+.columns p { margin: 0 0 1.2rem; hyphens: auto; }
+.drop::first-letter { float: left; font: 400 5.4rem/.8 var(--display); padding: .35rem .5rem 0 0; }
+.pull { break-inside: avoid; margin: 1rem 0 1.6rem; padding: 1rem 0; border-top: 3px double var(--ink); border-bottom: 3px double var(--ink); }
+.pull p { margin: 0; font: italic 400 1.9rem/1.15 var(--display); }
+
+.shop { padding: 5rem 0; border-bottom: 1px solid var(--ink); }
+.items { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; }
+.item { display: flex; flex-direction: column; gap: .4rem; }
+.plate { aspect-ratio: 4 / 3; background: var(--tint); display: grid; place-items: center; padding: 2rem; margin-bottom: .8rem; }
+.plate svg { width: 100%; height: 100%; }
+.no { margin: 0; font-size: .82rem; font-variant: small-caps; letter-spacing: .1em; }
+.item h3 { margin: 0; font: 600 1.9rem/1.1 var(--display); }
+.desc { margin: 0; font-style: italic; color: var(--ink-2); }
+.price { margin: .4rem 0 .8rem; font-size: 1.25rem; font-variant-numeric: lining-nums tabular-nums; }
+.price s { opacity: .75; margin-right: .4rem; }
+.item button { align-self: flex-start; margin-top: auto; }
+.all { margin: 3rem 0 0; text-align: center; }
+
+.testimonial { padding: 6rem 0; border-bottom: 1px solid var(--ink); }
+.testimonial blockquote { margin: 0 auto; max-width: 52rem; text-align: center; }
+.testimonial p { margin: 0; font: italic 400 clamp(2rem, 4.6vw, 3.4rem)/1.1 var(--display); text-wrap: balance; }
+.testimonial footer { margin-top: 1.5rem; font-variant: small-caps; letter-spacing: .12em; }
+
+.newsletter { padding: 5rem 0; max-width: 40rem; }
+.newsletter p { margin: 0 0 1.5rem; }
+.newsletter label { display: block; font-style: italic; margin-bottom: .4rem; }
+.row { display: flex; gap: .75rem; flex-wrap: wrap; }
+input { flex: 1 1 14rem; font: inherit; color: var(--ink); background: transparent; border: 0; border-bottom: 2px solid var(--ink); padding: .5rem 0; }
+input::placeholder { color: var(--ink-2); }
+input:focus-visible { outline: none; border-bottom-width: 3px; }
+
+.foot { border-top: 3px double var(--ink); max-width: 1180px; margin: 0 auto; padding: 3rem 1.5rem 4rem; text-align: center; }
+.foot p { margin: 0 0 .6rem; }
+.foot .logo { font-size: 2.4rem; margin-bottom: 1rem; }
+.small { font-size: .85rem; font-style: italic; }
+.linkbtn { background: none; color: inherit; border: 0; padding: 0; text-decoration: underline; font: inherit; }
+
+@media (max-width: 760px) {
+  .hero { grid-template-columns: 1fr; padding-top: 2rem; }
+  .hero-art { grid-column: 1; grid-row: auto; }
+  .folio span:nth-child(3) { display: none; }
+  .items { grid-template-columns: 1fr; }
+  .navbar ul { order: 3; flex-basis: 100%; gap: 1rem; flex-wrap: wrap; }
+}
+
+/* Contemporary mix: a heavy grotesk for every label, nav and control against the Didone display. */
+.navbar ul, .folio, .byline, .no, .testimonial footer, .btn, button, .topbar, .cart { font-family: var(--grot); font-style: normal; font-variant: normal; text-transform: uppercase; letter-spacing: .08em; font-weight: 500; font-size: .78rem; }
+.btn, button { font-weight: 800; font-size: .8rem; }
+.feature h2 em, .hero h1 i, .logo i { font-style: italic; }
+.columns b { font-family: var(--grot); font-weight: 800; text-transform: uppercase; font-size: .82em; letter-spacing: .06em; }
+.hero h1 { font-weight: 500; font-size: clamp(3rem, 10vw, 7.5rem); letter-spacing: -.04em; }
+.linkbtn { font: inherit; text-transform: none; letter-spacing: 0; }

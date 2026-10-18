@@ -15,7 +15,7 @@ Audience and job: beginners who build with AI ("vibe coders"), new to terminals 
 
 Keep: the live Oak & Iron before/after, the human/agent fork, the headline "Your website needs a fresh look". Avoid: techy jargon and terminal costume, generic SaaS card grids, cutesy.
 
-Proof and content: six real redesigns of Oak & Iron (site/public/demo/oak-and-iron/v1-v6) with their BRIEF.md; real commands; real stack list. No testimonials, counts, benchmarks or invented timings.
+Proof and content: thirty real redesigns of Oak & Iron in two runs (Classic, site/public/demo/oak-and-iron/v1-v20; Winter 2026, site/public/demo/oak-and-iron-w26/v1-v10) with their BRIEF.md, shown as posters until the demo is used; real commands; real stack list. No testimonials, counts, benchmarks or invented timings.
 
 Constraints: Next.js 16 + Tailwind v4 + CVA Button/Typography (site/AGENTS.md); DESIGN.md tokens; keyboard-operable slider and fork; WCAG 2.2 AA.
 
@@ -26,5 +26,5 @@ THESIS: The demo is the page. The live before/after fills the first viewport edg
 OWN-WORLD: Gate Board: slate dock, white passes on panel ground, one alert yellow for the single copy action, Martian Mono condensed for headings and the flap, system sans for every sentence.
 STORY: The visitor sees a real site change under the flap word, reads one sentence on the dock, copies the command; scrolls to three oversized numbered steps, a tickable "Before you start" checklist, logos, plain FAQ.
 FIRST VIEWPORT: stage = viewport minus header; dock overlays the bottom on desktop, sits below the stage on phones.
-SIGNATURE: flap word plus the stage changing in sync, stopped by drag or 01–06.
+SIGNATURE: flap word plus the stage changing in sync, stopped by drag or the 01–20 grid.
 RISK: overlaid dock hides the bottom of the demo; dock must stay compact.
