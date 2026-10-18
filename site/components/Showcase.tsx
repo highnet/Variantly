@@ -162,10 +162,13 @@ const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
   return (
     <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
       <span className="text-steel-on-slate text-[10px] tracking-[0.08em] uppercase">{label}</span>
-      {/* Only the change against the original: nobody reads the new value. */}
+      {/* Only the change against the original: nobody reads the new value.
+          A fixed width, so a change from "+9" to "+13" (or "same") never
+          resizes the dock, which is centred and would slide sideways. */}
       <span
         className={cn(
-          'text-[15px] font-bold tabular-nums',
+          'inline-block text-left text-[15px] font-bold tabular-nums',
+          lowerIsBetter ? 'min-w-[8ch]' : 'min-w-[4ch]',
           diff === 0 ? 'text-surface' : better ? 'text-ok-on-slate' : 'text-fail-on-slate',
         )}
       >
@@ -1359,7 +1362,16 @@ const Showcase = () => {
                 ) : (
                   <Play className="size-3.5" aria-hidden="true" />
                 )}
-                {auto ? 'Pause tour' : 'Play tour'}
+                {/* Both labels share one cell, so the button (and the centred
+                    dock) keeps its width when Pause turns into Play. */}
+                <span className="grid">
+                  <span className={cn('col-start-1 row-start-1', !auto && 'invisible')}>
+                    Pause tour
+                  </span>
+                  <span className={cn('col-start-1 row-start-1', auto && 'invisible')}>
+                    Play tour
+                  </span>
+                </span>
               </Button>
               <Button
                 variant="toggle-slate"
