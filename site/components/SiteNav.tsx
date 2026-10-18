@@ -1,6 +1,6 @@
 'use client';
 
-import { Menu, X } from 'lucide-react';
+import { Clock, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
@@ -70,6 +70,9 @@ const SiteNav = ({ brand, aside }: SiteNavProps) => {
               className,
             )}
           >
+            {n.href === '/agents' && (
+              <Clock aria-hidden="true" className="mr-1.5 inline size-3.5 align-[-0.15em]" />
+            )}
             {n.label}
           </Link>
         </li>
