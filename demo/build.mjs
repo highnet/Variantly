@@ -17,6 +17,7 @@ import { spawn } from 'node:child_process';
 import { copyFileSync, existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { at, ffmpeg, ffmpegPath, log, readJson, run, seekreelDir, writeJson } from './lib/common.mjs';
+import { duckUnder, musicFor } from './music.mjs';
 
 const args = process.argv.slice(2);
 const themeAt = args.indexOf('--theme');
@@ -133,6 +134,14 @@ for (const theme of themes) {
   // `build` would re-cut the footage; it is already cut, so render and encode.
   if (mode === 'wide' || mode === 'all') {
     await seekreel('audio', '--config', wide);
+    // The music: music/full.strudel, ducked under the voice (music.mjs).
+    if (existsSync(at('music', 'full.strudel'))) {
+      const sound = at('build', theme, 'soundtrack.wav');
+      const voiceOnly = at('build', theme, 'soundtrack.voice.wav');
+      renameSync(sound, voiceOnly);
+      const seconds = readJson(at('build', theme, 'cues.json')).duration;
+      await duckUnder(voiceOnly, await musicFor(at('music', 'full.strudel'), seconds), sound, seconds);
+    }
     await loudnorm(at('build', theme, 'soundtrack.wav'));
     await seekreel('render', '--config', wide);
     await seekreel('encode', '--config', wide);

@@ -12,15 +12,17 @@
  *      settings as voice.mjs (audio/cuts/, re-read only when the line changes);
  *   2. takes the beat's shots from the no-captions film, at real speed, sharing
  *      the line's length (plus a breath) between them;
- *   3. mixes the voice over the same music bed with SeekReel's cue engine;
+ *   3. mixes the voice with SeekReel's cue engine, then ducks the cut's Strudel
+ *      score (music/cut-<id>.strudel, rendered by music.mjs) under it;
  *   4. burns in captions from the word timings, and writes
  *      out/variantly-demo-<theme>-<cut>.mp4 and its .srt.
  */
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { at, duration, ffmpeg, log, readJson, run, seekreelDir, takeFacts, writeJson, FPS, WIDTH, HEIGHT } from './lib/common.mjs';
 import { risky, toSpoken, toWritten } from './lib/pronounce.mjs';
+import { duckUnder, musicFor } from './music.mjs';
 
 const args = process.argv.slice(2);
 const themeAt = args.indexOf('--theme');
@@ -180,20 +182,22 @@ async function build(cut, theme) {
   }
   const total = t;
 
-  // Sound: the full film's music bed under the cut's own lines.
-  const full = readJson(at('build', theme, 'cues.json'));
+  // Sound: the cut's own lines and two cues, then its Strudel score
+  // (music/cut-<id>.strudel) ducked under them.
   const cues = {
     duration: total,
     sampleRate: 48000,
-    bed: { ...full.bed, dense: [0, total], bassFrom: 0 },
     tracks,
-    duck: full.duck,
-    cues: [{ at: 0.05, sound: 'swell', note: 'D2', dur: 1.6, gain: 0.5 }, { at: Math.max(0, total - 4), sound: 'chime', note: 'A5', gain: 0.35 }],
+    cues: [{ at: 0.05, sound: 'swell', note: 'D2', dur: 1.6, gain: 0.4 }, { at: Math.max(0, total - 4), sound: 'chime', note: 'A5', gain: 0.3 }],
     master: { fadeIn: 0.1, fadeOut: 1.2, peak: 0.72 },
   };
   writeJson(path.join(dir, 'cues.json'), cues);
+  const voiceOnly = path.join(dir, 'soundtrack.voice.wav');
+  await run(PYTHON, [path.join(SEEKREEL, 'src', 'audio', 'render.py'), '--cues', path.join(dir, 'cues.json'), '--out', voiceOnly]);
+  const score = at('music', `cut-${cut.id}.strudel`);
   const wav = path.join(dir, 'soundtrack.wav');
-  await run(PYTHON, [path.join(SEEKREEL, 'src', 'audio', 'render.py'), '--cues', path.join(dir, 'cues.json'), '--out', wav]);
+  if (existsSync(score)) await duckUnder(voiceOnly, await musicFor(score, total), wav, total);
+  else copyFileSync(voiceOnly, wav);
 
   // Picture: the shots joined with hard cuts, captions burned in.
   writeFileSync(path.join(dir, 'captions.ass'), ass(caps));

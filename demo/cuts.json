@@ -11,7 +11,7 @@
         },
         {
           "id": "command",
-          "text": "I'm Joaquin. I built Variantly so you don't have to bet on one direction. Run npx variantly. Next.js, Django, plain HTML: it finds them.",
+          "text": "I'm Joaquin. I built Variantly so you don't have to choose one direction and hope. Run npx variantly. Next.js, Django, plain HTML: it finds them.",
           "shots": [{ "scene": "need", "from": 0.5 }, { "scene": "stacks", "from": 0.5 }]
         },
         {
@@ -21,7 +21,7 @@
         },
         {
           "id": "run",
-          "text": "Real time, for the record: this run took {{runMinutes}} minutes. Here it is, sped up. Each variant gets its own git worktree, so your main branch is never touched.",
+          "text": "In real time, this run took {{runMinutes}} minutes. Here it is, sped up. Each variant gets its own git worktree, so your main branch is never touched.",
           "shots": [{ "scene": "lapse", "from": 0 }, { "scene": "worktrees", "from": 1 }]
         },
         {

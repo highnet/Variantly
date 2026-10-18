@@ -340,7 +340,8 @@ const outro = scenes.find((s) => s.cta);
 writeJson(at(BUILD, 'cues.json'), {
   duration: total,
   sampleRate: 48000,
-  bed: {
+  // With a Strudel score (music/full.strudel) the music is mixed in by build.mjs instead.
+  bed: existsSync(at('music', 'full.strudel')) ? undefined : {
     tempo: 92,
     barsPerChord: 2,
     progression: [
