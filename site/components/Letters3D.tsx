@@ -351,12 +351,20 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     // canvas and its 2D frame stay together while the word tilts.
     // Phones lean the same way from the device's tilt (see the gyro below).
     // `u`, `v` in -1..1: toward the right, toward the bottom.
+    // Phones lean further (a tipped phone is a bigger gesture than a cursor
+    // drift) and follow faster (0.15s: the sensor already moves smoothly).
+    const leanX = phone ? 7 : 5;
+    const leanY = phone ? 10 : 7;
     const leanTo = (u: number, v: number) => {
-      const lean = `perspective(900px) rotateX(${(-v * 5).toFixed(2)}deg) rotateY(${(u * 7).toFixed(2)}deg)`;
-      el.style.transform = lean;
-      el.parentElement
-        ?.querySelectorAll<HTMLElement>('[data-lens-lean]')
-        .forEach((l) => (l.style.transform = lean));
+      const lean = `perspective(900px) rotateX(${(-v * leanX).toFixed(2)}deg) rotateY(${(u * leanY).toFixed(2)}deg)`;
+      const layers = [
+        el,
+        ...(el.parentElement?.querySelectorAll<HTMLElement>('[data-lens-lean]') ?? []),
+      ];
+      layers.forEach((l) => {
+        if (phone) l.style.transition = 'transform 0.15s ease-out';
+        l.style.transform = lean;
+      });
     };
     if (!phone && !still && seek === null) {
       const move = (e: PointerEvent) =>
@@ -875,17 +883,35 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
       // control can swallow it; touchend and click both count as the gesture).
       if (phone && !still && seek === null && typeof DeviceOrientationEvent !== 'undefined') {
         let base: [number, number] | null = null;
+        let baseT = 0;
+        // ?tilt=debug: the raw sensor and the lean, on screen.
+        const debug =
+          new URLSearchParams(location.search).get('tilt') === 'debug'
+            ? document.body.appendChild(document.createElement('pre'))
+            : null;
+        if (debug)
+          debug.style.cssText =
+            'position:fixed;left:8px;top:8px;z-index:9999;margin:0;padding:6px 8px;font:11px/1.4 ui-monospace,monospace;background:rgb(0 0 0/0.75);color:#fff;border-radius:4px;pointer-events:none';
         const onTilt = (e: DeviceOrientationEvent) => {
           if (e.beta === null || e.gamma === null) return;
           const turned = Math.abs(screen.orientation?.angle ?? 0) === 90;
           const side = turned ? e.beta : e.gamma;
           const tip = turned ? -e.gamma : e.beta;
+          const now = performance.now();
           if (!base) base = [side, tip];
-          base[0] += (side - base[0]) * 0.015;
-          base[1] += (tip - base[1]) * 0.015;
-          const u = Math.max(-1, Math.min(1, (side - base[0]) / 18));
-          const v = Math.max(-1, Math.min(1, (tip - base[1]) / 18));
+          // The neutral pose drifts toward however the phone is held, over
+          // ~15s: a held tilt keeps its lean; lying down or standing still
+          // re-centres in a while.
+          const k = 1 - Math.exp(-Math.min(100, baseT ? now - baseT : 16) / 15000);
+          baseT = now;
+          base[0] += (side - base[0]) * k;
+          base[1] += (tip - base[1]) * k;
+          // Full lean at ~12° of tilt.
+          const u = Math.max(-1, Math.min(1, (side - base[0]) / 12));
+          const v = Math.max(-1, Math.min(1, (tip - base[1]) / 12));
           leanTo(u, v);
+          if (debug)
+            debug.textContent = `beta ${e.beta.toFixed(1)}  gamma ${e.gamma.toFixed(1)}\nlean u ${u.toFixed(2)}  v ${v.toFixed(2)}`;
           const yaw = u * 0.55;
           const pitch = v * 0.4;
           if (Math.abs(yaw - lightTo.yaw) + Math.abs(pitch - lightTo.pitch) < 0.01) return;
@@ -916,6 +942,7 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         } else listen();
         cleanups.push(() => {
           removeEventListener('deviceorientation', onTilt);
+          debug?.remove();
           document.removeEventListener('touchend', onTap, true);
           document.removeEventListener('click', onTap, true);
         });
