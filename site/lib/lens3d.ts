@@ -4,7 +4,6 @@ import { Earcut } from 'three/src/extras/Earcut.js';
 import { CONCEPT_BY_ID, CONCEPT_LOADERS, type ConceptId } from '@/concepts';
 import type { Built } from '@/concepts/types';
 import { blendMorph, loadMorph, morphTrack, planMorph, type MorphData } from '@/lib/glyphMorph';
-import { glTier } from '@/lib/glTier';
 import { kickGlitch, lensLive, onLensTick, setLensGl } from '@/lib/lens';
 import { glitchOn } from '@/lib/lensGlitch';
 import {
@@ -294,7 +293,12 @@ export const attachLens = (host: LensHost): LensPass => {
   let pageSlots: Slot[] = [];
   let lensSlots: Slot[] = [];
   let laid = '';
-  let lensScene: { scene: THREE.Scene; built: Built; colors: string[] } | null = null;
+  let lensScene: {
+    scene: THREE.Scene;
+    built: Built;
+    colors: string[];
+    pixelArt: boolean;
+  } | null = null;
   let sceneT0 = performance.now();
   let tintRGBA: [number, number, number, number] = [0, 0, 0, 0];
 
@@ -425,7 +429,7 @@ export const attachLens = (host: LensHost): LensPass => {
         const sc = new THREE.Scene();
         const colors = def.colors[dark() ? 'dark' : 'light'];
         const built = def.build(sc, colors);
-        lensScene = { scene: sc, built, colors };
+        lensScene = { scene: sc, built, colors, pixelArt: !!def.pixelArt };
         sceneT0 = performance.now();
       })
       .catch(() => {});
@@ -582,10 +586,16 @@ export const attachLens = (host: LensHost): LensPass => {
       }
       (cam as THREE.PerspectiveCamera).updateProjectionMatrix();
       lensScene.built.update((performance.now() - sceneT0) / 1000, 0);
-      // At the backdrop's own resolution (GlField renders at ~0.55x, and
-      // the scenes' screen-space patterns are sized in its pixels), then
-      // laid into the door.
-      const pr = glTier(0.55).pixelRatio;
+      // At the backdrop's own resolution (GlField: up to 1.5x for a moving
+      // scene, one pixel per CSS pixel for pixel art, whose screen-space
+      // patterns are sized in those pixels), then laid into the door.
+      const pr = lensScene.pixelArt ? 1 : Math.min(devicePixelRatio || 1, 1.5);
+      const filter = lensScene.pixelArt ? THREE.NearestFilter : THREE.LinearFilter;
+      if (rt.texture.magFilter !== filter) {
+        // Filters are set when the target is allocated: re-allocate it.
+        rt.texture.magFilter = filter;
+        rt.dispose();
+      }
       const rw = Math.max(1, Math.ceil(W * pr));
       const rh = Math.max(1, Math.ceil(H * pr));
       if (rt.width !== rw || rt.height !== rh) rt.setSize(rw, rh);

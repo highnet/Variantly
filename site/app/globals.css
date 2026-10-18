@@ -761,15 +761,28 @@ a:hover > .brand-mark .brand-grip {
  *                 (soft by default; none with --grain-tile: none)
  *   --grain-o     0–1, for layers that hold the tile as their own element
  *                 and fade it with opacity (1 = as baked; 0 = off)
- *   --grain-size  tile size (96px: one noise pixel per CSS pixel)
+ *   --grain-size  tile size (96px: one noise pixel per device pixel, via the
+ *                 1x/2x/3x tiles in image-set)
  *   --grain-wash  the gradient under the grain
  * Anything else that wants the grain (e.g. the liquid numerals) layers
  * var(--grain-tile) as a background-image inside its own clipped area.
  * ------------------------------------------------------------------------- */
 :root {
-  --grain-soft: url('./_grain/grain-soft.png');
-  --grain-mid: url('./_grain/grain-mid.png');
-  --grain-strong: url('./_grain/grain-strong.png');
+  --grain-soft: image-set(
+    url('./_grain/grain-soft.png') 1x,
+    url('./_grain/grain-soft@2x.png') 2x,
+    url('./_grain/grain-soft@3x.png') 3x
+  );
+  --grain-mid: image-set(
+    url('./_grain/grain-mid.png') 1x,
+    url('./_grain/grain-mid@2x.png') 2x,
+    url('./_grain/grain-mid@3x.png') 3x
+  );
+  --grain-strong: image-set(
+    url('./_grain/grain-strong.png') 1x,
+    url('./_grain/grain-strong@2x.png') 2x,
+    url('./_grain/grain-strong@3x.png') 3x
+  );
   --grain-tile: var(--grain-mid);
   /* Translucent or text-dense surfaces (the hero, primary buttons, the
      footer) take a lighter tile and no wash, which keeps their text at AA.

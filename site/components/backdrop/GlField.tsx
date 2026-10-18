@@ -203,8 +203,17 @@ const run = (
     return;
   }
   const still = seek !== null || phone || calmMotion() || perfTier() === 'low';
+  // The host is shown overscaled (the parallax scale on .vy-scene, 1.14, and
+  // the pointer drift's scale(1.04) on a moving canvas): the drawing buffer
+  // takes that scale too, or the overscale upsamples it and softens the grain.
+  const overscale = () => {
+    const box = el.getBoundingClientRect().width / (el.clientWidth || 1);
+    return (box > 1 ? box : 1) * (still ? 1 : 1.04);
+  };
   const ratio = () =>
-    seek !== null ? glTier(0.55).pixelRatio : Math.min(devicePixelRatio || 1, still ? 2 : 1.5);
+    seek !== null
+      ? glTier(0.55).pixelRatio
+      : (def.pixelArt ? 1 : Math.min(devicePixelRatio || 1, still ? 2 : 1.5)) * overscale();
   renderer.setPixelRatio(ratio());
   const canvas = renderer.domElement;
   // Stacked, so an outgoing scene can stay under the incoming one.
@@ -270,6 +279,9 @@ const run = (
   ro.observe(el);
   // Zoom and DPR changes resize nothing the observer sees.
   addEventListener('resize', resize);
+  // Nor does the parallax overscale switching on or off (a class on <html>).
+  const scaled = new MutationObserver(resize);
+  scaled.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
 
   // Desktop parallax is a CSS transform on the canvas, not a re-render.
   const move = (e: PointerEvent) => {
@@ -277,6 +289,9 @@ const run = (
     canvas.style.transform = `translate3d(${x.toFixed(1)}px, 0, 0) scale(1.04)`;
   };
   if (!still) {
+    // Overscaled from the start, so the buffer (sized for scale(1.04)) is
+    // never shown at a fractional, unmatched scale before the first move.
+    canvas.style.transform = 'translate3d(0px, 0, 0) scale(1.04)';
     canvas.style.transition = 'transform 1.2s cubic-bezier(0.2, 0.7, 0.2, 1)';
     addEventListener('pointermove', move, { passive: true });
   }
@@ -346,6 +361,7 @@ const run = (
     cancelAnimationFrame(shown);
     ro.disconnect();
     mo.disconnect();
+    scaled.disconnect();
     document.removeEventListener('visibilitychange', sync);
     document.removeEventListener('vy:gl-busy', onBusy);
     document.removeEventListener('vy:perf', sync);

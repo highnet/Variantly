@@ -44,6 +44,10 @@ export type Built = { camera: THREE.Camera; update: (t: number, px: number) => v
 export type ConceptScene = {
   colors: Record<Theme, string[]>;
   build: (scene: THREE.Scene, colors: string[]) => Built;
+  // Pixel art: drawn at one buffer pixel per CSS pixel and shown with
+  // image-rendering: pixelated, so each pixel lands on a whole number of
+  // device pixels (2x, 3x) instead of a fractional nearest-neighbour smear.
+  pixelArt?: boolean;
 };
 
 // look.ts: the 3D title's surfaces and cast shadow.
