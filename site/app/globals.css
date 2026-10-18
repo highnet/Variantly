@@ -1383,8 +1383,12 @@ a:hover > .brand-mark .brand-grip {
    there would outline their full geometry. A concept tunes it with
    --art-grain (0 turns it off). */
 .vy-art-grain {
-  opacity: var(--art-grain, 0.9);
+  /* Two layers (artKit GrainDefs): each a little lighter, the same grain. */
+  opacity: calc(var(--art-grain, 0.9) * 0.7);
   pointer-events: none;
+}
+.vy-art-grain.vy-art-grain-b * {
+  fill: url(#vy-art-grain-b);
 }
 .vy-art-grain * {
   fill: url(#vy-art-grain);
