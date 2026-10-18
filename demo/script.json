@@ -3,6 +3,10 @@
   "agent": "claude",
   "mix": null,
   "keep": 1,
+  "prompt": "~/tallyboard $",
+  "estimates": {
+    "runMinutes": "about 60"
+  },
   "directions": [
     "Tactile imperfection: raw paper, brushstrokes, stitching, ivory and rust",
     "Surreal distortion: impossible proportions, dreamlike light, icy blue",
@@ -40,7 +44,7 @@
         "name": "Joaquin",
         "role": "Variantly"
       },
-      "text": "Hi, I'm Joaquin, the designer behind Variantly. Redesigning a site usually means betting on one direction. If it's wrong, you start over. Variantly is for developers who already use a coding agent, and for designers exploring directions. Your agent builds several complete redesigns at once, each one running as your real site, and you keep the one you like.",
+      "text": "This is Variantly. In the next ten minutes, I'll show you one whole run, including what it costs and how to undo it. I'm Joaquin, and I built Variantly because redesigning a site usually means betting on one direction. If it's wrong, you start over. Here, your agent builds several complete redesigns at once, each one running as your real site, and you keep the one you like.",
       "actions": [
         {
           "goto": "{{site}}"
@@ -77,7 +81,7 @@
         "items": [
           {
             "text": "Set up a run",
-            "on": "set"
+            "on": "setting"
           },
           {
             "text": "Give each variant its own direction",
@@ -85,15 +89,15 @@
           },
           {
             "text": "Compare them on your real site",
-            "on": "compare"
+            "on": "comparing"
           },
           {
             "text": "Keep one, for the whole site",
-            "on": "keep"
+            "on": "keeping"
           }
         ]
       },
-      "text": "In this video, you'll learn how to set up a run, give each variant its own direction, compare the results on your real site, and keep one.",
+      "text": "Here's what we'll cover: setting up a run, giving each variant its own direction, comparing them on your real site, and keeping one.",
       "actions": [
         {
           "wait": 300
@@ -120,7 +124,7 @@
           {
             "label": "Previews",
             "sub": "own dev server",
-            "on": "preview"
+            "on": "preview."
           },
           {
             "label": "Compare",
@@ -130,7 +134,7 @@
           {
             "label": "Keep",
             "sub": "into your tree",
-            "on": "keep"
+            "on": "keep,"
           },
           {
             "label": "Rollout",
@@ -139,7 +143,7 @@
           }
         ]
       },
-      "text": "First, the mental model. Your project stays exactly where it is. Each variant is a separate copy, an isolated git worktree, with its own preview server. You compare the previews side by side. You keep one. And one last pass rolls it out to the rest of the site.",
+      "text": "First, the mental model. Your project stays where it is. Each variant is its own copy: a git worktree on its own branch, a little timeline of your site, with a preview. You compare them side by side, keep one, and a last pass rolls it out to the whole site.",
       "actions": [
         {
           "wait": 300
@@ -165,9 +169,9 @@
       "lower": {
         "name": "Designs by Impeccable",
         "role": "impeccable.style",
-        "from": 18
+        "from": 15
       },
-      "text": "You need two things: Node, and a coding agent you already use. In your project folder, run npx variantly. It opens a wizard in your browser. The design work is done by Impeccable, an open-source design skill for coding agents. One thing to watch: it has to be the command-line agent. Browser builders like Lovable or Bolt can't run on your machine.",
+      "text": "You need two things: Node, and a coding agent you already use. In your project folder, run npx variantly, and a wizard opens in your browser. The design work is done by Impeccable, an open-source design skill. One catch: it has to be the command-line agent, not a browser builder like Lovable or Bolt.",
       "actions": [
         {
           "wait": 7000
@@ -180,6 +184,13 @@
         },
         {
           "wait": 1500
+        },
+        {
+          "spotlight": "#wiz-title",
+          "ms": 2600,
+          "pad": 40,
+          "zoom": true,
+          "optional": true
         },
         {
           "realOnly": true,
@@ -196,13 +207,119 @@
       ]
     },
     {
-      "id": "setup",
+      "id": "stacks",
       "chapter": {
         "n": 3,
+        "title": "Will it work on yours?"
+      },
+      "step": "Will it work on yours?",
+      "terminal": {
+        "capture": "stacks",
+        "per": 0.5,
+        "from": 0.3,
+        "sequence": [
+          {
+            "title": "~/my-next-app",
+            "prompt": "~/my-next-app $",
+            "lines": [
+              "$ npx variantly doctor",
+              "  Next.js  .  →  npx next dev --port {port}"
+            ]
+          },
+          {
+            "title": "~/my-django-site",
+            "prompt": "~/my-django-site $",
+            "lines": [
+              "$ npx variantly doctor",
+              "  Django  .  →  python manage.py runserver 127.0.0.1:{port}"
+            ]
+          },
+          {
+            "title": "~/tallyboard",
+            "prompt": "~/tallyboard $",
+            "lines": [
+              "$ npx variantly doctor",
+              "  Static HTML  .  →  built-in static server on {port}"
+            ]
+          }
+        ]
+      },
+      "text": "Will it work on yours? Here's variantly doctor on a Next.js app, a Django site, and plain HTML. It finds the stack, and the command that serves it, every time. And you can always type your own.",
+      "actions": [
+        {
+          "wait": 300
+        }
+      ]
+    },
+    {
+      "id": "doctor",
+      "step": "Will it work on yours?",
+      "terminal": {
+        "capture": "fail",
+        "per": 0.6,
+        "untilEnd": true,
+        "title": "~/my-site",
+        "prompt": "~/my-site $",
+        "lines": [
+          "$ npx variantly doctor",
+          "✓ node 22.18.0",
+          "✓ git version 2.47.0",
+          "✗ repository ~/my-site (no commits yet)"
+        ]
+      },
+      "text": "Here's a rough edge, on purpose. This folder has no commit yet, so doctor marks it with a cross. Variantly can make that first commit for you, or you fix it and run doctor again.",
+      "actions": [
+        {
+          "wait": 300
+        }
+      ]
+    },
+    {
+      "id": "beginner",
+      "step": "Will it work on yours?",
+      "text": "Not a developer? If you can paste a command, you're set. On variantly.style, there's a walk-me-through prompt. Paste it into any AI chat, and it takes you through it one small step at a time.",
+      "actions": [
+        {
+          "goto": "{{web}}"
+        },
+        {
+          "wait": 1200
+        },
+        {
+          "click": "text=Never used a terminal? Start here",
+          "optional": true
+        },
+        {
+          "spotlight": "role=button[name=\"Copy walk-me-through prompt\"]",
+          "ms": 3200,
+          "pad": 24,
+          "zoom": true,
+          "point": true,
+          "optional": true,
+          "callout": "Paste into any AI chat."
+        },
+        {
+          "wait": 1500
+        },
+        {
+          "goto": "{{app}}"
+        },
+        {
+          "waitFor": "#wiz-title"
+        },
+        {
+          "wait": 800
+        }
+      ]
+    },
+    {
+      "id": "setup",
+      "chapter": {
+        "n": 4,
         "title": "Setup"
       },
       "step": "Setup",
-      "text": "Setup finds your app and checks your agent. Each agent card says whether it's ready, and if it isn't, the fix sits right on the card. I'm using Claude Code. You could switch to Codex, Copilot, Gemini or Cursor, or any model on OpenRouter, and combine them in one run.",
+      "text": "Setup finds your app and checks your agent. Each card says if it's ready, and if not, the fix is right on the card. I'm using Claude Code. You could pick Codex, Copilot, Gemini, Cursor, or any OpenRouter model, and mix them in one run.",
       "actions": [
         {
           "spotlight": "text=/app found/",
@@ -237,7 +354,7 @@
     {
       "id": "combine",
       "step": "Setup",
-      "text": "Why combine agents? Each model has its own design instincts. So you get more genuinely different directions, you see which model designs best for your site, and you can spread the work across accounts you already pay for.",
+      "text": "Why mix them? Each model has its own design instincts. So you get more varied directions, you see which model designs best for your site, and you spread the work across accounts you already pay for. Add --blind, and you won't see who made each one until you've kept it.",
       "actions": [
         {
           "spotlight": "text=How it runs",
@@ -284,11 +401,15 @@
           },
           {
             "text": "Compare which model designs best",
-            "on": "different"
+            "on": "designs"
           },
           {
             "text": "Spread the work across your accounts",
             "on": "accounts"
+          },
+          {
+            "text": "--blind: who made it stays hidden until you keep one",
+            "on": "--blind,"
           }
         ]
       }
@@ -296,11 +417,11 @@
     {
       "id": "make",
       "chapter": {
-        "n": 4,
+        "n": 5,
         "title": "What to make"
       },
       "step": "What to make",
-      "text": "Next, what to make. The quick picks are two, four or six. I'll pick six, then open More settings and step it up to ten, the maximum. I'll let five agents work at a time, so the run happens in two waves. The rarer settings live behind More settings. That's progressive disclosure: the common path stays short, and the detail is there when you need it.",
+      "text": "Next, what to make. The quick picks are two, four or six. I'll pick six, then step it up to ten under More settings, with five agents at a time, so it runs in two waves. The rarer settings stay back there. That's progressive disclosure: the common path stays short.",
       "actions": [
         {
           "spotlight": "text=How many variants?",
@@ -370,7 +491,7 @@
     {
       "id": "directions",
       "chapter": {
-        "n": 5,
+        "n": 6,
         "title": "Your own directions"
       },
       "step": "Your own directions",
@@ -478,7 +599,7 @@
         "untilEnd": 2.5,
         "source": "Curated from the 2026 trend reports by Adobe and Canva, and AW26–27 interiors and surface-design reporting."
       },
-      "text": "Now, your own directions. Every slot starts blank, and blank means Impeccable picks. To pin one, type it in your own words. I'll type the first two slowly. Tactile imperfection: raw paper, brushstrokes and stitching. Then surreal distortion: impossible proportions, dreamlike light. These are the trends I'm watching this winter, from this year's trend reports: human-made texture meeting digital surrealism. One trend per variant. You can mix, too: leave any slot blank, and Impeccable still picks that one.",
+      "text": "Now, your own directions. Every slot starts blank, and blank means Impeccable picks. To pin one, type it in your own words. Tactile imperfection: raw paper, brushstrokes, stitching. Surreal distortion: impossible proportions, dreamlike light. These are the trends I'm watching this winter: human-made texture meeting digital surrealism. One per variant, and any slot you leave blank, Impeccable picks.",
       "actions": [
         {
           "spotlight": "text=/Your own directions/",
@@ -561,11 +682,11 @@
     {
       "id": "brief",
       "chapter": {
-        "n": 6,
+        "n": 7,
         "title": "Review and go"
       },
       "step": "Review and go",
-      "text": "A few words about your site, and what must stay. Here: the prices, the sign-up button and the FAQ. Agents change presentation, never behaviour. Then the review. I designed this screen to show exactly what will run and what it costs, because trust matters when an AI agent edits your code. Ten variants, each with a review pass, is twenty sessions on your own account. Make ten variants.",
+      "text": "A few words about your site, and what must stay: here, the prices, the sign-up button and the FAQ. Then the review. I designed this screen to show exactly what will run, and what it costs. Variantly is free and open source; each variant is one session on your own plan, plus one for its review. Ten variants, twenty sessions. Trying it out? Start with four.",
       "actions": [
         {
           "fill": "role=textbox[name=/Who is it for/]",
@@ -595,20 +716,23 @@
         },
         {
           "spotlight": "text=/Uses \\d+ sessions|Nothing is spent/",
-          "ms": 3200,
-          "pad": 20
+          "ms": 4200,
+          "pad": 20,
+          "zoom": true,
+          "callout": "The cost, before anything runs."
         },
         {
           "click": "role=button[name=/^Make \\d+ variants?$/]",
           "zoom": true,
-          "sound": "whoosh"
+          "sound": "whoosh",
+          "mark": "runStart"
         }
       ]
     },
     {
       "id": "worktrees",
       "chapter": {
-        "n": 7,
+        "n": 8,
         "title": "The run"
       },
       "step": "The run",
@@ -639,7 +763,7 @@
           }
         ]
       },
-      "text": "Each variant runs in an isolated git worktree, outside your project, so your main branch is never touched. Ten worktrees, ten dev servers, and five agents at a time.",
+      "text": "Can this break your site? No. Each variant runs in an isolated git worktree, outside your project, so your main branch is never touched. And agents change presentation, never behaviour. Ten worktrees, ten dev servers, five agents at a time.",
       "actions": [
         {
           "waitFor": "body[data-view=\"board\"]"
@@ -652,7 +776,7 @@
     {
       "id": "agent",
       "step": "The run",
-      "text": "The board shows each variant's direction, progress and time, live. Let's follow one. It reads your site and builds its direction. Then it opens its variant in a real browser, at desktop and phone width, and fixes what it sees. A second pass critiques and audits it, without changing the direction.",
+      "text": "The board shows each variant's direction, progress and time, live. Let's follow one. It reads your site, builds its direction, then opens it in a real browser, at desktop and phone width, and fixes what it sees. A second pass critiques and audits it, keeping the direction.",
       "actions": [
         {
           "spotlight": "role=columnheader[name=\"Direction\"]",
@@ -674,13 +798,14 @@
         },
         {
           "spotlight": ".board-detail",
-          "ms": 2400,
+          "ms": 4500,
           "pad": 16,
           "optional": true,
-          "callout": "Its current step, beside the agent's log."
+          "callout": "Its current step, beside the agent's log.",
+          "zoom": true
         },
         {
-          "wait": 6500
+          "wait": 2500
         }
       ]
     },
@@ -688,22 +813,25 @@
       "id": "lapse",
       "step": "The run",
       "timelapse": true,
-      "hold": 8000,
-      "text": "",
+      "hold": 9000,
+      "text": "Real time, for the record: the whole run took {{runMinutes}} minutes, start to finish, so here's the rest, sped up.",
       "actions": [
         {
           "waitApi": "allDone",
-          "timeoutMin": 180
+          "timeoutMin": 180,
+          "mark": "runEnd"
         },
         {
           "wait": 1500
         }
-      ]
+      ],
+      "realHead": 3500,
+      "clockFrom": "runStart"
     },
     {
       "id": "retry",
       "step": "The run",
-      "text": "If a variant fails, the board says why, in the agent's own words, and you retry just that one.",
+      "text": "If a variant fails, the board says why, in the agent's own words, and you retry just that one. And if one comes out broken, like a layout that falls apart on a phone, tell the agent to fix it, retry it, or just don't keep it.",
       "actions": [
         {
           "click": "role=button[name=\"Show the board\"]",
@@ -732,11 +860,11 @@
     {
       "id": "compare",
       "chapter": {
-        "n": 8,
+        "n": 9,
         "title": "Compare"
       },
       "step": "Compare",
-      "text": "Then, compare. This is your real site running, not screenshots, so you judge the real thing: real type, real layout, real interactions. Drag the divider for a before and after.",
+      "text": "Then, compare. This is your real site running, not screenshots, so you're judging the real thing: real type, real layout, real interactions. Drag the divider for a before and after.",
       "actions": [
         {
           "waitFor": "body[data-view=\"compare\"]"
@@ -763,7 +891,7 @@
       "id": "walk",
       "step": "Compare",
       "afterTake": true,
-      "text": "Ten trends, ten sites. One: tactile imperfection, paper grain and stitched rules. Two: surreal distortion, cold light and impossible scale. Three: cinematic drama, deep shadow and oxblood. Four: maximalist collage, cut-outs that still read. Five: retro-tech, an early desktop with modern type. Six: expressive typography, the type is the event. Seven: warm eclecticism, wood and mixed eras. Eight: neo-folk craft, one named tradition. Nine: soft chrome and glass. Ten: quiet organic minimalism, space and earth tones. S is side by side, both panes labelled, on one scrollbar. M is the phone layout.",
+      "text": "One: tactile imperfection, paper grain and stitched rules. Two: surreal distortion, cold light and impossible scale. Three: cinematic drama, deep shadow and oxblood. Four: maximalist collage, cut-outs that still read. Five: retro-tech, an early desktop with modern type. Six: expressive typography, where the type is the event. Seven: warm eclecticism, wood and mixed eras. Eight: neo-folk craft, one named tradition. Nine: soft chrome and glass. Ten: quiet organic minimalism, space and earth tones. S puts them side by side, both panes labelled, on one scrollbar. M is the phone layout.",
       "actions": [
         {
           "key": "2"
@@ -934,7 +1062,7 @@
           }
         ]
       },
-      "text": "Here's how I decide. First, does it still read clearly? Second, does it fit the people who use the site? And third, would it hold up on every other page? Today, I'll keep tactile imperfection.",
+      "text": "Here's how I decide. First, does it still read clearly? Second, does it fit the people who use the site? And third, would it hold up on every other page? Today, I'm keeping tactile imperfection.",
       "actions": [
         {
           "wait": 300
@@ -944,7 +1072,7 @@
     {
       "id": "scores",
       "step": "Compare",
-      "text": "Every variant is scored against your original, on your machine, with axe-core and Lighthouse. Only the change is shown: how many accessibility points it gained, and how many axe issues it fixed. That's evidence, not just a look.",
+      "text": "Every variant is scored against your original, right on your machine, with axe-core and Lighthouse. You only see the change: how many accessibility points it gained, and how many axe issues it fixed. So it's evidence, not just a look.",
       "actions": [
         {
           "key": "i"
@@ -955,7 +1083,8 @@
         {
           "spotlight": "text=/axe-core and Lighthouse/",
           "ms": 2400,
-          "pad": 120
+          "pad": 120,
+          "zoom": true
         },
         {
           "spotlight": "text=/fixed/",
@@ -975,10 +1104,28 @@
       ]
     },
     {
+      "id": "again",
+      "step": "Compare",
+      "terminal": {
+        "untilEnd": true,
+        "per": 1.2,
+        "lines": [
+          "$ npx variantly clean",
+          "Removed variantly worktrees, branches and state for this project."
+        ]
+      },
+      "text": "And if you hate all ten? Run it again with a sharper brief. Nothing is kept unless you press Keep, and npx variantly clean removes every worktree and branch it made.",
+      "actions": [
+        {
+          "wait": 300
+        }
+      ]
+    },
+    {
       "id": "chat",
       "pending": "#81 has merged; still needs a chatDone wait in record.mjs, and about 10 s of runtime. Drop this flag once both are in.",
       "chapter": {
-        "n": 9,
+        "n": 10,
         "title": "Change it"
       },
       "step": "Change it",
@@ -1013,7 +1160,7 @@
     {
       "id": "keep",
       "chapter": {
-        "n": 10,
+        "n": 11,
         "title": "Keep"
       },
       "step": "Keep",
@@ -1039,7 +1186,7 @@
       "id": "rollout",
       "step": "Keep",
       "timelapse": true,
-      "hold": 4000,
+      "hold": 5000,
       "text": "",
       "actions": [
         {
@@ -1049,18 +1196,20 @@
         {
           "wait": 1000
         }
-      ]
+      ],
+      "realHead": 1500
     },
     {
       "id": "sitewide",
       "step": "Keep",
       "terminal": {
         "diffstat": true,
+        "branches": true,
         "after": [
           "$ npx variantly clean"
         ]
       },
-      "text": "Variantly applies it to your working tree, merging with anything you've changed since. Nothing is committed. The other variants stay as branches until you clean them up.",
+      "text": "It lands in your working tree, merged with anything you've changed since. The last commit is still yours: nothing is committed. So you review it like any other change, and undo it the same way. You keep one timeline; the others stay as branches until you run npx variantly clean.",
       "actions": [
         {
           "spotlight": "text=/Rolled out site-wide/",
@@ -1096,7 +1245,7 @@
     {
       "id": "handoff",
       "step": "Keep",
-      "text": "Then hand off to your own agent. Open your site, and this prompt names its local address, the design notes to follow, and what to check. Paste it into any agent to finish the job.",
+      "text": "Then hand off to your own agent. Open your site, and this prompt gives it the local address, the design notes, and what to check.",
       "actions": [
         {
           "goto": "{{app}}"
@@ -1161,7 +1310,7 @@
     {
       "id": "website",
       "chapter": {
-        "n": 11,
+        "n": 12,
         "title": "Wrap"
       },
       "step": "Wrap",
@@ -1185,7 +1334,7 @@
           },
           {
             "label": "Blocking time",
-            "note": "TVA concept, 4× CPU throttle",
+            "note": "Amber Terminal concept, 4× CPU throttle",
             "before": "3,790 ms",
             "after": "2,291 ms",
             "on": "blocking"
@@ -1194,7 +1343,7 @@
         "source": "Mobile performance pass, PR #83, prompted by an iPhone screen recording of the lag.",
         "fromOn": "mobile"
       },
-      "text": "The website gets the same care. Its title morphs between typefaces, in 2D and 3D, across twenty concepts, from Bauhaus to Riso Poster to Candy 3D. Its demo has twenty redesigns of one shop, plus a Winter 2026 run of today's ten trends. And a mobile performance pass cut its transfer, font requests and blocking time on phones.",
+      "text": "The website got the same care: twenty title concepts, twenty redesigns of one shop plus a Winter 2026 run, and a mobile pass that cut its transfer, font requests and blocking time on phones.",
       "actions": [
         {
           "goto": "{{web}}"
@@ -1269,7 +1418,7 @@
             "on": "isolated"
           },
           {
-            "text": "Pin a direction per variant, or combine agents",
+            "text": "Pin a direction per variant, or mix agents",
             "on": "direction,"
           },
           {
@@ -1282,7 +1431,7 @@
           }
         ]
       },
-      "text": "So, to recap. Each variant is an isolated copy of your project. You can pin a direction per variant, and combine agents. You compare them on your real site, with real scores. And you keep one, and it rolls out to the whole site.",
+      "text": "To recap: each variant is an isolated copy, its own branch of your site. You can pin a direction per variant, and mix agents. You compare on your real site, with real scores. And you keep one, and it rolls out site-wide.",
       "actions": [
         {
           "wait": 300
@@ -1295,10 +1444,29 @@
       "cta": {
         "command": "npx variantly",
         "url": "variantly.style",
-        "credit": "Designs by Impeccable · impeccable.style"
+        "credit": "Free & open source (MIT) · Designs by Impeccable",
+        "fromOn": "try",
+        "stamp": "Variant record VY-001 · kept"
       },
-      "text": "I designed and directed Variantly with Claude Code and Impeccable: I set the direction, I made the calls, and I tested it on a real iPhone. It runs entirely on your machine, with the agent you already use. No account, and no server of ours. To try it, run npx variantly in your project. The docs are at variantly.style. Thanks for watching.",
+      "text": "I designed and directed Variantly with Claude Code and Impeccable: I set the direction, made the calls, and tested it on a real iPhone. It's free and open source, and it runs on your machine. No account, no server of ours. To try it, run npx variantly in your project. Docs at variantly.style. Thanks for watching.",
       "actions": [
+        {
+          "goto": "{{site}}"
+        },
+        {
+          "wait": 1500
+        },
+        {
+          "scroll": 1400,
+          "ms": 6000
+        },
+        {
+          "wait": 1000
+        },
+        {
+          "scroll": 0,
+          "ms": 3000
+        },
         {
           "wait": 500
         }

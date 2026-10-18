@@ -1,0 +1,33 @@
+/* Phone edition: Swiss International poster. */
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;700;900&display=swap");
+:root{color-scheme:light;--paper:#fff;--ink:#111;--mute:#4a4a4a;--red:#d40019;--red-ink:#b80016;--on-red:#fff;--hair:#e6e6e6;--field:#fff}
+html[data-theme="dark"]{color-scheme:dark;--paper:#111;--ink:#f2f2f2;--mute:#b5b5b5;--red:#ff3a46;--red-ink:#ff5b65;--on-red:#111;--hair:#262626;--field:#1a1a1a}
+body{background:var(--paper);color:var(--ink);font:400 16px/1.45 "Inter Tight","Helvetica Neue",Arial,sans-serif}
+a{color:var(--ink)}
+:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.b-head{border-bottom:6px solid var(--ink)}
+.logo{font-weight:900;font-size:20px;line-height:1;letter-spacing:-.02em}
+.b-hero{justify-content:flex-end;padding-bottom:36px}
+.b-hero::after{content:"";position:absolute;left:0;bottom:0;width:50%;height:14px;background:var(--red)}
+.kicker{font-weight:900;font-size:120px;line-height:.8;letter-spacing:-.06em;color:var(--red)}
+h1{font-weight:700;font-size:40px;line-height:.98;letter-spacing:-.035em}
+.intro{color:var(--mute)}
+.btn,button{background:var(--ink);color:var(--paper);border:0;border-radius:0;padding:12px 20px;font:700 15px "Inter Tight",sans-serif;text-decoration:none}
+.btn{background:var(--red);color:var(--on-red)}
+.link{font-weight:500;text-underline-offset:4px;text-decoration-thickness:2px}
+.b-sec{font-weight:700;font-size:18px;border-top:2px solid var(--ink);justify-content:flex-start;padding-top:12px}
+.b-feat{display:grid;grid-template-columns:76px 1fr;grid-template-rows:auto auto;align-content:center;column-gap:12px;border-bottom:1px solid var(--hair)}
+.big{grid-row:1/3;font-weight:900;font-size:104px;line-height:.8;letter-spacing:-.06em}
+.b-feat:nth-of-type(1) .big{color:var(--red)}
+.b-feat h3{font-size:19px;font-weight:700;align-self:end}
+.b-feat p{color:var(--mute);font-size:15px}
+.b-item{border-bottom:1px solid var(--ink)}
+.b-item .art{color:var(--ink);padding:40px 56px}
+.i1 .art{color:var(--red)}
+.b-item h3{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.desc{color:var(--mute)}
+.price{font-weight:900;font-size:44px;line-height:1;letter-spacing:-.05em}
+.b-news label{font-size:14px;font-weight:700}
+.b-news input{background:var(--field);color:var(--ink);border:2px solid var(--ink);padding:0 12px;border-radius:0}
+.b-foot{border-top:6px solid var(--ink);font-size:14px}
+.small{font-size:12px;color:var(--mute)}
