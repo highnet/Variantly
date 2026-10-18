@@ -5,30 +5,34 @@ import { useRef, type MouseEvent } from 'react';
 
 import { Button } from '@/components/ui/Button';
 import { CONCEPT_BY_ID } from '@/concepts';
+import { burstStyle, type BurstStyle } from '@/lib/burstStyle';
 import { EASE } from '@/lib/motion';
 import { lensFor } from '@/lib/lensPair';
 import { calmMotion } from '@/lib/prefs';
 import { currentVariant, pressOrigin, setVariant, useConcept } from '@/lib/variant';
 
 const SPARKS = 26;
-const GLYPHS = ['✦', '✶', '●', '■', '▲'];
 
 /*
- * A burst of confetti and sparks from the word, in the concept's colours,
- * plus a ring. It plays out before the page wipes to the next concept (a
+ * A burst of confetti and sparks from the word, in the concept's colours and
+ * its own shapes (lib/burstStyle.ts), plus a ring. It plays out before the page wipes to the next concept (a
  * view transition would freeze it in the old snapshot).
  */
-export const burst = (x: number, y: number, sparks = SPARKS) => {
+export const burst = (x: number, y: number, sparks = SPARKS, look?: BurstStyle) => {
   const css = getComputedStyle(document.documentElement);
-  const colours = ['--alert', '--title', '--board-ok', '--alert', '--hero-ink']
-    .map((v) => css.getPropertyValue(v).trim())
-    .filter(Boolean);
+  const style = look ?? burstStyle();
+  const colours =
+    style.colours ??
+    ['--alert', '--title', '--board-ok', '--alert', '--hero-ink']
+      .map((v) => css.getPropertyValue(v).trim())
+      .filter(Boolean);
   const layer = document.createElement('div');
   layer.className = 'vy-burst';
   document.body.appendChild(layer);
 
   const ring = document.createElement('span');
   ring.className = 'vy-burst-ring';
+  ring.dataset.shape = style.ring;
   ring.style.left = `${x}px`;
   ring.style.top = `${y}px`;
   ring.style.borderColor = colours[0] ?? 'currentColor';
@@ -44,7 +48,8 @@ export const burst = (x: number, y: number, sparks = SPARKS) => {
   for (let i = 0; i < sparks; i++) {
     const s = document.createElement('span');
     s.className = 'vy-spark';
-    s.textContent = GLYPHS[i % GLYPHS.length];
+    s.textContent = style.glyphs[i % style.glyphs.length];
+    if (style.font) s.style.fontFamily = style.font;
     s.style.left = `${x}px`;
     s.style.top = `${y}px`;
     s.style.color = colours[i % colours.length] ?? 'currentColor';
