@@ -11,7 +11,13 @@ import {
   shownIds,
   type ConceptId,
 } from '@/concepts';
-import { heroOrigin, mountSwapFrame, openDoor, swapDuration, type SwapOrigin } from '@/lib/lensSwap';
+import {
+  heroOrigin,
+  mountSwapFrame,
+  openDoor,
+  swapDuration,
+  type SwapOrigin,
+} from '@/lib/lensSwap';
 import { DUR, EASE } from '@/lib/motion';
 import { perfTier } from '@/lib/perfTier';
 import { calmMotion } from '@/lib/prefs';

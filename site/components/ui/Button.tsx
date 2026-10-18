@@ -46,6 +46,8 @@ const buttonVariants = cva(
         pill: 'border border-rule bg-surface text-ink normal-case tracking-normal font-sans hover:border-ink',
         'pill-slate':
           'border border-slate-line bg-ink text-surface normal-case tracking-normal font-sans hover:bg-slate-raised',
+        // The Lens's doorway controls: an amber plate on the slab.
+        lens: 'bg-lens-frame text-lens-ink normal-case tracking-normal font-sans font-semibold hover:bg-surface hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-lens-frame active:translate-y-px',
         // The before/after divider's handle.
         grip: 'bg-ink text-surface shadow-grip hover:scale-105 focus-visible:outline-alert cursor-ew-resize',
       },

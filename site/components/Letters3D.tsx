@@ -8,6 +8,7 @@ import { FontLoader, type Font } from 'three/examples/jsm/loaders/FontLoader.js'
 
 import type { VariantKey } from '@/components/backdrop/variants';
 import { glTier, markFallback } from '@/lib/glTier';
+import { attachLens, lensHoldsTitle, type LensPass } from '@/lib/lens3d';
 import {
   blendMorph,
   loadMorph,
@@ -169,6 +170,8 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
         // Only seekreel captures need the frame kept after compositing.
         preserveDrawingBuffer: seek !== null,
         powerPreference: phone ? 'low-power' : 'default',
+        // The Lens clips its doorway with the stencil (lib/lens3d).
+        stencil: true,
       });
     } catch {
       probes.forEach(({ p }) => p.remove());
@@ -236,11 +239,13 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
     const group = new THREE.Group();
     scene.add(group);
 
-    // A one-off paint (resize, new look): full density, fresh shadow.
+    // A one-off paint (resize, new look): full density, fresh shadow. The
+    // Lens draws its doorway in the same pass when it is up.
+    let lens: LensPass | null = null;
     const paint = () => {
       ratio(fullRatio);
       renderer.shadowMap.needsUpdate = true;
-      renderer.render(scene, camera);
+      if (!lens?.render()) renderer.render(scene, camera);
     };
 
     // Pause for real (no idle rAF) when the tab hides or the card leaves the screen.
@@ -296,6 +301,7 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
     // transition, so following the pointer costs no WebGL frames.
     if (!phone && !still && seek === null) {
       const move = (e: PointerEvent) => {
+        if (lensHoldsTitle()) return;
         const x = (e.clientX / innerWidth - 0.5) * 14;
         const y = (e.clientY / innerHeight - 0.5) * -10;
         el.style.transform = `perspective(900px) rotateX(${y.toFixed(2)}deg) rotateY(${x.toFixed(2)}deg)`;
@@ -380,6 +386,25 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
         };
       });
       const phase: MorphPhase = { step: 0, e: 0 };
+      if (seek === null) {
+        lens = attachLens({
+          renderer,
+          scene,
+          camera,
+          el,
+          word,
+          letters,
+          backdrop,
+          final: FINAL,
+          em: EM,
+          depth: DEPTH,
+          bevel: BEVEL,
+          phone,
+          unit: () => unit,
+          paint,
+        });
+        cleanups.push(() => lens?.dispose());
+      }
       const mpose: MorphPose = { k: 1, y: 0 };
 
       // Lay the word out over the 2D one. Card px map to scene units at the

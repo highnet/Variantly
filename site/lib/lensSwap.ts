@@ -52,9 +52,9 @@ type PressLike = { clientX: number; clientY: number; detail: number; currentTarg
 // detail 0) the centre of the focused control.
 export const pressOrigin = (e: PressLike): SwapOrigin => {
   if (e.detail > 0 && (e.clientX || e.clientY)) return { x: e.clientX, y: e.clientY };
-  const el = (e.currentTarget instanceof Element ? e.currentTarget : document.activeElement) as
-    | Element
-    | null;
+  const el = (
+    e.currentTarget instanceof Element ? e.currentTarget : document.activeElement
+  ) as Element | null;
   const r = el?.getBoundingClientRect();
   return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : heroOrigin();
 };

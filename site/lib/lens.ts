@@ -43,6 +43,8 @@ export type LensLive = {
   // The lens hero's 2D word (inside the Lens's shadow root), laid out in the
   // lens concept: where the 3D pass places and colours its letters.
   word: HTMLElement | null;
+  // The card's top-left on screen (viewport px), kept by the UI.
+  card: { left: number; top: number };
 };
 
 export const lensLive: LensLive = {
@@ -58,6 +60,7 @@ export const lensLive: LensLive = {
   gl: false,
   scene: false,
   word: null,
+  card: { left: 0, top: 0 },
 };
 
 const listeners = new Set<() => void>();

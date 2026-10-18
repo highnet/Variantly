@@ -80,9 +80,7 @@ const f = (n: number) => Math.round(n * 10) / 10;
 
 // SVG / CSS path() data for closed rings, offset by (ox, oy).
 export const ringsPath = (rings: Pt[][], ox = 0, oy = 0) =>
-  rings
-    .map((ring) => `M${ring.map(([x, y]) => `${f(x + ox)} ${f(y + oy)}`).join('L')}Z`)
-    .join('');
+  rings.map((ring) => `M${ring.map(([x, y]) => `${f(x + ox)} ${f(y + oy)}`).join('L')}Z`).join('');
 
 // A full-width scanline dropout as a ring (a hole under evenodd).
 export const dropoutRing = (w: number, y0: number, y1: number): Pt[] => [

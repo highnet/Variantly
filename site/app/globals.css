@@ -24,6 +24,7 @@
   --lens-frame: #ffb648;
   --lens-edge: #a8611a;
   --lens-light: #ffc56b;
+  --lens-ink: #2a1600;
 }
 
 /* Dark theme: the light grounds go dark and ink goes light. The slate board
@@ -122,6 +123,9 @@
 }
 
 @theme inline {
+  --color-lens-frame: var(--lens-frame);
+  --color-lens-edge: var(--lens-edge);
+  --color-lens-ink: var(--lens-ink);
   --color-ink: var(--ink);
   --color-slate: var(--slate);
   --color-slate-raised: var(--slate-raised);
@@ -1364,3 +1368,55 @@ main > div p { line-height: 1.65; }
   :root.vy-reveal-ready .vy-rv,
   :root.vy-reveal-ready .vy-rv-list > * { opacity: 1 !important; transform: none !important; }
 }
+
+/* ---- The Lens: a doorway that shows the hero in another concept ---------- */
+/* components/Lens.tsx. A thin frosted-amber slab: a crisp front frame, a side
+   edge offset by its depth, and (only here on the site) a warm light: an inner
+   luminance, a halo and a spill on the ground below. All small layers moved
+   with transforms; the light is plain gradients (no filter). Calm and the low
+   perf tier get the solid frame only (no data-glow). */
+.vy-lens:not([data-shown]),
+.vy-lens-frame:not([data-shown]) { visibility: hidden; }
+.vy-lens[data-over] { z-index: 3; }
+.vy-lens-port,
+.vy-lens-frame,
+.vy-lens-glow { will-change: transform; }
+.vy-lens-front { stroke: var(--lens-frame); stroke-width: 2.5px; stroke-linejoin: round; }
+.vy-lens-frame:not([data-glow]) .vy-lens-lum,
+.vy-lens:not([data-glow]) .vy-lens-glow { display: none; }
+.vy-lens-glow {
+  background:
+    radial-gradient(closest-side, color-mix(in srgb, var(--lens-light) 30%, transparent), transparent),
+    radial-gradient(50% 9% at 50% calc(100% - 22px), color-mix(in srgb, var(--lens-light) 42%, transparent), transparent);
+  /* The halo sits a little wider than the slab; the spill on its "floor". */
+  margin: -20px 0 0 -20px;
+  padding: 20px;
+  box-sizing: content-box;
+}
+.vy-lens-label {
+  position: absolute;
+  left: 28px;
+  top: 28px;
+  translate: 0 calc(-100% - 4px);
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: var(--lens-frame);
+  color: var(--lens-ink);
+  font: 600 10px/1.3 var(--font-mono, ui-monospace, monospace);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.vy-lens-hint {
+  position: absolute;
+  left: 0;
+  top: calc(var(--door-h) + 100% + 14px);
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--lens-ink) 82%, transparent);
+  color: var(--lens-frame);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+.vy-lens-frame[data-peek] .vy-lens-label { display: none; }
+.vy-lens-handle { will-change: transform; }

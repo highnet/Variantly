@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
+import { Lens } from '@/components/Lens';
 import { canWebGL } from '@/lib/glTier';
 import {
   blendMorph,
@@ -401,6 +402,8 @@ export const VariantTitle = () => {
           onFail={onFail}
         />
       )}
+      {/* The Lens: a doorway over the title showing another concept. */}
+      <Lens />
     </div>
   );
 };
