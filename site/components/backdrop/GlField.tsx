@@ -102,16 +102,38 @@ const grainPass = (amount: number, chroma: number) => {
  */
 export const GlField = ({ concept, theme, grain, chroma }: GlFieldProps) => {
   const host = useRef<HTMLDivElement>(null);
-  // The scene on screen. A concept or theme change builds the next one beside
-  // it and retires this one only once the next has drawn and faded in, so a
-  // swap never shows an empty frame.
+  // The scene on screen. A theme change builds the next one beside it and
+  // retires this one only once the next has drawn and faded in, so the swap
+  // never shows an empty frame. A concept change instead fades the old scene
+  // out at once: its shapes belong to the previous concept and must not sit
+  // over the new concept's art while the next scene loads.
   const shown = useRef<(() => void) | null>(null);
+  const shownConcept = useRef(concept);
 
   useEffect(() => {
     const el = host.current;
     if (!el) return;
     let dead = false;
     const seek = seekTime();
+    if (shown.current && shownConcept.current !== concept) {
+      const retire = shown.current;
+      shown.current = null;
+      const old = [...el.querySelectorAll('canvas')];
+      if (seek !== null || calmMotion()) retire();
+      else {
+        const fades = old.map((c) =>
+          c.animate([{ opacity: 1 }, { opacity: 0 }], {
+            duration: OUT_MS,
+            easing: 'ease-out',
+            fill: 'forwards',
+          }),
+        );
+        void Promise.all(fades.map((f) => f.finished))
+          .catch(() => {})
+          .then(retire);
+      }
+    }
+    shownConcept.current = concept;
     void CONCEPT_LOADERS[concept]
       .scene()
       .then(({ scene }) => {
@@ -147,6 +169,8 @@ export const GlField = ({ concept, theme, grain, chroma }: GlFieldProps) => {
 // load and (faster, the wipe already moves) on every concept or theme swap.
 const FADE_MS = 800;
 const SWAP_FADE_MS = 400;
+// How fast the previous concept's scene leaves on a concept change.
+const OUT_MS = 160;
 
 const run = (
   el: HTMLDivElement,

@@ -1,18 +1,17 @@
-import { Piece } from '@/components/backdrop/artKit';
+/* t · Stone & Linen: linen (the page ground in concept.css), the light of a
+   four-pane window drifting across it as the sun moves, and one pebble at
+   rest. Nothing else moves (24s, transform only). */
+const PANES = [0, 1, 2, 3];
 
-/* t · Stone & Linen: placeholder composition (three drifting shapes). */
-const Placeholder = () => (
+const Linen = () => (
   <>
-    <Piece className="top-[10%] left-[-8%] size-[40vmax]" float={0}>
-      <circle cx="50" cy="50" r="42" className="fill-(--art-1)" fillOpacity="0.55" />
-    </Piece>
-    <Piece className="top-[-4%] right-[-8%] size-[30vmax]" float={1}>
-      <rect x="12" y="12" width="76" height="76" className="fill-(--art-2)" fillOpacity="0.5" />
-    </Piece>
-    <Piece className="top-[56%] left-[46%] size-[24vmax] max-sm:hidden" float={2}>
-      <path d="M50,8 L94,90 L6,90Z" className="fill-(--art-3)" fillOpacity="0.5" />
-    </Piece>
+    <div className="vy-t-window absolute top-[6%] left-[-8%] h-[64vh] w-[52vw] max-sm:top-[18%] max-sm:h-[44vh] max-sm:w-[90vw]">
+      {PANES.map((p) => (
+        <i key={p} />
+      ))}
+    </div>
+    <div className="vy-t-pebble absolute top-[47%] right-[12%] h-[4.6vmax] w-[6.6vmax] rotate-[-8deg] max-sm:top-[59%] max-sm:right-[16%]" />
   </>
 );
 
-export default Placeholder;
+export default Linen;

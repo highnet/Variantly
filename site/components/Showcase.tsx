@@ -13,6 +13,7 @@ import {
 
 import { CommandCopy } from '@/components/CommandCopy';
 import { FreshLook } from '@/components/FreshLook';
+import { GlossaryTip } from '@/components/GlossaryTip';
 import { PageSkeleton } from '@/components/PageSkeleton';
 import { PromptCopy } from '@/components/PromptCopy';
 import { RollingNumber } from '@/components/RollingNumber';
@@ -161,10 +162,13 @@ const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
   return (
     <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
       <span className="text-steel-on-slate text-[10px] tracking-[0.08em] uppercase">{label}</span>
-      {/* Only the change against the original: nobody reads the new value. */}
+      {/* Only the change against the original: nobody reads the new value.
+          A fixed width, so a change from "+9" to "+13" (or "same") never
+          resizes the dock, which is centred and would slide sideways. */}
       <span
         className={cn(
-          'text-[15px] font-bold tabular-nums',
+          'inline-block text-left text-[15px] font-bold tabular-nums',
+          lowerIsBetter ? 'min-w-[8ch]' : 'min-w-[4ch]',
           diff === 0 ? 'text-surface' : better ? 'text-ok-on-slate' : 'text-fail-on-slate',
         )}
       >
@@ -602,7 +606,16 @@ const Showcase = () => {
   useEffect(() => {
     const el = stage.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => placeAt(pos.current));
+    // The line's tilt: --lean at the top and bottom over the stage's height.
+    const tilt = () => {
+      const lean = parseFloat(getComputedStyle(el).getPropertyValue('--lean')) || 0;
+      el.style.setProperty('--lean-a', `${Math.atan2(2 * lean, el.clientHeight || 1)}rad`);
+    };
+    tilt();
+    const ro = new ResizeObserver(() => {
+      tilt();
+      placeAt(pos.current);
+    });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
@@ -847,13 +860,18 @@ const Showcase = () => {
               Your AI coding agent redesigns your{' '}
               <strong className="text-surface">actual site</strong>{' '}
               <strong className="text-surface">in parallel</strong>. Compare{' '}
-              <strong className="text-surface">live versions</strong>, keep the best, and{' '}
+              <strong className="text-surface">
+                <GlossaryTip term="live">live versions</GlossaryTip>
+              </strong>
+              , <GlossaryTip term="keep">keep the best</GlossaryTip>, and{' '}
               <strong className="text-surface">review the code</strong> before it ships.
             </p>
             <ul className="text-steel-on-slate m-0 grid list-none gap-1.5 p-0 text-[15px] leading-snug">
               <li>
-                <span className="text-surface font-semibold">Real code:</span> each design is a git
-                branch in its own worktree, made by the agent you already use.
+                <span className="text-surface font-semibold">Real code:</span> each design is a git{' '}
+                <GlossaryTip term="branch" /> in its own{' '}
+                <GlossaryTip term="worktree">worktree</GlossaryTip>, made by the agent you already
+                use.
               </li>
               <li>
                 <span className="text-surface font-semibold">Your call:</span> nothing touches your
@@ -973,8 +991,8 @@ const Showcase = () => {
                             : r.variants.length}{' '}
                         ways
                       </strong>{' '}
-                      by Claude Code. <strong className="text-surface">Drag the line</strong> or
-                      pick a number.
+                      by <GlossaryTip term="claude-code" />.{' '}
+                      <strong className="text-surface">Drag the line</strong> or pick a number.
                     </p>
                   </div>
                 ))}
@@ -997,7 +1015,7 @@ const Showcase = () => {
           aria-label={`Before: the original Oak & Iron page. After: ${vname(selected)}, ${current.direction}`}
           onClick={goLive}
           className={cn(
-            'group/stage relative isolate h-[62svh] min-h-[380px] overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]',
+            'group/stage vy-split relative isolate h-[62svh] min-h-[380px] overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]',
           )}
         >
           <PageSkeleton
@@ -1171,10 +1189,14 @@ const Showcase = () => {
             <div className="bg-ink/70 group-hover/track:bg-ink group-active/track:bg-ink absolute inset-x-0.5 top-[var(--thumb-top,0px)] h-[var(--thumb-h,40px)] rounded-full shadow-[0_0_0_1px_rgb(255_255_255/.5)] transition-colors" />
           </div>
 
-          {/* The divider leans slightly; the clip, its shadow and the line share one
-            edge in globals.css (.vy-split-*), so they meet at any height. */}
-          <div className="vy-split-shade pointer-events-none absolute inset-0 z-20" />
-          <div className="vy-split-line pointer-events-none absolute inset-0 z-20" />
+          {/* The divider leans slightly: the panes' clip (.vy-split-clip) and
+            this line share one lean, the line tilted by --lean-a so the two
+            meet at any height. Two-tone with a soft shadow (.vy-divider), so
+            it reads over any page. */}
+          <div
+            aria-hidden="true"
+            className="vy-divider pointer-events-none absolute top-1/2 left-0 z-20 h-[120%] translate-x-[var(--split-x,50vw)] -translate-y-1/2 rotate-[var(--lean-a,0rad)]"
+          />
           <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-0 translate-x-[var(--split-x,50vw)]">
             <Button
               ref={grip}
@@ -1247,10 +1269,10 @@ const Showcase = () => {
               <ChevronLeft className="size-4" aria-hidden="true" />
             </Button>
             <Button
-              variant="cell"
-              size="cell"
+              variant="outline-slate"
+              size="icon"
               aria-label="Previous redesign"
-              className="sm:hidden"
+              className="size-11 rounded-full sm:hidden [&_svg]:size-5"
               onClick={() => step(-1)}
             >
               <ChevronLeft className="size-4" aria-hidden="true" />
@@ -1310,10 +1332,10 @@ const Showcase = () => {
               {String(position).padStart(2, '0')} / {total}
             </span>
             <Button
-              variant="cell"
-              size="cell"
+              variant="outline-slate"
+              size="icon"
               aria-label="Next redesign"
-              className="sm:hidden"
+              className="size-11 rounded-full sm:hidden [&_svg]:size-5"
               onClick={() => step(1)}
             >
               <ChevronRight className="size-4" aria-hidden="true" />
@@ -1340,7 +1362,16 @@ const Showcase = () => {
                 ) : (
                   <Play className="size-3.5" aria-hidden="true" />
                 )}
-                {auto ? 'Pause tour' : 'Play tour'}
+                {/* Both labels share one cell, so the button (and the centred
+                    dock) keeps its width when Pause turns into Play. */}
+                <span className="grid">
+                  <span className={cn('col-start-1 row-start-1', !auto && 'invisible')}>
+                    Pause tour
+                  </span>
+                  <span className={cn('col-start-1 row-start-1', auto && 'invisible')}>
+                    Play tour
+                  </span>
+                </span>
               </Button>
               <Button
                 variant="toggle-slate"

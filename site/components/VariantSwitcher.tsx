@@ -143,13 +143,32 @@ const Tile = ({ meta, selected, active, large, onPick, onFocusTile }: TileProps)
     className={cn(large && 'border-rule bg-surface border')}
   >
     <Chip meta={meta} size={large ? 'lg' : 'sm'} />
-    <span className="flex min-w-0 items-baseline gap-1.5">
-      <span className="font-mono text-[10px] opacity-60">{meta.id.toUpperCase()}</span>
-      <span className="truncate" style={{ fontFamily: meta.font }}>
-        {meta.name}
+    {large ? (
+      // Large phone tiles: the letter over the name, and the name a plain
+      // block as wide as the tile, so wide display faces (Cut & Paste) wrap.
+      // No flex row or line clamp here: iOS Safari sized those to the
+      // unwrapped name and let it spill out of the tile.
+      <span className="block w-full min-w-0">
+        <span className="block font-mono text-[10px] opacity-60">
+          {meta.id.toUpperCase()}
+          {meta.status === 'draft' && <span className="vy-draft ml-1.5">Draft</span>}
+        </span>
+        <span
+          className="block w-full text-[15px] leading-tight [overflow-wrap:anywhere] break-words"
+          style={{ fontFamily: meta.font }}
+        >
+          {meta.name}
+        </span>
       </span>
-      {meta.status === 'draft' && <span className="vy-draft">Draft</span>}
-    </span>
+    ) : (
+      <span className="flex max-w-full min-w-0 items-baseline gap-1.5">
+        <span className="font-mono text-[10px] opacity-60">{meta.id.toUpperCase()}</span>
+        <span className="min-w-0 truncate" style={{ fontFamily: meta.font }}>
+          {meta.name}
+        </span>
+        {meta.status === 'draft' && <span className="vy-draft">Draft</span>}
+      </span>
+    )}
   </Button>
 );
 
