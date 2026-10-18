@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0](https://github.com/highnet/Variantly/compare/variantly-v0.7.0...variantly-v0.8.0) (2026-10-18)
+
+
+### Features
+
+* **ui:** lens compare mode in the local app ([#163](https://github.com/highnet/Variantly/issues/163)) ([a161ade](https://github.com/highnet/Variantly/commit/a161ade8f9a3e7b7927dda641339ab5da80e95aa))
+
 ## [0.7.0](https://github.com/highnet/Variantly/compare/variantly-v0.6.0...variantly-v0.7.0) (2026-10-18)
 
 
