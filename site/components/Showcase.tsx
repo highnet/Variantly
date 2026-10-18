@@ -967,13 +967,13 @@ const Showcase = () => {
               id="hero-title"
               className="text-surface text-[clamp(2.25rem,4.2vw,4.25rem)]"
             >
-              One website. <span className="whitespace-nowrap">Ten redesigns.</span>{' '}
+              One website. <span className="whitespace-nowrap">Many redesigns.</span>{' '}
               <FreshLook>You pick.</FreshLook>
             </Typography>
             <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">
               Your <GlossaryTip term="agent" /> redesigns your{' '}
-              <strong className="text-surface">actual site</strong>, up to ten different ways. Click
-              through each one{' '}
+              <strong className="text-surface">actual site</strong>, as many different ways as you
+              want. Click through each one{' '}
               <strong className="text-surface">
                 <GlossaryTip term="live">running live</GlossaryTip>
               </strong>
