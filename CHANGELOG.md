@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/highnet/Variantly/compare/variantly-v0.5.0...variantly-v0.6.0) (2026-10-18)
+
+
+### Features
+
+* **site:** concept registry, 20-concept switcher, drafts flag, first-paint dock, steady 3D backdrop ([#131](https://github.com/highnet/Variantly/issues/131)) ([c385317](https://github.com/highnet/Variantly/commit/c385317b9202e16dac25314283a2aae2d0a94110))
+
 ## [0.5.0](https://github.com/highnet/Variantly/compare/variantly-v0.4.0...variantly-v0.5.0) (2026-10-18)
 
 
