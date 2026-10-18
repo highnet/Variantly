@@ -159,7 +159,7 @@ const Terminal = ({ v, compact = false }: TerminalProps) => {
           <span className="t-meta">
             {v.status === 'done' && (
               <span className="data" title={usageTitle(v)}>
-                {[v.files?.length ? `${v.files.length} files` : '', usageText(v) !== '—' ? usageText(v) : ''].filter(Boolean).join(' · ')}
+                {[v.files?.length ? `${v.files.length} file${v.files.length === 1 ? '' : 's'}` : '', usageText(v) !== '—' ? usageText(v) : ''].filter(Boolean).join(' · ')}
               </span>
             )}
             <TermActions v={v} />
