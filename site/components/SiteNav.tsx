@@ -1,9 +1,9 @@
 'use client';
 
-import { Clock, Menu, X } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
@@ -56,10 +56,10 @@ const SiteNav = ({ brand, aside }: SiteNavProps) => {
   }, [open]);
 
   const links = (className: string) =>
-    NAV.map((n) => {
+    NAV.map((n, i) => {
       const current = pathname === n.href;
       return (
-        <li key={n.href}>
+        <li key={n.href} style={{ '--i': i } as CSSProperties}>
           <Link
             href={n.href}
             aria-current={current ? 'page' : undefined}
@@ -94,25 +94,33 @@ const SiteNav = ({ brand, aside }: SiteNavProps) => {
             ref={toggle}
             variant="header-icon"
             size="icon"
-            className="md:hidden"
+            className="vy-burger md:hidden"
             aria-expanded={open}
             aria-controls="site-menu"
             aria-label={open ? 'Close menu' : 'Open menu'}
             onClick={() => setOpen((o) => !o)}
           >
-            {open ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}
+            {/* Three bars that fold into an X (styled in globals.css). */}
+            <span aria-hidden="true" className="vy-burger-box">
+              <span />
+              <span />
+              <span />
+            </span>
           </Button>
         </div>
       </div>
       <nav
         id="site-menu"
         aria-label="Main"
-        hidden={!open}
-        className="border-rule bg-panel border-t px-4 pb-4 md:hidden"
+        inert={!open}
+        data-open={open}
+        className="vy-menu md:hidden"
       >
-        <ul className="m-0 grid list-none p-0">
-          {links('border-rule block border-b py-3.5 text-[15px]')}
-        </ul>
+        <div>
+          <ul className="border-rule bg-panel m-0 grid list-none border-t px-4 pb-4">
+            {links('border-rule block border-b py-3.5 text-[15px]')}
+          </ul>
+        </div>
       </nav>
     </header>
   );

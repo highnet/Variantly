@@ -1,20 +1,100 @@
-/* q · Sticker Bomb: placeholder tokens from the roll's palette. */
+/* q · Sticker Bomb: glossy vinyl stickers slapped on a brushed aluminium lid. */
 :root[data-variant='q'] {
-  --panel: color-mix(in srgb, #f7f7f2 94%, #111111); --surface: #f7f7f2; --rule: color-mix(in srgb, #111111 18%, #f7f7f2); --steel: color-mix(in srgb, #111111 66%, #f7f7f2); --ink: #111111;
-  --alert: #ff3ea5; --alert-hover: color-mix(in srgb, #ff3ea5 85%, #f7f7f2); --on-alert: #ffffff;
-  --hero-bg: #f7f7f2; --hero-ink: #111111; --hero-mute: color-mix(in srgb, #111111 66%, #f7f7f2); --hero-line: color-mix(in srgb, #111111 22%, #f7f7f2); --hero-box: color-mix(in srgb, #f7f7f2 96%, #111111);
-  --title: #ff3ea5;
-  --flap-bg: #ff3ea5; --flap-ink: #ffffff;
-  --art-1: #ff3ea5; --art-2: #00c2ff; --art-3: #c4f000; --art-ink: #111111; --art-shadow: #111111;
-  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
-  --board-bg: #121212; --board-raised: color-mix(in srgb, #121212 88%, #fafafa); --board-line: color-mix(in srgb, #121212 70%, #fafafa);
-  --board-mute: color-mix(in srgb, #fafafa 72%, #121212); --board-text: #fafafa; --board-deep: color-mix(in srgb, #121212 80%, #000); --board-ok: #ff3ea5;
+  --panel: #e4e5e3; --surface: #ffffff; --rule: #cfd0cc; --steel: #45464a; --ink: #111111;
+  --alert: #ff3ea5; --alert-hover: #ff62b6; --on-alert: #111111; --hero-bg: #f7f7f2; --hero-ink: #111111;
+  --hero-mute: #45464a; --hero-line: #d6d6d0; --hero-box: #ffffff; --hero-face: var(--font-bricolage); --title: #111111;
+  --hero-alpha: 90%; --flap-bg: #111111; --flap-ink: #c4f000; --blob-o: 0.92; --board-bg: #111111;
+  --board-raised: #222224; --board-line: #3a3a3e; --board-mute: #c2c2c6; --board-text: #fafafa; --board-deep: #000000;
+  --board-ok: #c4f000; --art-1: #ff3ea5; --art-2: #00c2ff; --art-3: #c4f000; --art-ink: #111111;
+  --art-cut: #ffffff; --art-metal: #d9dadc; --art-hair: rgb(255 255 255 / 0.55); --art-shadow: rgb(17 17 17 / 0.22);
 }
 :root[data-variant='q'][data-theme='dark'] {
-  --panel: color-mix(in srgb, #121212 94%, #fafafa); --surface: #121212; --rule: color-mix(in srgb, #fafafa 18%, #121212); --steel: color-mix(in srgb, #fafafa 66%, #121212); --ink: #fafafa;
-  --alert: #ff3ea5; --alert-hover: color-mix(in srgb, #ff3ea5 85%, #121212); --on-alert: #ffffff;
-  --hero-bg: #121212; --hero-ink: #fafafa; --hero-mute: color-mix(in srgb, #fafafa 66%, #121212); --hero-line: color-mix(in srgb, #fafafa 22%, #121212); --hero-box: color-mix(in srgb, #121212 96%, #fafafa);
-  --title: #ff3ea5;
-  --flap-bg: #ff3ea5; --flap-ink: #ffffff;
-  --art-1: #ff3ea5; --art-2: #00c2ff; --art-3: #c4f000; --art-ink: #fafafa; --art-shadow: #fafafa;
+  --panel: #18191b; --surface: #202124; --rule: #34353a; --steel: #b4b5ba; --ink: #fafafa;
+  --alert: #ff3ea5; --alert-hover: #ff62b6; --on-alert: #111111; --hero-bg: #121212; --hero-ink: #fafafa;
+  --hero-mute: #b9babf; --hero-line: #34353a; --hero-box: #1c1d20; --hero-alpha: 90%; --blob-o: 0.85;
+  --board-bg: #0b0b0c; --board-raised: #1c1c1f; --board-line: #333338; --art-metal: #232427; --art-hair: rgb(255 255 255 / 0.05);
+  --art-shadow: rgb(0 0 0 / 0.5);
 }
+/* The lid: brushed hairlines over a soft sheen. */
+:root[data-variant='q'] {
+  background-color: var(--art-metal);
+  background-image:
+    repeating-linear-gradient(0deg, var(--art-hair) 0 1px, transparent 1px 3px),
+    linear-gradient(100deg, transparent 20%, rgb(255 255 255 / 0.18) 45%, transparent 70%);
+}
+/* The one clean zone: the wordmark on a plain white die-cut sticker. */
+:root[data-variant='q'] [data-hero-title] { background: transparent; isolation: isolate; }
+:root[data-variant='q'] [data-hero-title]::before {
+  --fs: clamp(2.5rem, 16vw, 11rem); content: ''; position: absolute; left: 50%; top: 50%;
+  z-index: 0; width: min(calc(100% - 20px), calc(var(--fs) * 5.7 + 3rem)); height: calc(var(--fs) * 1.5); translate: -50% -50%; rotate: -1.6deg;
+  border-radius: calc(var(--fs) * 0.32); background: #ffffff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06), 0 2px 3px rgb(0 0 0 / 0.08), 0 22px 36px -18px rgb(0 0 0 / 0.45);
+}
+:root[data-variant='q'] .vy-title { color: #111111; text-shadow: 0 3px 0 #ffffff, 0 4px 0 #d9d9d9; }
+:root[data-variant='q'] .vy-letter:nth-child(3n + 2) { color: #ff3ea5; }
+:root[data-variant='q'] .vy-letter:nth-child(6) { color: #00a6e0; }
+:root[data-variant='q'] [data-hero-grid] { padding-top: 12px; }
+:root[data-variant='q'] #hero-title { font-weight: 800; font-stretch: 75%; font-size: clamp(2.6rem, 5.4vw, 5.2rem); line-height: 0.98; letter-spacing: -0.035em; }
+:root[data-variant='q'] #hero-title .vy-fresh { display: inline-block; margin-top: 0.14em; padding: 0.06em 0.28em 0.1em; border-radius: 0.34em; background: #ff3ea5; color: #111111; rotate: -2deg; box-shadow: 0 0 0 0.09em #ffffff, 0 0.16em 0.3em -0.08em rgb(0 0 0 / 0.4); text-decoration-color: #111111; }
+:root[data-variant='q'] [data-hero-side],
+:root[data-variant='q'] main > div .bg-surface {
+  border: 0;
+  border-radius: 20px;
+  background: var(--hero-box);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.07), 0 14px 28px -16px rgb(0 0 0 / 0.42);
+}
+:root[data-variant='q'] [data-hero-side] { padding: 22px; }
+:root[data-variant='q'] main > div .bg-surface { background: var(--surface); }
+:root[data-variant='q'][data-theme='dark'] [data-hero-side],
+:root[data-variant='q'][data-theme='dark'] main > div .bg-surface { box-shadow: 0 0 0 2px #2e2f33, 0 14px 28px -16px rgb(0 0 0 / 0.8); }
+/* Section heads: each one a fresh die-cut sticker. */
+:root[data-variant='q'] main > div h2 {
+  justify-self: start;
+  width: fit-content;
+  padding: 0.3em 0.5em 0.32em;
+  border-radius: 0.4em;
+  background: #ff3ea5;
+  color: #111111;
+  font-weight: 800;
+  font-stretch: 75%;
+  letter-spacing: -0.02em;
+  rotate: -1.2deg;
+  box-shadow: 0 0 0 0.12em #ffffff, 0 0.2em 0.4em -0.1em rgb(0 0 0 / 0.35);
+}
+:root[data-variant='q'] main > div section:nth-of-type(3n + 2) h2 { background: #00c2ff; rotate: 1deg; }
+:root[data-variant='q'] main > div section:nth-of-type(3n) h2 { background: #c4f000; rotate: -0.6deg; }
+:root[data-variant='q'] main > div .figure:not(h2, h3) { color: #ff3ea5; }
+:root[data-variant='q']:not([data-theme='dark']) main > div .figure:not(h2, h3) { color: #d1157a; }
+:root[data-variant='q'] .flap-cell { border-radius: 0.2em; box-shadow: 0 0 0 2px #ffffff; }
+:root[data-variant='q'] .flap-cell:nth-child(3n + 1) {
+  --flap-bg: #ff3ea5; --flap-ink: #111111;
+}
+:root[data-variant='q'] .flap-cell:nth-child(3n + 2) {
+  --flap-bg: #00c2ff; --flap-ink: #111111;
+}
+.vy-swatch-q { background: conic-gradient(#ff3ea5, #00c2ff, #c4f000, #ff3ea5); box-shadow: inset 0 0 0 2px #fff; }
+:root[data-variant='q'] .vy-loadbar { height: 8px; inset: 6px 12px auto; }
+:root[data-variant='q'] .vy-loadbar-fill { border-radius: 99px; background: linear-gradient(90deg, #ff3ea5, #00c2ff, #c4f000, #ff3ea5); box-shadow: 0 0 0 2px #fff; }
+@media (max-width: 639px) {
+:root[data-variant='q'] [data-hero-title]::before { height: calc(var(--fs) * 1.7); rotate: -2.4deg; }
+}
+/* Backdrop stickers: a few peel up and slap back down, 24s. */
+.vy-q-peel { transform-origin: 20% 90%; animation: vy-q-peel 24s cubic-bezier(0.3, 0.7, 0.3, 1) infinite; }
+.vy-q-peel-b { animation-delay: -12s; }
+.vy-q-curl { transform-box: fill-box; transform-origin: 100% 0; animation: vy-q-curl 12s ease-in-out infinite; }
+:root[data-scrolled] .vy-q-peel, :root[data-scrolled] .vy-q-curl { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce), (pointer: coarse) { .vy-q-peel, .vy-q-curl { animation: none; } }
+@keyframes vy-q-peel {
+0%, 30%, 100% { transform: none; }
+36% { transform: translate(-0.6vmax, -1.8vmax) rotate(-9deg) scale(1.07); }
+41% { transform: translate(0, 0.1vmax) rotate(1deg) scale(0.96); }
+44% { transform: rotate(-0.5deg) scale(1.015); }
+48% { transform: none; }
+}
+@keyframes vy-q-curl {
+0%, 100% { transform: scale(0.15); }
+50% { transform: scale(1); }
+}
+
+:root[data-variant='q'] main > div h2.figure { color: #111111; }
+/* Pages without the hero: the art steps back behind the reading. */
+:root[data-variant='q']:not(:has(#hero-title)) { --blob-o: 0.28; }
