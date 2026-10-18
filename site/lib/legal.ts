@@ -9,4 +9,4 @@ export const OPERATOR = {
   phone: '+43 676 4204412',
 };
 
-export const LEGAL_UPDATED = '16 October 2026';
+export const LEGAL_UPDATED = '18 October 2026';

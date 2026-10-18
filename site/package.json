@@ -9,7 +9,8 @@
     "lint": "eslint",
     "score-demo": "node scripts/score-demo.mjs",
     "demo-posters": "node scripts/demo-posters.mjs",
-    "perf-budget": "node scripts/perf-budget.mjs"
+    "perf-budget": "node scripts/perf-budget.mjs",
+    "upload-demo-video": "node scripts/upload-demo-video.mjs"
   },
   "dependencies": {
     "@types/three": "^0.186.0",
@@ -30,6 +31,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vercel/blob": "^2.8.2",
     "eslint": "^9",
     "eslint-config-next": "16.4.1",
     "eslint-config-prettier": "^10.1.8",
