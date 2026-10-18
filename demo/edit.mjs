@@ -39,6 +39,11 @@ const lineSeconds = (id) =>
 // step does the cutting and reports where every clip landed.
 const TRANSITIONS = { hi: { type: 'fade', duration: 0.5 }, lapse: { type: 'fade', duration: 0.4 }, compare: { type: 'fadeblack', duration: 0.5 } };
 const round3 = (n) => Math.round(n * 1000) / 1000;
+// Dead air: an overrun longer than TIGHTEN_MIN s after a line (plus its pad)
+// is sped up, at most TIGHTEN_MAX×, aiming to end TIGHTEN_KEEP s after it.
+const TIGHTEN_MIN = 1.5;
+const TIGHTEN_MAX = 3;
+const TIGHTEN_KEEP = 0.5;
 // A timelapse with `realHead` (ms) first plays that long at real speed, under
 // a real clock, and only then speeds up: the viewer sees the honest time
 // before the fast part. The fast part is a second clip labelled "<id>+".
@@ -54,7 +59,20 @@ const clips = raw.scenes.flatMap((scene) => {
     to: round3(from + round3(length)),
     ...(TRANSITIONS[scene.id] ? { transition: TRANSITIONS[scene.id] } : {}),
   };
-  if (!scene.timelapse) return [clip];
+  if (!scene.timelapse) {
+    // Dead air: when a scene's actions ran past its line, play the overrun
+    // faster (up to TIGHTEN_MAX×) so the scene ends just after the voice.
+    // The line's own part stays at real speed, so the words still match.
+    const spoken = byId[scene.id]?.text ? lineSeconds(scene.id) + PAD_MS / 1000 : 0;
+    const slack = length - spoken - TIGHTEN_KEEP;
+    if (!spoken || slack <= TIGHTEN_MIN) return [clip];
+    const cut = round3(from + spoken);
+    const speed = Number(Math.min(TIGHTEN_MAX, (length - spoken) / TIGHTEN_KEEP).toFixed(4));
+    return [
+      { ...clip, to: cut },
+      { label: `${scene.id}+`, src: clip.src, from: cut, to: clip.to, speed },
+    ];
+  }
   const target = Math.max(lineSeconds(scene.id) + PAD_MS / 1000, (byId[scene.id]?.hold ?? 0) / 1000, 5);
   const head = round3(Math.min((byId[scene.id]?.realHead ?? 0) / 1000, length / 4, target / 2));
   if (head <= 0) return [{ ...clip, speed: Number(Math.max(1, length / target).toFixed(4)) }];
@@ -104,6 +122,11 @@ const wide = {
 };
 writeJson(at(`seekreel.${THEME}.json`), wide);
 log('edit', `cutting ${clips.length} clips with SeekReel`);
+for (const c of clips) {
+  if (!c.label.endsWith('+') || byId[c.label.slice(0, -1)]?.timelapse) continue;
+  const over = c.to - c.from;
+  log('edit', `tightened ${c.label.slice(0, -1)}: ${over.toFixed(1)}s overrun → ${(over / c.speed).toFixed(1)}s (×${c.speed})`);
+}
 await run(process.execPath, [path.join(SEEKREEL, 'bin', 'seekreel.ts'), 'footage', '-c', at(`seekreel.${THEME}.json`)]);
 const footage = readJson(at(BUILD, 'footage', 'footage.json'));
 const total = footage.duration;
@@ -224,8 +247,9 @@ const scenes = sceneClips.map((clip, i) => {
     id: clip.label,
     start,
     end,
-    speed: Number(clip.speed.toFixed(2)),
-    fastAt: clip.fastAt ?? null,
+    // Only a timelapse shows its speed (the ▶▶ chip); a tightened overrun plays quietly.
+    speed: def.timelapse ? Number(clip.speed.toFixed(2)) : 1,
+    fastAt: def.timelapse ? clip.fastAt ?? null : null,
     clock: def.timelapse ? clockFor(def, clip.label) : null,
     voiceAt,
     voice: lineSeconds(clip.label),
