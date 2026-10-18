@@ -2246,11 +2246,14 @@ main > div p {
 }
 
 /* ---- The Lens: a doorway that shows the hero in another concept ---------- */
-/* components/Lens.tsx. A thin frosted-amber slab: a crisp front frame, a side
-   edge offset by its depth, and (only here on the site) a warm light: an inner
-   luminance, a halo and a spill on the ground below. All small layers moved
-   with transforms; the light is plain gradients (no filter). Calm and the low
-   perf tier get the solid frame only (no data-glow). */
+/* components/Lens.tsx. A time door: a doorway cut out of light. A white-hot
+   core inside an amber rim, a bloom of three widening strokes around it (no
+   blur filter: the outline is redrawn every frame of a drag), two streams of
+   energy running round the rim, a faint warm light inside, and outside a glow
+   that hugs the door with a pool of light on the floor beneath it. The glow
+   is a box-shadow on an element moved only by transform, so it rasterises
+   once per door size. Calm and the low perf tier (no data-glow) get the rim,
+   core and one bloom, standing still. */
 .vy-lens:not([data-shown]),
 .vy-lens-frame:not([data-shown]) {
   visibility: hidden;
@@ -2263,68 +2266,153 @@ main > div p {
 .vy-lens-glow {
   will-change: transform;
 }
+.vy-lens-front,
+.vy-lens-core,
+.vy-lens-bloom,
+.vy-lens-energy {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
 .vy-lens-front {
-  fill: none;
   stroke: url(#vy-lens-rim);
-  stroke-width: 3px;
-  stroke-linejoin: round;
+  stroke-width: 3.5px;
 }
-/* The bevel: a hairline catching the light on the rim's inner face. */
-.vy-lens-bevel {
-  fill: none;
-  stroke: rgb(255 248 232 / 0.7);
-  stroke-width: 0.75px;
-  stroke-linejoin: round;
-  transform: translate(0.6px, 0.6px);
+/* The white-hot line at the heart of the rim. */
+.vy-lens-core {
+  stroke: #fffaf0;
+  stroke-width: 1.25px;
+  opacity: 0.95;
 }
-.vy-lens-side {
-  fill: url(#vy-lens-side);
+.vy-lens-bloom {
+  stroke: var(--lens-light);
 }
-/* Depth: a wide, faint stroke clipped to the inside reads as the doorway's
-   reveal, the other concept sitting a little behind the frame. */
-.vy-lens-shade {
-  fill: none;
-  stroke: rgb(40 20 0 / 0.22);
-  stroke-width: 14px;
-}
-.vy-lens-frame:not([data-glow]) .vy-lens-shade {
+.vy-lens-bloom-1 {
   stroke-width: 8px;
+  opacity: 0.32;
 }
+.vy-lens-bloom-2 {
+  stroke-width: 18px;
+  opacity: 0.13;
+}
+.vy-lens-bloom-3 {
+  stroke: var(--lens-frame);
+  stroke-width: 34px;
+  opacity: 0.06;
+}
+/* Energy: sparks of light sliding round the rim. The dash pattern's length
+   is the offset each loop travels, so the flow never jumps. */
+.vy-lens-energy-a {
+  stroke: #fff3d6;
+  stroke-width: 2.5px;
+  stroke-dasharray: 2 13 22 9 5 17;
+  opacity: 0.85;
+  animation: lens-flow-a 2.2s linear infinite;
+}
+.vy-lens-energy-b {
+  stroke: var(--lens-rim-hi);
+  stroke-width: 5px;
+  stroke-dasharray: 1 29 9 23;
+  opacity: 0.5;
+  animation: lens-flow-b 3.4s linear infinite;
+}
+@keyframes lens-flow-a {
+  to {
+    stroke-dashoffset: -68;
+  }
+}
+@keyframes lens-flow-b {
+  to {
+    stroke-dashoffset: 62;
+  }
+}
+.vy-lens-frame:not([data-glow]) :is(.vy-lens-energy, .vy-lens-bloom-2, .vy-lens-bloom-3),
 .vy-lens-frame:not([data-glow]) .vy-lens-lum,
 .vy-lens:not([data-glow]) .vy-lens-glow {
   display: none;
 }
-.vy-lens-glow {
-  background:
-    radial-gradient(
-      closest-side,
-      color-mix(in srgb, var(--lens-light) 30%, transparent),
-      transparent
-    ),
-    radial-gradient(
-      50% 9% at 50% calc(100% - 22px),
-      color-mix(in srgb, var(--lens-light) 42%, transparent),
-      transparent
-    );
-  /* The halo sits a little wider than the slab; the spill on its "floor". */
-  margin: -20px 0 0 -20px;
-  padding: 20px;
-  box-sizing: content-box;
+:root[data-motion='calm'] .vy-lens-energy {
+  animation: none;
 }
+@media (prefers-reduced-motion: reduce) {
+  .vy-lens-energy {
+    animation: none;
+  }
+}
+/* The light the door throws: a glow hugging its outline (a box-shadow on
+   the door-sized ::before) and a pool on the floor beneath it (::after),
+   breathing slightly, as an unsteady light does. The element itself is the
+   door plus its margin, moved by transform. */
+.vy-lens-glow {
+  animation: lens-breathe 3.1s ease-in-out infinite;
+}
+.vy-lens-glow::before,
+.vy-lens-glow::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+.vy-lens-glow::before {
+  inset: 28px;
+  border-radius: 10px;
+  box-shadow:
+    0 0 18px 4px color-mix(in srgb, var(--lens-light) 45%, transparent),
+    0 0 60px 14px color-mix(in srgb, var(--lens-frame) 24%, transparent),
+    0 0 130px 30px color-mix(in srgb, var(--lens-frame) 12%, transparent);
+}
+.vy-lens-glow::after {
+  left: 50%;
+  bottom: 28px;
+  width: calc(100% + 80px);
+  height: 46px;
+  translate: -50% 50%;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--lens-rim-hi) 55%, transparent),
+    color-mix(in srgb, var(--lens-frame) 22%, transparent) 55%,
+    transparent
+  );
+}
+@keyframes lens-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  37% {
+    opacity: 0.86;
+  }
+  41% {
+    opacity: 0.97;
+  }
+  70% {
+    opacity: 0.9;
+  }
+}
+:root[data-motion='calm'] .vy-lens-glow {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .vy-lens-glow {
+    animation: none;
+  }
+}
+/* The name tag: a dark plate with the concept's name lit in amber. */
 .vy-lens-label {
   position: absolute;
   left: 28px;
   top: 28px;
-  translate: 0 calc(-100% - 5px);
-  padding: 3px 7px;
+  translate: 0 calc(-100% - 8px);
+  padding: 3px 8px;
+  border: 1px solid color-mix(in srgb, var(--lens-frame) 70%, transparent);
   border-radius: 3px;
-  background: linear-gradient(180deg, var(--lens-rim-hi), var(--lens-frame) 55%);
+  background: rgb(24 14 4 / 0.82);
   box-shadow:
-    inset 0 -1px 0 color-mix(in srgb, var(--lens-rim-lo) 70%, transparent),
-    0 1px 2px rgb(40 20 0 / 0.25);
-  color: var(--lens-ink);
+    0 0 10px color-mix(in srgb, var(--lens-frame) 35%, transparent),
+    inset 0 0 6px color-mix(in srgb, var(--lens-frame) 18%, transparent);
+  color: var(--lens-rim-hi);
+  text-shadow: 0 0 6px color-mix(in srgb, var(--lens-frame) 80%, transparent);
   font: 600 10px/1.3 var(--font-mono, ui-monospace, monospace);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   white-space: nowrap;
 }
