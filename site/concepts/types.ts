@@ -22,8 +22,13 @@ export type ConceptMeta = {
   swatch: Record<Theme, [string, string, string]>;
   // CSS font-family for the tile name (a --font-* var loaded by the layout).
   font: string;
-  // Strength of the film grain GlField adds to the scene's shapes (0 = none).
+  // Strength of the film grain GlField adds to the scene's shapes (0 = none,
+  // 0.2 is clearly grainy, 0.4 is heavy print grain). Midtones take it all;
+  // deep darks and bright highlights get less.
   grain: number;
+  // Share of that grain that is per-channel colour noise (default 0.35;
+  // 0 = monochrome grain).
+  grainChroma?: number;
 };
 
 // Backdrop.tsx default export: the concept's 2D background composition.

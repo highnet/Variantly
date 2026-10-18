@@ -94,7 +94,13 @@ export const Backdrop = () => {
       <div className="vy-scene absolute inset-0">
         {/* Reduced motion: the CSS layers only; the three.js chunk never loads. */}
         {(!calmMotion() || seekTime() !== null) && (
-          <GlField key={key + theme} concept={key} theme={theme} grain={CONCEPT_BY_ID[key].grain} />
+          <GlField
+            key={key + theme}
+            concept={key}
+            theme={theme}
+            grain={CONCEPT_BY_ID[key].grain}
+            chroma={CONCEPT_BY_ID[key].grainChroma ?? 0.35}
+          />
         )}
       </div>
     </div>

@@ -6,5 +6,5 @@ export const meta: ConceptMeta = {
   family: 'Hand & Material',
   swatch: { light: ['#ff9a76', '#ffd166', '#a78bfa'], dark: ['#ff7a59', '#ffb84d', '#8b6cff'] },
   font: 'var(--font-clay)',
-  grain: 0.1,
+  grain: 0.22,
 };
