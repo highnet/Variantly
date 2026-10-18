@@ -163,3 +163,5 @@
 
 :root[data-variant='s'] main .bg-slate .text-alert { color: #e6b450; }
 :root[data-variant='s'] .figure { font-variant-numeric: lining-nums; }
+/* Pages without the hero: the art steps back behind the reading. */
+:root[data-variant='s']:not(:has(#hero-title)) { --blob-o: 0.28; }

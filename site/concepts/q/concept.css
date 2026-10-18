@@ -62,8 +62,8 @@
 }
 :root[data-variant='q'] main > div section:nth-of-type(3n + 2) h2 { background: #00c2ff; rotate: 1deg; }
 :root[data-variant='q'] main > div section:nth-of-type(3n) h2 { background: #c4f000; rotate: -0.6deg; }
-:root[data-variant='q'] main > div .figure:not(h3) { color: #ff3ea5; }
-:root[data-variant='q']:not([data-theme='dark']) main > div .figure:not(h3) { color: #d1157a; }
+:root[data-variant='q'] main > div .figure:not(h2, h3) { color: #ff3ea5; }
+:root[data-variant='q']:not([data-theme='dark']) main > div .figure:not(h2, h3) { color: #d1157a; }
 :root[data-variant='q'] .flap-cell { border-radius: 0.2em; box-shadow: 0 0 0 2px #ffffff; }
 :root[data-variant='q'] .flap-cell:nth-child(3n + 1) {
   --flap-bg: #ff3ea5; --flap-ink: #111111;
@@ -96,3 +96,5 @@
 }
 
 :root[data-variant='q'] main > div h2.figure { color: #111111; }
+/* Pages without the hero: the art steps back behind the reading. */
+:root[data-variant='q']:not(:has(#hero-title)) { --blob-o: 0.28; }

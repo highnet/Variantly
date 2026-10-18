@@ -122,3 +122,5 @@
 
 :root[data-variant='r'] main > div h2.figure { color: var(--ink); font-stretch: 58%; }
 :root[data-variant='r'] main .bg-slate .text-alert { color: #e0533f; }
+/* Pages without the hero: the art steps back behind the reading. */
+:root[data-variant='r']:not(:has(#hero-title)) { --blob-o: 0.28; }
