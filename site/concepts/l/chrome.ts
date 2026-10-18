@@ -31,21 +31,25 @@ uniform float uDark;
 varying vec3 vN;
 varying vec3 vV;
 vec3 world(vec3 r) {
+  // Sky: a studio cyclorama with two long softboxes and a strip light, so
+  // pillowed glyphs pick up clean, continuous highlights.
   if (r.y > 0.0) {
-    vec3 c = mix(uSky * 1.05, uSky * 0.55 + 0.1, pow(r.y, 0.6));
-    c += smoothstep(0.06, 0.0, abs(r.y - 0.42)) * 0.9;
-    c += smoothstep(0.12, 0.0, abs(r.x + 0.55)) * step(0.15, r.y) * 0.5;
-    return c + smoothstep(0.08, 0.0, r.y) * 0.6;
+    vec3 c = mix(uSky, uSky * 0.72, smoothstep(0.0, 0.9, r.y));
+    c += smoothstep(0.09, 0.0, abs(r.y - 0.34)) * 0.85;
+    c += smoothstep(0.05, 0.0, abs(r.y - 0.72)) * 0.55;
+    c += smoothstep(0.1, 0.0, abs(r.x + 0.5)) * smoothstep(0.1, 0.3, r.y) * 0.35;
+    return c + smoothstep(0.1, 0.0, r.y) * 0.5;
   }
-  vec2 g = r.xz / max(-r.y, 0.04) * 1.6;
-  // Antialiased lines; where the grid gets finer than a pixel it fades out
-  // rather than sparkling (curved chrome compresses it fast).
+  // Floor: a smooth fall from a hot horizon to the dark floor, with one thin
+  // acid-green horizon line and, at most, a faint ghost of the grid.
+  float d = -r.y;
+  vec3 c = mix(uSky * 0.9, uFloor, smoothstep(0.0, 0.35, d));
+  c += uGrid * smoothstep(0.035, 0.0, abs(d - 0.05)) * 0.55;
+  vec2 g = r.xz / max(d, 0.04) * 1.6;
   vec2 w = fwidth(g);
   vec2 f = abs(fract(g) - 0.5);
-  vec2 l2 = smoothstep(0.5 - 0.04 - w, 0.5 - 0.04 + w, f) * (1.0 - smoothstep(0.15, 0.4, w));
-  float line = max(l2.x, l2.y);
-  float fade = smoothstep(0.0, 0.25, -r.y);
-  return mix(uFloor, uGrid, line * uGridA * fade) + smoothstep(0.1, 0.0, -r.y) * 0.5;
+  vec2 l2 = smoothstep(0.5 - 0.04 - w, 0.5 - 0.04 + w, f) * (1.0 - smoothstep(0.08, 0.2, w));
+  return mix(c, uGrid, max(l2.x, l2.y) * uGridA * smoothstep(0.0, 0.25, d));
 }
 void main() {
   vec3 n = normalize(vN);
@@ -68,13 +72,13 @@ export type ChromeOpts = {
   floor?: string;
 };
 
-export const chrome = ({ dark, tint = '#ffffff', puff = 0, grid = 0.9, floor }: ChromeOpts) =>
+export const chrome = ({ dark, tint = '#ffffff', puff = 0, grid = 0, floor }: ChromeOpts) =>
   new THREE.ShaderMaterial({
     vertexShader: CHROME_VERT,
     fragmentShader: CHROME_FRAG,
     uniforms: {
-      uSky: { value: new THREE.Color(dark ? '#8a8f96' : '#f4f5f6') },
-      uFloor: { value: new THREE.Color(floor ?? (dark ? '#050505' : '#1a1a1a')) },
+      uSky: { value: new THREE.Color(dark ? '#9aa0a8' : '#eef0f2') },
+      uFloor: { value: new THREE.Color(floor ?? (dark ? '#0a0a0b' : '#3a3c40')) },
       uGrid: { value: new THREE.Color('#c6ff00') },
       uTint: { value: new THREE.Color(tint) },
       uGridA: { value: grid },
