@@ -135,6 +135,24 @@ test('OpenCode invocation: run --format json, permissions and MCP in OPENCODE_CO
   }
 });
 
+test('Grok Build invocation: -p with Claude-style stream, dontAsk plus an allow list, trusted folder', () => {
+  const safe = agent('grok').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', model: 'grok-build' });
+  assert.equal(safe.file, 'grok');
+  assert.equal(safe.output, 'grok-stream');
+  assert.deepEqual(safe.args, [
+    '-p', PROMPT, '--output-format', 'streaming-messages-json', '--no-auto-update', '--trust',
+    '--permission-mode', 'dontAsk',
+    '--allow', 'Read', '--allow', 'Edit', '--allow', 'Grep',
+    '--allow', 'Bash(*impeccable*)', '--allow', 'Bash(git status*)', '--allow', 'Bash(git diff*)', '--allow', 'Bash(ls*)',
+    '-m', 'grok-build',
+  ]);
+  const full = agent('grok').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'full' });
+  assert.deepEqual(full.args, ['-p', PROMPT, '--output-format', 'streaming-messages-json', '--no-auto-update', '--trust', '--always-approve']);
+  assert.equal(agent('grok').mcp, false, 'MCP servers come only from Grok\'s config files');
+  const withMcp = agent('grok').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', mcp: { playwright: { command: 'npx', args: [] } } });
+  assert.deepEqual(withMcp.args, safe.args.slice(0, -2));
+});
+
 test('Codex through OpenRouter: the configured provider and its key variable are read', () => {
   const home = tmp();
   try {
@@ -160,6 +178,20 @@ test('Codex through OpenRouter: the configured provider and its key variable are
     assert.deepEqual(codexProvider(home), { id: 'openrouter', envKey: 'OPENROUTER_API_KEY' });
     writeFileSync(path.join(home, 'config.toml'), '[profiles.x]\nmodel_provider = "openrouter"\n');
     assert.equal(codexProvider(home), null, 'a provider inside a table is not the default');
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
+test('binCandidates also looks in ~/.grok/bin, where Grok Build installs', () => {
+  const home = tmp();
+  try {
+    const bin = path.join(home, '.grok', 'bin');
+    mkdirSync(bin, { recursive: true });
+    const file = path.join(bin, process.platform === 'win32' ? 'grok.CMD' : 'grok');
+    writeFileSync(file, '');
+    const found = binCandidates('grok', { PATH: '', HOME: home, USERPROFILE: home, PATHEXT: '.CMD' });
+    assert.deepEqual(found.map((f) => f.toLowerCase()), [file.toLowerCase()]);
   } finally {
     rmSync(home, { recursive: true, force: true });
   }
@@ -223,6 +255,15 @@ test('skill locations match where each agent reads skills', () => {
     path.join(home, '.agents', 'skills', 'impeccable'),
     path.join(home, '.claude', 'skills', 'impeccable'),
   ]);
+  assert.deepEqual(skillLocations(agent('grok'), 'impeccable', where), [
+    path.join(project, '.grok/skills', 'impeccable'),
+    path.join(project, '.agents/skills', 'impeccable'),
+    path.join(project, '.claude/skills', 'impeccable'),
+    path.join(home, '.grok', 'skills', 'impeccable'),
+    path.join(home, '.agents', 'skills', 'impeccable'),
+    path.join(home, '.claude', 'skills', 'impeccable'),
+  ]);
+  assert.equal(skillLocations(agent('grok'), 's', { home, env: { GROK_HOME: path.resolve('GH') } })[0], path.join(path.resolve('GH'), 'skills', 's'));
   // OpenCode's config folder follows OPENCODE_CONFIG_DIR, then XDG_CONFIG_HOME.
   assert.equal(skillLocations(agent('opencode'), 's', { home, env: { XDG_CONFIG_HOME: path.resolve('XC') } })[0], path.join(path.resolve('XC'), 'opencode', 'skills', 's'));
   assert.equal(

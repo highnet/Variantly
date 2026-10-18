@@ -19,7 +19,7 @@ curl -fsSL https://variantly.style/SKILLS.md
 
 Below, `<agent>` is the id of the agent you are: `claude` (Claude Code),
 `codex` (Codex CLI), `copilot` (GitHub Copilot CLI), `gemini` (Gemini CLI),
-`cursor` (Cursor CLI) or `opencode` (OpenCode).
+`cursor` (Cursor CLI), `opencode` (OpenCode) or `grok` (Grok Build).
 
 1. `npx variantly doctor`; fix anything marked ✗ (git commit, agent CLI,
    `npx impeccable install --providers=<agent> --scope=global --yes --no-hooks`).

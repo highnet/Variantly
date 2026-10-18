@@ -350,6 +350,51 @@ export const AGENTS = [
       };
     },
   },
+  {
+    // `grok -p`, checked against Grok Build 1.0.62 (flags, output and skill
+    // loading run here without an account). streaming-messages-json is
+    // Claude Code's stream-json shape. Headless, `dontAsk` silently denies
+    // whatever isn't allowed, so safe mode lists what is: reads, edits, search
+    // and the shell commands Impeccable needs. Project skills load only in a
+    // trusted folder, hence --trust (the flag Impeccable's install notes give).
+    // Grok takes MCP servers only from its config files, so no browser.
+    id: "grok",
+    name: "Grok Build",
+    bin: "grok",
+    install:
+      process.platform === "win32"
+        ? `powershell -NoProfile -Command "irm https://x.ai/cli/install.ps1 | iex"`
+        : "curl -fsSL https://x.ai/cli/install.sh | bash",
+    mcp: false,
+    skills: {
+      global: (home, env) => [
+        path.join(dirFrom(env, "GROK_HOME", path.join(home, ".grok")), "skills"),
+        path.join(home, ".agents", "skills"),
+        path.join(home, ".claude", "skills"),
+      ],
+      project: [".grok/skills", ".agents/skills", ".claude/skills"],
+    },
+    invocation: ({ briefPath, model, permissions }) => ({
+      file: "grok",
+      args: [
+        "-p",
+        pointer(briefPath),
+        "--output-format",
+        "streaming-messages-json",
+        "--no-auto-update",
+        "--trust",
+        ...(permissions === "full"
+          ? ["--always-approve"]
+          : [
+              "--permission-mode",
+              "dontAsk",
+              ...["Read", "Edit", "Grep", "Bash(*impeccable*)", "Bash(git status*)", "Bash(git diff*)", "Bash(ls*)"].flatMap((r) => ["--allow", r]),
+            ]),
+        ...(model ? ["-m", model] : []),
+      ],
+      output: "grok-stream",
+    }),
+  },
 ];
 
 /**
@@ -428,10 +473,10 @@ export function binCandidates(bin, env = process.env) {
   const win = process.platform === "win32";
   const exts = win ? (env.PATHEXT ?? ".EXE;.CMD;.BAT;.COM").toLowerCase().split(";").filter(Boolean) : [""];
   const npmBin = env.APPDATA && win ? [path.join(env.APPDATA, "npm")] : [];
-  // Cursor's installer puts cursor-agent in ~/.local/bin, which a fresh
-  // shell may not have on PATH yet.
+  // Installers that put the agent in their own folder, which a fresh shell
+  // may not have on PATH yet: Cursor (~/.local/bin), Grok Build (~/.grok/bin).
   const home = env.HOME ?? env.USERPROFILE;
-  const localBin = home ? [path.join(home, ".local", "bin")] : [];
+  const localBin = home ? [path.join(home, ".local", "bin"), path.join(home, ".grok", "bin")] : [];
   const dirs = [...(env.PATH ?? env.Path ?? "").split(path.delimiter).filter(Boolean), ...npmBin, ...localBin];
   /** @type {string[]} */
   const found = [];
@@ -525,6 +570,7 @@ const LOGIN = /** @type {Record<string, string>} */ ({
   gemini: "gemini",
   cursor: "cursor-agent login",
   opencode: "opencode auth login",
+  grok: "grok login",
 });
 
 /**
@@ -537,7 +583,8 @@ const LOGIN = /** @type {Record<string, string>} */ ({
  * ANTHROPIC_AUTH_TOKEN); it asks on first run otherwise. Gemini CLI takes an
  * API key, Vertex AI, or its Google sign-in (~/.gemini/oauth_creds.json).
  * Cursor CLI takes CURSOR_API_KEY or its own auth.json. OpenCode keeps
- * provider keys in its auth.json. null = unknown.
+ * provider keys in its auth.json. Grok Build takes XAI_API_KEY or the login
+ * it caches in ~/.grok/auth.json. null = unknown.
  * @param {string} id
  * @returns {Promise<boolean | null>}
  */
@@ -573,6 +620,10 @@ const isSignedIn = async (id) => {
           ? path.join(home, ".cursor", "auth.json")
           : path.join(process.env.XDG_CONFIG_HOME || path.join(home, ".config"), "cursor", "auth.json");
     return fs.existsSync(file);
+  }
+  if (id === "grok") {
+    if (process.env.XAI_API_KEY) return true;
+    return fs.existsSync(path.join(dirFrom(process.env, "GROK_HOME", path.join(home, ".grok")), "auth.json")) || null;
   }
   if (id === "opencode") {
     // Its free OpenCode Zen models need no sign-in, so a missing auth.json

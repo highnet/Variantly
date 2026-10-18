@@ -12,7 +12,7 @@ const PATHS: Record<string, string> = {
 };
 
 /** Agents with no mark in simple-icons get a plain initial, not a lookalike logo. */
-const INITIALS: Record<string, string> = {};
+const INITIALS: Record<string, string> = { grok: 'G' };
 
 type AgentIconProps = { id: string };
 

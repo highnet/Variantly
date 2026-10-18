@@ -17,10 +17,12 @@
  *   user, assistant, thinking, tool_call (started/completed), result.
  * - OpenCode 1.19 `opencode run --format json`: step_start, text, tool_use,
  *   step_finish (tokens and dollar cost per step), error. Captured from a real run.
+ * - Grok Build 1.0.62 `grok -p --output-format streaming-messages-json`: Claude
+ *   Code's stream-json shape; a failed run's `result` carries `errors[]`.
  */
 import path from 'node:path';
 
-/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'gemini-stream' | 'cursor-stream' | 'opencode-json' | 'text'} OutputKind */
+/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'gemini-stream' | 'cursor-stream' | 'opencode-json' | 'grok-stream' | 'text'} OutputKind */
 
 /**
  * Token counts as the agent reported them, summed over the session.
@@ -56,6 +58,7 @@ export const UNAVAILABLE = [
   /\bplease set an auth method\b/i,
   /\b401 Unauthorized\b/i,
   /\binvalid api key\b/i,
+  /\bincorrect api key\b/i,
   /\bauthentication (?:is )?required\b/i,
   /\bno authentication information found\b/i,
 ];
@@ -104,7 +107,7 @@ export function createParser(kind, opts = {}) {
     u.cachedInputTokens += num(cached);
   };
   /** @type {Record<string, (event: any, state: ParseState, rel: Rel, addUsage: AddUsage) => string[]>} */
-  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot, 'gemini-stream': gemini, 'cursor-stream': cursor, 'opencode-json': opencode };
+  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot, 'gemini-stream': gemini, 'cursor-stream': cursor, 'opencode-json': opencode, 'grok-stream': grok };
   const describe = parsers[kind];
 
   return {
@@ -188,6 +191,17 @@ function claude(event, state, rel, addUsage) {
     return [`Finished in ${Math.round(num(event.duration_ms) / 1000)}s${cost}`];
   }
   return [];
+}
+
+/** Grok Build speaks Claude Code's stream-json, under its own name. @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function grok(event, state, rel, addUsage) {
+  if (event.type === 'system' && event.subtype === 'init') return [`Grok Build session started (${event.model ?? 'default model'})`];
+  const out = claude(event, state, rel, addUsage);
+  if (event.type === 'result' && event.is_error && Array.isArray(event.errors) && event.errors.length) {
+    state.error = String(event.errors[0]);
+    return [...out, `Error: ${clip(state.error, 300)}`];
+  }
+  return out;
 }
 
 /** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */

@@ -40,6 +40,7 @@ export const metadata: Metadata = {
     'Gemini CLI',
     'Cursor CLI',
     'OpenCode',
+    'Grok Build',
     'OpenRouter',
     'Impeccable',
     'before/after slider',

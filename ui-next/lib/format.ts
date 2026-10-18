@@ -81,7 +81,7 @@ export const scoreText = (a: Audit, base?: Audit) =>
     ? `A11y ${vsBase(a.lighthouse.accessibility, base.lighthouse.accessibility)} · Perf ${vsBase(a.lighthouse.performance, base.lighthouse.performance)} · axe ${axeVsBase(a.axe.total, base.axe.total)}`
     : `A11y ${a.lighthouse.accessibility} · Perf ${a.lighthouse.performance} · axe ${a.axe.total}`;
 
-export const agentShort: Record<string, string> = { claude: 'Claude', codex: 'Codex', copilot: 'Copilot', gemini: 'Gemini', cursor: 'Cursor', opencode: 'OpenCode', demo: 'Demo' };
+export const agentShort: Record<string, string> = { claude: 'Claude', codex: 'Codex', copilot: 'Copilot', gemini: 'Gemini', cursor: 'Cursor', opencode: 'OpenCode', grok: 'Grok', demo: 'Demo' };
 
 /** "Claude · opus": an agent and, when set, its model. */
 export const agentLabel = (agent: string, model?: string) => `${agentShort[agent] ?? agent}${model ? ` · ${model}` : ''}`;

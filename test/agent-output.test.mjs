@@ -198,3 +198,30 @@ test('OpenCode error event is the run\'s error', () => {
   assert.deepEqual(out, ['Error: Unexpected server error.']);
   assert.equal(parser.error(), 'Unexpected server error.');
 });
+
+test('Grok Build streaming-messages-json: Claude Code\'s shape under its own name, with dollars', () => {
+  const { parser, lines } = feed('grok', 'grok-stream');
+  assert.equal(lines[0], 'Grok Build session started (grok-build)');
+  assert.ok(lines.includes('→ read_file C:/home/.variantly/site-1a2b3c4d/briefs/v1.md'));
+  assert.ok(lines.includes('→ search_replace src/styles/global.css'));
+  assert.ok(lines.includes('→ run_terminal_command npx impeccable detect src'));
+  assert.equal(lines.at(-1), 'Finished in 201s, $0.42');
+  assert.equal(parser.costUsd(), 0.42);
+  assert.deepEqual(parser.usage(), { inputTokens: 18000, outputTokens: 400, cachedInputTokens: 9000 });
+  assert.match(extractSummary(parser.text()), /^Brutalist world/);
+  assert.equal(parser.error(), undefined);
+});
+
+test('Grok Build, real run with a bad key: the result\'s errors[] is the error, and the agent is unavailable', () => {
+  const { parser, lines } = feed('grok-failed', 'grok-stream');
+  assert.equal(lines[0], 'Grok Build session started (grok-4.6)');
+  assert.match(parser.error() ?? '', /Incorrect API key provided/);
+  assert.match(lines.at(-1) ?? '', /^Error: Internal error/);
+  assert.ok(parser.unavailable(), 'a bad key stops the rest of that agent\'s variants');
+});
+
+test('Grok Build, not signed in: unavailable', () => {
+  const parser = createParser('grok-stream');
+  parser.note('Error: Not signed in. To authenticate without a browser, run:');
+  assert.match(parser.unavailable() ?? '', /Not signed in/);
+});

@@ -13,6 +13,11 @@ variantly's safe-mode permission config and the free `opencode/big-pickle`
 model, on a one-line brief (make a colour blue, run `git status`, try `rm`).
 Paths were rewritten to the ones below.
 
+`grok-failed.jsonl` is a **real capture**: Grok Build 1.0.62 run with
+variantly's exact safe-mode arguments and an invalid `XAI_API_KEY`. It proves
+the flags are accepted and shows the error `result`. `grok.jsonl` is written
+by hand in the same (Claude Code stream-json) shape.
+
 The other files were **written by hand from each CLI's published event
 schema**, not captured from a signed-in run (no agent was signed in where they
 were written). Field names and nesting follow:
