@@ -60,7 +60,9 @@ const RecordStamp = ({ label, build }: RecordStampProps) => {
     if (presses.current.length >= 3) {
       presses.current = [];
       setOpen(true);
-      if (!calmMotion()) doorBurst(self.current);
+      if (!calmMotion() && document.documentElement.dataset.audience !== 'agent') {
+        doorBurst(self.current);
+      }
     }
   };
 

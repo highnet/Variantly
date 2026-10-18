@@ -1,9 +1,9 @@
 /*
  * What the press burst throws, per concept: each one celebrates in its own
  * material (clay pebbles, riso dots, terminal blocks, stitches, flowers...).
- * TIMELINE is the /agents page's (`[data-audience='agent']`) and the hidden
- * branch log's: clock faces and hourglasses in amber, out of a tall
- * door-shaped ring, in keeping with the agents' clock mark. Glyphs stay to plain text symbols that never turn into colour
+ * TIMELINE is the hidden branch log's: clock faces and hourglasses in amber,
+ * out of a tall door-shaped ring. Never on the /agents page, which stays
+ * plain. Glyphs stay to plain text symbols that never turn into colour
  * emoji, so they take the concept's colours.
  */
 
@@ -50,6 +50,5 @@ const DEFAULT: BurstStyle = { glyphs: ['✦', '✶', '●', '■', '▲'], ring:
 
 export const burstStyle = (): BurstStyle => {
   const html = document.documentElement;
-  if (html.dataset.audience === 'agent') return TIMELINE;
   return BY_CONCEPT[html.dataset.variant ?? ''] ?? DEFAULT;
 };

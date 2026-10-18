@@ -1453,7 +1453,7 @@ a:hover > .brand-mark .brand-grip {
 .vy-burst-ring[data-shape='square'] {
   border-radius: 4px;
 }
-/* The /agents burst: a tall door outline, dashed like a timeline seam. */
+/* The branch log's burst: a tall door outline, dashed like a timeline seam. */
 .vy-burst-ring[data-shape='door'] {
   width: 48px;
   height: 84px;
