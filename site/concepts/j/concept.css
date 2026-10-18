@@ -1,20 +1,94 @@
-/* j · Instrument OS: placeholder tokens from the roll's palette. */
+/* j · Instrument OS: anodised aluminium, rubber caps, dot-matrix readouts. */
 :root[data-variant='j'] {
-  --panel: color-mix(in srgb, #e9e6df 94%, #161514); --surface: #e9e6df; --rule: color-mix(in srgb, #161514 18%, #e9e6df); --steel: color-mix(in srgb, #161514 66%, #e9e6df); --ink: #161514;
-  --alert: #c4462a; --alert-hover: color-mix(in srgb, #c4462a 85%, #e9e6df); --on-alert: #ffffff;
-  --hero-bg: #e9e6df; --hero-ink: #161514; --hero-mute: color-mix(in srgb, #161514 66%, #e9e6df); --hero-line: color-mix(in srgb, #161514 22%, #e9e6df); --hero-box: color-mix(in srgb, #e9e6df 96%, #161514);
-  --title: #c4462a;
-  --flap-bg: #c4462a; --flap-ink: #ffffff;
-  --art-1: #c4462a; --art-2: #9a978f; --art-3: #3c6e71; --art-ink: #161514; --art-shadow: #161514;
-  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
-  --board-bg: #111111; --board-raised: color-mix(in srgb, #111111 88%, #efebe3); --board-line: color-mix(in srgb, #111111 70%, #efebe3);
-  --board-mute: color-mix(in srgb, #efebe3 72%, #111111); --board-text: #efebe3; --board-deep: color-mix(in srgb, #111111 80%, #000); --board-ok: #e0583a;
+  --panel: #e9e6df; --surface: #f4f2ed; --rule: #cdc9c0; --steel: #55524c; --ink: #161514; --alert: #c4462a; --alert-hover: #ad3c22;
+  --on-alert: #ffffff; --hero-bg: #e9e6df; --hero-ink: #161514; --hero-mute: #55524c; --hero-line: #c2beb5; --hero-box: #f4f2ed;
+  --hero-face: var(--font-doto); --title: #161514; --hero-alpha: 36%; --blob-o: 1; --flap-bg: #1c1b19; --flap-ink: #ff6a45; --board-bg: #1c1b19;
+  --board-raised: #262522; --board-line: #3a3936; --board-mute: #b9b5ac; --board-text: #efebe3; --board-deep: #0d0d0c; --board-ok: #5a9a9d;
+  --art-1: #c4462a; --art-2: #9a978f; --art-3: #3c6e71; --art-ink: #161514; --art-plate: #e9e6df; --art-lcd: #1c1b19; --art-led: #ff6a45;
+  --key-1: #161514; --key-2: #6e6b64; --key-3: #c4462a; --key-4: #3c6e71; --alu: #bdb9b0; --font-sans: var(--font-grotesk), system-ui, sans-serif;
 }
 :root[data-variant='j'][data-theme='dark'] {
-  --panel: color-mix(in srgb, #111111 94%, #efebe3); --surface: #111111; --rule: color-mix(in srgb, #efebe3 18%, #111111); --steel: color-mix(in srgb, #efebe3 66%, #111111); --ink: #efebe3;
-  --alert: #e0583a; --alert-hover: color-mix(in srgb, #e0583a 85%, #111111); --on-alert: #ffffff;
-  --hero-bg: #111111; --hero-ink: #efebe3; --hero-mute: color-mix(in srgb, #efebe3 66%, #111111); --hero-line: color-mix(in srgb, #efebe3 22%, #111111); --hero-box: color-mix(in srgb, #111111 96%, #efebe3);
-  --title: #e0583a;
-  --flap-bg: #e0583a; --flap-ink: #ffffff;
-  --art-1: #e0583a; --art-2: #3a3936; --art-3: #5a9a9d; --art-ink: #efebe3; --art-shadow: #efebe3;
+  --panel: #111111; --surface: #1a1a19; --rule: #34332f; --steel: #a9a59c; --ink: #efebe3; --alert: #e0583a; --alert-hover: #ea6d50;
+  --on-alert: #111111; --hero-bg: #111111; --hero-ink: #efebe3; --hero-mute: #a9a59c; --hero-line: #3a3936; --hero-box: #1a1a19; --title: #efebe3;
+  --flap-bg: #050505; --art-1: #e0583a; --art-2: #5c5a55; --art-3: #5a9a9d; --art-ink: #efebe3; --art-plate: #111111; --art-lcd: #050505;
+  --key-1: #efebe3; --key-2: #a9a59c; --key-3: #e0583a; --key-4: #5a9a9d; --alu: #3a3936;
+}
+:root[data-variant='j'] .vy-j-dots { background: radial-gradient( circle, color-mix(in srgb, var(--art-ink) 10%, #0000) 1.3px, #0000 1.7px ) 0 0 / 12px 12px; }
+:root[data-variant='j'] .vy-j-ring {
+  position: relative; width: clamp(64px, 6.4vw, 104px); aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle, var(--art-plate) 0 64%, #0000 65%), repeating-conic-gradient( from -1deg, color-mix(in srgb, var(--art-ink) 55%, #0000) 0 2deg, #0000 0 30deg );
+}
+:root[data-variant='j'] .vy-j-cap {
+  --cap: var(--art-1); position: absolute; inset: 17%; border-radius: 50%;
+  background: radial-gradient( circle at 36% 30%, color-mix(in srgb, var(--cap) 72%, #fff), var(--cap) 46%, color-mix(in srgb, var(--cap) 72%, #000) );
+  box-shadow: 0 7px 12px -5px rgb(0 0 0 / 0.45); will-change: transform; animation: vy-j-detent 24s cubic-bezier(0.2, 0.9, 0.3, 1.18) infinite;
+}
+:root[data-variant='j'] .vy-j-cap::after { content: ''; position: absolute; left: calc(50% - 2px); top: 9%; width: 4px; height: 28%; border-radius: 2px; background: #fff; }
+:root[data-variant='j'] .vy-j-knob:nth-child(2) .vy-j-cap { --cap: var(--art-2); animation-duration: 12s; }
+:root[data-variant='j'] .vy-j-knob:nth-child(3) .vy-j-cap { --cap: var(--art-3); animation-duration: 8s; }
+:root[data-variant='j'] .vy-j-knob b { font: 600 12px/1 var(--font-grotesk); letter-spacing: 0.16em; color: color-mix(in srgb, var(--art-ink) 72%, #0000); }
+/* Detents: hold, click a notch over, settle back. 0% is the poster. */
+@keyframes vy-j-detent {
+  0%, 14%, 100% { transform: rotate(-60deg); }
+  16%, 39% { transform: rotate(0deg); }
+  41%, 64% { transform: rotate(60deg); }
+  66%, 89% { transform: rotate(-30deg); }
+}
+:root[data-variant='j'] .vy-j-lcd {
+  width: 26vw; padding: 12px 14px 14px; border-radius: 14px; background: var(--art-lcd);
+  box-shadow: inset 0 2px 8px rgb(0 0 0 / 0.6), 0 1px 0 rgb(255 255 255 / 0.5); font: 900 15px/1 var(--font-doto); letter-spacing: 0.08em;
+  color: var(--art-led);
+}
+:root[data-variant='j'] .vy-j-window {
+  height: 9.75vw; margin-top: 10px; overflow: hidden;
+  background: radial-gradient(circle, color-mix(in srgb, var(--art-led) 16%, #0000) 31%, #0000 33%) 0 0 / calc(26vw / 24) calc(26vw / 24);
+}
+:root[data-variant='j'] .vy-j-wave { display: block; width: 200%; height: 100%; will-change: transform; animation: vy-j-scroll 24s steps(48) infinite; }
+@keyframes vy-j-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+:root[data-scrolled][data-variant='j'] :is(.vy-j-cap, .vy-j-wave) { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce), (pointer: coarse) {
+  :root[data-variant='j'] :is(.vy-j-cap, .vy-j-wave) { animation: none; }
+}
+
+/* The page as a device: keycap letters, Doto readouts, screwed-down modules. */
+:root[data-variant='j'] .vy-title { text-shadow: 0 6px 0 var(--alu); }
+:root[data-variant='j'] .vy-letter { color: var(--key-1); }
+:root[data-variant='j'] .vy-letter:nth-child(3n + 2) { color: var(--key-2); }
+:root[data-variant='j'] .vy-letter:nth-child(4) { color: var(--key-3); }
+:root[data-variant='j'] .vy-letter:nth-child(7) { color: var(--key-4); }
+:root[data-variant='j'] #hero-title { font-weight: 900; font-size: clamp(2.4rem, 4.6vw, 4.6rem); line-height: 0.98; letter-spacing: -0.02em; }
+:root[data-variant='j'] #hero-title .vy-fresh {
+  color: var(--alert); text-decoration: none; padding-bottom: 0.14em;
+  background: radial-gradient(circle, var(--alert) 2px, #0000 2.6px) 0 100% / 8px 8px repeat-x;
+}
+:root[data-variant='j'] :is([data-hero-side], main > div .bg-surface) {
+  --screw: radial-gradient( circle, color-mix(in srgb, var(--steel) 45%, #0000) 0 2.6px, #0000 3.2px ); border: 1px solid var(--rule);
+  border-radius: 16px;
+  background: var(--screw) 6px 6px / 12px 12px no-repeat, var(--screw) calc(100% - 6px) 6px / 12px 12px no-repeat, var(--screw) 6px calc(100% - 6px) / 12px 12px no-repeat, var(--screw) calc(100% - 6px) calc(100% - 6px) / 12px 12px no-repeat, var(--module, var(--surface));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.7), 0 18px 34px -26px rgb(0 0 0 / 0.55);
+}
+:root[data-variant='j'] [data-hero-side] { --module: var(--hero-box); position: relative; padding: 44px 24px 24px; }
+:root[data-variant='j'][data-theme='dark'] :is([data-hero-side], main > div .bg-surface) { box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 18px 34px -26px #000; }
+:root[data-variant='j'] [data-hero-side]::before {
+  content: 'PRESET J · INSTRUMENT OS'; position: absolute; top: 16px; left: 24px; font: 900 14px/1 var(--font-doto); letter-spacing: 0.1em;
+  color: var(--alert);
+}
+:root[data-variant='j'] [data-hero-side]::after {
+  content: ''; position: absolute; top: 15px; right: 24px; width: 10px; height: 10px; border-radius: 50%; background: var(--art-3);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--art-3) 25%, #0000);
+}
+:root[data-variant='j'] main > div h2.figure:not(h3) { font-weight: 900; font-size: clamp(2rem, 3.6vw, 3rem); text-transform: none; letter-spacing: -0.01em; color: var(--ink); }
+:root[data-variant='j'] main > div h2::before {
+  content: ''; display: inline-block; width: 0.34em; height: 0.34em; margin-right: 0.4em; vertical-align: 0.14em; border-radius: 50%;
+  background: var(--alert); box-shadow: 0 0 0 0.1em color-mix(in srgb, var(--alert) 25%, #0000);
+}
+:root[data-variant='j'] main > div .figure:not(h3) { font-family: var(--font-doto); font-weight: 900; color: var(--art-3); }
+:root[data-variant='j'] .flap-cell { border-radius: 3px; }
+:root[data-variant='j'] .vy-loadbar { height: 6px; inset: 6px 12px auto; }
+:root[data-variant='j'] .vy-loadbar-fill { background: var(--art-3); }
+:root[data-variant='j'] .vy-loadbar::after {
+  content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, #0000 0 10px, var(--panel) 10px 13px);
 }

@@ -31,15 +31,16 @@ type SiteShellProps = {
 /* Header, page and footer, shared by every section of the site. */
 const SiteShell = ({ children, plain }: SiteShellProps) => (
   <>
-    {/* The concept's background art paints with the first frame, under the title. */}
-    {!plain && <BackdropPoster />}
-    {!plain && <HumanChrome />}
+    {/* First in tab order, before the concept dock. */}
     <a
       href="#content"
       className="bg-ink text-surface fixed top-3 left-3 z-50 -translate-y-24 rounded-[4px] px-3.5 py-2.5 font-mono text-[13px] font-semibold no-underline focus:translate-y-0"
     >
       Skip to content
     </a>
+    {/* The concept's background art paints with the first frame, under the title. */}
+    {!plain && <BackdropPoster />}
+    {!plain && <HumanChrome />}
     <SiteNav
       brand={<Brand />}
       aside={
