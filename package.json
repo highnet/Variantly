@@ -1,6 +1,6 @@
 {
   "name": "variantly",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "Point it at a site that needs a redesign. Your own coding agent renders N Impeccable redesigns side by side; you swipe between them and keep one.",
   "type": "module",
   "bin": {

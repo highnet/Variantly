@@ -1,51 +1,43 @@
 import * as THREE from 'three';
 
-import type { ConceptLook } from '@/concepts/types';
+import { bsdf } from '@/lib/bsdf';
 import { plain, type LetterInk } from '@/lib/lookKit';
+import type { ConceptLook } from '@/concepts/types';
 
 /*
- * j · Instrument OS: machined letters. Each face is a rubber or plastic
- * keycap in the letter's own colour; the extruded body is aluminium, painted
- * on phones and brushed (lit by the studio environment) on desktop.
+ * j · Instrument OS: machined letters. Each face is a keycap in the letter's
+ * own colour (soft-touch rubber or glossy ABS under a clear coat); the body is
+ * anodised aluminium, brushed: an anisotropic highlight stretched around the
+ * rim (the mesh's UVs run along the outline there), with fine streaks in the
+ * roughness.
  */
+const BRUSH = /* glsl */ `
+  roughnessFactor *= 0.75 + 0.5 * vyHash(vec2(floor(vObj.z * 900.0), floor(vObj.x * 6.0)));
+`;
 
-// Brushed: fine streaks along x in the roughness, and the page's film grain.
-const brushed = (m: THREE.MeshStandardMaterial) => {
-  m.onBeforeCompile = (s) => {
-    s.fragmentShader = s.fragmentShader.replace(
-      '#include <roughnessmap_fragment>',
-      `#include <roughnessmap_fragment>
-      roughnessFactor *= 0.7 + 0.6 * fract(sin(floor(vViewPosition.y * 260.0) * 91.7) * 4375.5);`,
-    );
-  };
-  m.customProgramCacheKey = () => 'j-brushed';
-  return m;
-};
-
-// Matte painted caps in the letter's CSS colour (no emissive glow).
-const cap = (c: string, roughness: number) =>
-  new THREE.MeshStandardMaterial({ color: c, roughness, metalness: 0 });
+const cap = (c: string, roughness: number, clearcoat: number) =>
+  bsdf({ key: 'j-cap', color: c, roughness, clearcoat, clearcoatRoughness: 0.05, grain: 0.03 });
 
 const pool = (ink: LetterInk, dark: boolean) => {
-  const alu = new THREE.Color(ink.side);
-  const painted = () =>
-    new THREE.MeshStandardMaterial({ color: alu, roughness: 0.42, metalness: 0.3 });
-  const metal = (rough: number) =>
-    brushed(
-      new THREE.MeshStandardMaterial({
-        color: alu.clone().lerp(new THREE.Color(dark ? '#8a8a88' : '#ffffff'), 0.35),
-        roughness: rough,
-        metalness: 0.92,
-      }),
-    );
+  const alu = new THREE.Color(ink.side).lerp(new THREE.Color(dark ? '#8a8a88' : '#ffffff'), 0.35);
+  const metal = (roughness: number, anisotropy: number) =>
+    bsdf({
+      key: 'j-alu',
+      color: alu,
+      roughness,
+      metalness: 0.95,
+      anisotropy,
+      anisotropyRotation: 0,
+      grain: 0.03,
+      hooks: { rough: BRUSH },
+    });
   return [
-    // Phones: painted aluminium, no environment pass.
-    plain(cap(ink.face, 0.82), painted()),
-    plain(cap(ink.face, 0.38), painted()),
-    plain(cap(ink.face, 0.6), painted()),
-    plain(cap(ink.face, 0.85), metal(0.38), true),
-    plain(cap(ink.face, 0.32), metal(0.3), true),
-    plain(cap(ink.face, 0.6), metal(0.46), true),
+    plain(cap(ink.face, 0.78, 0), metal(0.32, 0.85), true),
+    plain(cap(ink.face, 0.3, 1), metal(0.26, 0.7), true),
+    plain(cap(ink.face, 0.55, 0.4), metal(0.4, 0.9), true),
+    plain(cap(ink.face, 0.85, 0), metal(0.36, 0.8), true),
+    plain(cap(ink.face, 0.24, 1), metal(0.22, 0.75), true),
+    plain(cap(ink.face, 0.6, 0.3), metal(0.44, 0.9), true),
   ];
 };
 

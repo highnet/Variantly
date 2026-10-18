@@ -18,7 +18,8 @@
 // concept uses) clips the liquid. Vector frames stay crisp at any DPR and are
 // a few kB gzipped.
 //
-// Usage (in site/): node scripts/bake-liquid.mjs
+// Usage (in site/): node scripts/bake-liquid.mjs [numeral ...]
+//   e.g. node scripts/bake-liquid.mjs 01 02 03 04 05 06 07 08
 // Needs Playwright with Chromium (a global install works: it is looked up in
 // the global node_modules when it is not a local dependency).
 import { execSync } from 'node:child_process';
@@ -32,10 +33,12 @@ const here = dirname(fileURLToPath(import.meta.url));
 const site = join(here, '..');
 const out = join(site, 'public/liquid');
 
-// Must match LIQUID_FRAMES in components/Delight.tsx and the 4800% / 47 /
+// Must match LIQUID_FRAMES in components/LiquidPour.tsx and the 4800% / 47 /
 // steps(48) in the liquid rules of app/globals.css.
 const FRAMES = 48;
-const DIGITS = ['1', '2', '3'];
+// The homepage steps by default; pass others to bake them too (the How it
+// works tour bakes 01 to 08).
+const DIGITS = process.argv.length > 2 ? process.argv.slice(2) : ['1', '2', '3'];
 const PX = 400; // render size of the glyph for the container mask
 const TILE = 200; // sprite units per tile width
 const COLS = 56; // surface columns

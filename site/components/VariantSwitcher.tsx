@@ -25,14 +25,7 @@ import {
 } from '@/concepts';
 import type { ConceptMeta } from '@/concepts/types';
 import { useSeekTime } from '@/lib/seek';
-import {
-  pressOrigin,
-  setVariant,
-  shuffleVariant,
-  stepVariant,
-  useConcept,
-  type SwapOrigin,
-} from '@/lib/variant';
+import { setVariant, shuffleVariant, stepVariant, useConcept } from '@/lib/variant';
 import { useDockSwipe } from '@/lib/dockSwipe';
 import { cn } from '@/lib/utils';
 
@@ -130,7 +123,7 @@ type TileProps = {
   selected: boolean;
   active: boolean;
   large?: boolean;
-  onPick: (id: ConceptId, origin: SwapOrigin) => void;
+  onPick: (id: ConceptId) => void;
   onFocusTile: (id: ConceptId) => void;
 };
 
@@ -143,7 +136,7 @@ const Tile = ({ meta, selected, active, large, onPick, onFocusTile }: TileProps)
     data-concept={meta.id}
     aria-selected={selected}
     tabIndex={active ? 0 : -1}
-    onClick={(e) => onPick(meta.id as ConceptId, pressOrigin(e))}
+    onClick={() => onPick(meta.id as ConceptId)}
     onFocus={() => {
       onFocusTile(meta.id as ConceptId);
       prefetch(meta.id as ConceptId);
@@ -243,7 +236,7 @@ export const VariantSwitcher = () => {
     dock: dockEl,
     face: faceEl,
     current: current ?? '',
-    step: (by, origin) => current && stepVariant(current, by, { origin }),
+    step: (by) => current && stepVariant(current, by),
     open: () => (open ? undefined : openPicker()),
   });
 
@@ -284,8 +277,8 @@ export const VariantSwitcher = () => {
   const at = current ? steps.indexOf(current) : -1;
   const count = steps.length;
 
-  const pick = (id: ConceptId, origin: SwapOrigin) => {
-    setVariant(id, { origin });
+  const pick = (id: ConceptId) => {
+    setVariant(id);
     close();
   };
   const focusTile = (id: ConceptId) => {
@@ -337,8 +330,8 @@ export const VariantSwitcher = () => {
     <Button
       variant="concept-tile"
       size={phone ? 'tile-lg' : 'tile'}
-      onClick={(e) => {
-        shuffleVariant(current, { origin: pressOrigin(e) });
+      onClick={() => {
+        shuffleVariant(current);
         close();
       }}
       className={cn(phone && 'border-rule bg-surface border border-dashed')}
@@ -368,7 +361,7 @@ export const VariantSwitcher = () => {
           data-dir="prev"
           aria-label="Previous concept"
           title="Previous concept ( [ )"
-          onClick={(e) => stepVariant(current, -1, { origin: pressOrigin(e) })}
+          onClick={() => stepVariant(current, -1)}
           onPointerEnter={() => prefetch(conceptAt(current, -1))}
         >
           <ChevronLeft />
@@ -407,7 +400,7 @@ export const VariantSwitcher = () => {
           data-dir="next"
           aria-label="Next concept"
           title="Next concept ( ] )"
-          onClick={(e) => stepVariant(current, 1, { origin: pressOrigin(e) })}
+          onClick={() => stepVariant(current, 1)}
           onPointerEnter={() => prefetch(conceptAt(current, 1))}
         >
           <ChevronRight />

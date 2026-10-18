@@ -4,8 +4,11 @@
  *
  * Pre-baked: one call samples a damped spring into WAAPI keyframes for three
  * small layers (the pill arriving, the blob it leaves behind, and the neck
- * between them), all transform and opacity, so the browser plays them on the
- * compositor. No filters, no masks, no per-frame script.
+ * between them). Motion is transform and opacity only, so the browser plays
+ * it on the compositor even while the page is busy (the flip, a page load).
+ * The corners round off in separate border-radius tracks: one animation
+ * holding both would run all of it on the main thread. No filters, no
+ * masks, no per-frame script.
  */
 
 type Vec = { x: number; y: number };
@@ -14,8 +17,12 @@ export type GooPlan = {
   duration: number;
   /** The arriving pill, drawn in the target cell. */
   head: Keyframe[];
+  /** Its corners (border-radius), played as their own animation. */
+  headShape: Keyframe[];
   /** The blob left in the source cell, drawn there. */
   tail: Keyframe[];
+  /** Its corners (border-radius), played as their own animation. */
+  tailShape: Keyframe[];
   /** The neck, drawn from the source cell's centre. */
   neck: Keyframe[];
   /** When the target's number turns to the pill's ink, in ms. */
@@ -92,7 +99,9 @@ export const bakeGoo = (
   const oy = start.y - from.y;
 
   const head: Keyframe[] = [];
+  const headShape: Keyframe[] = [];
   const tail: Keyframe[] = [];
+  const tailShape: Keyframe[] = [];
   const neck: Keyframe[] = [];
   let arriveMs = duration * 0.5;
   let leaveMs = duration * 0.35;
@@ -115,10 +124,13 @@ export const bakeGoo = (
     const hy = -dy * (1 - h);
     // The head swells out of the source blob rather than starting full size.
     const grow = 0.6 + 0.4 * smooth(0.45, 0.95, h);
+    // Rounder while it is goo, back to the pill's corners as it settles.
+    headShape.push({
+      offset: t,
+      borderRadius: i === SAMPLES ? radius(0) : radius(1 - smooth(0.82, 1, h)),
+    });
     head.push({
       offset: t,
-      // Rounder while it is goo, back to the pill's corners as it settles.
-      borderRadius: i === SAMPLES ? radius(0) : radius(1 - smooth(0.82, 1, h)),
       transform:
         i === SAMPLES
           ? 'none'
@@ -136,10 +148,13 @@ export const bakeGoo = (
     const lean = 1 + 0.1 * smooth(0, 0.15, h) * (1 - drain);
     const tx = ox + dx * k;
     const ty = oy + dy * k;
+    tailShape.push({
+      offset: t,
+      borderRadius: radius(smooth(0, 0.5, drain) + smooth(0, 0.2, h)),
+    });
     tail.push({
       offset: t,
       opacity: ts > 0.02 ? 1 : 0,
-      borderRadius: radius(smooth(0, 0.5, drain) + smooth(0, 0.2, h)),
       transform: `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) ${stretch(angle, lean)} scale(${ts.toFixed(3)})`,
     });
 
@@ -173,7 +188,9 @@ export const bakeGoo = (
   return {
     duration,
     head,
+    headShape,
     tail,
+    tailShape,
     neck,
     arriveMs: Math.round(arriveMs),
     leaveMs: Math.round(Math.min(leaveMs, arriveMs)),

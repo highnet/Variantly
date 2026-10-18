@@ -18,7 +18,7 @@ import { seekTime } from '@/lib/seek';
  * no React renders.
  */
 
-export type LensMode = 'pointer' | 'touch' | 'fixed';
+export type LensMode = 'drag' | 'fixed';
 
 export type LensLive = {
   // The door is on screen.
@@ -49,7 +49,7 @@ export type LensLive = {
 
 export const lensLive: LensLive = {
   shown: false,
-  mode: 'pointer',
+  mode: 'drag',
   id: null,
   rect: { x: 0, y: 0, w: 0, h: 0 },
   tilt: { rx: 0, ry: 0 },

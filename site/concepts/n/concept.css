@@ -74,7 +74,7 @@
   --sw-ink: #e9e6e0;
 }
 
-/* the gate: grain flickers, the whole frame weaves a fraction of a pixel */
+/* the gate: the whole frame weaves a fraction of a pixel */
 :root[data-variant='n'] .r-weave {
   will-change: transform;
   animation: r-weave 24s linear infinite;
@@ -107,30 +107,6 @@
   }
   88% {
     transform: translate(-0.5px, 0.4px);
-  }
-}
-:root[data-variant='n'] .r-grain {
-  inset: -60px;
-  will-change: transform;
-  background:
-    radial-gradient(circle at 30% 40%, rgb(0 0 0 / 0.16) 0.8px, transparent 1.3px) 0 0 / 7px 11px,
-    radial-gradient(circle at 70% 20%, rgb(255 255 255 / 0.22) 0.8px, transparent 1.3px) 3px 5px /
-      13px 7px,
-    radial-gradient(circle at 50% 60%, rgb(0 0 0 / 0.12) 1px, transparent 1.5px) 5px 2px / 17px 19px,
-    radial-gradient(circle at 20% 80%, rgb(255 255 255 / 0.14) 1px, transparent 1.5px) 9px 4px /
-      23px 29px;
-  animation: r-grain 0.5s steps(3) infinite;
-}
-@keyframes r-grain {
-  0%,
-  100% {
-    transform: none;
-  }
-  33% {
-    transform: translate(41px, 23px);
-  }
-  66% {
-    transform: translate(-29px, 53px);
   }
 }
 /* scratches: a hairline down the frame for a moment, then gone */
@@ -312,18 +288,17 @@
 :root[data-variant='n'] .r-vignette {
   background: radial-gradient(ellipse 75% 70% at 50% 45%, transparent 55%, var(--r-shade));
 }
-:root[data-variant='n'][data-scrolled] :is(.r-weave, .r-grain, .r-scratch, .r-dust) {
+:root[data-variant='n'][data-scrolled] :is(.r-weave, .r-scratch, .r-dust) {
   animation-play-state: paused;
 }
 @media (pointer: coarse) {
-  :root[data-variant='n'] :is(.r-weave, .r-grain, .r-scratch, .r-dust) {
+  :root[data-variant='n'] :is(.r-weave, .r-scratch, .r-dust) {
     animation: none;
   }
 }
 
 /* the title card: a projected frame, thin double rule, rounded corners */
 :root[data-variant='n'] [data-hero-title] {
-  margin: 14px 14px 0;
   border: 0;
   border-radius: 22px;
   background: radial-gradient(ellipse 70% 80% at 50% 45%, var(--r-frame) 45%, var(--r-edge));

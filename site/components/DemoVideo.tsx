@@ -3,6 +3,7 @@
 import { useState } from 'react';
 
 import { CommandCopy } from '@/components/CommandCopy';
+import { LiquidNumeral } from '@/components/LiquidNumeral';
 import { Typography } from '@/components/ui/Typography';
 import { Button, buttonVariants } from '@/components/ui/Button';
 import { Rich } from '@/components/ui/Rich';
@@ -42,9 +43,7 @@ const DemoVideo = () => {
         <ol className="m-0 grid max-w-[1100px] list-none gap-8 p-0 md:grid-cols-2 lg:grid-cols-3">
           {DEMO_STEPS.map((step, i) => (
             <li key={step.title} className="border-ink grid content-start gap-3 border-t-2 pt-4">
-              <span className="text-steel font-mono text-[13px] font-semibold">
-                {String(i + 1).padStart(2, '0')}
-              </span>
+              <LiquidNumeral n={String(i + 1).padStart(2, '0')} className="text-[2.5rem]" />
               <span className="text-[17px] font-semibold">{step.title}</span>
               <p className="text-steel m-0 text-[15px] leading-relaxed">
                 <Rich text={step.body} />
@@ -57,7 +56,7 @@ const DemoVideo = () => {
         </ol>
       )}
       {HAS_VIDEO && (
-        <div className="vy-grain border-ink bg-slate relative aspect-video w-full max-w-[1100px] overflow-hidden rounded-md border-2">
+        <div className="border-ink bg-slate relative aspect-video w-full max-w-[1100px] overflow-hidden rounded-md border-2">
           {videoId ? (
             <iframe
               className="absolute inset-0 size-full"

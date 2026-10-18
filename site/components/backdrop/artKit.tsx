@@ -25,13 +25,24 @@ export type PieceProps = {
  * (see .vy-art-grain in globals.css), so only the shapes pick up texture and
  * the ground between them stays clean. A static pattern, rasterised once with
  * the rest of the layer. The tile spans 16 of a Piece's 100 units, so the
- * grain scales with the shape, like grain in a print of it.
+ * grain scales with the shape, like grain in a print of it. A second copy of
+ * the tile, 23 units and turned 37deg, lies over the first: the two never
+ * line up, so no repeat shows on a large shape.
  */
 export const GrainDefs = () => (
   <svg width="0" height="0" className="absolute" aria-hidden="true">
     <defs>
       <pattern id="vy-art-grain" patternUnits="userSpaceOnUse" width="16" height="16">
         <image href={grainTile.src} width="16" height="16" />
+      </pattern>
+      <pattern
+        id="vy-art-grain-b"
+        patternUnits="userSpaceOnUse"
+        width="23"
+        height="23"
+        patternTransform="rotate(37) translate(5 9)"
+      >
+        <image href={grainTile.src} width="23" height="23" />
       </pattern>
     </defs>
   </svg>
@@ -49,6 +60,7 @@ export const Piece = ({ className, children, float }: PieceProps) => (
     <svg viewBox="0 0 100 100" className="size-full overflow-visible">
       {children}
       <g className="vy-art-grain">{children}</g>
+      <g className="vy-art-grain vy-art-grain-b">{children}</g>
     </svg>
   </div>
 );

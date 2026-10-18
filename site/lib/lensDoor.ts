@@ -1,8 +1,7 @@
 // The Lens's doorway: an upright slab about 1:2, its outline (with the
 // glitch's sideways band slices and scanline dropouts), its tilt toward the
 // cursor, and the rounded-rect paths the 2D layers clip with. Shared by the
-// Lens itself (components/Lens.tsx, lib/lens3d.ts) and the concept-swap
-// doorway that opens from every switch (lib/lensSwap.ts). Pure maths: no DOM.
+// Lens itself (components/Lens.tsx and lib/lens3d.ts). Pure maths: no DOM.
 
 export type Pt = [number, number];
 export type Rect = { x: number; y: number; w: number; h: number };

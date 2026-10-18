@@ -8,6 +8,7 @@ const lastModified = new Date();
 const sitemap = (): MetadataRoute.Sitemap => [
   { url: SITE_URL, lastModified, changeFrequency: 'weekly', priority: 1 },
   { url: `${SITE_URL}/start`, lastModified, changeFrequency: 'weekly', priority: 0.9 },
+  { url: `${SITE_URL}/how-it-works`, lastModified, changeFrequency: 'monthly', priority: 0.8 },
   { url: `${SITE_URL}/safety`, lastModified, changeFrequency: 'monthly', priority: 0.8 },
   { url: `${SITE_URL}/docs`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
   { url: `${SITE_URL}/agents`, lastModified, changeFrequency: 'weekly', priority: 0.7 },

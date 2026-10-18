@@ -11,6 +11,7 @@ import { releaseFrame, seekTime } from '@/lib/seek';
 import { CONCEPT_LOADERS, type ConceptId } from '@/concepts';
 import type { ConceptScene } from '@/concepts/types';
 import { perfTier } from '@/lib/perfTier';
+import { sceneBsdf } from '@/lib/sceneBsdf';
 
 type GlFieldProps = {
   concept: ConceptId;
@@ -24,12 +25,27 @@ type GlFieldProps = {
  * renders, the frame is copied into a texture and redrawn through this pass:
  * each pixel moves by a grain value weighted to its luminance (strongest in
  * midtones, gentle in deep darks and bright highlights), with a little
- * independent per-channel noise for chroma. Colour is un-premultiplied first
- * and alpha kept, so empty (transparent) areas stay clean and soft edges fade
- * the grain with them. The noise is keyed to screen pixels only (no clock),
- * so it never shimmers; on a canvas drawn at ~half resolution each grain is
- * about two CSS pixels across, which reads as a coarse film grain.
+ * independent per-channel noise for chroma. Colour is un-premultiplied first,
+ * so empty (transparent) areas stay clean. Soft edges are stippled, like a
+ * grainy gradient in print: their alpha is dithered by the same noise, so a
+ * fading edge breaks into scattered pixels instead of a smooth blur, while
+ * solid areas and the empty ground are left alone.
+ *
+ * Around the shapes, a grainy halo (the soft glow of a print under
+ * a loupe): a blur of the frame taken with a few taps at a random angle per
+ * pixel, so the blur itself comes out grainy instead of smooth, laid under the
+ * shapes at a strength that tracks the grain and broken up further by noise as
+ * it fades. The halo reaches HALO_PX CSS pixels out.
+ *
+ * The noise is white noise per drawing-buffer pixel from an integer hash
+ * (PCG), each sample seeded apart, so it never tiles or forms a pattern at
+ * any screen size (the usual fract(sin(dot())) hash drew diagonal, repeating
+ * worms on GPUs). It is keyed to pixels only (no clock), so it never
+ * shimmers.
  */
+const HALO_PX = 34;
+const HALO_TAPS = 12;
+
 const grainPass = (amount: number, chroma: number) => {
   let frame = new THREE.FramebufferTexture(1, 1);
   const res = new THREE.Vector2(1, 1);
@@ -41,6 +57,9 @@ const grainPass = (amount: number, chroma: number) => {
         uRes: { value: res },
         uAmount: { value: amount },
         uChroma: { value: chroma },
+        uRadius: { value: HALO_PX },
+        // Grain 0.2 and up carries a full halo; faint grain, a faint one.
+        uHalo: { value: Math.min(0.85, amount * 4) },
       },
       vertexShader: 'void main() { gl_Position = vec4(position.xy, 0.0, 1.0); }',
       fragmentShader: `
@@ -48,19 +67,55 @@ const grainPass = (amount: number, chroma: number) => {
         uniform vec2 uRes;
         uniform float uAmount;
         uniform float uChroma;
-        float hash(vec2 p) { return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
+        uniform float uRadius;
+        uniform float uHalo;
+        uint pcg(uint v) {
+          uint s = v * 747796405u + 2891336453u;
+          uint w = ((s >> ((s >> 28u) + 4u)) ^ s) * 277803737u;
+          return (w >> 22u) ^ w;
+        }
+        // Uniform in 0..1 for pixel p and an independent stream k.
+        float hash(uvec2 p, uint k) {
+          return float(pcg(p.x + pcg(p.y + pcg(k)))) * (1.0 / 4294967295.0);
+        }
         void main() {
+          uvec2 p = uvec2(gl_FragCoord.xy);
           vec4 c = texture2D(tFrame, gl_FragCoord.xy / uRes);
-          if (c.a < 0.004) { gl_FragColor = c; return; }
+
+          // The halo: a stochastic blur, taps on a golden-angle spiral turned
+          // by a random angle per pixel, so it is grainy by construction.
+          vec4 glow = vec4(0.0);
+          float turn = hash(p, 7u) * 6.2831853;
+          float jitter = hash(p, 8u);
+          for (int i = 0; i < ${HALO_TAPS}; i++) {
+            float a = turn + float(i) * 2.3999632;
+            float r = uRadius * sqrt((float(i) + jitter) / ${HALO_TAPS}.0);
+            glow += texture2D(tFrame, (gl_FragCoord.xy + r * vec2(cos(a), sin(a))) / uRes);
+          }
+          glow /= ${HALO_TAPS}.0;
+          float ha = glow.a * uHalo * (1.0 - c.a);
+          // Broken up as it fades: the outer reach is mostly specks.
+          ha *= smoothstep(0.0, 1.0, 0.35 + 1.3 * hash(p, 9u) - 0.6 * (1.0 - glow.a));
+          ha = clamp(ha, 0.0, 1.0);
+          vec3 hrgb = glow.a > 0.004 ? glow.rgb / glow.a : vec3(0.0);
+
+          if (c.a < 0.004) {
+            gl_FragColor = vec4(hrgb * ha, ha);
+            return;
+          }
           vec3 rgb = c.rgb / c.a;
           float l = dot(rgb, vec3(0.2126, 0.7152, 0.0722));
           float w = (0.5 + 2.0 * l * (1.0 - l)) * smoothstep(0.0, 0.12, l + 0.03);
-          vec2 p = floor(gl_FragCoord.xy);
           // Two hashes summed: a triangular (film-like) distribution in -1..1.
-          float n = hash(p) + hash(p + 41.7) - 1.0;
-          vec3 ch = vec3(hash(p + 7.3), hash(p + 19.1), hash(p + 29.9)) - 0.5;
-          rgb += uAmount * w * (n + uChroma * ch);
-          gl_FragColor = vec4(clamp(rgb, 0.0, 1.0) * c.a, c.a);
+          float n = hash(p, 1u) + hash(p, 2u) - 1.0;
+          vec3 ch = vec3(hash(p, 3u), hash(p, 4u), hash(p, 5u)) - 0.5;
+          rgb = clamp(rgb + uAmount * w * (n + uChroma * ch), 0.0, 1.0);
+          // Stipple the soft edges: strongest half way out, none where the
+          // shape is solid or the ground is empty.
+          float edge = 4.0 * c.a * (1.0 - c.a);
+          float a = clamp(c.a + 2.5 * uAmount * edge * (hash(p, 6u) - 0.5), 0.0, 1.0);
+          // The shape over its own halo (premultiplied).
+          gl_FragColor = vec4(rgb * a + hrgb * ha, a + ha);
         }
       `,
       depthTest: false,
@@ -79,6 +134,7 @@ const grainPass = (amount: number, chroma: number) => {
     // Re-made at the drawing buffer's size whenever the canvas resizes.
     fit: (renderer: THREE.WebGLRenderer) => {
       renderer.getDrawingBufferSize(size);
+      material.uniforms.uRadius.value = HALO_PX * renderer.getPixelRatio();
       if (size.equals(res)) return;
       res.copy(size);
       frame.dispose();
@@ -223,13 +279,20 @@ const run = (
   el.appendChild(canvas);
   const scene = new THREE.Scene();
   const { camera, update } = def.build(scene, colors);
+  // The scene's lit meshes on the Principled BSDF, in the title's photo
+  // studio (lib/sceneBsdf); hand-written shaders are left as authored.
+  const bsdf = sceneBsdf(renderer, scene);
   const film = grain > 0 ? grainPass(grain, chroma) : null;
 
   // Phones get one painted frame of the scene: a moving full-screen WebGL
   // layer behind scrolling content is the costliest thing on the page there.
-  const t0 = performance.now();
+  // The scene's clock runs only while the loop does: paused (the title
+  // morphing, a swap, scrolled away) it holds, so resuming carries on from the
+  // same frame instead of jumping ahead by the pause.
+  let t0 = performance.now();
+  let pausedAt = 0;
   const draw = () => {
-    update(seek ?? (still ? 6 : (performance.now() - t0) / 1000), 0);
+    update(seek ?? (still ? 6 : ((pausedAt || performance.now()) - t0) / 1000), 0);
     renderer.render(scene, camera);
     if (film) {
       renderer.autoClear = false;
@@ -323,10 +386,15 @@ const run = (
       !html.hasAttribute('data-swapping') &&
       !busy &&
       perfTier() !== 'low';
-    if (visible && !raf) raf = requestAnimationFrame(tick);
+    if (visible && !raf) {
+      if (pausedAt) t0 += performance.now() - pausedAt;
+      pausedAt = 0;
+      raf = requestAnimationFrame(tick);
+    }
     if (!visible && raf) {
       cancelAnimationFrame(raf);
       raf = 0;
+      pausedAt = performance.now();
     }
   };
   draw();
@@ -367,6 +435,7 @@ const run = (
     document.removeEventListener('vy:perf', sync);
     removeEventListener('resize', resize);
     removeEventListener('pointermove', move);
+    bsdf?.();
     [scene, film?.scene].forEach((sc) =>
       sc?.traverse((o) => {
         const m = o as THREE.Mesh;

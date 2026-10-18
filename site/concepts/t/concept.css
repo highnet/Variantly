@@ -52,7 +52,6 @@
 /* The word at full scale on the linen, the stones and the window light around it. */
 :root[data-variant='t'] [data-hero-title] {
   background: transparent;
-  min-height: max(58vh, 320px);
 }
 :root[data-variant='t'] .vy-title { text-shadow:
     0 2px 0 var(--t-side),

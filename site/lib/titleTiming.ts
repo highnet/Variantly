@@ -45,12 +45,12 @@ export const REVEAL: Timeline = timeline(
   [...WORD].map((_, i) => 260 + Math.round(jitter(i, 2) * 360)),
   [...WORD].map((_, i) => scheduleFor(i)),
 );
-// When the concept changes, each letter morphs out to one neighbouring face
-// and back onto its (new) final face, in a quick wave from left to right.
+// When the concept changes, each letter morphs out through two neighbouring
+// faces and back onto its (new) final face, in a quick wave from left to right.
 export const SWAP: Timeline = timeline(
   'swap',
   [...WORD].map((_, i) => 40 * i),
-  [...WORD].map(() => [MORPH_MS, 120 + MORPH_MS]),
+  [...WORD].map(() => [MORPH_MS, 120 + MORPH_MS, 120 + MORPH_MS]),
 );
 export const REVEAL_MS = REVEAL.end;
 // How many morphs a letter makes before it locks in.
@@ -168,18 +168,18 @@ export const morphAt = (ms: number, index: number, out: MorphPhase, tl = REVEAL)
   return false;
 };
 
-// Switches for the owner's experiments, both on by default: the letters'
-// colour walking the concept's palette as they morph (`?titlecolor=0` turns it
-// off), and a short glitch accent on one face change per letter (`?glitch=0`).
+// Switches for the owner's experiments: the letters' colour walking the
+// concept's palette as they morph (on; `?titlecolor=0` turns it off). The
+// glitch accents (the title's, the Lens door's and the swap's) are retired:
+// off everywhere, with no flag to bring them back.
 export const TITLE_COLOR = true;
-export const TITLE_GLITCH = true;
 const flag = (name: string, on: boolean) => {
   if (typeof location === 'undefined') return on;
   const q = new URLSearchParams(location.search).get(name);
   return q === null ? on : q !== '0';
 };
 export const titleColorOn = () => flag('titlecolor', TITLE_COLOR);
-export const titleGlitchOn = () => flag('glitch', TITLE_GLITCH);
+export const titleGlitchOn = () => false;
 
 // The glitch: once per letter per reveal, at the moment one morph lands (a
 // step picked per letter, never the lockup), for GLITCH_MS. Returns its

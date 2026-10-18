@@ -2,7 +2,6 @@ import Link from 'next/link';
 
 import { Credits } from '@/components/Faq';
 import { HashRedirect } from '@/components/HashRedirect';
-import { HowItWorks } from '@/components/HowItWorks';
 import { Showcase } from '@/components/Showcase';
 import { SiteShell } from '@/components/SiteShell';
 import { buttonVariants } from '@/components/ui/Button';
@@ -48,7 +47,6 @@ const Page = () => (
       <AgentStrip />
       <Showcase />
       <div className="mx-auto grid w-full max-w-[1440px] grid-cols-[minmax(0,1fr)] gap-24 px-4 pt-16 pb-16 sm:px-6">
-        <HowItWorks />
         <NextSteps />
         <Credits />
       </div>

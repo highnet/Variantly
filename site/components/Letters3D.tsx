@@ -2,11 +2,10 @@
 
 import { useEffect, useRef, type RefObject } from 'react';
 import * as THREE from 'three';
-import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 
 import type { VariantKey } from '@/components/backdrop/variants';
 import { glTier, markFallback } from '@/lib/glTier';
-import { attachLens, lensHoldsTitle, type LensPass } from '@/lib/lens3d';
+import { attachLens, type LensPass } from '@/lib/lens3d';
 import {
   blendMorph,
   loadMorph,
@@ -29,6 +28,8 @@ import {
   type LetterLook,
 } from '@/lib/letterLook';
 import { morphMesh } from '@/lib/morphMesh';
+import { studioScene } from '@/lib/studioEnv';
+import { aimAt, turnLight, type LightAim } from '@/lib/titleLight';
 import { colourAt, letterPalette, toRgb, type Lab, type LetterPalette } from '@/lib/titleColor';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
@@ -47,6 +48,8 @@ import {
   type Timeline,
 } from '@/lib/titleTiming';
 
+// The most one drawn frame advances the title's run, ms (see `now`).
+const STALL_MS = 50;
 const WORD = 'variantly';
 // The 3D wardrobe is the 2D title's: the same faces in the same order. Each
 // letter is one morphing mesh (lib/morphMesh) built from the shared outline
@@ -208,7 +211,9 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     // Phones and the low power tier (html[data-perf='low']) animate at 2x at
     // most, 30fps, with the shadow map redrawn only when a letter steps,
     // then repaint once at full density, shadow and all, when the word settles.
-    const dpr = () => Math.min(devicePixelRatio || 1, 3);
+    // Phones hold one density (2x) for every frame, moving or settled: a
+    // settle that jumped to the screen's 3x read as a flicker as it landed.
+    const dpr = () => Math.min(devicePixelRatio || 1, phone ? 2 : 3);
     // Re-read on resize: browser zoom or a move to another screen changes it.
     let fullRatio = dpr();
     renderer.setPixelRatio(fullRatio);
@@ -225,6 +230,8 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
       document.dispatchEvent(new CustomEvent('vy:gl-busy', { detail: { busy: b } }));
     };
     // Neutral tone mapping keeps the candy colours saturated under the studio light.
+    // Glass letters' transmission pass: half resolution on phones.
+    if (phone) renderer.transmissionResolutionScale = 0.5;
     renderer.toneMapping = THREE.NeutralToneMapping;
     renderer.toneMappingExposure = 0.9;
     renderer.shadowMap.enabled = true;
@@ -239,20 +246,24 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     renderer.domElement.addEventListener('webglcontextlost', lost);
     cleanups.push(() => renderer.domElement.removeEventListener('webglcontextlost', lost));
     const scene = new THREE.Scene();
-    // The studio environment only lights three's PBR looks (candy); it is
-    // built the first time a pool needs it.
+    // The photo studio every BSDF letter reflects (lib/studioEnv), built the
+    // first time a pool needs it.
     let envMap: THREE.Texture | null = null;
     const lightStudio = () => {
       if (envMap) return;
       const pmrem = new THREE.PMREMGenerator(renderer);
-      envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+      const studio = studioScene();
+      envMap = pmrem.fromScene(studio.scene, 0.02).texture;
+      studio.dispose();
       pmrem.dispose();
       scene.environment = envMap;
-      scene.environmentIntensity = 0.55;
+      scene.environmentIntensity = 0.8;
     };
     const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 400);
-    const key = new THREE.DirectionalLight('#ffffff', 1.4);
+    const key = new THREE.DirectionalLight('#ffffff', 1.8);
     key.position.set(-4, 6, 8);
+    // Where the key rests; the moving light turns it from here.
+    const keyRest = key.position.clone();
     scene.add(key);
     const rim = new THREE.DirectionalLight('#22c3ee', 1.2);
     rim.position.set(6, -2, -4);
@@ -334,14 +345,21 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     );
 
     // Desktop: the word leans toward the cursor via a CSS transform with a
-    // transition, so following the pointer costs no WebGL frames.
+    // transition, so following the pointer costs no WebGL frames. The Lens's
+    // layers (its 2D hero under the canvas, its frame above it) cover the same
+    // box and lean with the same transform, so the door's stencil in the
+    // canvas and its 2D frame stay together while the word tilts.
+    // `u`, `v` in -1..1: toward the right, toward the bottom.
+    const leanTo = (u: number, v: number) => {
+      const lean = `perspective(900px) rotateX(${(-v * 5).toFixed(2)}deg) rotateY(${(u * 7).toFixed(2)}deg)`;
+      el.style.transform = lean;
+      el.parentElement
+        ?.querySelectorAll<HTMLElement>('[data-lens-lean]')
+        .forEach((l) => (l.style.transform = lean));
+    };
     if (!phone && !still && seek === null) {
-      const move = (e: PointerEvent) => {
-        if (lensHoldsTitle()) return;
-        const x = (e.clientX / innerWidth - 0.5) * 14;
-        const y = (e.clientY / innerHeight - 0.5) * -10;
-        el.style.transform = `perspective(900px) rotateX(${y.toFixed(2)}deg) rotateY(${x.toFixed(2)}deg)`;
-      };
+      const move = (e: PointerEvent) =>
+        leanTo((e.clientX / innerWidth - 0.5) * 2, (e.clientY / innerHeight - 0.5) * 2);
       addEventListener('pointermove', move, { passive: true });
       cleanups.push(() => removeEventListener('pointermove', move));
     }
@@ -563,7 +581,10 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         setColour(l.flat.material, f);
         l.ink = [f[0], f[1], f[2]];
       };
-      const wear = (l: Letter, i: number, k: number) => {
+      const wear = (l: Letter, i: number, at: number) => {
+        // A concept may offer fewer looks than the pool size (Kinetic Type's
+        // dark print has two): wrap rather than read past the end.
+        const k = at % pools[i].length;
         if (l.look === k) return;
         const look = pools[i][k];
         l.look = k;
@@ -807,7 +828,74 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         renderer.autoClear = autoClear;
         renderer.shadowMap.autoUpdate = autoShadow;
       };
-      const now = () => seek ?? (still ? 30 : (performance.now() - clock.current) / 1000);
+      // The run's time, advanced at most STALL_MS per drawn frame: a stalled
+      // main thread (a concept switch loading its look) pauses the morph
+      // rather than skipping it, so a quick swap still plays on screen.
+      let runStart = -1;
+      let runMs = 0;
+      let lastMs = 0;
+      const now = () => {
+        if (seek !== null) return seek;
+        if (still) return 30;
+        const ms = performance.now() - clock.current;
+        if (clock.current !== runStart) {
+          runStart = clock.current;
+          runMs = Math.min(ms, STALL_MS);
+        } else runMs += Math.min(STALL_MS, Math.max(0, ms - lastMs));
+        lastMs = ms;
+        return runMs / 1000;
+      };
+
+      // The moving light (lib/titleLight): the pointer (a finger on phones)
+      // sets where it aims, and each frame eases the light toward it. Calm
+      // mode and seek renders keep it at rest.
+      const lightTo: LightAim = { yaw: 0, pitch: 0 };
+      const lightAim: LightAim = { yaw: 0, pitch: 0 };
+      let lightT = 0;
+      if (!still && seek === null) {
+        const onPoint = (e: PointerEvent) => {
+          sweepT0 = -1;
+          swept = true;
+          aimAt(e.clientX, e.clientY, innerWidth, innerHeight, lightTo);
+          wake();
+        };
+        addEventListener('pointermove', onPoint, { passive: true });
+        addEventListener('pointerdown', onPoint, { passive: true });
+        cleanups.push(() => {
+          removeEventListener('pointermove', onPoint);
+          removeEventListener('pointerdown', onPoint);
+        });
+      }
+      // Once, as the first reveal settles: the light sweeps across the word
+      // and back (right, left, rest), so the materials show themselves before
+      // anyone moves the pointer. Any pointer input takes over at once.
+      const SWEEP_MS = 2400;
+      let sweepT0 = -1;
+      let swept = false;
+      const sweepAt = (stamp: number) => {
+        const u = Math.min(1, (stamp - sweepT0) / SWEEP_MS);
+        lightTo.yaw = 0.5 * Math.sin(u * Math.PI * 2);
+        lightTo.pitch = -0.16 * Math.sin(u * Math.PI);
+        if (u >= 1) sweepT0 = -1;
+      };
+      // Moves the light one frame on; true while it is still travelling.
+      const glide = (stamp: number) => {
+        if (sweepT0 >= 0) sweepAt(stamp);
+        const dt = Math.min(64, lightT ? stamp - lightT : 16);
+        const k = 1 - Math.exp(-dt / 160);
+        lightAim.yaw += (lightTo.yaw - lightAim.yaw) * k;
+        lightAim.pitch += (lightTo.pitch - lightAim.pitch) * k;
+        const moving =
+          sweepT0 >= 0 ||
+          Math.abs(lightTo.yaw - lightAim.yaw) + Math.abs(lightTo.pitch - lightAim.pitch) > 0.0015;
+        if (!moving) {
+          lightAim.yaw = lightTo.yaw;
+          lightAim.pitch = lightTo.pitch;
+        }
+        lightT = moving ? stamp : 0;
+        key.position.copy(keyRest).applyQuaternion(turnLight(lightAim));
+        return moving;
+      };
 
       let last = 0;
       const frame = (stamp = performance.now()) => {
@@ -822,18 +910,33 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         const t = now();
         hand(performance.now());
         const settled = pose(t) && !handing;
+        if (settled && !swept && !still && seek === null) {
+          swept = true;
+          sweepT0 = stamp;
+        }
+        // Only the light travelling: drawn like a moving word (no shadow
+        // update, the light casts none) but without claiming the GL, so the
+        // backdrop scene keeps running.
+        const gliding = glide(stamp) && seek === null && visible();
         const going = seek === null && !still && !settled && visible();
-        if (going && lite) {
+        if (gliding && !going) {
+          // Full density from the first frame, so the light settling does not
+          // sharpen the word a second time.
+          ratio(fullRatio);
+          renderer.shadowMap.autoUpdate = false;
+          if (!lens?.render()) draw();
+        } else if (going && lite) {
           ratio(Math.min(fullRatio, 2));
           renderer.shadowMap.autoUpdate = false;
           if (stepped) renderer.shadowMap.needsUpdate = true;
-          draw();
+          // The Lens door, when up, is drawn in the same pass.
+          if (!lens?.render()) draw();
         } else {
           renderer.shadowMap.autoUpdate = true;
           paint();
         }
         setBusy(going);
-        if (going) raf = requestAnimationFrame(frame);
+        if (going || gliding) raf = requestAnimationFrame(frame);
       };
       wake = () => {
         if (!raf && seek === null && (!still || handing)) raf = requestAnimationFrame(frame);

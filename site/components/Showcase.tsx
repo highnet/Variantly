@@ -19,7 +19,7 @@ import { PageSkeleton } from '@/components/PageSkeleton';
 import { PromptCopy } from '@/components/PromptCopy';
 import { RollingNumber } from '@/components/RollingNumber';
 import { RunnerPicker } from '@/components/RunnerPicker';
-import { SlatFlip, slatCount, type Flip } from '@/components/SlatFlip';
+import { SlatFlip, type Flip } from '@/components/SlatFlip';
 import { VariantTitle } from '@/components/VariantTitle';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
@@ -27,6 +27,7 @@ import { markLoaded } from '@/lib/loadProgress';
 import { bakeGoo } from '@/lib/goo';
 import { applyPrefsToFrame, calmMotion, PREFS_EVENT, readPrefs, type Prefs } from '@/lib/prefs';
 import { whenIdle } from '@/lib/scrollIdle';
+import { slatCount } from '@/lib/slatTurn';
 import { DEMO_RUNS, PROMPTS } from '@/lib/content';
 import { INSTALL } from '@/lib/site';
 import { cn } from '@/lib/utils';
@@ -43,6 +44,18 @@ const DRUM = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ&-0123456789';
 const page = (base: string, n: number, phone: boolean) =>
   `${n === 0 ? DEMO_RUNS[0].base : base}/v${n}/${phone ? 'phone' : 'index'}.html`;
 const PHONE_QUERY = '(max-width: 639px)';
+// The posters' layout width, which the live pages are laid out at too.
+const POSTER = { desktop: { w: 1440, h: 702 }, phone: { w: 390, h: 523 } };
+// Desktop stages this wide and up scale the live pages to the posters' width.
+const SCALE_FROM = 1008;
+// A live page laid out at the poster's width, scaled to the stage.
+const FRAME_FIT =
+  'absolute top-0 left-0 h-[var(--pane-h,100%)] w-[var(--pane-w,100%)] origin-top-left scale-[var(--pane-s,1)] border-0 bg-white opacity-0';
+// A poster covers the stage, or, when the pages are scaled and the stage is
+// taller than the poster, spans its width with white below, as the live page
+// shows more of itself there.
+const POSTER_FIT =
+  'absolute inset-0 size-full bg-white object-cover object-top group-data-[fit=contain]/stage:object-contain group-data-[live=true]/pane:invisible';
 // A still of each page's top, per site theme (scripts/demo-posters.mjs),
 // shot at the stage's own shape (1440 x 702 on a desktop, 390 x 523 on a
 // phone) so it lands on the live frame's pixels, at 1x/2x and 2x/3x.
@@ -290,8 +303,9 @@ const Showcase = () => {
   // Where a newly picked run starts: its first design, or its last when the
   // phone's back button steps across from the run after it.
   const [runStart, setRunStart] = useState(1);
-  // The number drawn lit (the pill's ink): the selection, except mid-hop.
-  const [lit, setLit] = useState<number | null>(selected);
+  // The number lit on first paint; after that the goo hop sets data-lit on
+  // the cells itself (see the hop below), so this never changes.
+  const [litFirst] = useState(selected);
   if (wasRun !== runIdx) {
     // The old run's pane stays drawn underneath until the new one arrives.
     setWasRun(runIdx);
@@ -299,14 +313,10 @@ const Showcase = () => {
     setWas(runStart);
     setUnder({ run: wasRun, n: was });
     setMounted(new Set([runStart]));
-    setLit(runStart);
   } else if (was !== selected) {
     setWas(selected);
     setUnder({ run: runIdx, n: was });
     setMounted((m) => (m.has(selected) ? m : new Set(m).add(selected)));
-    // The old number stays lit until the goo leaves it (the hop hands the
-    // light on); in calm mode the new one lights at once.
-    setLit(calm ? selected : was);
   }
   const selKey = paneKey({ run: runIdx, n: selected });
   const selKeyRef = useRef(selKey);
@@ -473,7 +483,8 @@ const Showcase = () => {
       () => {
         if (!f.isConnected) return;
         f.style.opacity = '1';
-        if (f.parentElement) f.parentElement.dataset.live = 'true';
+        const pane = f.closest<HTMLElement>('[data-pane]');
+        if (pane) pane.dataset.live = 'true';
         waiting.current.get(key)?.();
         if (shownLive(frames.current, 'before') && shownLive(frames.current, selKeyRef.current)) {
           setReady(true);
@@ -625,9 +636,28 @@ const Showcase = () => {
       const lean = parseFloat(getComputedStyle(el).getPropertyValue('--lean')) || 0;
       el.style.setProperty('--lean-a', `${Math.atan2(2 * lean, el.clientHeight || 1)}rad`);
     };
+    // The live pages lay out at the posters' width (1440 on a desktop, 390
+    // on a phone) and are scaled to the stage, so a poster and its live
+    // page share every pixel and the handoff never shifts. Stages narrower
+    // than a desktop (tablets) lay out at their own width: scaled down that
+    // far, the desktop page would be too small to read.
+    const fit = () => {
+      const w = el.clientWidth || 1;
+      const h = el.clientHeight || 1;
+      const ph = matchMedia(PHONE_QUERY).matches;
+      const scaled = ph || w >= SCALE_FROM;
+      const shot = ph ? POSTER.phone : POSTER.desktop;
+      const s = scaled ? w / shot.w : 1;
+      el.dataset.fit = scaled && w / h < shot.w / shot.h ? 'contain' : 'cover';
+      el.style.setProperty('--pane-s', String(s));
+      el.style.setProperty('--pane-w', `${w / s}px`);
+      el.style.setProperty('--pane-h', `${h / s}px`);
+    };
     tilt();
+    fit();
     const ro = new ResizeObserver(() => {
       tilt();
+      fit();
       placeAt(pos.current);
     });
     ro.observe(el);
@@ -692,6 +722,7 @@ const Showcase = () => {
         w: box.clientWidth,
         h: box.clientHeight,
         count: slatCount(phone),
+        contain: box.dataset.fit === 'contain',
       }));
     };
     // Turn only once there is something to show: the poster or the page.
@@ -874,7 +905,6 @@ const Showcase = () => {
     cells.current[to[e.key]]?.focus();
   };
 
-  // The goo hop between numbers: baked once per pick, played by WAAPI on
   // "Many redesigns." never breaks, so in a wide display face on a narrow
   // phone (or with larger text) it can run past the edge: shrink the title
   // just enough for that line to fit, again on resize, font load or concept.
@@ -903,7 +933,10 @@ const Showcase = () => {
       document.fonts.removeEventListener('loadingdone', fit);
     };
   }, []);
+  // The goo hop between numbers: baked once per pick, played by WAAPI on
   // transforms. Calm mode, a run switch or a first paint just moves the pill.
+  // The lit number is set on the cells directly (data-lit), not through
+  // state: a re-render of the whole demo mid-hop is what made it stutter.
   const picker = useRef<HTMLDivElement>(null);
   const pill = useRef<HTMLSpanElement>(null);
   const gooTail = useRef<HTMLSpanElement>(null);
@@ -926,11 +959,19 @@ const Showcase = () => {
     const hop = shown && prev.run === runIdx && prev.n !== selected && src && !calmMotion();
     // The light passes from the old number to the new one as the goo does.
     clearTimeout(gooTimer.current);
-    const light = (at: number, n: number | null, then?: () => void) =>
-      (gooTimer.current = window.setTimeout(() => {
+    const setLit = (n: number | null) =>
+      cells.current.forEach((el, i) => el?.toggleAttribute('data-lit', i === n));
+    const light = (at: number, n: number | null, then?: () => void) => {
+      if (at <= 0) {
         setLit(n);
         then?.();
-      }, at));
+        return;
+      }
+      gooTimer.current = window.setTimeout(() => {
+        setLit(n);
+        then?.();
+      }, at);
+    };
     // A hop that interrupts another starts from wherever the pill is now.
     const moving = head.getBoundingClientRect();
     gooPlay.current.forEach((a) => a.cancel());
@@ -960,7 +1001,9 @@ const Showcase = () => {
     const opts = { duration: plan.duration, easing: 'linear' };
     gooPlay.current = [
       head.animate(plan.head, opts),
+      head.animate(plan.headShape, opts),
       tail.animate(plan.tail, opts),
+      tail.animate(plan.tailShape, opts),
       neck.animate(plan.neck, opts),
     ];
     light(plan.leaveMs, null, () => light(plan.arriveMs - plan.leaveMs, selected));
@@ -1185,7 +1228,7 @@ const Showcase = () => {
               shown. Pane wrappers let clicks through to the frames: the
               after pane's wrapper spans the whole stage, and used to swallow
               every click on the before side. */}
-          <div className="group/pane pointer-events-none absolute inset-0">
+          <div data-pane className="group/pane pointer-events-none absolute inset-0">
             {theme && (
               // eslint-disable-next-line @next/next/no-img-element -- pre-sized static WebP
               <img
@@ -1195,7 +1238,7 @@ const Showcase = () => {
                 aria-hidden="true"
                 decoding="async"
                 onLoad={() => onPosterLoad('before')}
-                className="absolute inset-0 size-full bg-white object-cover object-top group-data-[live=true]/pane:invisible"
+                className={POSTER_FIT}
               />
             )}
             {live && (
@@ -1207,7 +1250,7 @@ const Showcase = () => {
                 onLoad={() => onFrameLoad('before')}
                 src={page(run.base, 0, phone)}
                 title="Before: Oak & Iron as it was, the original"
-                className="pointer-events-auto absolute inset-0 size-full border-0 bg-white opacity-0"
+                className={cn(FRAME_FIT, 'pointer-events-auto')}
               />
             )}
           </div>
@@ -1225,6 +1268,7 @@ const Showcase = () => {
             return (
               <div
                 key={key}
+                data-pane
                 ref={(el) => {
                   if (el) swaps.current.set(key, el);
                   else swaps.current.delete(key);
@@ -1243,25 +1287,26 @@ const Showcase = () => {
                     aria-hidden="true"
                     decoding="async"
                     onLoad={(e) => onVariantPoster(key, e.currentTarget.currentSrc)}
-                    className="vy-split-clip absolute inset-0 size-full object-cover object-top group-data-[live=true]/pane:invisible"
+                    className={cn(POSTER_FIT, 'vy-split-clip')}
                   />
                 )}
                 {live && (
-                  <iframe
-                    ref={(el) => {
-                      if (el) frames.current.set(key, el);
-                      else frames.current.delete(key);
-                    }}
-                    onLoad={() => onFrameLoad(key)}
-                    src={page(r.base, pane.n, phone)}
-                    title={`After: ${vname(pane.n)}, ${v.direction}`}
-                    aria-hidden={!isSel}
-                    tabIndex={isSel ? 0 : -1}
-                    className={cn(
-                      'vy-split-clip absolute inset-0 size-full border-0 bg-white opacity-0',
-                      isSel && 'pointer-events-auto',
-                    )}
-                  />
+                  // The clip sits on a wrapper in stage pixels: the frame
+                  // itself is scaled, which would scale the clip's lean too.
+                  <div className="vy-split-clip absolute inset-0 overflow-hidden">
+                    <iframe
+                      ref={(el) => {
+                        if (el) frames.current.set(key, el);
+                        else frames.current.delete(key);
+                      }}
+                      onLoad={() => onFrameLoad(key)}
+                      src={page(r.base, pane.n, phone)}
+                      title={`After: ${vname(pane.n)}, ${v.direction}`}
+                      aria-hidden={!isSel}
+                      tabIndex={isSel ? 0 : -1}
+                      className={cn(FRAME_FIT, isSel && 'pointer-events-auto')}
+                    />
+                  </div>
                 )}
               </div>
             );
@@ -1478,16 +1523,13 @@ const Showcase = () => {
                     title={`${v.direction} (${v.n})`}
                     tabIndex={active ? 0 : -1}
                     onClick={() => choose(v.n)}
+                    // A constant after mount: React never touches it again,
+                    // so the hop's own data-lit toggles stand.
+                    data-lit={litFirst === v.n || undefined}
                     className="group/cell"
                   >
                     {/* Above the pill; lit as the goo arrives, not before. */}
-                    <span
-                      className={cn(
-                        'text-surface/80 group-hover/cell:text-surface relative z-[2] inline-block transition-[color,scale,translate] duration-[90ms,460ms,460ms] ease-[linear,var(--ease-spring-pop),var(--ease-spring-pop)]',
-                        lit === v.n &&
-                          'text-ink group-hover/cell:text-ink -translate-y-0.5 scale-160',
-                      )}
-                    >
+                    <span className="text-surface/80 group-hover/cell:text-surface group-data-lit/cell:text-ink group-data-lit/cell:group-hover/cell:text-ink relative z-[2] inline-block transition-[color,scale,translate] duration-[90ms,460ms,460ms] ease-[linear,var(--ease-spring-pop),var(--ease-spring-pop)] group-data-lit/cell:-translate-y-0.5 group-data-lit/cell:scale-160">
                       {String(v.n).padStart(2, '0')}
                     </span>
                     {active && auto && !calm && (
