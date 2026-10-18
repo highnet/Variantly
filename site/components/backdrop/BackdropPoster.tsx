@@ -1,3 +1,4 @@
+import { GrainDefs } from '@/components/backdrop/artKit';
 import { CONCEPT_POSTERS } from '@/concepts/posters';
 import { LIVE_IDS } from '@/concepts/metas';
 
@@ -23,6 +24,7 @@ export const BackdropPoster = () => (
   >
     <style>{SHOW}</style>
     <div className="vy-blobs vy-art absolute inset-0">
+      <GrainDefs />
       {LIVE_IDS.map((id) => {
         const Art = CONCEPT_POSTERS[id];
         return (

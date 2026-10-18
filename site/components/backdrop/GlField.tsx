@@ -54,7 +54,7 @@ const grainPass = (amount: number, chroma: number) => {
           if (c.a < 0.004) { gl_FragColor = c; return; }
           vec3 rgb = c.rgb / c.a;
           float l = dot(rgb, vec3(0.2126, 0.7152, 0.0722));
-          float w = (0.3 + 2.8 * l * (1.0 - l)) * smoothstep(0.0, 0.18, l + 0.04);
+          float w = (0.5 + 2.0 * l * (1.0 - l)) * smoothstep(0.0, 0.12, l + 0.03);
           vec2 p = floor(gl_FragCoord.xy);
           // Two hashes summed: a triangular (film-like) distribution in -1..1.
           float n = hash(p) + hash(p + 41.7) - 1.0;

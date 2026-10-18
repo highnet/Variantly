@@ -5,6 +5,7 @@ import { useEffect, useState, type ComponentType } from 'react';
 import dynamic from 'next/dynamic';
 
 import { CONCEPT_BY_ID, CONCEPT_LOADERS, isLive, type ConceptId } from '@/concepts';
+import { GrainDefs } from '@/components/backdrop/artKit';
 import { markLoaded } from '@/lib/loadProgress';
 import { startPerfTier } from '@/lib/perfTier';
 import { calmMotion } from '@/lib/prefs';
@@ -99,6 +100,7 @@ export const Backdrop = () => {
     >
       {Art && (
         <div className="vy-blobs vy-art absolute inset-0">
+          <GrainDefs />
           <Art key={key} />
         </div>
       )}

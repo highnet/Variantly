@@ -955,6 +955,23 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
 
 /* ---- Grainy-gradient shapes: strength per concept ------------------------- */
 .vy-blobs { opacity: var(--blob-o, 0.7); }
+/* Grain on the art's shapes (artKit's Piece draws each shape again with the
+   tile pattern). Soft-edged helpers (contact shadows, rims, specular
+   highlights, dot and hatch screens) and unfilled strokes are skipped: grain
+   there would outline their full geometry. A concept tunes it with
+   --art-grain (0 turns it off). */
+.vy-art-grain {
+  opacity: var(--art-grain, 0.9);
+  pointer-events: none;
+}
+.vy-art-grain * { fill: url(#vy-art-grain); stroke: none; }
+.vy-art-grain [fill='none'],
+.vy-art-grain [fill='none'] *,
+.vy-art-grain [fill*='-ao'],
+.vy-art-grain [fill*='-rim'],
+.vy-art-grain [fill*='-spec'],
+.vy-art-grain [fill*='dots'],
+.vy-art-grain [fill*='hatch'] { display: none; }
 :root[data-scrolled] .vy-blobs { opacity: 0.16; }
 
 /* The press burst sits above everything; it finishes before the concept wipe. */
