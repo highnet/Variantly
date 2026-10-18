@@ -306,6 +306,14 @@
     scrollbar-gutter: stable;
   }
 
+  /* Decoration that pokes past the edge (backdrop blobs, concept art,
+     sparks) must never make the page pan sideways; iOS Safari pans on any
+     overflow the root does not clip. `clip`, unlike `hidden`, makes no
+     scroll container, so the sticky header keeps working. */
+  html,
+  body {
+    overflow-x: clip;
+  }
   body {
     display: flex;
     flex-direction: column;

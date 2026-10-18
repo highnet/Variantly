@@ -1253,10 +1253,10 @@ const Showcase = () => {
               <ChevronLeft className="size-4" aria-hidden="true" />
             </Button>
             <Button
-              variant="cell"
-              size="cell"
+              variant="outline-slate"
+              size="icon"
               aria-label="Previous redesign"
-              className="sm:hidden"
+              className="size-11 rounded-full sm:hidden [&_svg]:size-5"
               onClick={() => step(-1)}
             >
               <ChevronLeft className="size-4" aria-hidden="true" />
@@ -1316,10 +1316,10 @@ const Showcase = () => {
               {String(position).padStart(2, '0')} / {total}
             </span>
             <Button
-              variant="cell"
-              size="cell"
+              variant="outline-slate"
+              size="icon"
               aria-label="Next redesign"
-              className="sm:hidden"
+              className="size-11 rounded-full sm:hidden [&_svg]:size-5"
               onClick={() => step(1)}
             >
               <ChevronRight className="size-4" aria-hidden="true" />
