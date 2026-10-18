@@ -9,6 +9,11 @@
 // the TextGeometry it hands over to at the lock: front face at z = 0, a
 // chamfer from the outline inset by `inset` at the front out to the exact
 // outline, the sides, and the same chamfer at the back.
+//
+// UVs (in ems) give the BSDF a tangent frame (anisotropy, normal maps): the
+// caps are planar (u along x, v along y, so a cap's tangent is screen-right);
+// the chamfers and sides run u along the outline (arc length) and v down the
+// depth, so a brushed or stitched direction wraps the rim.
 import * as THREE from 'three';
 import { Earcut } from 'three/src/extras/Earcut.js';
 
@@ -34,6 +39,7 @@ export const morphMesh = (t: MorphTrack, o: MorphMeshOptions) => {
   const verts = slots * m * ROWS;
   const pos = new Float32Array(verts * 3);
   const nor = new Float32Array(verts * 3);
+  const uv = new Float32Array(verts * 2);
   const sideCount = slots * 3 * m * 6;
   const capRoom = 2 * 3 * (slots * m + 2 * slots);
   const index = new (verts > 65535 ? Uint32Array : Uint16Array)(sideCount + capRoom);
@@ -67,9 +73,11 @@ export const morphMesh = (t: MorphTrack, o: MorphMeshOptions) => {
   const geo = new THREE.BufferGeometry();
   const posAttr = new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage);
   const norAttr = new THREE.BufferAttribute(nor, 3).setUsage(THREE.DynamicDrawUsage);
+  const uvAttr = new THREE.BufferAttribute(uv, 2).setUsage(THREE.DynamicDrawUsage);
   const idxAttr = new THREE.BufferAttribute(index, 1).setUsage(THREE.DynamicDrawUsage);
   geo.setAttribute('position', posAttr);
   geo.setAttribute('normal', norAttr);
+  geo.setAttribute('uv', uvAttr);
   geo.setIndex(idxAttr);
   // TextGeometry's material groups: 0 the caps (face), 1 the sides.
   geo.addGroup(0, sideCount, 1);
@@ -80,6 +88,7 @@ export const morphMesh = (t: MorphTrack, o: MorphMeshOptions) => {
   // Scratch: one contour's points and edge normals, earcut input and its map
   // back to slots.
   const px = new Float32Array(m);
+  const arc = new Float32Array(m);
   const py = new Float32Array(m);
   const nx = new Float32Array(m);
   const ny = new Float32Array(m);
@@ -196,11 +205,23 @@ export const morphMesh = (t: MorphTrack, o: MorphMeshOptions) => {
         nx[i] = sx / l;
         ny[i] = sy / l;
       }
+      // Arc length along the outline (ems), for the rim's u.
+      arc[0] = 0;
+      for (let i = 1; i < m; i++)
+        arc[i] = arc[i - 1] + Math.hypot(px[i] - px[i - 1], py[i] - py[i - 1]) / o.em;
       for (let i = 0; i < m; i++) {
         const x = px[i];
         const y = py[i];
         const a = nx[i];
         const b = ny[i];
+        // Rim rows: u along the outline, v down the depth (rows 1..6).
+        const u = arc[i];
+        const rimV = [0, 0, z1, z1, z2, z2, z3, 0];
+        for (let row = 1; row <= 6; row++) {
+          const v = vi(s, row, i) * 2;
+          uv[v] = u;
+          uv[v + 1] = rimV[row] / o.em;
+        }
         // The bevel's inset, held within the stroke's room there (a thin
         // stroke's inset outline would otherwise cross itself).
         const inset = Math.min(o.inset, t.room[s * t.n + i * o.stride] * o.em);
@@ -226,6 +247,16 @@ export const morphMesh = (t: MorphTrack, o: MorphMeshOptions) => {
     // scripts/build-morph.mjs keeps clean), never a cap triangulated across
     // a crossed outline.
     if (tangled()) flatten();
+    // Cap UVs: planar, from the cap rows as they stand (after any flatten).
+    for (let s = 0; s < slots; s++) {
+      if (!t.live[s]) continue;
+      for (let i = 0; i < m; i++)
+        for (const row of [0, 7]) {
+          const v = vi(s, row, i);
+          uv[v * 2] = pos[v * 3] / o.em;
+          uv[v * 2 + 1] = pos[v * 3 + 1] / o.em;
+        }
+    }
     // Caps: each live outer with the live holes inside it, front and back.
     let c = sideCount;
     for (let s = 0; s < t.outerSlots; s++) {
@@ -279,6 +310,7 @@ export const morphMesh = (t: MorphTrack, o: MorphMeshOptions) => {
     geo.groups[1].count = c - sideCount;
     posAttr.needsUpdate = true;
     norAttr.needsUpdate = true;
+    uvAttr.needsUpdate = true;
     idxAttr.needsUpdate = true;
   };
 
