@@ -469,6 +469,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   mo.observe(html, { attributes: true, attributeFilter: ['data-variant'] });
   cleanups.push(() => mo.disconnect());
 
+  const drag = { id: -1, x0: 0, y0: 0, moved: false };
   // ---- The resting tab, drag and snap (every device). ----
   if (mode === 'drag') {
     target = restRect();
@@ -484,12 +485,94 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     const onScroll = () => placeRoot();
     addEventListener('resize', onResize);
     addEventListener('scroll', onScroll, { passive: true });
+
+    // Follow, with nothing to click first: the door leaves its tab for the
+    // cursor while it is over the card (mouse, pen) or for a finger touching
+    // anywhere on the card, and goes home when the cursor leaves or the finger
+    // lifts. The cursor is followed from the window, so it keeps tracking
+    // while a switch's view transition holds hit testing. A finger holds the
+    // door just above it, so the finger does not hide what it shows.
+    const doorAt = (x: number, y: number, finger: boolean): Rect => {
+      const b = card.getBoundingClientRect();
+      const { w, h } = fitDoor();
+      return { x: x - b.left - w / 2, y: y - b.top - (finger ? h * 0.75 : h / 2), w, h };
+    };
+    const inside = (e: PointerEvent) => {
+      const b = card.getBoundingClientRect();
+      return (
+        e.clientX >= b.left && e.clientX <= b.right && e.clientY >= b.top && e.clientY <= b.bottom
+      );
+    };
+    const follow = (on: boolean) => {
+      if (dragging === on) return;
+      dragging = on;
+      ui.setDragging(on);
+      if (!on) target = restRect();
+      wake();
+    };
+    let finger = -1;
+    const onMove = (e: PointerEvent) => {
+      if (fixedOpen || committing || drag.id !== -1) return;
+      const touch = e.pointerType === 'touch';
+      if (touch) {
+        if (e.pointerId !== finger) return;
+      } else if (!inside(e) || (e.target as Element).closest('[data-lens-ui]')) {
+        follow(false);
+        return;
+      }
+      follow(true);
+      target = doorAt(e.clientX, e.clientY, touch);
+      wake();
+    };
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch' || fixedOpen || committing) return;
+      if ((e.target as Element).closest('[data-lens-ui], a, button')) return;
+      finger = e.pointerId;
+      card.setPointerCapture(e.pointerId);
+      follow(true);
+      target = doorAt(e.clientX, e.clientY, true);
+      wake();
+    };
+    const onUp = (e: PointerEvent) => {
+      if (e.pointerId !== finger) return;
+      finger = -1;
+      follow(false);
+    };
+    // The cursor left the window altogether.
+    const onOut = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch' && !e.relatedTarget) follow(false);
+    };
+    // A click while the door is out keeps its concept (mouse; a finger keeps
+    // one with Try, so a casual tap on the title never switches it).
+    const onClick = (e: MouseEvent) => {
+      if (!dragging || fixedOpen || (e.target as Element).closest('[data-lens-ui], a, button'))
+        return;
+      if ((e as PointerEvent).pointerType === 'touch') return;
+      commit();
+    };
+    // A finger on the card drives the door in every direction, so the card
+    // does not pan the page (the rest of the page still scrolls).
+    card.style.touchAction = 'none';
+    addEventListener('pointermove', onMove, { passive: true });
+    card.addEventListener('pointerdown', onDown);
+    card.addEventListener('pointerup', onUp);
+    card.addEventListener('pointercancel', onUp);
+    card.addEventListener('lostpointercapture', onUp);
+    card.addEventListener('click', onClick);
+    document.addEventListener('pointerout', onOut);
     cleanups.push(() => {
       removeEventListener('resize', onResize);
       removeEventListener('scroll', onScroll);
+      removeEventListener('pointermove', onMove);
+      card.removeEventListener('pointerdown', onDown);
+      card.removeEventListener('pointerup', onUp);
+      card.removeEventListener('pointercancel', onUp);
+      card.removeEventListener('lostpointercapture', onUp);
+      card.removeEventListener('click', onClick);
+      document.removeEventListener('pointerout', onOut);
+      card.style.touchAction = '';
     });
   }
-  const drag = { id: -1, x0: 0, y0: 0, moved: false };
   const handleDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     drag.id = e.pointerId;
@@ -604,11 +687,13 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
  *
  * - The door always shows the page concept's fixed partner (the next on stepIds); only
  *   keeping it changes what the door shows next.
- * - Every device the same way: the door rests small at the card's edge (a
- *   peek tab) with "Try ..." beside it. Mouse, pen or finger drags it out
- *   full size over the word (tilting a few degrees toward its motion, its
- *   concept named on its top edge); letting go snaps it back. "Try ...", or
- *   a tap on the door without dragging, keeps it: the door opens (setVariant
+ * - Every device the same way, with nothing to click first: the door rests
+ *   small at the card's edge (a peek tab) with "Try ..." beside it, and comes
+ *   out full size to follow the cursor while it is over the card, or a finger
+ *   touching anywhere on the card (held just above it), tilting a few degrees
+ *   toward its motion, its concept named on its top edge; it goes home when
+ *   the cursor leaves or the finger lifts. "Try ...", a click while the door
+ *   is out, or a tap on the resting tab keeps it: the door opens (setVariant
  *   with the door as the origin, the same doorway every switch opens).
  * - Calm / reduced motion, and the keyboard: a "Peek another look" button
  *   opens a still door in the middle with its controls; keeping is instant
