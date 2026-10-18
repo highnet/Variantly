@@ -20,9 +20,9 @@ const Disc = ({ levels, className, sweep }: DiscProps) => (
 // Top to bottom: lit at the crown, dissolving into the paper below.
 const SUN = [16, 16, 12, 8, 8, 4, 2, 1];
 const PROOFS: [string, number[]][] = [
-  ['.75', [12, 8, 4, 2, 1, 1, 0, 0]],
-  ['.50', SUN],
-  ['.25', [16, 16, 16, 16, 12, 8, 4, 2]],
+  ['75%', [12, 8, 4, 2, 1, 1, 0, 0]],
+  ['50%', SUN],
+  ['25%', [16, 16, 16, 16, 12, 8, 4, 2]],
 ];
 
 const Dither = () => (
@@ -33,11 +33,11 @@ const Dither = () => (
       sweep
       className="top-[7vh] right-[-7vmax] size-[46vmax] max-sm:top-[3vh] max-sm:right-[-18vmax] max-sm:size-[50vmax]"
     />
-    <div className="vy-h-proofs absolute top-[16vh] left-[2.5vw] grid gap-4 max-xl:hidden">
+    <div className="vy-h-proofs absolute top-[12vh] left-[2.5vw] grid gap-3 max-xl:hidden">
       {PROOFS.map(([t, levels]) => (
         <figure key={t} className="m-0 grid gap-2">
-          <Disc levels={levels} className="relative size-[88px]" />
-          <figcaption>T{t}</figcaption>
+          <Disc levels={levels} className="relative size-[72px]" />
+          <figcaption>Proof · threshold {t}</figcaption>
         </figure>
       ))}
     </div>

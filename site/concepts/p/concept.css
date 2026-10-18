@@ -30,19 +30,26 @@
 :root[data-variant='p'] .p-breathe { transform-origin: 50% 60%; will-change: transform; animation: p-breathe 8s ease-in-out infinite; }
 @keyframes p-breathe { 0%, 100% { transform: none; } 50% { transform: scale(1.035) rotate(-1deg); } }
 
-/* one red thread running round the border, a stitch every 3s */
-:root[data-variant='p'] .p-run { position: absolute; overflow: hidden; inset: 12px 12px auto; height: 3px; }
-:root[data-variant='p'] .p-run-b { inset: auto 12px 12px; }
-:root[data-variant='p'] .p-run-l { inset: 12px auto 12px 12px; width: 3px; height: auto; }
-:root[data-variant='p'] .p-run-r { inset: 12px 12px 12px auto; width: 3px; height: auto; }
+/* one red thread running round the border, a stitch every 3s: twisted floss
+   (a sheen line along each stitch), slanted stitch ends, needle holes between */
+:root[data-variant='p'] .p-run { position: absolute; overflow: hidden; inset: 64px 10px auto; height: 4px; opacity: 0.75; }
+:root[data-variant='p'] .p-run-b { inset: auto 10px 10px; }
+:root[data-variant='p'] .p-run-l { inset: 64px auto 10px 10px; width: 4px; height: auto; }
+:root[data-variant='p'] .p-run-r { inset: 64px 10px 10px auto; width: 4px; height: auto; }
 :root[data-variant='p'] .p-run::before {
-  content: ''; position: absolute; inset: 0 -16px; border-radius: 2px; will-change: transform;
-  background: repeating-linear-gradient(90deg, var(--art-1) 0 10px, transparent 10px 16px);
+  content: ''; position: absolute; inset: 0 -16px; will-change: transform;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 1px, rgb(255 255 255 / 0.35) 1px 9px, transparent 9px 16px) 0 1px / 100% 1px no-repeat,
+    repeating-linear-gradient(90deg, var(--art-1) 0 10px, transparent 10px 16px);
+  border-radius: 2px; filter: drop-shadow(0 1px 0 rgb(60 20 10 / 0.25));
   animation: p-run-x 3s linear infinite;
 }
 :root[data-variant='p'] .p-run-b::before { animation-direction: reverse; }
 :root[data-variant='p'] :is(.p-run-l, .p-run-r)::before {
-  inset: -16px 0; background: repeating-linear-gradient(180deg, var(--art-1) 0 10px, transparent 10px 16px);
+  inset: -16px 0;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 1px, rgb(255 255 255 / 0.35) 1px 9px, transparent 9px 16px) 1px 0 / 1px 100% no-repeat,
+    repeating-linear-gradient(180deg, var(--art-1) 0 10px, transparent 10px 16px);
   animation-name: p-run-y;
 }
 :root[data-variant='p'] .p-run-l::before { animation-direction: reverse; }
@@ -62,7 +69,7 @@
 :root[data-variant='p'] [data-hero-title]::after {
   content: 'Motifs after Tenango embroidery · Otomí (Hñähñu) artisans of Tenango de Doria, Hidalgo, México';
   position: absolute; inset: auto 16px 22px; text-align: center;
-  font: 500 12px/1.4 var(--font-sans); letter-spacing: 0.04em; color: var(--hero-mute);
+  font: 600 13px/1.4 var(--font-sans); letter-spacing: 0.03em; color: var(--hero-ink);
 }
 :root[data-variant='p'] #hero-title { font-weight: 800; letter-spacing: -0.01em; line-height: 1.05; }
 :root[data-variant='p'] main > div h2 { text-transform: none; font-weight: 800; letter-spacing: -0.01em; }
