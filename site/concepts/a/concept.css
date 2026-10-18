@@ -1,0 +1,133 @@
+/* Concept a: every rule is scoped to :root[data-variant='a'] (concepts/README.md). */
+:root[data-variant='a'] {
+  --panel: #fff3ea;
+  --surface: #fffaf6;
+  --rule: #f1d3c2;
+  --steel: #7a5a50;
+  --ink: #2a1630;
+  --alert: #ff7a59;
+  --alert-hover: #ff9677;
+  --hero-bg: #ffe9dc;
+  --hero-ink: #2a1630;
+  --hero-mute: #7a5a62;
+  --hero-line: #f3c9b4;
+  --hero-box: #fffaf6;
+  --hero-face: var(--font-clay);
+  --title: #ff7a59;
+  --hero-alpha: 55%;
+}
+:root[data-variant='a'][data-theme='dark'] {
+  --panel: #1a0f1e;
+  --surface: #251629;
+  --rule: #3d2744;
+  --steel: #c9a9b8;
+  --ink: #fbeee6;
+  --hero-bg: #241428;
+  --hero-ink: #fff1ea;
+  --hero-mute: #cfa9bb;
+  --hero-line: #4a2d52;
+  --hero-box: #120a15;
+}
+:root[data-variant='a'] .vy-title {
+  text-shadow:
+    0 2px 0 #e8603f,
+    0 4px 0 #d9502f,
+    0 6px 0 #c94322,
+    0 8px 0 #b8391b;
+}
+:root[data-variant='a'] [data-hero-grid] {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+  text-align: center;
+  max-width: 980px;
+  border-radius: 36px;
+  margin-block: 0 40px;
+}
+:root[data-variant='a'] [data-hero-copy] p {
+  margin-inline: auto;
+}
+:root[data-variant='a'] [data-hero-side] {
+  width: min(100%, 620px);
+  text-align: left;
+}
+:root[data-variant='a'] [data-hero-title] {
+  background: transparent;
+}
+:root[data-variant='a'] main > div h2 {
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+:root[data-variant='a'] main > div .bg-surface {
+  border: 0;
+  border-radius: 28px;
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.7),
+    0 18px 40px -18px rgb(140 60 40 / 0.35);
+}
+:root[data-variant='a'][data-theme='dark'] main > div .bg-surface {
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 18px 40px -18px rgb(0 0 0 / 0.7);
+}
+:root[data-variant='a'] main > div .figure:not(h3) {
+  text-shadow:
+    0 2px 0 #e8603f,
+    0 4px 0 #c94322;
+}
+:root[data-variant='a'] main > div .border-rule {
+  border-color: transparent;
+}
+@media (max-width: 639px) {
+  :root[data-variant='a'] [data-hero-grid] {
+    border-radius: 24px;
+    margin-inline: 12px;
+  }
+}
+:root[data-variant='a'] {
+  --flap-bg: #ff7a59;
+  --flap-ink: #fff8f3;
+}
+:root[data-variant='a'] .flap-cell {
+  border-radius: 0.22em;
+}
+:root[data-variant='a'] {
+  --board-bg: #2a1630;
+  --board-raised: #3a2242;
+  --board-line: #553363;
+  --board-mute: #d9b8c4;
+  --board-text: #fff1ea;
+  --board-deep: #1a0e1e;
+  --board-ok: #ff7a59;
+}
+:root[data-variant='a'] {
+  --blob-o: 0.8;
+}
+@media (max-width: 639px), (pointer: coarse) {
+  :root[data-variant='a'] .vy-title {
+    text-shadow:
+      0 4px 0 #d9502f,
+      0 8px 0 #b8391b;
+  }
+}
+:root[data-variant='a'] {
+  --art-1: #ffb59a;
+  --art-2: #ffd98a;
+  --art-3: #c9b8ff;
+  --art-hi: #fff6ef;
+  --art-shadow: #7a3a2a;
+}
+:root[data-variant='a'][data-theme='dark'] {
+  --art-1: #c86a55;
+  --art-2: #c99a4e;
+  --art-3: #7d68c9;
+  --art-hi: #f2c2ae;
+  --art-shadow: #000;
+}
+:root[data-variant='a'] .vy-loadbar {
+  height: 6px;
+  inset: 6px 12px auto;
+}
+:root[data-variant='a'] .vy-loadbar-fill {
+  border-radius: 99px;
+  background: linear-gradient(90deg, var(--art-1), var(--art-2), var(--art-3));
+}

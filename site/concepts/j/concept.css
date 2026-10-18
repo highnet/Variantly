@@ -1,0 +1,20 @@
+/* j · Instrument OS: placeholder tokens from the roll's palette. */
+:root[data-variant='j'] {
+  --panel: color-mix(in srgb, #e9e6df 94%, #161514); --surface: #e9e6df; --rule: color-mix(in srgb, #161514 18%, #e9e6df); --steel: color-mix(in srgb, #161514 66%, #e9e6df); --ink: #161514;
+  --alert: #c4462a; --alert-hover: color-mix(in srgb, #c4462a 85%, #e9e6df); --on-alert: #ffffff;
+  --hero-bg: #e9e6df; --hero-ink: #161514; --hero-mute: color-mix(in srgb, #161514 66%, #e9e6df); --hero-line: color-mix(in srgb, #161514 22%, #e9e6df); --hero-box: color-mix(in srgb, #e9e6df 96%, #161514);
+  --title: #c4462a;
+  --flap-bg: #c4462a; --flap-ink: #ffffff;
+  --art-1: #c4462a; --art-2: #9a978f; --art-3: #3c6e71; --art-ink: #161514; --art-shadow: #161514;
+  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
+  --board-bg: #111111; --board-raised: color-mix(in srgb, #111111 88%, #efebe3); --board-line: color-mix(in srgb, #111111 70%, #efebe3);
+  --board-mute: color-mix(in srgb, #efebe3 72%, #111111); --board-text: #efebe3; --board-deep: color-mix(in srgb, #111111 80%, #000); --board-ok: #e0583a;
+}
+:root[data-variant='j'][data-theme='dark'] {
+  --panel: color-mix(in srgb, #111111 94%, #efebe3); --surface: #111111; --rule: color-mix(in srgb, #efebe3 18%, #111111); --steel: color-mix(in srgb, #efebe3 66%, #111111); --ink: #efebe3;
+  --alert: #e0583a; --alert-hover: color-mix(in srgb, #e0583a 85%, #111111); --on-alert: #ffffff;
+  --hero-bg: #111111; --hero-ink: #efebe3; --hero-mute: color-mix(in srgb, #efebe3 66%, #111111); --hero-line: color-mix(in srgb, #efebe3 22%, #111111); --hero-box: color-mix(in srgb, #111111 96%, #efebe3);
+  --title: #e0583a;
+  --flap-bg: #e0583a; --flap-ink: #ffffff;
+  --art-1: #e0583a; --art-2: #3a3936; --art-3: #5a9a9d; --art-ink: #efebe3; --art-shadow: #efebe3;
+}

@@ -1,0 +1,20 @@
+/* l · Inflated Chrome: placeholder tokens from the roll's palette. */
+:root[data-variant='l'] {
+  --panel: color-mix(in srgb, #e6e6e6 94%, #0a0a0a); --surface: #e6e6e6; --rule: color-mix(in srgb, #0a0a0a 18%, #e6e6e6); --steel: color-mix(in srgb, #0a0a0a 66%, #e6e6e6); --ink: #0a0a0a;
+  --alert: #c6ff00; --alert-hover: color-mix(in srgb, #c6ff00 85%, #e6e6e6); --on-alert: #111111;
+  --hero-bg: #e6e6e6; --hero-ink: #0a0a0a; --hero-mute: color-mix(in srgb, #0a0a0a 66%, #e6e6e6); --hero-line: color-mix(in srgb, #0a0a0a 22%, #e6e6e6); --hero-box: color-mix(in srgb, #e6e6e6 96%, #0a0a0a);
+  --title: #0a0a0a;
+  --flap-bg: #c6ff00; --flap-ink: #111111;
+  --art-1: #c6ff00; --art-2: #9b9b9b; --art-3: #8fb4e6; --art-ink: #0a0a0a; --art-shadow: #0a0a0a;
+  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
+  --board-bg: #050505; --board-raised: color-mix(in srgb, #050505 88%, #eaeaea); --board-line: color-mix(in srgb, #050505 70%, #eaeaea);
+  --board-mute: color-mix(in srgb, #eaeaea 72%, #050505); --board-text: #eaeaea; --board-deep: color-mix(in srgb, #050505 80%, #000); --board-ok: #c6ff00;
+}
+:root[data-variant='l'][data-theme='dark'] {
+  --panel: color-mix(in srgb, #050505 94%, #eaeaea); --surface: #050505; --rule: color-mix(in srgb, #eaeaea 18%, #050505); --steel: color-mix(in srgb, #eaeaea 66%, #050505); --ink: #eaeaea;
+  --alert: #c6ff00; --alert-hover: color-mix(in srgb, #c6ff00 85%, #050505); --on-alert: #111111;
+  --hero-bg: #050505; --hero-ink: #eaeaea; --hero-mute: color-mix(in srgb, #eaeaea 66%, #050505); --hero-line: color-mix(in srgb, #eaeaea 22%, #050505); --hero-box: color-mix(in srgb, #050505 96%, #eaeaea);
+  --title: #c6ff00;
+  --flap-bg: #c6ff00; --flap-ink: #111111;
+  --art-1: #c6ff00; --art-2: #4a4a4a; --art-3: #8fb4e6; --art-ink: #eaeaea; --art-shadow: #eaeaea;
+}

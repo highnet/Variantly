@@ -1,0 +1,20 @@
+/* i · Liquid Glass: placeholder tokens from the roll's palette. */
+:root[data-variant='i'] {
+  --panel: color-mix(in srgb, #eef2f6 94%, #0b0c10); --surface: #eef2f6; --rule: color-mix(in srgb, #0b0c10 18%, #eef2f6); --steel: color-mix(in srgb, #0b0c10 66%, #eef2f6); --ink: #0b0c10;
+  --alert: #5b8db8; --alert-hover: color-mix(in srgb, #5b8db8 85%, #eef2f6); --on-alert: #ffffff;
+  --hero-bg: #eef2f6; --hero-ink: #0b0c10; --hero-mute: color-mix(in srgb, #0b0c10 66%, #eef2f6); --hero-line: color-mix(in srgb, #0b0c10 22%, #eef2f6); --hero-box: color-mix(in srgb, #eef2f6 96%, #0b0c10);
+  --title: #5b8db8;
+  --flap-bg: #5b8db8; --flap-ink: #ffffff;
+  --art-1: #5b8db8; --art-2: #ffffff; --art-3: #b8c3d1; --art-ink: #0b0c10; --art-shadow: #0b0c10;
+  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
+  --board-bg: #05070b; --board-raised: color-mix(in srgb, #05070b 88%, #f2f5f9); --board-line: color-mix(in srgb, #05070b 70%, #f2f5f9);
+  --board-mute: color-mix(in srgb, #f2f5f9 72%, #05070b); --board-text: #f2f5f9; --board-deep: color-mix(in srgb, #05070b 80%, #000); --board-ok: #8fb4e6;
+}
+:root[data-variant='i'][data-theme='dark'] {
+  --panel: color-mix(in srgb, #05070b 94%, #f2f5f9); --surface: #05070b; --rule: color-mix(in srgb, #f2f5f9 18%, #05070b); --steel: color-mix(in srgb, #f2f5f9 66%, #05070b); --ink: #f2f5f9;
+  --alert: #8fb4e6; --alert-hover: color-mix(in srgb, #8fb4e6 85%, #05070b); --on-alert: #111111;
+  --hero-bg: #05070b; --hero-ink: #f2f5f9; --hero-mute: color-mix(in srgb, #f2f5f9 66%, #05070b); --hero-line: color-mix(in srgb, #f2f5f9 22%, #05070b); --hero-box: color-mix(in srgb, #05070b 96%, #f2f5f9);
+  --title: #8fb4e6;
+  --flap-bg: #8fb4e6; --flap-ink: #111111;
+  --art-1: #8fb4e6; --art-2: #1b1e27; --art-3: #3a3f4c; --art-ink: #f2f5f9; --art-shadow: #f2f5f9;
+}

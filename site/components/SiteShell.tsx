@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { siGithub } from 'simple-icons';
 
-import { BackdropPoster } from '@/components/BackdropArt';
+import { BackdropPoster } from '@/components/backdrop/BackdropPoster';
 import { Brand } from '@/components/Brand';
 import { HumanChrome } from '@/components/HumanChrome';
 import { PrefsMenu } from '@/components/PrefsMenu';

@@ -1,0 +1,20 @@
+/* p · Tenango Thread: placeholder tokens from the roll's palette. */
+:root[data-variant='p'] {
+  --panel: color-mix(in srgb, #fbf8f2 94%, #1d1b1a); --surface: #fbf8f2; --rule: color-mix(in srgb, #1d1b1a 18%, #fbf8f2); --steel: color-mix(in srgb, #1d1b1a 66%, #fbf8f2); --ink: #1d1b1a;
+  --alert: #c2263a; --alert-hover: color-mix(in srgb, #c2263a 85%, #fbf8f2); --on-alert: #ffffff;
+  --hero-bg: #fbf8f2; --hero-ink: #1d1b1a; --hero-mute: color-mix(in srgb, #1d1b1a 66%, #fbf8f2); --hero-line: color-mix(in srgb, #1d1b1a 22%, #fbf8f2); --hero-box: color-mix(in srgb, #fbf8f2 96%, #1d1b1a);
+  --title: #c2263a;
+  --flap-bg: #c2263a; --flap-ink: #ffffff;
+  --art-1: #c2263a; --art-2: #1b8a7f; --art-3: #e08a3c; --art-ink: #1d1b1a; --art-shadow: #1d1b1a;
+  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
+  --board-bg: #14110f; --board-raised: color-mix(in srgb, #14110f 88%, #f6f1e8); --board-line: color-mix(in srgb, #14110f 70%, #f6f1e8);
+  --board-mute: color-mix(in srgb, #f6f1e8 72%, #14110f); --board-text: #f6f1e8; --board-deep: color-mix(in srgb, #14110f 80%, #000); --board-ok: #ef476f;
+}
+:root[data-variant='p'][data-theme='dark'] {
+  --panel: color-mix(in srgb, #14110f 94%, #f6f1e8); --surface: #14110f; --rule: color-mix(in srgb, #f6f1e8 18%, #14110f); --steel: color-mix(in srgb, #f6f1e8 66%, #14110f); --ink: #f6f1e8;
+  --alert: #ef476f; --alert-hover: color-mix(in srgb, #ef476f 85%, #14110f); --on-alert: #ffffff;
+  --hero-bg: #14110f; --hero-ink: #f6f1e8; --hero-mute: color-mix(in srgb, #f6f1e8 66%, #14110f); --hero-line: color-mix(in srgb, #f6f1e8 22%, #14110f); --hero-box: color-mix(in srgb, #14110f 96%, #f6f1e8);
+  --title: #ef476f;
+  --flap-bg: #ef476f; --flap-ink: #ffffff;
+  --art-1: #ef476f; --art-2: #2ec4b6; --art-3: #ffb563; --art-ink: #f6f1e8; --art-shadow: #f6f1e8;
+}

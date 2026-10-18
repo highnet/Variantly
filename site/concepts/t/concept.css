@@ -1,0 +1,20 @@
+/* t · Stone & Linen: placeholder tokens from the roll's palette. */
+:root[data-variant='t'] {
+  --panel: color-mix(in srgb, #efe9df 94%, #2b2824); --surface: #efe9df; --rule: color-mix(in srgb, #2b2824 18%, #efe9df); --steel: color-mix(in srgb, #2b2824 66%, #efe9df); --ink: #2b2824;
+  --alert: #7d8f86; --alert-hover: color-mix(in srgb, #7d8f86 85%, #efe9df); --on-alert: #ffffff;
+  --hero-bg: #efe9df; --hero-ink: #2b2824; --hero-mute: color-mix(in srgb, #2b2824 66%, #efe9df); --hero-line: color-mix(in srgb, #2b2824 22%, #efe9df); --hero-box: color-mix(in srgb, #efe9df 96%, #2b2824);
+  --title: #2b2824;
+  --flap-bg: #7d8f86; --flap-ink: #ffffff;
+  --art-1: #7d8f86; --art-2: #b9a48a; --art-3: #d8d1c4; --art-ink: #2b2824; --art-shadow: #2b2824;
+  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
+  --board-bg: #171512; --board-raised: color-mix(in srgb, #171512 88%, #ece5d8); --board-line: color-mix(in srgb, #171512 70%, #ece5d8);
+  --board-mute: color-mix(in srgb, #ece5d8 72%, #171512); --board-text: #ece5d8; --board-deep: color-mix(in srgb, #171512 80%, #000); --board-ok: #9aaa9b;
+}
+:root[data-variant='t'][data-theme='dark'] {
+  --panel: color-mix(in srgb, #171512 94%, #ece5d8); --surface: #171512; --rule: color-mix(in srgb, #ece5d8 18%, #171512); --steel: color-mix(in srgb, #ece5d8 66%, #171512); --ink: #ece5d8;
+  --alert: #9aaa9b; --alert-hover: color-mix(in srgb, #9aaa9b 85%, #171512); --on-alert: #ffffff;
+  --hero-bg: #171512; --hero-ink: #ece5d8; --hero-mute: color-mix(in srgb, #ece5d8 66%, #171512); --hero-line: color-mix(in srgb, #ece5d8 22%, #171512); --hero-box: color-mix(in srgb, #171512 96%, #ece5d8);
+  --title: #9aaa9b;
+  --flap-bg: #9aaa9b; --flap-ink: #ffffff;
+  --art-1: #9aaa9b; --art-2: #7e6c58; --art-3: #2a2622; --art-ink: #ece5d8; --art-shadow: #ece5d8;
+}
