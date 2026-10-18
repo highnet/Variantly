@@ -222,16 +222,28 @@
     <alias>REE-zoh</alias>
   </lexeme>
   <lexeme>
-    <grapheme>TVA</grapheme>
-    <alias>T V A</alias>
-  </lexeme>
-  <lexeme>
     <grapheme>Noir</grapheme>
     <alias>nwahr</alias>
   </lexeme>
   <lexeme>
     <grapheme>noir</grapheme>
     <alias>nwahr</alias>
+  </lexeme>
+  <lexeme>
+    <grapheme>Next.js</grapheme>
+    <alias>Next J S</alias>
+  </lexeme>
+  <lexeme>
+    <grapheme>HTML</grapheme>
+    <alias>H T M L</alias>
+  </lexeme>
+  <lexeme>
+    <grapheme>Django</grapheme>
+    <alias>Jango</alias>
+  </lexeme>
+  <lexeme>
+    <grapheme>--blind</grapheme>
+    <alias>dash dash blind</alias>
   </lexeme>
   <lexeme>
     <grapheme>Joaquin</grapheme>

@@ -1,0 +1,39 @@
+/* Phone edition: The Front Room. */
+@import url("https://fonts.googleapis.com/css2?family=Gloock&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Courier+Prime:wght@400;700&display=swap");
+:root{color-scheme:light;--wall:#23423f;--ivory:#f6eedd;--ivory-mute:#dccfb6;--ink:#2a1c14;--mute:#5d4a3c;--walnut:#5a3520;--walnut2:#6e4329;--ox:#7a2330;--ochre:#c9974a;--teal:#2f6866;--manila:#efdcb3;--gilt:#b88a3e;--field:#fffaf0}
+html[data-theme="dark"]{color-scheme:dark;--wall:#132422;--walnut:#2f1c11;--walnut2:#3a2416;--ochre:#d8a85a;--gilt:#a07a38}
+body{color:var(--ivory);font:400 16px/1.55 Newsreader,Georgia,serif;background-color:var(--wall);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='%238f3a2c' fill-opacity='.55'%3E%3Cpath d='M36 14c5 6 5 12 0 18-5-6-5-12 0-18zM36 58c5-6 5-12 0-18-5 6-5 12 0 18zM14 36c6-5 12-5 18 0-6 5-12 5-18 0zM58 36c-6-5-12-5-18 0 6 5 12 5 18 0z'/%3E%3C/g%3E%3Cg fill='%23c9974a' fill-opacity='.5'%3E%3Ccircle cx='36' cy='36' r='3'/%3E%3Ccircle cx='0' cy='0' r='2.5'/%3E%3Ccircle cx='72' cy='0' r='2.5'/%3E%3Ccircle cx='0' cy='72' r='2.5'/%3E%3Ccircle cx='72' cy='72' r='2.5'/%3E%3C/g%3E%3C/svg%3E")}
+a{color:inherit}
+h1,h2,h3{font-family:Gloock,Georgia,serif;font-weight:400}
+.b-head{background:var(--walnut);border-bottom:3px double var(--gilt)}
+.logo{display:flex;align-items:center;gap:10px;font:400 22px Gloock,serif}
+.crest{display:grid;place-items:center;width:40px;height:40px;border:1.5px solid var(--gilt);border-radius:50%;font:700 11px "Courier Prime",monospace;color:var(--ochre)}
+.b-hero{margin:24px 14px;height:492px;background:var(--ivory);color:var(--ink);outline:1px solid var(--gilt);outline-offset:-10px;box-shadow:0 24px 40px -20px rgba(0,0,0,.6)}
+.kicker{font:700 12px "Courier Prime",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--ox)}
+h1{font-size:42px;line-height:1.02}
+.intro{color:var(--mute)}
+.btn,button{font:600 16px Newsreader,serif;text-decoration:none;color:var(--ivory);background:var(--ox);border:0;border-radius:999px 999px 6px 6px;padding:11px 22px}
+.link{font-style:italic;color:var(--ox)}
+.b-sec{font-size:34px;text-align:center;align-items:center;background:var(--walnut);border-top:4px solid var(--gilt)}
+.s2{background:transparent;border-top:0}
+.b-feat{background:var(--walnut);background-image:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 1px,transparent 1px 7px)}
+.b-feat h3{font-size:24px;color:var(--ochre)}
+.b-feat p{color:var(--ivory-mute)}
+.b-feat:nth-of-type(3){border-bottom:4px solid var(--gilt)}
+.b-item{align-items:center;text-align:center}
+.b-item .art{width:250px;height:190px;margin:0 auto 14px;padding:26px;color:var(--ink);background:var(--ivory);border:12px solid var(--gilt);box-shadow:0 20px 30px -16px rgba(0,0,0,.7)}
+.i1 .art{border-radius:50%}
+.i2 .art{border-radius:999px 999px 4px 4px;border-color:var(--walnut2)}
+.i3 .art{border-color:var(--ink);box-shadow:inset 0 0 0 10px var(--manila),0 20px 30px -16px rgba(0,0,0,.7)}
+.b-item h3{font-size:26px}
+.desc{color:var(--ivory-mute)}
+.buy{width:100%}
+.price{font:700 16px "Courier Prime",monospace;color:var(--ink);background:var(--manila);padding:6px 12px;transform:rotate(-2deg)}
+.b-news{margin:0 14px;height:300px;background:var(--ivory);color:var(--ink)}
+.b-news p{color:var(--mute)}
+.b-news label{font:700 12px "Courier Prime",monospace;letter-spacing:.1em;text-transform:uppercase}
+.b-news input{background:transparent;color:var(--ink);border:0;border-bottom:1.5px solid var(--ink)}
+.b-news input::placeholder{color:var(--mute)}
+.b-foot{background:var(--walnut);border-top:3px double var(--gilt);color:var(--ivory-mute);font-size:14px}
+.small{font:400 12px "Courier Prime",monospace}

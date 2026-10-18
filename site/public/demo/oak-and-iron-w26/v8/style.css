@@ -1,0 +1,122 @@
+/* Oak & Iron · Neo-folk craft after Dalarna kurbits painting. */
+@import url("https://fonts.googleapis.com/css2?family=Young+Serif&family=Figtree:wght@400;500;600&display=swap");
+:root{color-scheme:light;
+  --ivory:#f6efe3;--paper:#fbf7ef;--ox:#6b1e23;--ox-deep:#521519;--teal:#2c6461;--teal-soft:#d6e4df;
+  --sienna:#b0502a;--ochre:#d6a043;--ink:#2a2421;--mute:#5e524b;--rule:#e2d5c2;--on-ox:#f6efe3;--field:#fff}
+html[data-theme="dark"]{color-scheme:dark;
+  --ivory:#1d1715;--paper:#241c1a;--ox:#e7a39a;--ox-deep:#f0bdb5;--teal:#8fc4bd;--teal-soft:#1f302e;
+  --sienna:#e08a62;--ochre:#d6a043;--ink:#f1e8dc;--mute:#c4b5a8;--rule:#3c302c;--on-ox:#241c1a;--field:#1a1412}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.6 Figtree,system-ui,sans-serif;overflow-x:hidden}
+::selection{background:var(--ox);color:var(--on-ox)}
+a{color:var(--ox);text-underline-offset:4px}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+h1,h2,h3{font-family:"Young Serif",Georgia,serif;font-weight:400;color:var(--ox);text-wrap:balance;margin:0}
+.skip{position:absolute;left:-999px}.skip:focus{left:16px;top:8px;background:var(--paper);padding:8px 12px;z-index:9}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+.topbar{margin:0;padding:8px 24px;text-align:center;background:var(--teal);color:var(--paper);font-size:14px;font-weight:500}
+html[data-theme="dark"] .topbar{color:#10201f}
+.navbar{max-width:1180px;margin:0 auto;padding:22px 32px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 32px}
+.logo{display:inline-flex;align-items:center;gap:10px;font:400 26px "Young Serif",serif;color:var(--ox);text-decoration:none;margin:0}
+.logo i{font-style:normal;color:var(--sienna)}
+.logo-mark{width:30px;height:30px;color:var(--teal)}
+.navbar ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 28px}
+.navbar ul a{color:var(--mute);text-decoration:none;font-weight:500;cursor:pointer}
+.navbar ul a:hover,.navbar ul a[aria-current]{color:var(--ox);text-decoration:underline;text-decoration-color:var(--ochre);text-decoration-thickness:3px}
+
+main{max-width:1180px;margin:0 auto;padding:0 32px}
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center;padding:48px 0 96px}
+h1{font-size:clamp(42px,6vw,78px);line-height:1.02;letter-spacing:-.015em}
+h1 em{font-style:normal;color:var(--teal)}
+.intro{max-width:52ch;color:var(--mute);font-size:19px;margin:28px 0 36px}
+.ctas{display:flex;flex-wrap:wrap;gap:16px 28px;align-items:center;margin:0}
+.btn,button{display:inline-block;background:var(--ox);color:var(--on-ox);border:0;border-radius:999px;padding:14px 28px;font:600 16px Figtree,sans-serif;text-decoration:none;cursor:pointer;transition:background .2s}
+.btn:hover,button:hover{background:var(--ox-deep)}
+.link{font-weight:600;cursor:pointer}
+
+/* The painted door panel */
+.hero-panel{position:relative;aspect-ratio:4/5;border-radius:50% 50% 24px 24px/34% 34% 24px 24px;background:var(--ox);display:grid;place-items:center;padding:12% 14% 8%;
+  box-shadow:inset 0 0 0 10px var(--ox),inset 0 0 0 13px var(--ochre);
+  background-image:radial-gradient(circle at 30% 20%,rgba(255,255,255,.07),transparent 50%),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .12 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E")}
+html[data-theme="dark"] .hero-panel{background-color:#5a1a1e;box-shadow:inset 0 0 0 10px #5a1a1e,inset 0 0 0 13px var(--ochre)}
+.bloom{width:100%;height:100%;overflow:visible}
+.k-leaf{fill:#2c6461;stroke:#f6efe3;stroke-width:3}
+.k-stem{stroke:#f6efe3;stroke-width:4;fill:none;stroke-linecap:round}
+.k-gourd{fill:#f6efe3}
+.k-inner{fill:#b0502a}
+.k-heart{fill:#d6a043}
+.k-line{fill:none;stroke:#6b1e23;stroke-width:3;stroke-linecap:round}
+.k-dot{fill:#d6a043}
+/* the one digital effect: the bloom paints itself in, brush stroke by brush stroke */
+@media (prefers-reduced-motion:no-preference){
+  .hero-panel .bloom{--d:1s}
+  .hero-panel .k-leaf{stroke-dasharray:520;stroke-dashoffset:520;fill-opacity:0;animation:draw 1.6s cubic-bezier(.2,.8,.2,1) .2s forwards,fill .8s ease-out 1.2s forwards}
+  .hero-panel .k-gourd,.hero-panel .k-inner,.hero-panel .k-heart{transform-origin:120px 200px;transform:scale(.2);opacity:0;animation:grow 1.1s cubic-bezier(.2,1.2,.3,1) forwards}
+  .hero-panel .k-gourd{animation-delay:.9s}.hero-panel .k-inner{animation-delay:1.1s}.hero-panel .k-heart{animation-delay:1.3s}
+  .hero-panel .k-line,.hero-panel .k-dot{opacity:0;animation:fade .6s ease-out 1.7s forwards}
+}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fill{to{fill-opacity:1}}
+@keyframes grow{to{transform:none;opacity:1}}
+@keyframes fade{to{opacity:1}}
+
+h2{font-size:clamp(30px,3.6vw,44px);line-height:1.1;margin-bottom:40px}
+section{padding:72px 0}
+.features{border-top:2px solid var(--ox);position:relative}
+.features::before{content:"";position:absolute;left:0;right:0;top:4px;border-top:1px solid var(--ox)}
+.feature-row{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:48px}
+.sprig{width:44px;height:44px;color:var(--sienna);margin-bottom:12px}
+.feature-row li:nth-child(2) .sprig{color:var(--teal)}
+.feature-row h3{font-size:26px;margin-bottom:8px}
+.feature-row p{margin:0;color:var(--mute)}
+
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.card{background:var(--ivory);border-radius:20px;padding:0 24px 24px;display:flex;flex-direction:column;gap:6px;border:1px solid var(--rule)}
+.card-img{margin:0 -24px 16px;height:220px;border-radius:20px 20px 0 0;display:grid;place-items:center;padding:36px;color:var(--ink)}
+.c1 .card-img{background:var(--teal-soft)}.c2 .card-img{background:#f1dcc8}.c3 .card-img{background:#efd7d3}
+html[data-theme="dark"] .c2 .card-img{background:#33241b}html[data-theme="dark"] .c3 .card-img{background:#36201f}
+.card-img svg{width:100%;height:100%}
+.card-img .paint{stroke:var(--sienna);stroke-width:3}
+.tag{margin:0;font-size:13px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:.1em}
+.card h3{font-size:26px}
+.card p{margin:0}
+.buy{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto!important;padding-top:20px;flex-wrap:wrap}
+.price{font:400 22px "Young Serif",serif;color:var(--ox)}
+.price s{font:400 15px Figtree,sans-serif;color:var(--mute);margin-right:6px}
+.card button{padding:10px 20px;font-size:15px}
+.all{margin:32px 0 0;text-align:center}
+
+.testimonial{display:grid;grid-template-columns:200px 1fr;gap:56px;align-items:center;border-block:1px solid var(--rule);margin-top:24px}
+.t-bloom{width:180px;height:225px}
+.t-bloom .k-gourd{fill:var(--ox)}html[data-theme="dark"] .t-bloom .k-gourd{fill:#6b1e23}
+.t-bloom .k-line{stroke:#f6efe3}
+blockquote{margin:0}
+blockquote p{font:400 clamp(26px,3vw,38px)/1.25 "Young Serif",serif;color:var(--ink);margin:0 0 20px;max-width:28ch}
+blockquote footer{color:var(--mute);font-weight:600}
+
+.newsletter{max-width:640px}
+.newsletter h2{margin-bottom:12px}
+.newsletter>p{color:var(--mute);margin:0 0 24px}
+label{display:block;font-weight:600;margin-bottom:8px}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+input{flex:1 1 240px;min-height:52px;padding:0 20px;border:2px solid var(--ox);border-radius:999px;background:var(--field);color:var(--ink);font:inherit}
+input::placeholder{color:var(--mute)}
+
+.foot{max-width:1180px;margin:48px auto 0;padding:48px 32px 40px;display:grid;grid-template-columns:1fr 1fr;gap:24px;border-top:2px solid var(--ox);color:var(--mute)}
+.foot p{margin:0}
+.foot .logo{font-size:22px}
+.foot .small{grid-column:1/-1;font-size:13px}
+
+@media (max-width:860px){
+  .hero,.testimonial{grid-template-columns:1fr}
+  .hero-panel{max-width:380px;width:100%;margin:0 auto}
+  .feature-row,.cards{grid-template-columns:1fr}
+  .foot{grid-template-columns:1fr}
+  main,.navbar,.foot{padding-left:20px;padding-right:20px}
+  .t-bloom{width:120px;height:150px}
+}
+
+/* Review stars, restored from the shared content. */
+.stars{margin:.25em 0;font-size:.85em;letter-spacing:.06em}
+.stars small{letter-spacing:0}

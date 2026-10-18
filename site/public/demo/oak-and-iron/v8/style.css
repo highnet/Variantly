@@ -1,0 +1,88 @@
+/* Liquid glass: translucent panes over a soft colour field, specular rims, Geist. */
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap");
+:root{color-scheme:light;--bg:#eef0f7;--text:#14161c;--mute:#3f4452;--accent:#1f5fd6;--accent-2:#1a4fb4;--on-accent:#fff;
+  --glass:rgba(255,255,255,.52);--glass-2:rgba(255,255,255,.72);--rim:rgba(255,255,255,.85);--edge:rgba(20,30,60,.10);--shadow:0 18px 40px -18px rgba(30,40,90,.35);
+  --c1:#ffb38a;--c2:#9ec5ff;--c3:#c9a7ff;--c4:#9ee6c9}
+html[data-theme="dark"]{color-scheme:dark;--bg:#0c0e16;--text:#f1f3f9;--mute:#c2c7d6;--accent:#7fb0ff;--accent-2:#a3c6ff;--on-accent:#0c0e16;
+  --glass:rgba(30,34,52,.48);--glass-2:rgba(40,44,66,.66);--rim:rgba(255,255,255,.22);--edge:rgba(255,255,255,.08);--shadow:0 18px 40px -18px rgba(0,0,0,.7);
+  --c1:#a1452a;--c2:#1f4e9e;--c3:#5a3a9e;--c4:#1d6b55}
+*{box-sizing:border-box}
+::selection{background:var(--accent);color:var(--on-accent)}
+body{margin:0;background:var(--bg);color:var(--text);font:400 17px/1.55 "Geist",-apple-system,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.field{position:fixed;inset:0;z-index:-1;overflow:hidden}
+.field i{position:absolute;border-radius:50%;filter:blur(60px);opacity:.85}
+.b1{width:46vw;height:46vw;left:-8vw;top:-10vw;background:var(--c1)}
+.b2{width:40vw;height:40vw;right:-6vw;top:8vh;background:var(--c2)}
+.b3{width:38vw;height:38vw;left:30vw;top:55vh;background:var(--c3)}
+.b4{width:30vw;height:30vw;right:4vw;bottom:-8vw;background:var(--c4)}
+@media (prefers-reduced-motion:no-preference){.field i{animation:drift 26s ease-in-out infinite alternate}.b2{animation-duration:32s}.b3{animation-duration:38s}}
+@keyframes drift{to{transform:translate(4vw,3vh) scale(1.08)}}
+/* The pane: blur + saturate, a bright top rim, a soft inner refraction highlight. */
+.glass{position:relative;background:var(--glass);-webkit-backdrop-filter:blur(24px) saturate(1.7);backdrop-filter:blur(24px) saturate(1.7);
+  border:1px solid var(--edge);border-radius:28px;box-shadow:inset 0 1px 0 var(--rim),inset 0 -1px 0 rgba(255,255,255,.18),var(--shadow)}
+.glass::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.55),rgba(255,255,255,0) 32%,rgba(255,255,255,0) 70%,rgba(255,255,255,.22));mix-blend-mode:soft-light}
+.glass>*{position:relative}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+.navbar{position:sticky;top:14px;z-index:5;max-width:760px;margin:14px auto 0;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 12px 10px 20px;border-radius:999px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:600;color:var(--text);text-decoration:none;letter-spacing:-.01em}
+.mark{width:22px;height:22px;border-radius:50%;background:conic-gradient(from 200deg,var(--c1),var(--c3),var(--c2),var(--c4),var(--c1));box-shadow:inset 0 1px 2px rgba(255,255,255,.9)}
+.navbar ul{list-style:none;margin:0;padding:0;display:flex;gap:2px;flex-wrap:wrap}
+.navbar ul a{display:block;padding:8px 14px;border-radius:999px;color:var(--mute);text-decoration:none;font-size:15px;font-weight:500}
+.navbar ul a:hover{color:var(--text)}
+.navbar ul a[aria-current]{background:var(--glass-2);color:var(--text);box-shadow:inset 0 1px 0 var(--rim),0 2px 8px -3px rgba(30,40,90,.3)}
+.wrap{max-width:1120px;margin:0 auto;padding:0 28px}
+.hero{padding:96px 0 72px;display:grid;grid-template-columns:1.3fr 1fr;gap:40px;align-items:end}
+h1{margin:0;font-weight:600;font-size:clamp(44px,6.6vw,88px);line-height:.98;letter-spacing:-.045em;text-wrap:balance}
+.hero-card{padding:28px}
+.intro{margin:0;color:var(--mute);font-size:18px}
+.ctas{margin:22px 0 0;display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.btn,button{display:inline-block;border:0;border-radius:999px;padding:13px 24px;font:600 15px "Geist",sans-serif;text-decoration:none;cursor:pointer;color:var(--on-accent);
+  background:linear-gradient(180deg,var(--accent),var(--accent-2));box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 20px -8px var(--accent);transition:transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s}
+.btn:hover,button:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 12px 26px -8px var(--accent)}
+.link{font-weight:500;text-underline-offset:4px}
+section{padding:40px 0}
+.section-h{margin:0 0 20px;font-weight:600;font-size:28px;letter-spacing:-.025em}
+.feature-list{margin:0;display:grid;grid-template-columns:repeat(3,1fr);padding:8px}
+.feature-list>div{padding:22px}
+.feature-list>div+div{border-left:1px solid var(--edge)}
+.feature-list dt{display:flex;align-items:center;gap:10px;font-weight:600;font-size:19px;margin-bottom:6px}
+.ic{width:34px;height:34px;padding:7px;border-radius:12px;fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;background:var(--glass-2);box-shadow:inset 0 1px 0 var(--rim)}
+.feature-list dd{margin:0;color:var(--mute)}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{display:flex;flex-direction:column;overflow:hidden}
+.card.wide{grid-column:1/-1;flex-direction:row}
+.art{color:var(--text);padding:30px 40px;margin:10px;border-radius:20px;background:var(--glass-2);box-shadow:inset 0 1px 0 var(--rim)}
+.wide .art{flex:1.3}
+.art svg{display:block;width:100%;height:auto;max-height:180px}
+.txt{padding:14px 26px 24px;flex:1;display:flex;flex-direction:column}
+.wide .txt{justify-content:center;padding:24px 32px}
+.card h3{margin:0 0 4px;font-size:22px;font-weight:600;letter-spacing:-.02em}
+.card p{margin:0 0 4px;color:var(--mute)}
+.spec{font-size:14px}
+.buy{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto!important;padding-top:16px}
+.price{font-size:20px;font-weight:600;color:var(--text);font-variant-numeric:tabular-nums}
+.card button{padding:10px 18px;font-size:14px}
+.newsletter{margin:40px 0;padding:36px}
+.newsletter p{margin:-8px 0 18px;color:var(--mute)}
+.newsletter form{max-width:540px}
+label{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+.row{display:flex;gap:8px;padding:6px;border-radius:999px;background:var(--glass-2);box-shadow:inset 0 1px 3px rgba(0,0,0,.08)}
+input{flex:1;min-width:0;padding:10px 16px;border:0;background:transparent;font:inherit;color:var(--text);border-radius:999px}
+input::placeholder{color:#5b6070}
+footer{padding:12px 28px 48px;font-size:15px;color:var(--mute)}
+footer p{margin:0 0 4px}
+.small{font-size:13px}
+@media (max-width:820px){
+  .hero,.cards,.feature-list{grid-template-columns:1fr}
+  .hero{padding:56px 0 40px}
+  .card.wide{flex-direction:column}
+  .feature-list>div+div{border-left:0;border-top:1px solid var(--edge)}
+  .navbar{margin:10px 12px 0;border-radius:24px}
+}
+@media (max-width:440px){
+  .wrap{padding:0 16px}footer{padding:12px 16px 40px}
+  .newsletter{padding:24px 18px}
+  .row{flex-direction:column;border-radius:20px}
+}

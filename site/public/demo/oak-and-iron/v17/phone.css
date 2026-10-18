@@ -1,0 +1,28 @@
+/* Phone edition: workbench bento, stone greys, one forge-orange accent. */
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;650&family=Geist+Mono:wght@400;500&display=swap');
+:root{color-scheme:light;--bg:#e9e7e3;--tile:#f6f5f2;--tile-2:#dcd9d3;--ink:#1f1e1c;--muted:#5d5a55;--line:#cfcbc4;--heat:#c2410c;--heat-ink:#fff7f2;--mono:'Geist Mono',monospace}
+html[data-theme="dark"]{color-scheme:dark;--bg:#141413;--tile:#1e1d1b;--tile-2:#2a2926;--ink:#eeece8;--muted:#a9a59e;--line:#34322f;--heat:#f2763a;--heat-ink:#1a0d06}
+body{background:var(--bg);color:var(--ink);font:17px/1.5 'Geist',Arial,sans-serif;padding:0 8px}
+.band{background:var(--tile);border-radius:20px;border:4px solid var(--bg)}
+.b-head{background:transparent;gap:4px;border:0}
+.topbar{font:400 12px var(--mono);color:var(--muted)}.topbar strong{color:var(--heat);font-weight:500}
+.logo{font-weight:650;font-size:20px;letter-spacing:-.02em;color:var(--ink)}
+.logo::before{content:'';display:inline-block;width:11px;height:11px;border-radius:50%;background:var(--heat);margin-right:8px}
+.kicker{font:400 13px var(--mono);color:var(--heat)}
+h1{font-weight:650;font-size:46px;line-height:1;letter-spacing:-.045em}
+.intro{color:var(--muted);font-size:18px}
+.btn,button{background:var(--ink);color:var(--tile);border:0;border-radius:99px;padding:11px 20px;font:500 15px 'Geist',sans-serif;text-decoration:none}
+.link{color:var(--ink);text-decoration:underline;text-underline-offset:.25em}
+.b-sec{background:transparent;border:0;font-weight:650;font-size:26px;letter-spacing:-.03em}
+.b-feat h3{font-weight:650;font-size:18px}.b-feat p{color:var(--muted)}
+.b-item .art{background:var(--tile-2);color:var(--ink)}
+.no{font:400 12px var(--mono);color:var(--heat)}
+.b-item h3{font-weight:650;font-size:22px;letter-spacing:-.02em}
+.desc{color:var(--muted)}.price{font:500 17px var(--mono)}
+.b-news{background:var(--heat);color:var(--heat-ink)}
+.b-news button{background:var(--ink);color:var(--tile)}
+.b-news input{background:var(--tile);color:var(--ink);border:0;border-radius:99px;padding:0 16px}
+.b-news input::placeholder{color:var(--muted)}
+.b-news label{font:400 12px var(--mono)}
+.b-foot{color:var(--muted)}
+.small{font-size:13px}

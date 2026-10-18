@@ -14,17 +14,25 @@ const HowItWorks = () => (
     <ol className="m-0 grid list-none gap-10 p-0 md:grid-cols-3 md:gap-8">
       {STEPS.map((s, i) => (
         <li key={s.label} className="border-ink grid content-start gap-3 border-t-2 pt-5">
-          {/* An outlined numeral that fills with ink as the scroll progress reaches
-              it (--fill, set in Delight). The filled copy sits on top inside a
-              sliding overflow-hidden window: transforms only, no repaint. */}
+          {/* An outlined numeral that fills with liquid as the scroll progress
+              reaches it. The liquid is a copy of the numeral masked by a
+              prebaked simulation (public/liquid, scripts/bake-liquid.mjs);
+              Delight picks the frame. A toned copy adds depth and grain, a lighter
+              copy the meniscus. */}
           <span className="vy-step-num relative w-fit" aria-hidden="true">
-            <span className="figure vy-step-ghost text-ink text-[clamp(4.5rem,8vw,7rem)] leading-[0.8]">
-              {i + 1}
-            </span>
-            <span className="vy-step-clip absolute inset-x-0 -inset-y-[0.15em] text-[clamp(4.5rem,8vw,7rem)]">
-              <span className="figure vy-step-fill text-ink py-[0.15em] leading-[0.8]">
+            <span className="vy-step-liq absolute inset-x-0 -inset-y-[0.15em] text-[clamp(4.5rem,8vw,7rem)]">
+              <span className="figure vy-step-fill text-ink block py-[0.15em] leading-[0.8]">
                 {i + 1}
               </span>
+              <span className="figure vy-step-tone text-ink absolute inset-0 py-[0.15em] leading-[0.8]">
+                {i + 1}
+              </span>
+              <span className="figure vy-step-line text-ink absolute inset-0 py-[0.15em] leading-[0.8]">
+                {i + 1}
+              </span>
+            </span>
+            <span className="figure vy-step-ghost text-ink relative text-[clamp(4.5rem,8vw,7rem)] leading-[0.8]">
+              {i + 1}
             </span>
           </span>
           <Typography variant="title" as="h3">

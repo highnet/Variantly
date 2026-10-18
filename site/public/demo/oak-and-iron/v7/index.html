@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Oak &amp; Iron · Möbel, Graz</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="grid-page">
+    <nav class="navbar" aria-label="Main">
+      <a class="logo">Oak<br />&amp; Iron</a>
+      <ul>
+        <li><a aria-current="page">Home</a></li>
+        <li><a>Shop</a></li>
+        <li><a>About Us</a></li>
+        <li><a>Contact</a></li>
+      </ul>
+      <p class="nav-meta">Werkstattgasse 4<br />8010 Graz</p>
+    </nav>
+
+    <header class="hero">
+      <p class="hero-num" aria-hidden="true">2019</p>
+      <h1>Furniture for real homes, made by hand.</h1>
+      <p class="intro">Tables, stools and shelves in reclaimed oak and forged steel, built in a small workshop outside Graz since 2019. Free delivery in Styria on orders over €500.</p>
+      <p class="ctas"><a class="btn">See the collection</a> <a class="link">Contact us</a></p>
+      <div class="hero-bar" aria-hidden="true"></div>
+    </header>
+
+    <section class="features" aria-labelledby="f-h">
+      <h2 id="f-h" class="section-h">How we work</h2>
+      <ol class="feature-list">
+        <li><span class="big" aria-hidden="true">1</span><h3>Handmade</h3><p>Every piece is built by hand in our workshop outside Graz.</p></li>
+        <li><span class="big" aria-hidden="true">2</span><h3>Reclaimed oak</h3><p>We use reclaimed oak and forged steel wherever we can.</p></li>
+        <li><span class="big" aria-hidden="true">3</span><h3>Personal delivery</h3><p>Delivered by the person who built it. Lead time 6–8 weeks.</p></li>
+      </ol>
+    </section>
+
+    <section id="shop" class="shop" aria-labelledby="s-h">
+      <h2 id="s-h" class="section-h">This month's products</h2>
+      <article class="item">
+        <p class="item-price">2.890<span>€</span></p>
+        <div class="item-art" aria-hidden="true"><svg viewBox="0 0 200 100" fill="none" stroke="currentColor" stroke-width="5"><path d="M6 34h188M30 34 20 94M170 34l10 60"/></svg></div>
+        <div class="item-text">
+          <h3>The Long Table</h3>
+          <p>2.4 m of reclaimed oak on steel trestles.</p>
+          <p class="spec">Reclaimed oak, steel · L 240 cm</p>
+          <button type="button">Add to cart</button>
+        </div>
+      </article>
+      <article class="item">
+        <p class="item-price">340<span>€</span></p>
+        <div class="item-art" aria-hidden="true"><svg viewBox="0 0 200 100" fill="none" stroke="currentColor" stroke-width="5"><path d="M60 22h80M78 22 66 94M122 22l12 72M70 66h60"/></svg></div>
+        <div class="item-text">
+          <h3>Smithy Stool</h3>
+          <p>Hand-forged legs, oiled seat.</p>
+          <p class="spec">Forged steel, oiled oak</p>
+          <button type="button">Add to cart</button>
+        </div>
+      </article>
+      <article class="item">
+        <p class="item-price">410<span>€</span></p>
+        <div class="item-art" aria-hidden="true"><svg viewBox="0 0 200 100" fill="none" stroke="currentColor" stroke-width="5"><path d="M100 4v92M40 22h120M40 50h120M40 78h120"/></svg></div>
+        <div class="item-text">
+          <h3>Wall Shelf No. 4</h3>
+          <p>Three shelves, one bracket, no screws visible.</p>
+          <p class="spec">Oak, steel bracket · 3 shelves</p>
+          <button type="button">Add to cart</button>
+        </div>
+      </article>
+    </section>
+
+    <section class="newsletter" aria-labelledby="n-h">
+      <h2 id="n-h" class="section-h">Newsletter</h2>
+      <p class="news-copy">News about new products and workshop days. No spam.</p>
+      <form id="newsletter">
+        <label for="email">Email address</label>
+        <div class="row">
+          <input id="email" type="email" placeholder="name@example.com" required />
+          <button>Subscribe</button>
+        </div>
+      </form>
+    </section>
+
+    <footer id="contact">
+      <p class="f-name">Oak &amp; Iron Furniture</p>
+      <p>Werkstattgasse 4<br />8010 Graz</p>
+      <p>hello@oak-and-iron.example</p>
+      <p class="small">© 2026 Oak &amp; Iron. A fictional shop: demo content for variantly.</p>
+    </footer>
+    </div>
+    <script>
+      document.getElementById('newsletter').addEventListener('submit', (e) => {
+        e.preventDefault();
+        e.target.querySelector('button').textContent = 'Thanks!';
+      });
+    </script>
+  </body>
+</html>

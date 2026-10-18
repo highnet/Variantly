@@ -1,0 +1,35 @@
+/* Phone edition: quiet organic minimalism. */
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600&display=swap");
+:root{color-scheme:light;--paper:#f8f4ee;--clay:#d9c3ae;--clay-2:#e6d6c4;--sand:#ebe1d3;--sage:#c9d0c6;--mist:#d7dfe0;--ink:#34302b;--mute:#655d55;--accent:#8a4a34;--rule:#ddd2c3;--field:#fffdf9}
+html[data-theme="dark"]{color-scheme:dark;--paper:#24201d;--clay:#4a3b30;--clay-2:#3d332b;--sand:#2e2823;--sage:#313a35;--mist:#2b3335;--ink:#ece5da;--mute:#bdb2a5;--accent:#e2a183;--rule:#3a332d;--field:#1a1715}
+body{background:var(--paper);color:var(--ink);font:400 16px/1.65 "Hanken Grotesk",system-ui,sans-serif}
+a{color:var(--accent)}
+h1,h2,h3{font-family:"Instrument Serif",Georgia,serif;font-weight:400}
+.b-head{gap:2px}
+.topbar{font-size:12px;color:var(--mute)}
+.logo{font:400 24px "Instrument Serif",serif;color:var(--ink)}
+.pebbles{position:relative;height:110px;flex:none}
+.pebbles span{position:absolute;bottom:0;display:block}
+.pebbles span:nth-child(1){left:0;width:150px;height:44px;background:var(--clay);border-radius:52% 48% 46% 54%/62% 58% 42% 38%}
+.pebbles span:nth-child(2){left:22px;bottom:40px;width:104px;height:38px;background:var(--sage);border-radius:44% 56% 52% 48%/58% 50% 50% 42%;transform:rotate(4deg)}
+.pebbles span:nth-child(3){left:44px;bottom:74px;width:60px;height:34px;background:var(--mist);border-radius:50% 50% 46% 54%/60% 62% 38% 40%;transform:rotate(-6deg)}
+h1{font-size:46px;line-height:1}
+.intro{color:var(--mute)}
+.btn,button{border:0;border-radius:999px;padding:12px 24px;background:var(--ink);color:var(--paper);font:500 15px "Hanken Grotesk",sans-serif;text-decoration:none}
+.link{font-weight:500}
+.b-sec{font-size:32px;line-height:1.05}
+.b-feat{border-top:1px solid var(--rule);margin:0 20px;padding:0}
+.b-feat h3{font-size:24px}
+.b-feat p{color:var(--mute)}
+.b-item .art{margin:0 0 14px;color:var(--ink);padding:28px 48px;background:var(--sand);border-radius:48% 52% 44% 56%/40% 44% 56% 60%}
+.i2 .art{background:var(--clay-2);border-radius:56% 44% 50% 50%/48% 56% 44% 52%}
+.i3 .art{background:var(--mist);border-radius:42% 58% 54% 46%/54% 42% 58% 46%}
+.no{font-size:13px;color:var(--accent)}
+.b-item h3{font-size:28px;line-height:1.1}
+.desc{color:var(--mute)}
+.price{font-size:17px;font-weight:500}
+.buy button{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.b-news label{font-size:14px;font-weight:500}
+.b-news input{background:var(--field);color:var(--ink);border:1px solid var(--rule);border-radius:999px;padding:0 20px}
+.b-foot{border-top:1px solid var(--rule);color:var(--mute);font-size:14px}
+.small{font-size:12px}
