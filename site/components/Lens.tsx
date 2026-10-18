@@ -162,6 +162,7 @@ type Els = {
   front: SVGPathElement;
   lum: SVGPathElement;
   handle: HTMLDivElement | null;
+  chip: () => HTMLDivElement | null;
   root: () => HTMLDivElement | null;
 };
 
@@ -204,6 +205,9 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     if (!r) return;
     const b = card.getBoundingClientRect();
     lensLive.card = { left: b.left, top: b.top };
+    // Inline: the page's rescoped `:root` rules (unlayered) outrank the
+    // utility classes on this element.
+    r.style.position = 'absolute';
     r.style.left = `${-b.left}px`;
     r.style.top = `${-b.top}px`;
     r.style.width = `${innerWidth}px`;
@@ -226,12 +230,33 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     return { w: Math.round(h / 2), h };
   };
 
-  const restRect = (): Rect => ({
-    x: card.offsetWidth - PEEK.w - 14,
-    y: card.offsetHeight - PEEK.h - 14,
-    w: PEEK.w,
-    h: PEEK.h,
-  });
+  // The resting door (phones): in the card's corner, in the strip below (or,
+  // failing room, above) the word, sized so it never covers a letter; the
+  // "Try ..." chip sits beside it in the same strip.
+  const restRect = (): Rect => {
+    const W = card.offsetWidth;
+    const H = card.offsetHeight;
+    const cb = card.getBoundingClientRect();
+    const wb = card.querySelector('.vy-title')?.getBoundingClientRect();
+    const top = wb ? wb.top - cb.top : H / 2;
+    const bottom = wb ? wb.bottom - cb.top : H / 2;
+    const below = H - bottom - 14;
+    const above = top - 14;
+    const room = Math.max(below, above);
+    const h = Math.round(Math.min(PEEK.h, Math.max(32, room)));
+    const w = Math.round(h / 2);
+    const y = below >= above ? H - 6 - h : 6 + Math.max(0, above - h - 8);
+    const r = { x: W - w - 14, y, w, h };
+    const chip = els.chip();
+    if (chip) {
+      const cy = Math.max(
+        4,
+        Math.min(H - chip.offsetHeight - 4, y + h / 2 - chip.offsetHeight / 2),
+      );
+      chip.style.transform = `translate(${Math.round(r.x - chip.offsetWidth - 8)}px, ${Math.round(cy)}px)`;
+    }
+    return r;
+  };
 
   const syncLayers = () => {
     const lr = els.root();
@@ -591,6 +616,10 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     handleMove,
     handleUp,
     rootChanged,
+    // The chip's label changed width: line it up again (phones).
+    placeChip: () => {
+      if (mode === 'touch') restRect();
+    },
     dispose: () => {
       cancelAnimationFrame(raf);
       cleanups.forEach((c) => c());
@@ -650,6 +679,7 @@ export const Lens = () => {
   const front = useRef<SVGPathElement>(null);
   const lum = useRef<SVGPathElement>(null);
   const handle = useRef<HTMLDivElement>(null);
+  const chip = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLDivElement | null>(null);
   const idRef = useRef<ConceptId | null>(null);
   const pageRef = useRef<ConceptId | null>(null);
@@ -678,6 +708,7 @@ export const Lens = () => {
     lensLive.id = id;
     if (id) void prefetchConcept(id, true);
     ctl.current?.rootChanged();
+    ctl.current?.placeChip();
   }, [id, page]);
 
   useEffect(() => {
@@ -704,6 +735,7 @@ export const Lens = () => {
         front: fr,
         lum: lu,
         handle: handle.current,
+        chip: () => chip.current,
         root: () => root.current,
       },
       {
@@ -721,6 +753,9 @@ export const Lens = () => {
       ctl.current = null;
     };
   }, [mode, card, shadow, setDragging]);
+
+  // The chip shows (first use) or relabels: line it up beside the door.
+  useEffect(() => ctl.current?.placeChip(), [used]);
 
   useEffect(() => {
     if (fixedOpen) document.getElementById('vy-lens-try')?.focus();
@@ -799,10 +834,18 @@ export const Lens = () => {
           </Button>
         </div>
       )}
-      {mode === 'touch' && !fixedOpen && !dragging && id && (
+      {mode === 'touch' && (
         // Phones: keep the peeked concept, from a chip beside the resting
-        // door, shown once the door has been used (focusable before that).
-        <div data-lens-ui className="vy-lens-try absolute right-17 bottom-3.5 z-4">
+        // door (never over the word), shown once the door has been used
+        // (focusable before that).
+        <div
+          ref={chip}
+          data-lens-ui
+          className={cn(
+            'vy-lens-try absolute top-0 left-0 z-4',
+            (dragging || fixedOpen || !id) && 'invisible',
+          )}
+        >
           <Button
             variant="lens"
             size="small"

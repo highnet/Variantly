@@ -57,6 +57,9 @@ export const lensSheet = (): CSSStyleSheet | null => {
   // document-wide: a second "vy-title" would cancel the transition).
   out.push(
     '.vy-lens-root,.vy-lens-root *{view-transition-name:none!important}',
+    // Held still like the page's 3D-backed word (.vy-title-solid): no scroll
+    // parallax or entrance, so its decorations line up with the 3D letters.
+    '.vy-lens-root .vy-title{translate:none!important;animation:none!important}',
     '.vy-lens-root[data-lens-3d] .vy-title .vy-letter > *{color:transparent!important;text-shadow:none!important}',
     '.vy-lens-root[data-lens-3d][data-lens-scene] [data-hero-title]{background-color:transparent!important}',
   );
