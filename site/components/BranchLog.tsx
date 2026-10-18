@@ -4,8 +4,9 @@ import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 
-import { VARIANTS, type VariantKey } from '@/components/backdrop/variants';
+import { type VariantKey } from '@/components/backdrop/variants';
 import { Button } from '@/components/ui/Button';
+import { CONCEPT_BY_ID, isLive } from '@/concepts/metas';
 import { calmMotion } from '@/lib/prefs';
 import { REPO_URL } from '@/lib/site';
 import { setVariant, useVariant, VARIANT_KEYS } from '@/lib/variant';
@@ -40,14 +41,18 @@ const BranchLog = ({ build, onClose }: BranchLogProps) => {
     return d.getHours() % 12 === 0 && d.getMinutes() === 0;
   });
 
-  const live = VARIANT_KEYS.filter((k) => !(VARIANTS[k] as { draft?: boolean }).draft);
-  const drafts = VARIANT_KEYS.filter((k) => (VARIANTS[k] as { draft?: boolean }).draft);
+  const live = VARIANT_KEYS.filter((k) => isLive(k));
+  const drafts = VARIANT_KEYS.filter((k) => !isLive(k));
   const rows: Row[] = [
     { glyph: '●  ', label: 'main' },
     { glyph: '│', label: '' },
-    ...live.map((k) => ({ glyph: '├──● ', label: `variantly/${slug(VARIANTS[k].name)}`, key: k })),
+    ...live.map((k) => ({
+      glyph: '├──● ',
+      label: `variantly/${slug(CONCEPT_BY_ID[k].name)}`,
+      key: k,
+    })),
     { glyph: '│', label: '' },
-    ...[...drafts.map((k) => slug(VARIANTS[k].name)), ...RETIRED].map((s) => ({
+    ...[...drafts.map((k) => slug(CONCEPT_BY_ID[k].name)), ...RETIRED].map((s) => ({
       glyph: '├── ',
       label: `variantly/${s}`,
       dead: true,
