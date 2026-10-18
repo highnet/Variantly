@@ -46,7 +46,11 @@ name and type. Nothing else changes.
      `concept.css`; see "Grainy gradients" in `app/globals.css`.
    - `status`: `'draft'` while the concept is being built; delete the line
      (or set `'live'`) when it is finished. See **Drafts**.
-     **No text around the title.** Nothing is written above or below the 3D
+     **Nothing behind the title.** The 3D word sits on clear ground: no backdrop
+   art, 3D props, patterns or texture with contrast run behind or through it,
+   on any viewport (check desktop and a 390px phone in both themes). A soft,
+   even glow or the page ground itself is fine.
+   **No text around the title.** Nothing is written above or below the 3D
      word: no captions, credits, labels, figure numbers or readouts in the
      title card or the backdrop art around it. Credits belong in the source
      (a comment in `Backdrop.tsx`), not on the page.
