@@ -51,15 +51,15 @@ const rand = (seed: number, k: number) => {
 export const glitchFrame = (seed: number, amount: number, height: number): GlitchFrame => {
   if (amount <= 0) return NO_GLITCH;
   const bands: GlitchFrame['bands'] = [];
-  const count = 2 + Math.floor(rand(seed, 1) * 3);
+  const count = 1 + Math.floor(rand(seed, 1) * 3);
   for (let i = 0; i < count; i++) {
     const y0 = rand(seed, 10 + i) * height * 0.92;
-    const tall = 6 + rand(seed, 20 + i) * 26;
-    const dx = (rand(seed, 30 + i) - 0.5) * 2 * (6 + 14 * amount);
+    const tall = 4 + rand(seed, 20 + i) * 16;
+    const dx = (rand(seed, 30 + i) - 0.5) * 2 * (3 + 7 * amount);
     bands.push({ y0, y1: Math.min(height, y0 + tall), dx: Math.round(dx) });
   }
   const dropouts: GlitchFrame['dropouts'] = [];
-  const lines = Math.floor(rand(seed, 40) * 3 * amount);
+  const lines = Math.floor(rand(seed, 40) * 2 * amount);
   for (let i = 0; i < lines; i++) {
     const y0 = Math.round(rand(seed, 50 + i) * height);
     dropouts.push({ y0, y1: y0 + 2 });
@@ -67,7 +67,7 @@ export const glitchFrame = (seed: number, amount: number, height: number): Glitc
   return {
     bands,
     dropouts,
-    split: Math.round(2 + 4 * amount),
-    flicker: rand(seed, 60) < 0.35,
+    split: Math.round(1 + 2 * amount),
+    flicker: rand(seed, 60) < 0.15,
   };
 };
