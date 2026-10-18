@@ -323,7 +323,6 @@
 
 /* the title card: a projected frame, thin double rule, rounded corners */
 :root[data-variant='n'] [data-hero-title] {
-  margin: 14px 14px 0;
   border: 0;
   border-radius: 22px;
   background: radial-gradient(ellipse 70% 80% at 50% 45%, var(--r-frame) 45%, var(--r-edge));

@@ -122,7 +122,6 @@
 }
 @media (max-width: 639px) {
 .vy-r-rows { opacity: 0.35; font-size: 9vh; }
-:root[data-variant='r'] .vy-title { font-size: 12.5vw; }
 }
 
 :root[data-variant='r'] main > div h2.figure { color: var(--ink); font-stretch: 58%; }

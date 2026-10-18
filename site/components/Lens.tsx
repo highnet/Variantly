@@ -230,10 +230,15 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
       watched = lw;
     }
     lw.style.removeProperty('translate');
+    lw.style.removeProperty('scale');
     const a = pw.getBoundingClientRect();
     const l = lw.getBoundingClientRect();
     const dx = a.left + a.width / 2 - (l.left + l.width / 2);
     const dy = a.top + a.height / 2 - (l.top + l.height / 2);
+    // Each concept sizes its word differently: match the page word's width
+    // so the letters meet at the door's edge.
+    const k = l.width > 0 ? a.width / l.width : 1;
+    lw.style.setProperty('scale', k.toFixed(4), 'important');
     // Important: the low tier's `translate: none !important` (meant for the
     // backdrop's drift) reaches the lens word through the rescoped sheet.
     lw.style.setProperty('translate', `${dx.toFixed(1)}px ${dy.toFixed(1)}px`, 'important');
