@@ -206,7 +206,14 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     sec.style.width = `${card.offsetWidth}px`;
     sec.style.height = `${card.offsetHeight}px`;
     const hc = sec.querySelector('[data-hero-title]') as HTMLElement | null;
-    if (hc) hc.style.height = `${card.offsetHeight}px`;
+    // Pin min/max too: a concept's own min-height (Stone & Linen's tall
+    // hero) would otherwise outgrow the card and push its word out of the door.
+    if (hc) {
+      const ch = `${card.offsetHeight}px`;
+      hc.style.height = ch;
+      hc.style.minHeight = ch;
+      hc.style.maxHeight = ch;
+    }
   };
 
   // A door for this screen, never taller than the card it shows (phones
