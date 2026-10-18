@@ -25,6 +25,11 @@ hermes-agent repository (commit e6cf2a9).
 safe-mode arguments and stale cloud credentials (the system prompt removed).
 `pi.jsonl` is written by hand from Pi's `docs/json.md`.
 
+`antigravity-failed.jsonl` is a **real capture**: Antigravity CLI 1.4.1 run
+with variantly's safe-mode arguments and an invalid Gemini API key.
+`antigravity.jsonl` is written by hand from the CLI's headless-mode docs
+(the tool parameter names in it are guesses; the parser doesn't depend on them).
+
 The other files were **written by hand from each CLI's published event
 schema**, not captured from a signed-in run (no agent was signed in where they
 were written). Field names and nesting follow:

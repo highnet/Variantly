@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { AGENTS, agentById, binCandidates, codexProvider, hasSkill, skillLocations } from '../src/agents.mjs';
+import { AGENTS, agentById, binCandidates, codexProvider, hasSkill, impeccableSources, skillLocations } from '../src/agents.mjs';
 import { writeBrief } from '../src/brief.mjs';
 import { installSkill, parseProviders, SKILL_SOURCE } from '../src/install-skill.mjs';
 
@@ -194,6 +194,16 @@ test('Pi invocation: print mode with JSON events; safe mode drops the shell and 
   }
 });
 
+test('Antigravity invocation: flags first, prompt last, brief folder added', () => {
+  const safe = agent('antigravity').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', model: 'gemini-3.6-flash' });
+  assert.equal(safe.file, 'agy');
+  assert.equal(safe.output, 'antigravity-stream');
+  assert.deepEqual(safe.args, ['--output-format', 'stream-json', '--add-dir', BRIEF_DIR, '--model', 'gemini-3.6-flash', '-p', PROMPT]);
+  const full = agent('antigravity').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'full' });
+  assert.deepEqual(full.args, ['--output-format', 'stream-json', '--add-dir', BRIEF_DIR, '--dangerously-skip-permissions', '-p', PROMPT]);
+  assert.equal(agent('antigravity').mcp, false);
+});
+
 test('Codex through OpenRouter: the configured provider and its key variable are read', () => {
   const home = tmp();
   try {
@@ -321,6 +331,11 @@ test('skill locations match where each agent reads skills', () => {
     path.join(home, '.agents', 'skills', 'impeccable'),
   ]);
   assert.equal(skillLocations(agent('pi'), 's', { home, env: { PI_CODING_AGENT_DIR: path.resolve('PA') } })[0], path.join(path.resolve('PA'), 'skills', 's'));
+  assert.deepEqual(skillLocations(agent('antigravity'), 'impeccable', where), [
+    path.join(project, '.agents/skills', 'impeccable'),
+    path.join(project, '.agent/skills', 'impeccable'),
+    path.join(home, '.gemini', 'antigravity-cli', 'skills', 'impeccable'),
+  ]);
   // OpenCode's config folder follows OPENCODE_CONFIG_DIR, then XDG_CONFIG_HOME.
   assert.equal(skillLocations(agent('opencode'), 's', { home, env: { XDG_CONFIG_HOME: path.resolve('XC') } })[0], path.join(path.resolve('XC'), 'opencode', 'skills', 's'));
   assert.equal(
@@ -462,5 +477,23 @@ test('every agent gets the Playwright MCP server when the browser check is on', 
     assert.doesNotMatch(inv.args.join(' '), /mcp/);
     assert.ok(!Object.keys(inv.files ?? {}).some((f) => /settings|plugin/.test(f)));
     assert.equal(inv.env, undefined);
+  }
+});
+
+test('Impeccable copies anywhere count as sources, including the Antigravity app\'s and OpenCode\'s', () => {
+  const home = tmp();
+  try {
+    assert.deepEqual(impeccableSources(home, {}), []);
+    for (const d of [path.join('.gemini', 'config', 'skills'), path.join('.config', 'opencode', 'skills'), path.join('.pi', 'agent', 'skills')]) {
+      mkdirSync(path.join(home, d, 'impeccable'), { recursive: true });
+      writeFileSync(path.join(home, d, 'impeccable', 'SKILL.md'), '---\nname: impeccable\n---\n');
+    }
+    assert.deepEqual(new Set(impeccableSources(home, {})), new Set([
+      path.join(home, '.gemini', 'config', 'skills', 'impeccable'),
+      path.join(home, '.config', 'opencode', 'skills', 'impeccable'),
+      path.join(home, '.pi', 'agent', 'skills', 'impeccable'),
+    ]));
+  } finally {
+    rmSync(home, { recursive: true, force: true });
   }
 });

@@ -272,3 +272,32 @@ test('Pi, real run whose provider refused: exit 0 but the error is reported', ()
   assert.ok(lines.some((l) => l.startsWith('Error: UnrecognizedClientException')));
   assert.equal(parser.text(), '');
 });
+
+test('Antigravity stream-json: events keyed by `event`, deltas, tool steps, a soft-denied command', () => {
+  const { parser, lines } = feed('antigravity', 'antigravity-stream');
+  assert.equal(lines[0], 'Antigravity session started (gemini-3.6-flash)');
+  assert.ok(lines.includes('Reading the brief.'));
+  assert.ok(lines.includes('→ view_file C:/home/.variantly/site-1a2b3c4d/briefs/v1.md'));
+  assert.ok(lines.includes('→ replace_file_content src/styles/global.css'));
+  assert.ok(lines.includes('→ run_command npx impeccable detect src'));
+  assert.ok(lines.includes('  ✗ run_command needs approval; add command(npx) to permissions.allow'));
+  assert.equal(lines.filter((l) => l.startsWith('→ view_file')).length, 1, 'a tool shows once, when done');
+  assert.equal(lines.at(-1), 'Finished in 95s, 32k in / 31 out tokens');
+  assert.deepEqual(parser.usage(), { inputTokens: 32100, outputTokens: 31, cachedInputTokens: 29000 });
+  assert.match(extractSummary(parser.text()), /^Brutalist world/);
+  assert.equal(parser.error(), undefined);
+});
+
+test('Antigravity, real run with a bad key: the result is the error, the agent is unavailable', () => {
+  const { parser, lines } = feed('antigravity-failed', 'antigravity-stream');
+  assert.equal(lines[0], 'Antigravity session started (gemini-3.6-flash)');
+  assert.match(parser.error() ?? '', /API key not valid/);
+  assert.ok(parser.unavailable());
+  assert.equal(lines.at(-1), 'Finished in 0s, no usage reported');
+});
+
+test('Antigravity, not signed in: the stderr prompt marks it unavailable', () => {
+  const parser = createParser('antigravity-stream');
+  parser.note('Authentication required. Please visit the URL to log in:');
+  assert.ok(parser.unavailable());
+});

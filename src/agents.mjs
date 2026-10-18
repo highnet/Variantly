@@ -481,6 +481,44 @@ export const AGENTS = [
       output: "pi-json",
     }),
   },
+  {
+    // `agy -p`, checked against Antigravity CLI 1.4.1 (flags and the error
+    // result run here without an account). Its default permissions already
+    // fit safe mode: reads and writes in the workspace are allowed, and shell
+    // commands not allowed in the user's settings are soft-denied headless
+    // (so Impeccable's command-line checks only run if the person allowed
+    // them). Flags go before -p: the prompt is the last argument. MCP servers
+    // come only from its config, so no browser.
+    id: "antigravity",
+    name: "Antigravity CLI",
+    bin: "agy",
+    install:
+      process.platform === "win32"
+        ? `powershell -NoProfile -Command "irm https://antigravity.google/cli/install.ps1 | iex"`
+        : "curl -fsSL https://antigravity.google/cli/install.sh | bash",
+    mcp: false,
+    skills: {
+      // The CLI's own global folder. Impeccable's global install goes to
+      // ~/.gemini/config/skills (the Antigravity app's), which variantly
+      // copies into the worktree's .agents/skills for each run.
+      global: (home) => [path.join(home, ".gemini", "antigravity-cli", "skills")],
+      project: [".agents/skills", ".agent/skills"],
+    },
+    invocation: ({ briefPath, model, permissions }) => ({
+      file: "agy",
+      args: [
+        "--output-format",
+        "stream-json",
+        "--add-dir",
+        path.dirname(briefPath),
+        ...(permissions === "full" ? ["--dangerously-skip-permissions"] : []),
+        ...(model ? ["--model", model] : []),
+        "-p",
+        pointer(briefPath),
+      ],
+      output: "antigravity-stream",
+    }),
+  },
 ];
 
 /**
@@ -659,6 +697,7 @@ const LOGIN = /** @type {Record<string, string>} */ ({
   grok: "grok login",
   hermes: "hermes setup",
   pi: "pi",
+  antigravity: "agy",
 });
 
 /**
@@ -674,7 +713,8 @@ const LOGIN = /** @type {Record<string, string>} */ ({
  * provider keys in its auth.json. Grok Build takes XAI_API_KEY or the login
  * it caches in ~/.grok/auth.json. Hermes Agent keeps keys in its home's .env
  * and auth.json. Pi saves /login in ~/.pi/agent/auth.json or reads provider
- * keys from the environment. null = unknown.
+ * keys from the environment. Antigravity takes ADC, a Gemini API key with
+ * modelProvider set, or a keyring sign-in (unknown). null = unknown.
  * @param {string} id
  * @returns {Promise<boolean | null>}
  */
@@ -723,6 +763,15 @@ const isSignedIn = async (id) => {
     if (process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY || process.env.OPENROUTER_API_KEY) return true;
     return fs.existsSync(path.join(dirFrom(process.env, "PI_CODING_AGENT_DIR", path.join(home, ".pi", "agent")), "auth.json")) || null;
   }
+  if (id === "antigravity") {
+    // A Google sign-in lives in the OS keyring, which can't be read from here.
+    if (process.env.AGY_ADC_AUTH === "true") return true;
+    try {
+      const settings = fs.readFileSync(path.join(home, ".gemini", "antigravity-cli", "settings.json"), "utf8");
+      if (/"modelProvider"\s*:\s*"gemini"/.test(settings)) return Boolean(process.env.GEMINI_API_KEY);
+    } catch {}
+    return null;
+  }
   if (id === "opencode") {
     // Its free OpenCode Zen models need no sign-in, so a missing auth.json
     // doesn't mean it can't run.
@@ -745,7 +794,9 @@ const isSignedIn = async (id) => {
  */
 export function impeccableSources(home = os.homedir(), env = process.env) {
   const dirs = [
-    ...[".claude/skills", ".agents/skills", ".github/skills", ".copilot/skills", ".codex/skills", ".gemini/skills", ".cursor/skills"].map((d) => path.join(home, d)),
+    ...[".claude/skills", ".agents/skills", ".github/skills", ".copilot/skills", ".codex/skills", ".gemini/skills", ".cursor/skills", ".gemini/config/skills"].map((d) =>
+      path.join(home, d),
+    ),
     ...AGENTS.flatMap((a) => a.skills.global(home, env)),
   ];
   return [...new Set(dirs)].map((d) => path.join(d, "impeccable")).filter((d) => existsSync(path.join(d, "SKILL.md")));

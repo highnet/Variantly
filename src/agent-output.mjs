@@ -23,10 +23,13 @@
  *   text (deltas), tool_use, tool_result, result (hermes_cli/stream_json.py).
  * - Pi 1.3 `pi -p --mode json`: session, message_end (assistant text, usage
  *   with cost, stopReason/errorMessage), tool_execution_start/end, auto_retry_*.
+ * - Antigravity CLI 1.4 `agy -p --output-format stream-json`: objects keyed by
+ *   `event`: init, step_update (agent_response text deltas, tool steps with
+ *   tool_info, per-step usage), result (status, response, error, usage).
  */
 import path from 'node:path';
 
-/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'gemini-stream' | 'cursor-stream' | 'opencode-json' | 'grok-stream' | 'hermes-stream' | 'pi-json' | 'text'} OutputKind */
+/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'gemini-stream' | 'cursor-stream' | 'opencode-json' | 'grok-stream' | 'hermes-stream' | 'pi-json' | 'antigravity-stream' | 'text'} OutputKind */
 
 /**
  * Token counts as the agent reported them, summed over the session.
@@ -63,6 +66,7 @@ export const UNAVAILABLE = [
   /\b401 Unauthorized\b/i,
   /\binvalid api key\b/i,
   /\bincorrect api key\b/i,
+  /\bapi key not valid\b/i,
   /\bauthentication (?:is )?required\b/i,
   /\bno authentication information found\b/i,
 ];
@@ -111,7 +115,7 @@ export function createParser(kind, opts = {}) {
     u.cachedInputTokens += num(cached);
   };
   /** @type {Record<string, (event: any, state: ParseState, rel: Rel, addUsage: AddUsage) => string[]>} */
-  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot, 'gemini-stream': gemini, 'cursor-stream': cursor, 'opencode-json': opencode, 'grok-stream': grok, 'hermes-stream': hermes, 'pi-json': pi };
+  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot, 'gemini-stream': gemini, 'cursor-stream': cursor, 'opencode-json': opencode, 'grok-stream': grok, 'hermes-stream': hermes, 'pi-json': pi, 'antigravity-stream': antigravity };
   const describe = parsers[kind];
 
   return {
@@ -528,6 +532,54 @@ function pi(event, state, rel, addUsage) {
     default:
       return [];
   }
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function antigravity(event, state, rel, addUsage) {
+  const step = event.step_update ?? {};
+  if (event.event === 'step_update' && step.step_type === 'agent_response') {
+    if (step.state === 'DONE' && step.usage) addUsage(step.usage.input_tokens, step.usage.output_tokens, step.usage.cache_read_tokens);
+    if (typeof step.text_delta !== 'string') return [];
+    // Deltas, shown a whole line at a time.
+    state.text[0] = (state.text[0] ?? '') + step.text_delta;
+    const lines = ((state.pending ?? '') + step.text_delta).split(/\r?\n/);
+    state.pending = lines.pop();
+    return lines.map((l) => l.trim()).filter(Boolean);
+  }
+  const held = state.pending?.trim() ? [state.pending.trim()] : [];
+  state.pending = '';
+  return [...held, ...antigravityEvent(event, state, rel, addUsage)];
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function antigravityEvent(event, state, rel, addUsage) {
+  if (event.event === 'init') return [`Antigravity session started (${event.init?.model ?? 'default model'})`];
+  if (event.event === 'step_update') {
+    const step = event.step_update ?? {};
+    if (step.state === 'DONE' && step.usage) addUsage(step.usage.input_tokens, step.usage.output_tokens, step.usage.cache_read_tokens);
+    if (step.step_type !== 'tool' || step.state !== 'DONE') return [];
+    const info = step.tool_info ?? {};
+    const a = info.parameters && typeof info.parameters === 'object' ? info.parameters : {};
+    const fileKey = Object.keys(a).find((k) => /path|file/i.test(k) && typeof a[k] === 'string');
+    const target = fileKey ? rel(a[fileKey]) : (a.CommandLine ?? a.Query ?? a.Pattern ?? a.Url ?? '');
+    const line = tool(step.tool_name ?? info.name ?? 'tool', target);
+    return info.error ? [line, `  ✗ ${clip(info.error.message ?? info.error.type ?? 'tool failed', 140)}`] : [line];
+  }
+  if (event.event === 'result') {
+    const r = event.result ?? {};
+    const u = r.usage;
+    if (u && (u.input_tokens || u.output_tokens)) {
+      state.usage = undefined;
+      addUsage(u.input_tokens, u.output_tokens, u.cache_read_tokens);
+    }
+    if (typeof r.response === 'string' && r.response.trim()) state.text = [r.response];
+    if (r.status && r.status !== 'SUCCESS') state.error = r.error || `Antigravity finished with status ${r.status}.`;
+    return [
+      ...(state.error ? [`Error: ${clip(state.error, 300)}`] : []),
+      `Finished in ${Math.round(num(r.duration_seconds))}s, ${tokens(state.usage)}`,
+    ];
+  }
+  return [];
 }
 
 /** @param {string} name @param {unknown} [target] */

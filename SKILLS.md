@@ -52,6 +52,7 @@ npx variantly install-skill --providers=opencode              # ~/.config/openco
 npx variantly install-skill --providers=grok                  # ~/.grok/skills/variantly/
 npx variantly install-skill --providers=hermes                # ~/.hermes/skills/variantly/
 npx variantly install-skill --providers=pi                    # ~/.pi/agent/skills/variantly/
+npx variantly install-skill --providers=antigravity           # ~/.gemini/antigravity-cli/skills/variantly/
 npx variantly install-skill --providers=codex --scope=project # .agents/skills/variantly/ in the repo
 ```
 
@@ -65,10 +66,10 @@ file in place. Claude Code can also use the plugin:
 
 - Node 20.11 or newer, git, and a repository with at least one commit.
 - One agent CLI on `PATH`, signed in: `claude`, `codex`, `copilot`, `gemini`,
-  `cursor-agent`, `opencode`, `grok`, `hermes` or `pi`. Claude Code and Codex may be pointed at OpenRouter instead
+  `cursor-agent`, `opencode`, `grok`, `hermes`, `pi` or `agy` (Antigravity). Claude Code and Codex may be pointed at OpenRouter instead
   (README, "Using OpenRouter"); that counts as signed in.
 - The Impeccable skill installed for that agent:
-  `npx impeccable install --providers=<claude|codex|copilot|gemini|cursor|opencode|grok|hermes|pi> --scope=global --yes --no-hooks`.
+  `npx impeccable install --providers=<claude|codex|copilot|gemini|cursor|opencode|grok|hermes|pi|antigravity> --scope=global --yes --no-hooks`.
   The wizard checks this and can run it. Where each agent looks: Claude Code
   `~/.claude/skills`, `.claude/skills`; Codex `~/.agents/skills`,
   `.agents/skills`; Copilot `~/.copilot/skills`, `~/.agents/skills`,
@@ -81,7 +82,10 @@ file in place. Claude Code can also use the plugin:
   `.grok/skills`, `.agents/skills`, `.claude/skills`; Hermes Agent
   `~/.hermes/skills` (`$HERMES_HOME/skills`) only, since one-shot runs never
   read an untrusted project's skills; Pi `~/.pi/agent/skills`,
-  `~/.agents/skills`, `.pi/skills`, `.agents/skills`.
+  `~/.agents/skills`, `.pi/skills`, `.agents/skills`; Antigravity CLI
+  `~/.gemini/antigravity-cli/skills`, `.agents/skills`, `.agent/skills`
+  (Impeccable's own global install for it lands in `~/.gemini/config/skills`;
+  variantly copies it into each worktree's `.agents/skills`).
 - A project whose dev server can be told its port (`{port}` in the command,
   or a `PORT` environment variable). Static HTML needs nothing.
 
@@ -98,7 +102,7 @@ npx variantly clean              # remove every variantly worktree, branch, stat
 npx variantly install-skill      # put the variantly skill where your agents read skills
 ```
 
-Flags for the default command: `--agent claude|codex|copilot|gemini|cursor|opencode|grok|hermes|pi|demo`,
+Flags for the default command: `--agent claude|codex|copilot|gemini|cursor|opencode|grok|hermes|pi|antigravity|demo`,
 `--agents <agent[:model]:count,...>` (split the variants across agents and
 models, e.g. `claude:opus:2,gemini:2`; every agent must be installed and signed
 in), `--blind` (hide who made each variant until one is kept), `--count 1..10`, `--brief "<text>"`, `--yes` (skip the wizard and start
@@ -110,7 +114,7 @@ crude fixed restyles, for trying the flow), `--no-open`, `--port <n>`.
 1. Run `npx variantly doctor` in the project. Fix what it marks `✗`: a missing
    commit (`git add -A && git commit -m "Before variantly"`), a missing agent,
    or a missing Impeccable install. Use your own id in what follows:
-   `claude`, `codex`, `copilot`, `gemini`, `cursor`, `opencode`, `grok`, `hermes` or `pi`.
+   `claude`, `codex`, `copilot`, `gemini`, `cursor`, `opencode`, `grok`, `hermes`, `pi` or `antigravity`.
 2. Start a run. With the person present: `npx variantly` and let them use the
    wizard. Without the wizard:
 
@@ -124,6 +128,7 @@ crude fixed restyles, for trying the flow), `--no-open`, `--port <n>`.
    npx variantly --yes --agent grok    --count 4 --brief "warmer, less corporate"
    npx variantly --yes --agent hermes  --count 4 --brief "warmer, less corporate"
    npx variantly --yes --agent pi      --count 4 --brief "warmer, less corporate"
+   npx variantly --yes --agent antigravity --count 4 --brief "warmer, less corporate"
    ```
 
    This prints the app URL (default `http://localhost:4477`) and keeps running.
