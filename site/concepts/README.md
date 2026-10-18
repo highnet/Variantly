@@ -38,7 +38,12 @@ name and type. Nothing else changes.
    - `font`: CSS `font-family` for the tile name, e.g. `var(--font-clay)`. Use a
      face the layout already loads (`--font-*` vars in `lib/introFonts.ts` and
      `app/layout.tsx`); a name it does not load falls back to the next entry.
-   - `grain`: opacity (0–0.3) of the shared film-grain overlay.
+   - `grain`: strength (0–0.5) of the film grain GlField puts on the scene's
+     shapes: 0 none, 0.2 clearly grainy, 0.4 heavy print grain. Optional
+     `grainChroma` (0–1, default 0.35) is its share of colour noise. The 2D
+     art's grain is `--art-grain` (0–1) and the page surfaces' grain is
+     `--grain-tile` (`var(--grain-soft|mid|strong)` or `none`), both set in
+     `concept.css`; see "Grainy gradients" in `app/globals.css`.
    - `status`: `'draft'` while the concept is being built; delete the line
      (or set `'live'`) when it is finished. See **Drafts**.
 2. **`concept.css`**: every rule starts with `:root[data-variant='<id>']`

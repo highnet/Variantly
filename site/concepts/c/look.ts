@@ -15,7 +15,7 @@ export const look: ConceptLook = {
     ];
     return tubes.map(([cell, noise], k) => ({
       ...both(ink, (a) =>
-        shader('crt', { a, b: hot, cell: cell * px, noise, seed: k * 3.7, grain: 0.05 }),
+        shader('crt', { a, b: hot, cell: cell * px, noise, seed: k * 3.7, grain: 0.08 }),
       ),
       // The phosphor glow: a pushed-out back-face hull, added to the screen.
       extra: shader('flat', {
