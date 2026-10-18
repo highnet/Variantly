@@ -4,9 +4,11 @@ import { RefreshCw } from 'lucide-react';
 import { useRef, type MouseEvent } from 'react';
 
 import { Button } from '@/components/ui/Button';
+import { CONCEPT_BY_ID } from '@/concepts';
 import { EASE } from '@/lib/motion';
+import { lensFor } from '@/lib/lensPair';
 import { calmMotion } from '@/lib/prefs';
-import { currentVariant, pressOrigin, stepVariant } from '@/lib/variant';
+import { currentVariant, pressOrigin, setVariant, useConcept } from '@/lib/variant';
 
 const SPARKS = 26;
 const GLYPHS = ['✦', '✶', '●', '■', '▲'];
@@ -91,12 +93,15 @@ type FreshLookProps = {
 
 export const FreshLook = ({ children = 'a fresh look' }: FreshLookProps) => {
   const self = useRef<HTMLButtonElement>(null);
+  const page = useConcept();
+  const partner = page ? CONCEPT_BY_ID[lensFor(page)].name : null;
 
   const next = (e: MouseEvent<HTMLButtonElement>) => {
-    // The next shown concept (drafts are skipped unless ?drafts=1).
-    // The doorway opens from the press (or the word's centre from the keyboard).
+    // The same concept the Lens door offers ("Try ..."), so the word and the
+    // door always agree. The doorway opens from the press (or the word's
+    // centre from the keyboard).
     const origin = pressOrigin(e);
-    const go = () => stepVariant(currentVariant(), 1, { origin });
+    const go = () => setVariant(lensFor(currentVariant()), { origin });
     if (calmMotion()) return go();
 
     const el = self.current;
@@ -134,8 +139,8 @@ export const FreshLook = ({ children = 'a fresh look' }: FreshLookProps) => {
       variant="headline-word"
       size="none"
       onClick={next}
-      title="Show the next concept"
-      aria-label={`${children} Restyle this page as the next concept`}
+      title={partner ? `Try ${partner}` : 'Try another look'}
+      aria-label={`${children} Try ${partner ?? 'another look'}: restyle this page`}
       className="vy-fresh"
     >
       {children}
