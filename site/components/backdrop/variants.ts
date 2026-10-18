@@ -58,7 +58,7 @@ export const VARIANTS: Record<VariantKey, Variant> = {
     grain: 0.28,
   },
   c: {
-    name: 'TVA Terminal',
+    name: 'Amber Terminal',
     scene: 'terrain',
     colors: { light: ['#1f6f6a'], dark: ['#ffb000'] },
     blobs: {

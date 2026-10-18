@@ -5,7 +5,6 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
-  useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent,
@@ -22,7 +21,6 @@ import { VariantTitle } from '@/components/VariantTitle';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
 import { markLoaded } from '@/lib/loadProgress';
-import { bakeGoo } from '@/lib/goo';
 import { EASE } from '@/lib/motion';
 import { applyPrefsToFrame, calmMotion, PREFS_EVENT, readPrefs, type Prefs } from '@/lib/prefs';
 import { whenIdle } from '@/lib/scrollIdle';
@@ -76,10 +74,6 @@ const paneKey = ({ run, n }: Pane) => (n === 0 ? 'before' : `${DEMO_RUNS[run].id
 // takes its frame with it, so a remount starts over.
 const shownLive = (frames: Map<string, HTMLIFrameElement>, key: string) =>
   frames.get(key)?.style.opacity === '1';
-// The picker's grid area for a number: ten to a row. The spans matter: an
-// absolutely placed grid child with an auto end line runs to the grid's edge.
-const cellArea = (n: number) =>
-  `${Math.floor((n - 1) / 10) + 1} / ${((n - 1) % 10) + 1} / span 1 / span 1`;
 const vname = (n: number) => `V${String(n).padStart(2, '0')}`;
 const LONGEST = Math.max(...DEMO_RUNS.flatMap((r) => r.variants.map((v) => v.direction.length)));
 // Sized so the longest direction's cells fill the row at most.
@@ -281,24 +275,20 @@ const Showcase = () => {
   const [under, setUnder] = useState<Pane | null>(null);
   const [was, setWas] = useState(selected);
   const [wasRun, setWasRun] = useState(runIdx);
-  // The number drawn lit (the pill's ink): the selection, except mid-hop.
-  const [lit, setLit] = useState<number | null>(selected);
+  // Where a newly picked run starts: its first design, or its last when the
+  // phone's back button steps across from the run after it.
+  const [runStart, setRunStart] = useState(1);
   if (wasRun !== runIdx) {
-    // A new run starts at its first design; the old run's pane stays drawn
-    // underneath until the new one arrives.
+    // The old run's pane stays drawn underneath until the new one arrives.
     setWasRun(runIdx);
-    setSelected(1);
-    setWas(1);
+    setSelected(runStart);
+    setWas(runStart);
     setUnder({ run: wasRun, n: was });
-    setMounted(new Set([1]));
-    setLit(1);
+    setMounted(new Set([runStart]));
   } else if (was !== selected) {
     setWas(selected);
     setUnder({ run: runIdx, n: was });
     setMounted((m) => (m.has(selected) ? m : new Set(m).add(selected)));
-    // The old number stays lit until the goo leaves it (the hop below
-    // hands the light on); in calm mode the new one lights at once.
-    setLit(calm ? selected : was);
   }
   const selKey = paneKey({ run: runIdx, n: selected });
   const selKeyRef = useRef(selKey);
@@ -322,12 +312,14 @@ const Showcase = () => {
     },
     [takeOver, goLive, variants],
   );
-  const chooseRun = (i: number) => {
+  const chooseRun = (i: number, start = 1) => {
     takeOver();
     goLive();
+    setRunStart(start);
     setRunIdx(i);
     const r = DEMO_RUNS[i];
-    setSaid(`${r.label}: ${r.variants.length} redesigns. Showing V01, ${r.variants[0].direction}`);
+    const v = r.variants[start - 1];
+    setSaid(`${r.label}: ${r.variants.length} redesigns. Showing ${vname(start)}, ${v.direction}`);
   };
 
   // Calm mode, now and whenever the visitor changes it, pauses the tour.
@@ -808,6 +800,15 @@ const Showcase = () => {
   const original = run.original;
   const prevN = ((selected + count - 2) % count) + 1;
   const nextN = (selected % count) + 1;
+  // Phones step through every run as one list: past a run's end, on to the
+  // next run's first design (and back to the previous run's last).
+  const total = DEMO_RUNS.reduce((t, r) => t + r.variants.length, 0);
+  const position = DEMO_RUNS.slice(0, runIdx).reduce((t, r) => t + r.variants.length, 0) + selected;
+  const step = (by: 1 | -1) => {
+    if (selected + by >= 1 && selected + by <= count) return choose(selected + by);
+    const i = (runIdx + by + DEMO_RUNS.length) % DEMO_RUNS.length;
+    chooseRun(i, by > 0 ? 1 : DEMO_RUNS[i].variants.length);
+  };
   const cells = useRef<(HTMLButtonElement | null)[]>([]);
   // Arrow keys move through the numbers, focus following the selection.
   const onCellsKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -826,71 +827,6 @@ const Showcase = () => {
     choose(to[e.key]);
     cells.current[to[e.key]]?.focus();
   };
-
-  // The goo hop between numbers: baked once per pick, played by WAAPI on
-  // transforms. Calm mode, a run switch or a first paint just moves the pill.
-  const picker = useRef<HTMLDivElement>(null);
-  const pill = useRef<HTMLSpanElement>(null);
-  const gooTail = useRef<HTMLSpanElement>(null);
-  const gooNeck = useRef<HTMLSpanElement>(null);
-  const gooFrom = useRef({ run: runIdx, n: selected });
-  const gooPlay = useRef<Animation[]>([]);
-  const gooTimer = useRef(0);
-  useLayoutEffect(() => {
-    const prev = gooFrom.current;
-    gooFrom.current = { run: runIdx, n: selected };
-    const grid = picker.current;
-    const head = pill.current;
-    const tail = gooTail.current;
-    const neck = gooNeck.current;
-    const src = cells.current[prev.n];
-    const dst = cells.current[selected];
-    if (!grid || !head || !tail || !neck || !dst) return;
-    const hop = prev.run === runIdx && prev.n !== selected && src && !calmMotion();
-    // The light passes from the old number to the new one as the goo does.
-    clearTimeout(gooTimer.current);
-    const light = (at: number, n: number | null, then?: () => void) =>
-      (gooTimer.current = window.setTimeout(() => {
-        setLit(n);
-        then?.();
-      }, at));
-    // A hop that interrupts another starts from wherever the pill is now.
-    const moving = head.getBoundingClientRect();
-    gooPlay.current.forEach((a) => a.cancel());
-    gooPlay.current = [];
-    if (!hop) {
-      light(0, selected);
-      return;
-    }
-    const still = head.getBoundingClientRect();
-    const centre = (r: DOMRect) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
-    const from = centre(src.getBoundingClientRect());
-    const to = centre(dst.getBoundingClientRect());
-    const start = {
-      x: from.x + centre(moving).x - centre(still).x,
-      y: from.y + centre(moving).y - centre(still).y,
-    };
-    const a = cells.current[1]?.getBoundingClientRect();
-    const b = cells.current[2]?.getBoundingClientRect();
-    const pitch = a && b ? b.left - a.left : dst.offsetWidth;
-    const plan = bakeGoo(start, from, to, pitch || 40);
-    tail.style.gridArea = cellArea(prev.n);
-    neck.style.gridArea = cellArea(prev.n);
-    const opts = { duration: plan.duration, easing: 'linear' };
-    gooPlay.current = [
-      head.animate(plan.head, opts),
-      tail.animate(plan.tail, opts),
-      neck.animate(plan.neck, opts),
-    ];
-    light(plan.leaveMs, null, () => light(plan.arriveMs - plan.leaveMs, selected));
-  }, [selected, runIdx]);
-  useEffect(() => {
-    const play = gooPlay;
-    return () => {
-      play.current.forEach((a) => a.cancel());
-      clearTimeout(gooTimer.current);
-    };
-  }, []);
 
   return (
     <section
@@ -914,22 +850,37 @@ const Showcase = () => {
               id="hero-title"
               className="text-surface text-[clamp(2.25rem,4.2vw,4.25rem)]"
             >
-              Your website needs <FreshLook />
+              One website. Four redesigns. <FreshLook>You pick.</FreshLook>
             </Typography>
             <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">
-              <strong className="text-surface">One command.</strong> Your own AI assistant redesigns
-              your site <strong className="text-surface">several ways</strong>,{' '}
-              <strong className="text-surface">from scratch</strong> using{' '}
-              <a
-                href="https://impeccable.style"
-                className="text-surface font-semibold underline decoration-1 underline-offset-2"
-              >
-                Impeccable
-              </a>
-              : the missing design vocabulary for agents. No preset themes. Try each{' '}
-              <strong className="text-surface">live</strong>,{' '}
-              <strong className="text-surface">keep one</strong>.
+              Your AI coding agent redesigns your{' '}
+              <strong className="text-surface">actual site</strong>{' '}
+              <strong className="text-surface">in parallel</strong>. Compare{' '}
+              <strong className="text-surface">live versions</strong>, keep the best, and{' '}
+              <strong className="text-surface">review the code</strong> before it ships.
             </p>
+            <ul className="text-steel-on-slate m-0 grid list-none gap-1.5 p-0 text-[15px] leading-snug">
+              <li>
+                <span className="text-surface font-semibold">Real code:</span> each design is a git
+                branch in its own worktree, made by the agent you already use.
+              </li>
+              <li>
+                <span className="text-surface font-semibold">Your call:</span> nothing touches your
+                files until you press Keep, and then it lands as an unstaged diff.
+              </li>
+              <li>
+                <span className="text-surface font-semibold">Free and MIT-licensed:</span> the AI
+                work runs on your own plan.{' '}
+                <a href="#demo-stage" className="text-surface underline underline-offset-2">
+                  Try the comparison below
+                </a>{' '}
+                or{' '}
+                <a href="/safety" className="text-surface underline underline-offset-2">
+                  see what it does to your repo
+                </a>
+                .
+              </li>
+            </ul>
           </div>
 
           <div data-hero-side className="grid content-start gap-6">
@@ -1021,7 +972,8 @@ const Showcase = () => {
                   >
                     <p className="text-steel-on-slate m-0 text-[13px] leading-snug">{r.brief}</p>
                     <p className="text-steel-on-slate m-0 text-[13px] leading-snug">
-                      A made-up shop, redesigned{' '}
+                      <strong className="text-surface">Illustrative example:</strong> a made-up
+                      shop, not customer work, redesigned{' '}
                       <strong className="text-surface">
                         {r.variants.length === 20
                           ? 'twenty'
@@ -1275,7 +1227,7 @@ const Showcase = () => {
             <div
               role="group"
               aria-label="Redesign run"
-              className="bg-ink rounded-control flex gap-0.5 p-0.5 max-sm:basis-full max-sm:justify-center lg:flex-col"
+              className="bg-ink rounded-control flex gap-0.5 p-0.5 max-sm:hidden lg:flex-col"
             >
               {DEMO_RUNS.map((r, i) => (
                 <Button
@@ -1307,43 +1259,24 @@ const Showcase = () => {
             >
               <ChevronLeft className="size-4" aria-hidden="true" />
             </Button>
+            <Button
+              variant="cell"
+              size="cell"
+              aria-label="Previous redesign"
+              className="sm:hidden"
+              onClick={() => step(-1)}
+            >
+              <ChevronLeft className="size-4" aria-hidden="true" />
+            </Button>
             {/* Ten to a row, so twenty fit a phone in two rows and every
                 number stays in view. */}
             <div
-              ref={picker}
               id="demo-picker"
               role="radiogroup"
               aria-label={`${run.label} redesigns, 1 to ${count}`}
               onKeyDown={onCellsKey}
-              className="relative isolate grid grid-cols-[repeat(10,minmax(0,2.125rem))] gap-0.5 sm:grid-cols-[repeat(10,2.5rem)] sm:gap-1"
+              className="hidden gap-1 sm:grid sm:grid-cols-[repeat(10,2.5rem)]"
             >
-              {/* The lit pill, drawn in the selected cell's grid area under
-                  the numbers; a new pick sends it over as goo (lib/goo.ts)
-                  with the blob it leaves behind and the neck between. */}
-              <span
-                ref={pill}
-                aria-hidden="true"
-                style={{ gridArea: cellArea(selected) }}
-                className="rounded-control bg-surface shadow-cell pointer-events-none absolute inset-0 z-[1] -translate-y-0.5"
-              />
-              <span
-                ref={gooTail}
-                aria-hidden="true"
-                className="rounded-control bg-surface pointer-events-none absolute inset-0 z-[1] opacity-0"
-              />
-              <span
-                ref={gooNeck}
-                aria-hidden="true"
-                className="text-surface pointer-events-none absolute top-0 left-1/2 z-[1] h-full w-[100px] origin-left opacity-0"
-              >
-                {/* An hourglass, so the neck flares into both blobs. */}
-                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="size-full">
-                  <path
-                    fill="currentColor"
-                    d="M0 0C30 0 35 28 50 28S70 0 100 0V100C70 100 65 72 50 72S30 100 0 100Z"
-                  />
-                </svg>
-              </span>
               {variants.map((v) => {
                 const active = selected === v.n;
                 return (
@@ -1352,7 +1285,7 @@ const Showcase = () => {
                     ref={(el) => {
                       cells.current[v.n] = el;
                     }}
-                    variant="cell-goo"
+                    variant="cell"
                     size="cell-grid"
                     role="radio"
                     aria-checked={active}
@@ -1360,23 +1293,13 @@ const Showcase = () => {
                     title={`${v.direction} (${v.n})`}
                     tabIndex={active ? 0 : -1}
                     onClick={() => choose(v.n)}
-                    className="group/cell"
                   >
-                    {/* Above the pill; lit as the goo arrives, not before. */}
-                    <span
-                      className={cn(
-                        'text-surface/55 group-hover/cell:text-surface/90 relative z-[2] inline-block transition-[color,scale,translate] duration-[90ms,460ms,460ms] ease-[linear,var(--ease-spring-pop),var(--ease-spring-pop)]',
-                        lit === v.n &&
-                          'text-ink group-hover/cell:text-ink -translate-y-0.5 scale-160',
-                      )}
-                    >
-                      {String(v.n).padStart(2, '0')}
-                    </span>
+                    {String(v.n).padStart(2, '0')}
                     {active && auto && !calm && (
                       <span
                         key={selected}
                         aria-hidden="true"
-                        className="bg-ink/50 absolute inset-x-1.5 bottom-1.5 z-[2] h-0.5 origin-left animate-[cycle_12s_linear_forwards] motion-reduce:hidden"
+                        className="bg-ink/50 absolute inset-x-1.5 bottom-1 h-0.5 origin-left animate-[cycle_12s_linear_forwards] motion-reduce:hidden"
                       />
                     )}
                   </Button>
@@ -1390,6 +1313,21 @@ const Showcase = () => {
               className="hidden sm:inline-flex"
               title="Next"
               onClick={() => choose(nextN)}
+            >
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </Button>
+            <span
+              aria-hidden="true"
+              className="text-surface min-w-24 text-center text-[15px] tabular-nums sm:hidden"
+            >
+              {String(position).padStart(2, '0')} / {total}
+            </span>
+            <Button
+              variant="cell"
+              size="cell"
+              aria-label="Next redesign"
+              className="sm:hidden"
+              onClick={() => step(1)}
             >
               <ChevronRight className="size-4" aria-hidden="true" />
             </Button>

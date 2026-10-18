@@ -164,4 +164,3 @@ export const bakeGoo = (start: Vec, from: Vec, to: Vec, pitch: number): GooPlan 
     leaveMs: Math.round(Math.min(leaveMs, arriveMs)),
   };
 };
-

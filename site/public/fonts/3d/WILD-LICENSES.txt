@@ -1,3 +1,26 @@
+UnifrakturMaguntia (400)
+Copyright (c) 2010 j. 'mach' wust with Reserved Font Name UnifrakturMaguntia.
+Copyright (c) 2009 Peter Wiegel.
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Cinzel (900)
+Copyright 2020 The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel)
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Great Vibes (400)
+Copyright 2010 The Great Vibes Pro Project Authors (https://github.com/googlefonts/great-vibes)
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Pacifico (400)
+Copyright 2018 The Pacifico Project Authors (https://github.com/googlefonts/Pacifico)
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
+Bungee (400)
+Copyright 2023 The Bungee Project Authors (https://github.com/djrrb/Bungee)
+Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
+
 Bagel Fat One (400)
 Copyright 2022 The Bagel Fat Project Authors (https://github.com/JAMO-TYPEFACE/BagelFat)
 Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
