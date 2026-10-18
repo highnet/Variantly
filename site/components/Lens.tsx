@@ -799,18 +799,23 @@ export const Lens = () => {
       </div>
       {mode === 'drag' && (
         <div
-          ref={handle}
-          data-lens-ui
-          aria-hidden="true"
-          onPointerDown={(e) => ctl.current?.handleDown(e)}
-          onPointerMove={(e) => ctl.current?.handleMove(e)}
-          onPointerUp={(e) => ctl.current?.handleUp(e)}
-          onPointerCancel={(e) => ctl.current?.handleUp(e)}
-          className="vy-lens-handle absolute top-0 left-0 z-4 grid cursor-grab touch-none place-items-center active:cursor-grabbing"
+          data-lens-lean
+          className="pointer-events-none absolute inset-0 z-4 [transition:transform_0.7s_ease-out]"
         >
-          {/* At rest the door peeks in from the edge: a chevron says it is a
+          <div
+            ref={handle}
+            data-lens-ui
+            aria-hidden="true"
+            onPointerDown={(e) => ctl.current?.handleDown(e)}
+            onPointerMove={(e) => ctl.current?.handleMove(e)}
+            onPointerUp={(e) => ctl.current?.handleUp(e)}
+            onPointerCancel={(e) => ctl.current?.handleUp(e)}
+            className="vy-lens-handle pointer-events-auto absolute top-0 left-0 z-4 grid cursor-grab touch-none place-items-center active:cursor-grabbing"
+          >
+            {/* At rest the door peeks in from the edge: a chevron says it is a
               tab to pull, not a stray frame. */}
-          {peek && <ChevronLeft className="vy-lens-grip size-5" strokeWidth={2.75} />}
+            {peek && <ChevronLeft className="vy-lens-grip size-5" strokeWidth={2.75} />}
+          </div>
         </div>
       )}
       {!fixedOpen && (
@@ -831,23 +836,28 @@ export const Lens = () => {
         // Keep the peeked concept: a chip beside the resting door (never over
         // the word), on every device, from the start.
         <div
-          ref={chip}
-          data-lens-ui
-          className={cn(
-            'vy-lens-try absolute top-0 left-0 z-4',
-            (dragging || fixedOpen || !id) && 'invisible',
-          )}
+          data-lens-lean
+          className="pointer-events-none absolute inset-0 z-4 [transition:transform_0.7s_ease-out]"
         >
-          <Button
-            variant="lens"
-            size="small"
-            onClick={() => ctl.current?.commit()}
-            // A 32px chip with a 44px touch target: the hit area reaches 6px
-            // past it above and below, invisibly.
-            className="relative before:absolute before:-inset-x-1 before:-inset-y-1.5 before:content-['']"
+          <div
+            ref={chip}
+            data-lens-ui
+            className={cn(
+              'vy-lens-try pointer-events-auto absolute top-0 left-0 z-4',
+              (dragging || fixedOpen || !id) && 'invisible',
+            )}
           >
-            Try {name}
-          </Button>
+            <Button
+              variant="lens"
+              size="small"
+              onClick={() => ctl.current?.commit()}
+              // A 32px chip with a 44px touch target: the hit area reaches 6px
+              // past it above and below, invisibly.
+              className="relative before:absolute before:-inset-x-1 before:-inset-y-1.5 before:content-['']"
+            >
+              Try {name}
+            </Button>
+          </div>
         </div>
       )}
       {fixedOpen && id && (
