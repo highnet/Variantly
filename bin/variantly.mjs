@@ -24,7 +24,9 @@ Usage
 
 Options
   -p, --port <n>             port for the variantly app (default 4477)
-      --agent <id>           claude | codex | copilot | gemini | cursor | demo
+      --agent <id>           claude | codex | copilot | gemini | cursor |
+                             opencode | grok | hermes | pi | antigravity |
+                             demo
       --agents <mix>         split the variants across agents and models, as
                              agent[:model]:count, e.g. claude:opus:2,gemini:2
       --blind                hide which agent made each variant until you keep one
@@ -36,7 +38,8 @@ Options
       --no-browser           don't give the agent a browser (Playwright MCP)
       --no-review            skip the Impeccable critique and audit pass
       --no-audit             skip the axe-core and Lighthouse scores
-      --providers <ids>      install-skill: claude,codex,copilot,gemini,cursor
+      --providers <ids>      install-skill: claude,codex,copilot,gemini,cursor,
+                             opencode,grok,hermes,pi,antigravity
                              (default: the agents on your PATH)
       --scope <s>            install-skill: global (default, your user) or
                              project (dir, for everyone who clones it)
@@ -226,13 +229,13 @@ const doctor = async (repo) => {
  */
 const installSkillCommand = async (o) => {
   const { installSkill, parseProviders } = await import('../src/install-skill.mjs');
-  const { AGENTS } = await import('../src/agents.mjs');
-  const { which } = await import('../src/proc.mjs');
+  const { AGENTS, binCandidates } = await import('../src/agents.mjs');
   const scope = String(o.scope ?? 'global');
   if (scope !== 'global' && scope !== 'project') return fail('--scope is global or project.');
   let providers = parseProviders(o.providers);
   if (!providers.length) {
-    providers = AGENTS.filter((a) => which(a.bin)).map((a) => a.id);
+    // Also the installers' own folders (~/.local/bin, ~/.grok/bin) a fresh shell may not have on PATH.
+    providers = AGENTS.filter((a) => binCandidates(a.bin).length > 0).map((a) => a.id);
     if (!providers.length) {
       return fail(`No agent CLI found on PATH. Name the ones to install for:\n\n  npx variantly install-skill --providers=${AGENTS.map((a) => a.id).join(',')}`);
     }

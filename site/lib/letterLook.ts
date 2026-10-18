@@ -44,7 +44,7 @@ export const poolSize = (phone: boolean) => (phone ? 3 : 6);
 const FALLBACK_SHADOW: LetterShadow = {
   color: '#000000',
   opacity: 0,
-  radius: 4,
+  radius: 1,
   dir: [-0.3, 0.5, 1],
 };
 

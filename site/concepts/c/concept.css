@@ -53,7 +53,6 @@
 }
 :root[data-variant='c'] .vy-title {
   text-shadow:
-    0 0 22px color-mix(in srgb, var(--title) 60%, transparent),
     2px 0 0 rgb(0 200 200 / 0.35),
     -2px 0 0 rgb(255 80 40 / 0.35);
   animation: vy-flicker 4s steps(1) infinite;

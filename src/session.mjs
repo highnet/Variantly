@@ -13,7 +13,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createParser } from './agent-output.mjs';
-import { agentById, agentFile } from './agents.mjs';
+import { AGENTS, agentById, agentFile, impeccableSources } from './agents.mjs';
 import { productFromCode } from './product.mjs';
 import { defaultDirections, extractReview, extractRollout, extractSummary, hasAnswers, productMarkdown, writeBrief, writeChatBrief, writeReviewBrief, writeRolloutBrief } from './brief.mjs';
 import { auditMarkdown, killAudits, playwrightMcp, runAudit, warmPlaywrightMcp } from './checks.mjs';
@@ -95,7 +95,7 @@ export const agentOf = (config, v) => ({ agent: v.agent ?? config.agent, model: 
  * @property {string} [error]
  * @property {number} [startedAt]
  * @property {number} [finishedAt]
- * @property {number} [costUsd]   what the agent reported the session cost (Claude Code only)
+ * @property {number} [costUsd]   what the agent reported the session cost (Claude Code, OpenCode, Grok Build, Pi)
  * @property {import('./agent-output.mjs').Usage} [usage]  tokens, as the agent reported them
  * @property {string} [picked]    the world Impeccable picked, as the agent named it
  * @property {number} [step]      index into STEPS: where the run is
@@ -427,7 +427,7 @@ export class Session extends EventEmitter {
       }
 
       // With a browser, the agent can look at its own variant while it works.
-      const browser = config.browser && agent.id !== 'demo';
+      const browser = config.browser && agent.id !== 'demo' && agent.mcp !== false;
       // Browser output (screenshots, snapshots, console logs) lands beside the
       // briefs, never in the worktree, so it cannot end up in the variant.
       const shots = browser ? path.join(this.dir, 'browser', `v${v.n}`) : undefined;
@@ -563,7 +563,8 @@ export class Session extends EventEmitter {
       await git.placeShared(this.repo, wt, { link: ['node_modules'], copy: [] });
     }
     // Agent skills and Impeccable's project context are often untracked.
-    for (const rel of ['.claude/skills', '.agents/skills', '.codex/skills', '.github/skills', '.gemini/skills', '.cursor/skills', '.impeccable', 'PRODUCT.md', 'DESIGN.md']) {
+    const skillDirs = [...new Set(AGENTS.flatMap((a) => a.skills.project)), '.codex/skills'];
+    for (const rel of [...skillDirs, '.impeccable', 'PRODUCT.md', 'DESIGN.md']) {
       const src = path.join(this.repo, rel);
       const dst = path.join(wt, rel);
       if (existsSync(src) && !existsSync(dst)) {
@@ -574,12 +575,10 @@ export class Session extends EventEmitter {
     // Impeccable's global installs land in different home folders per agent
     // (and Copilot doesn't read every one of them). Put the skill where this
     // agent reads project skills, inside the worktree, so it is always found.
-    const projectSkillDir = { claude: '.claude/skills', codex: '.agents/skills', copilot: '.github/skills', gemini: '.gemini/skills', cursor: '.cursor/skills' }[agentId];
+    const runner = agentById(agentId);
+    const projectSkillDir = runner?.worktreeSkills === false ? undefined : runner?.skills.project[0];
     if (projectSkillDir && !existsSync(path.join(wt, projectSkillDir, 'impeccable', 'SKILL.md'))) {
-      const home = os.homedir();
-      const source = ['.claude/skills', '.agents/skills', '.github/skills', '.copilot/skills', '.codex/skills', '.gemini/skills', '.cursor/skills']
-        .map((d) => path.join(home, d, 'impeccable'))
-        .find((d) => existsSync(path.join(d, 'SKILL.md')));
+      const source = impeccableSources()[0];
       if (source) {
         const rel = path.posix.join(projectSkillDir, 'impeccable');
         await cp(source, path.join(wt, rel), { recursive: true });
@@ -669,7 +668,7 @@ export class Session extends EventEmitter {
     // Run in the background: the request returns as soon as the turn is queued.
     (async () => {
       try {
-        const browser = config.browser && agent.id !== 'demo';
+        const browser = config.browser && agent.id !== 'demo' && agent.mcp !== false;
         const previewUrl = browser ? this.pool.urls(`v${n}`)?.preview : undefined;
         const shots = browser ? path.join(this.dir, 'browser', `v${n}`) : undefined;
         if (shots) await mkdir(shots, { recursive: true });

@@ -41,7 +41,7 @@ export const look: ConceptLook = {
     }));
     if (phone) return looks;
     // Desktop: studio-lit matte casts (MeshStandard, rough 0.95) with tooth.
-    const grain = patch('plaster', false, true);
+    const grain = patch('plaster', true);
     const cast = (c: string) =>
       grain(new THREE.MeshStandardMaterial({ color: c, roughness: 0.95, metalness: 0 }));
     ['#f6f3ec', '#e9e4da', '#f0f2f6'].forEach((c, i) =>
@@ -57,7 +57,7 @@ export const look: ConceptLook = {
   shadow: (dark) => ({
     color: dark ? '#000000' : '#3a3550',
     opacity: dark ? 0.55 : 0.3,
-    radius: 6,
+    radius: 1,
     dir: [-0.45, 0.7, 0.9],
   }),
 };

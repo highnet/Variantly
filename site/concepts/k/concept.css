@@ -65,7 +65,7 @@
 /* the title: cotton-paper letters, cut and sewn */
 :root[data-variant='k'] .vy-title {
   color: var(--k-letter);
-  text-shadow: 0 1px 0 var(--k-edge), 0 2px 0 var(--k-edge), 0 3px 0 var(--k-edge), 0 10px 16px rgb(40 26 14 / 0.28);
+  text-shadow: 0 1px 0 var(--k-edge), 0 2px 0 var(--k-edge), 0 3px 0 var(--k-edge);
 }
 :root[data-variant='k'] [data-hero-title] { border-bottom: 0; }
 :root[data-variant='k'] #hero-title { font-size: clamp(2.8rem, 5.4vw, 5.6rem); line-height: 0.98; letter-spacing: 0.005em; }

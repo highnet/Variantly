@@ -7,7 +7,7 @@ import type { ConceptLook } from '@/concepts/types';
  * i · Liquid Glass. The cheap looks (all phones get) fake the glass in one
  * pass: the view ray refracts through the normal (ior 1.45) into a soft
  * colour field with hairlines, the same ground the backdrop's lenses bend,
- * with dispersion, a thin specular bevel and a fresnel rim, tinted by the
+ * with dispersion and a thin specular bevel (no glowing rim), tinted by the
  * letter's own colour. Desktop adds real transmission glass.
  */
 const GLASS_VERT = /* glsl */ `
@@ -49,10 +49,9 @@ void main() {
     ground(s + refract(-v, n, 0.69).xy * 0.86).g,
     ground(s + refract(-v, n, 0.71).xy * 0.92).b);
   vec3 c = mix(r * uTint * 1.1, r, uClear);
-  float fres = pow(1.0 - ndv, 3.0);
   vec3 L = normalize(vec3(-0.45, 0.6, 0.65));
   float spec = pow(max(dot(reflect(-L, n), v), 0.0), 90.0);
-  c += uHi * (fres * 0.9 + spec * 1.4);
+  c += uHi * spec * 1.4;
   gl_FragColor = vec4(c, 1.0);
   #include <colorspace_fragment>
 }`;
@@ -79,9 +78,9 @@ export const look: ConceptLook = {
     );
     if (phone) return looks;
     // Desktop: true transmission glass (ior 1.45, thickness 0.6), lit by the studio.
-    const rim = patch('glass-rim', true, false);
+    const grain = patch('glass', false);
     const phys = (tint: string, iridescence: number) =>
-      rim(
+      grain(
         new THREE.MeshPhysicalMaterial({
           color: tint,
           transmission: 1,
@@ -108,7 +107,7 @@ export const look: ConceptLook = {
   shadow: (dark) => ({
     color: dark ? '#000000' : '#23364d',
     opacity: dark ? 0.5 : 0.16,
-    radius: 10,
+    radius: 1,
     dir: [-0.3, 0.6, 1],
   }),
 };

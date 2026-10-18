@@ -33,8 +33,7 @@
     0 2px 0 #e8603f,
     0 4px 0 #d9502f,
     0 6px 0 #c94322,
-    0 8px 0 #b8391b,
-    0 18px 30px rgb(120 40 20 / 0.35);
+    0 8px 0 #b8391b;
 }
 :root[data-variant='a'] [data-hero-grid] {
   grid-template-columns: minmax(0, 1fr);
