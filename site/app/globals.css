@@ -1039,24 +1039,10 @@ a:hover > .brand-mark .brand-grip {
     opacity: 1;
   }
 }
-@keyframes vy-lock {
-  from {
-    transform: scale(1.12);
-    filter: brightness(1.6);
-  }
-  to {
-    transform: none;
-    filter: none;
-  }
-}
 @keyframes vy-ticker {
   to {
     transform: translateX(-50%);
   }
-}
-/* Same curve as the 3D word's pop (lockPop in lib/titleTiming): ease-out quad. */
-.vy-letter-locked {
-  animation: vy-lock 0.35s cubic-bezier(0.5, 1, 0.89, 1);
 }
 @media (prefers-reduced-motion: reduce) {
   .vy-title,

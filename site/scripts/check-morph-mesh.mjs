@@ -42,7 +42,19 @@ const EM = 2;
 const opts = (stride) => ({ em: EM, depth: 0.3, bevel: 0.05, inset: 0.035, stride });
 // Progress samples: through the morph, and past the target by up to the
 // spring's largest overshoot (and a touch below 0, where a spring can dip).
-const SAMPLES = [0, 0.1, 0.25, 0.4, 0.5, 0.6, 0.75, 0.9, 1, 1 + OVERSHOOT_MAX / 2, 1 + OVERSHOOT_MAX];
+const SAMPLES = [
+  0,
+  0.1,
+  0.25,
+  0.4,
+  0.5,
+  0.6,
+  0.75,
+  0.9,
+  1,
+  1 + OVERSHOOT_MAX / 2,
+  1 + OVERSHOOT_MAX,
+];
 
 const area2 = (xs, ys, n) => {
   let a = 0;
@@ -143,7 +155,7 @@ for (const ch of [...new Set('variantly')]) {
         }
         if (outside) fail(key, 'cap triangle outside the letter');
         if (Math.abs(triArea - capArea) > 0.02 * Math.abs(capArea) + 1e-4)
-          fail(key, `cap area off (${triArea.toFixed(4)} vs ${capArea.toFixed(4)})`.replace(/\(.*\)/, ''));
+          fail(key, 'cap triangles do not cover the outline');
       }
     }
   }

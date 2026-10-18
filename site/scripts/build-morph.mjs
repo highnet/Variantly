@@ -189,10 +189,11 @@ for (let f = 0; f < FACE_COUNT; f++) {
 // Mirrors lib/glyphMorph.ts: contours paired by rank, each split into a frame
 // (centre, RMS size) and a unit shape whose start point is aligned by the
 // least summed squared distance over every offset. A pair is compatible when
-// both faces have the same outers and holes and, at a quarter, half and
-// three quarters of the way, no contour folds (crosses itself or another) or
-// shrinks below 60% of its endpoints' mean area (crossings the faces
-// already have do not count). Monoton (stacked stripes)
+// both faces have the same outers and holes and, every tenth of the way and
+// on through the spring's overshoot, at full and at phone (half) detail, no
+// contour folds (crosses itself or another) or shrinks below 60% of the
+// smaller end's area (crossings the faces already have do not count), and
+// the in-between shapes stay legible (below). Monoton (stacked stripes)
 // morphs into nothing: it stays out of the morph wardrobe.
 const decodeC = (d) => {
   const c = new Float64Array(d.length);
@@ -381,6 +382,8 @@ for (const ch of CHARS) {
   const ends = contours.map((cs, f) => (f === monoton ? null : raster(cs)));
   const shape = (f) => [faces[f].g[ch].o, faces[f].g[ch].p.length];
   const lists = Array.from({ length: FACE_COUNT }, () => []);
+  // Clean but not quite legible pairs, for the final faces' sake (below).
+  const loose = [];
   let geometric = 0;
   // Faces whose own glyph is far from the letter's usual form (Rubik Mono
   // One's l is an L, the pixel faces' v a stepped cup) stay out of the morph
@@ -398,7 +401,7 @@ for (const ch of CHARS) {
         const fb = frameOf(cb);
         const na = norm(ca, fa);
         const [nb] = align(na, norm(cb, fb));
-        return { fa, fb, na, nb, area: (Math.abs(flatArea(ca)) + Math.abs(flatArea(cb))) / 2 };
+        return { fa, fb, na, nb, area: Math.min(Math.abs(flatArea(ca)), Math.abs(flatArea(cb))) };
       });
       const at = (e) =>
         pairs.map(({ fa, fb, na, nb }) => {
@@ -410,7 +413,9 @@ for (const ch of CHARS) {
       // Every tenth of the way, and past the end by up to the spring's
       // overshoot (SPRING_PEAK in lib/titleTiming.ts, about 0.095): at full
       // detail and at the phones' half detail, nothing may fold or collapse.
-      const crossEnds = [1, 2].map((st) => Math.max(folds(contours[a], st), folds(contours[b], st)));
+      const crossEnds = [1, 2].map((st) =>
+        Math.max(folds(contours[a], st), folds(contours[b], st)),
+      );
       const geometryOk = SAMPLES.every((e) => {
         const mid = at(e);
         return (
@@ -434,7 +439,22 @@ for (const ch of CHARS) {
         nearMid >= MIN_MID &&
         [q1, mid, q3].every((px) => readsAs(px) === ch);
       if (legible) lists[b].push([a, Math.min(near1, near3, nearMid)]);
+      else if (near1 >= 0.5 && near3 >= 0.5 && nearMid >= 0.4)
+        loose.push([a, b, Math.min(near1, near3, nearMid)]);
     }
+  // Each letter leaves its final face and comes back to it, so a final face
+  // needs neighbours both ways. One whose glyph is far from the usual form
+  // (Great Vibes' r, whose in-betweens read a moment like a t) has few or
+  // none: it also takes the clean pairs that stay close to both ends.
+  for (const f of FINALS.filter((f, i) => 'variantly'[i] === ch)) {
+    const outs = () => lists.filter((l) => l.some(([a]) => a === f)).length;
+    if (lists[f].length < 3)
+      for (const [a, b, q] of loose)
+        if (b === f && !lists[f].some(([x]) => x === a)) lists[f].push([a, q]);
+    if (outs() < 3)
+      for (const [a, b, q] of loose)
+        if (a === f && !lists[b].some(([x]) => x === a)) lists[b].push([a, q]);
+  }
   // Most legible first.
   k[ch] = lists.map((l) => l.sort((p, q) => q[1] - p[1]).map(([f]) => f));
   const pairsOk = lists.reduce((n, l) => n + l.length, 0);

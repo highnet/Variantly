@@ -73,16 +73,8 @@ Alfa Slab One (400)
 Copyright 2016 The Alfa Slab One Project Authors (http://www.jmsole.cl | info@jmsole.cl), with Reserved Font Name "Alfa Slab".
 Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
 
-Kaushan Script (400)
-Copyright (c) 2011, Pablo Impallari (www.impallari.com|impallari@gmail.com),Copyright (c) 2011, Igino Marini. (www.ikern.com|mail@iginomarini.com),with Reserved Font Name Kaushan Script.
-Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
-
 Baloo 2 (800)
 Copyright 2019 The Baloo 2 Project Authors (https://github.com/EkType/Baloo2)
-Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
-
-Londrina Outline (400)
-Copyright 2011 The Londrina Outline Authors (https://github.com/marcelommp/Londrina-Typeface), with Reserved Font Name "Londrina Outline"
 Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
 
 Fraunces (900)
@@ -95,8 +87,4 @@ Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfo
 
 Black Ops One (400)
 Copyright 2022 The PinyonScript Project Authors (https://github.com/SorkinType/Black-Ops)
-Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).
-
-Syne (800)
-Copyright 2019 The Syne Project Authors (https://gitlab.com/bonjour-monde/fonderie/syne-typeface)
 Licensed under the SIL Open Font License 1.1 (see LICENSES.txt or https://openfontlicense.org).

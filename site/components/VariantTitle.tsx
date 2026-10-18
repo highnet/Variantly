@@ -5,6 +5,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { canWebGL } from '@/lib/glTier';
 import {
   blendMorph,
+  faceSequence,
   loadMorph,
   morphPose,
   morphTrack,
@@ -20,9 +21,9 @@ import {
   faceAt,
   morphAt,
   msToNextStep,
-  scaleAt,
   startDelay,
   stepAt,
+  stepCount,
   type MorphPhase,
 } from '@/lib/titleTiming';
 import { useVariant } from '@/lib/variant';
@@ -144,7 +145,7 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
     if (!g || !box || !text || step === null || morph) return;
     const fit = () => {
       const k = Math.min(1, box.offsetWidth / Math.max(1, text.offsetWidth));
-      g.style.transform = `scale(${k * scaleAt(step, index)})`;
+      g.style.transform = `scale(${k})`;
     };
     fit();
     // A face still loading measures with its fallback: fit again once it lands.
@@ -166,7 +167,8 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
     const ctx = el?.getContext('2d');
     if (!morph || !shifting || !el || !box || !ctx) return;
     const track = morphTrack(morph, char);
-    const phase: MorphPhase = { step: 0, e: 0 };
+    const phase: MorphPhase = { step: 0, e: 0, c: 0 };
+    const seq = faceSequence(morph, char, index, FINAL[index], stepCount(index), low);
     const pose: MorphPose = { k: 1, y: 0 };
     const shadows = shadowLayers(box);
     const dpr = Math.min(devicePixelRatio || 1, 3);
@@ -205,8 +207,9 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
       if (!morphAt(ms, index, phase)) {
         phase.step = Math.max(lastStep, 0);
         phase.e = 1;
+        phase.c = 1;
       }
-      const toFinal = planStep(morph, track, phase, index, FINAL[index], low);
+      planStep(morph, track, phase, seq, low);
       if (
         !force &&
         phase.step === lastStep &&
@@ -220,7 +223,7 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
       lastFrom = track.from;
       lastTo = track.to;
       blendMorph(track, phase.e);
-      morphPose(morph, track, index, phase.e, toFinal, w, h, fontPx, finalBase, pose);
+      morphPose(morph, track, phase.e, FINAL[index], w, h, fontPx, finalBase, pose);
       const k = fontPx * pose.k;
       const ox = pad + w / 2;
       const oy = pad + h / 2 + pose.y;
@@ -263,13 +266,7 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
   }, [morph, shifting, char, index, low, run, variant]);
 
   return (
-    <span
-      ref={slot}
-      className={cn(
-        'vy-letter relative inline-block leading-none',
-        live === null && seek === null && 'vy-letter-locked',
-      )}
-    >
+    <span ref={slot} className="vy-letter relative inline-block leading-none">
       <span className={cn(INTRO_FINAL[index], step !== null && 'invisible')}>
         {char}
         {/* Marks the final glyph's baseline for the 3D word's layout. */}

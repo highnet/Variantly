@@ -41,18 +41,20 @@ const FACES = [
   ['Rye', '400', 'rye'],
   ['Fascinate', '400', 'fascinate'],
   ['Rubik Wet Paint', '400', 'wet-paint'],
+  // The wider wardrobe (all SIL OFL 1.1): a stencil, two wide grotesks, a
+  // didone, a slab, a soft rounded face, a soft serif, a brush and a
+  // military stencil. Each joins only the letters it morphs cleanly for
+  // (scripts/build-morph.mjs); faces that joined none (Kaushan Script,
+  // Londrina Outline, Syne) were left out.
   ['Big Shoulders Stencil', '900', 'stencil'],
   ['Krona One', '400', 'krona'],
   ['Unbounded', '900', 'unbounded'],
   ['Bodoni Moda', '900', 'bodoni'],
   ['Alfa Slab One', '400', 'alfa-slab'],
-  ['Kaushan Script', '400', 'kaushan'],
   ['Baloo 2', '800', 'baloo'],
-  ['Londrina Outline', '400', 'londrina-outline'],
   ['Fraunces', '900', 'fraunces'],
   ['Knewave', '400', 'knewave'],
   ['Black Ops One', '400', 'black-ops'],
-  ['Syne', '800', 'syne'],
 ];
 const wildOut = join(process.cwd(), 'app/fonts/wild');
 mkdirSync(wildOut, { recursive: true });
