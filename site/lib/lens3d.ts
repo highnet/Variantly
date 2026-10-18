@@ -650,7 +650,8 @@ export const attachLens = (host: LensHost): LensPass => {
   const offTick = onLensTick(() => {
     if (disposed || busy) return;
     const shown = lensLive.shown;
-    if (shown !== wasShown) {
+    const changed = shown !== wasShown;
+    if (changed) {
       wasShown = shown;
       // The title's cursor lean stops while the door is up (the door tilts
       // instead), at once so the stencil lines up with the 2D layer.
@@ -658,7 +659,9 @@ export const attachLens = (host: LensHost): LensPass => {
       if (shown) host.el.style.transform = '';
       laid = '';
     }
-    if (shown || lensLive.gl) host.paint();
+    // One more paint as the door goes, or the title keeps its last frame,
+    // the door's letters still in it, until something else redraws it.
+    if (shown || lensLive.gl || changed) host.paint();
   });
   const onBusy = (e: Event) => {
     busy = !!(e as CustomEvent<{ busy: boolean }>).detail?.busy;
