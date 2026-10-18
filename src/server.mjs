@@ -11,7 +11,7 @@
  * approves.
  */
 import http from 'node:http';
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findChrome } from './checks.mjs';
@@ -21,7 +21,7 @@ import { detectRoutes } from './routes.mjs';
 import * as git from './git.mjs';
 import { LineBuffer, isUp, run, runOk, spawnShell } from './proc.mjs';
 import { ADAPTERS, detect, packageRunner, projectInfo as projectInfoFor } from './stacks.mjs';
-import { Session } from './session.mjs';
+import { Session, appFileFor } from './session.mjs';
 import { createSiteRunner, openFolder } from './open-site.mjs';
 
 const UI_DIR = fileURLToPath(new URL('../ui/', import.meta.url));
@@ -78,7 +78,7 @@ export const serveUi = (req, res) => {
  * @param {{ repo: string, port: number, maxLive?: number, defaults?: Partial<import('./session.mjs').Config> }} opts
  */
 export const startApp = async (opts) => {
-  const session = new Session({ repo: opts.repo, maxLive: opts.maxLive, local: serveUi });
+  const session = new Session({ repo: opts.repo, maxLive: opts.maxLive, local: serveUi, shared: true });
   await session.load();
   /** @type {Set<http.ServerResponse>} */
   const clients = new Set();
@@ -102,6 +102,8 @@ export const startApp = async (opts) => {
   session.on('log', (l) => send('log', l));
   session.on('chat', (c) => send('chat', c));
   session.on('error', (e) => send('problem', { message: String(e?.message ?? e) }));
+  // Kept or cleaned from the terminal: every open page says so and moves on.
+  session.on('external', (c) => send('notice', c));
 
   let port = opts.port;
   const allowedHost = (/** @type {string | undefined} */ host) =>
@@ -164,12 +166,22 @@ export const startApp = async (opts) => {
     switch (`${method} ${name}`) {
       case 'GET state':
         return session.snapshot();
+      case 'POST sync': {
+        // The page re-reads the run when it regains focus and before Keep or
+        // Clean: the CLI may have kept or cleaned it in the meantime.
+        const change = await session.refresh();
+        return { change, state: session.snapshot() };
+      }
       case 'GET detect':
         return detectProject(opts.repo, opts.defaults);
       case 'GET log':
         return { lines: session.logFor(n) };
       case 'GET rollout-log':
         return { lines: session.rolloutLog() };
+      case 'POST release':
+        // `variantly clean` / `keep` in a terminal: let go of the worktrees.
+        await session.release();
+        return { ok: true };
       case 'POST cancel-rollout':
         await session.cancelRollout();
         return { ok: true };
@@ -193,9 +205,15 @@ export const startApp = async (opts) => {
         session.audit(arg).catch(() => {});
         return { ok: true };
       case 'POST finalize':
+        // finalize re-reads the state file first and refuses a run kept or cleaned elsewhere.
         return session.finalize(n, { sitewide: body.sitewide !== false });
-      case 'POST discard':
-        return session.discard();
+      case 'POST discard': {
+        // Already kept or cleaned from the terminal: that answer stands, the page catches up.
+        const change = await session.refresh();
+        if (change) return { change, state: session.snapshot() };
+        await session.discard();
+        return { ok: true };
+      }
       case 'POST install-impeccable':
         return installImpeccable(String(body.agent ?? 'claude'));
       case 'POST install-agent':
@@ -284,6 +302,14 @@ export const startApp = async (opts) => {
   const address = server.address();
   port = typeof address === 'object' && address ? address.port : port;
 
+  // Announce this app, so `variantly clean` / `keep` in a terminal can ask it
+  // to let go of the worktrees first (see session.release).
+  const appFile = appFileFor(opts.repo);
+  try {
+    mkdirSync(path.dirname(appFile), { recursive: true });
+    writeFileSync(appFile, JSON.stringify({ url: `http://127.0.0.1:${port}`, pid: process.pid }));
+  } catch {}
+
   const app = {
     url: `http://localhost:${port}`,
     port,
@@ -294,6 +320,9 @@ export const startApp = async (opts) => {
       send('problem', { message });
     },
     close: async () => {
+      try {
+        rmSync(appFile, { force: true });
+      } catch {}
       for (const c of clients) c.end();
       await site.close().catch(() => {});
       await session.close();
@@ -381,24 +410,25 @@ export const detectProject = async (repo, defaults = {}) => {
 
 
 /**
- * A mix of agents starts only when every one of them can run: installed and
- * not known to be signed out. One agent alone keeps today's behaviour, where
- * its variants fail with the agent's own message.
+ * A run starts only when its agents can run. Every agent in a mix must be
+ * installed and not known to be signed out; one agent alone must be
+ * installed (a sign-in it lacks still shows as the agent's own message on
+ * each variant, since the sign-in check can't always tell).
  * @param {import('./session.mjs').Config} config @param {string} repo
  */
 export const assertAgentsReady = async (config, repo) => {
-  if (!config.mix) return;
-  const ids = [...new Set(config.mix.map((r) => r.agent))].filter((id) => id !== 'demo');
+  const ids = [...new Set(config.mix ? config.mix.map((r) => r.agent) : [config.agent])].filter((id) => id !== 'demo');
   if (!ids.length) return;
   const found = await detectAgents(repo);
   const problems = ids.flatMap((id) => {
     const a = found.find((x) => x.id === id);
     if (!a) return [`"${id}" is not an agent variantly knows.`];
     if (!a.installed) return [`${a.name} isn't installed (${a.install}).`];
-    if (a.signedIn === false) return [`${a.name} isn't signed in (run \`${a.login}\`).`];
+    if (config.mix && a.signedIn === false) return [`${a.name} isn't signed in (run \`${a.login}\`).`];
     return [];
   });
-  if (problems.length) throw new Error(`Not started: every agent in the mix must be ready.\n${problems.join('\n')}`);
+  if (!problems.length) return;
+  throw new Error(config.mix ? `Not started: every agent in the mix must be ready.\n${problems.join('\n')}` : `Not started: ${problems.join('\n')}`);
 };
 
 /**

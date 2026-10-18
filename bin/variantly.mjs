@@ -219,8 +219,14 @@ const doctor = async (repo) => {
   }
   console.log('\nApp');
   if (!info.candidates.length) console.log('✗ no known stack found; set a custom dev command in the wizard');
+  const { fill, pythonFor } = await import('../src/stacks.mjs');
+  const root = fileURLToPath(new URL('..', import.meta.url)).replace(/[\\/]$/, '');
+  const width = Math.max(0, ...info.candidates.map((c) => c.name.length));
   for (const c of info.candidates) {
-    console.log(`  ${c.name.padEnd(12)} ${c.rel || '.'}  →  ${c.command}${c.running ? `   (running at ${c.defaultUrl})` : ''}`);
+    // The command as you'd type it to start the app on its usual port, not the template.
+    const port = Number(new URL(c.defaultUrl).port) || 3000;
+    const command = fill(c.command, { run: c.runner, python: pythonFor(path.join(repo, c.rel)), node: 'node', variantly: root, port, port2: port + 1 });
+    console.log(`  ${c.name.padEnd(width)}  ${c.rel || '.'}  →  ${command}${c.running ? `   (running at ${c.defaultUrl})` : ''}`);
   }
 };
 
@@ -260,8 +266,32 @@ const installSkillCommand = async (o) => {
   }
 };
 
+/**
+ * An app left open on this project holds its worktrees (agents, audits, the
+ * preview servers run in them), and Windows will not delete a folder a live
+ * process sits in. Ask it to let go first; no app, or no answer, is fine.
+ * @param {string} repo
+ */
+const releaseOpenApp = async (repo) => {
+  const { appFileFor } = await import('../src/session.mjs');
+  let url = '';
+  try {
+    url = JSON.parse(readFileSync(appFileFor(repo), 'utf8')).url;
+  } catch {
+    return;
+  }
+  if (!url) return;
+  await fetch(`${url}/api/release`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-variantly': '1' },
+    body: '{}',
+    signal: AbortSignal.timeout(10_000),
+  }).catch(() => {});
+};
+
 /** @param {string} repo */
 const clean = async (repo) => {
+  await releaseOpenApp(repo);
   const { Session, stateDirFor } = await import('../src/session.mjs');
   const git = await import('../src/git.mjs');
   const session = new Session({ repo });
@@ -307,11 +337,19 @@ const status = async (repo) => {
 /** @param {string} repo @param {number} n @param {boolean} sitewide */
 const keep = async (repo, n, sitewide) => {
   if (!Number.isInteger(n) || n < 1) return fail('Usage: variantly keep <n>   (n is the variant number)');
-  const { Session } = await import('../src/session.mjs');
+  await releaseOpenApp(repo);
+  const { Session, agentOf } = await import('../src/session.mjs');
+  const { agentById } = await import('../src/agents.mjs');
   const session = new Session({ repo });
   await session.load();
   try {
-    if (sitewide) console.log(`Rolling variant ${n} out to the rest of the site first. This is one more agent run.`);
+    const v = session.state.variants.find((x) => x.n === n);
+    const agent = v && session.state.config ? agentById(agentOf(session.state.config, v).agent) : undefined;
+    if (sitewide && v?.status === 'done' && session.state.phase === 'ready') {
+      // The demo agent restyles the global stylesheet: the rest of the site already matches.
+      if (agent?.id === 'demo') console.log(`Variant ${n} is from the demo agent, whose style is site-wide already: no rollout needed.`);
+      else console.log(`Rolling variant ${n} out to the rest of the site first: one more ${agent?.name ?? 'agent'} run, usually a few minutes.`);
+    }
     const result = await session.finalize(n, { sitewide });
     if (result.rollout) console.log(`Rollout: ${result.rollout}`);
     if (result.rolloutError) console.log(`Rollout failed, applying the variant as built: ${result.rolloutError}`);

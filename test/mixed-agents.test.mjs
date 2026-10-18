@@ -64,7 +64,11 @@ test('each variant gets its row in order; old runs fall back to the config', () 
 test('a mix with an agent variantly doesn\'t know never starts', async () => {
   const c = normalizeConfig({ ...base, mix: [{ agent: 'demo', count: 1 }, { agent: 'nope', count: 1 }] });
   await assert.rejects(assertAgentsReady(c, process.cwd()), /every agent in the mix must be ready[\s\S]*"nope"/);
-  // Demo-only mixes and single agents aren't checked.
+  // Demo-only mixes and the demo alone aren't checked.
   await assertAgentsReady(normalizeConfig({ ...base, mix: [{ agent: 'demo', model: 'a', count: 1 }, { agent: 'demo', model: 'b', count: 1 }] }), process.cwd());
-  await assertAgentsReady(normalizeConfig({ ...base, agent: 'nope' }), process.cwd());
+  await assertAgentsReady(normalizeConfig({ ...base, agent: 'demo' }), process.cwd());
+});
+
+test('one agent alone that variantly doesn\'t know never starts either', async () => {
+  await assert.rejects(assertAgentsReady(normalizeConfig({ ...base, agent: 'nope' }), process.cwd()), /^Error: Not started: "nope" is not an agent variantly knows\.$/);
 });
