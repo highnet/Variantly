@@ -74,6 +74,22 @@ export const onLensTick = (cb: () => void) => {
   };
 };
 
+// The 3D pass started or stopped drawing the door (lensLive.gl / .scene):
+// the UI moves its 2D layer over or under the canvas to match.
+let glListener: (() => void) | null = null;
+export const onLensGl = (cb: () => void) => {
+  glListener = cb;
+  return () => {
+    if (glListener === cb) glListener = null;
+  };
+};
+export const setLensGl = (gl: boolean, scene: boolean) => {
+  if (lensLive.gl === gl && lensLive.scene === scene) return;
+  lensLive.gl = gl;
+  lensLive.scene = scene;
+  glListener?.();
+};
+
 // A short glitch asked for by the 3D pass (a letter flipping across the
 // rim) or the UI (cycling the concept). The UI's loop plays it.
 type Kick = 'rim' | 'cycle';

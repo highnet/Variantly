@@ -5,7 +5,7 @@ import { CONCEPT_BY_ID, CONCEPT_LOADERS, type ConceptId } from '@/concepts';
 import type { Built } from '@/concepts/types';
 import { blendMorph, loadMorph, morphTrack, planMorph, type MorphData } from '@/lib/glyphMorph';
 import { glTier } from '@/lib/glTier';
-import { kickGlitch, lensLive, onLensTick } from '@/lib/lens';
+import { kickGlitch, lensLive, onLensTick, setLensGl } from '@/lib/lens';
 import { glitchOn } from '@/lib/lensGlitch';
 import {
   disposePool,
@@ -487,8 +487,7 @@ export const attachLens = (host: LensHost): LensPass => {
     if (lensLive.id && lensLive.id !== id && data) build(lensLive.id);
     if (!active()) {
       wasActive = false;
-      lensLive.gl = false;
-      lensLive.scene = false;
+      setLensGl(false, false);
       group.visible = false;
       return false;
     }
@@ -559,8 +558,7 @@ export const attachLens = (host: LensHost): LensPass => {
     group.visible = true;
 
     const sceneOn = !!lensScene && !lensLive.fast;
-    lensLive.gl = true;
-    lensLive.scene = sceneOn;
+    setLensGl(true, sceneOn);
     const autoClear = renderer.autoClear;
     const autoShadow = renderer.shadowMap.autoUpdate;
     renderer.autoClear = false;

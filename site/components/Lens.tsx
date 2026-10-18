@@ -26,6 +26,7 @@ import {
   lensLive,
   lensPerf,
   lensTick,
+  onLensGl,
   pendingKick,
   takeKick,
 } from '@/lib/lens';
@@ -344,7 +345,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   const wake = () => {
     if (!raf) raf = requestAnimationFrame(draw);
   };
-  cleanups.push(takeKick(wake));
+  cleanups.push(takeKick(wake), onLensGl(syncLayers));
 
   const show = (on: boolean) => {
     if (shown === on) return;
