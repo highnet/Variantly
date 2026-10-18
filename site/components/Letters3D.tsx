@@ -57,7 +57,9 @@ type Letter = {
   // Placed and shaped like the 2D slot (its transform, rotation, skew).
   holder: THREE.Object3D;
   mesh: THREE.Mesh;
-  extra: THREE.Mesh;
+  // A flat, unlit copy in the 2D letter's colour over the lit letter: fully
+  // opaque at the handover from the 2D word, fading as the letter extrudes.
+  flat: THREE.Mesh<THREE.BufferGeometry, THREE.MeshBasicMaterial>;
   // The letter's outline track and its morphing mesh.
   track: MorphTrack;
   morph: ReturnType<typeof morphMesh>;
@@ -331,10 +333,20 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
         mesh.castShadow = true;
         // The morphing mesh's bound is loose and its caps change: never cull.
         mesh.frustumCulled = false;
-        const extra = new THREE.Mesh(morph.geo);
-        extra.frustumCulled = false;
-        extra.renderOrder = -1;
-        mesh.add(extra);
+        const flat = new THREE.Mesh(
+          morph.geo,
+          new THREE.MeshBasicMaterial({
+            transparent: true,
+            toneMapped: false,
+            depthWrite: false,
+            polygonOffset: true,
+            polygonOffsetFactor: -1,
+            polygonOffsetUnits: -4,
+          }),
+        );
+        flat.frustumCulled = false;
+        flat.renderOrder = 1;
+        mesh.add(flat);
         const holder = new THREE.Object3D();
         holder.matrixAutoUpdate = false;
         holder.add(mesh);
@@ -343,7 +355,7 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
           ch,
           holder,
           mesh,
-          extra,
+          flat,
           track,
           morph,
           step: -1,
@@ -461,9 +473,6 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
         const look = pools[i][k];
         l.look = k;
         l.mesh.material = look.body;
-        l.extra.visible = !!look.extra;
-        if (look.extra) l.extra.material = look.extra;
-        l.extra.position.set(...look.offset);
       };
       // The 2D letter's colour for the face; a concept's stacked text-shadow
       // (a straight drop, like Soft Clay's extrusion) for the sides.
@@ -480,7 +489,11 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
         const dark = html.dataset.theme === 'dark';
         pools.forEach(disposePool);
         const slotsEls = [...word.children];
-        pools = letters.map((_, i) => lookPool(variant, inkOf(slotsEls[i]), dark, phone));
+        pools = letters.map((l, i) => {
+          const ink = inkOf(slotsEls[i]);
+          l.flat.material.color.set(ink.face);
+          return lookPool(variant, ink, dark, phone);
+        });
         if (pools.some((p) => p.some((l) => l.env))) lightStudio();
         shade = letterShadow(variant, dark);
         backdropMat.color.set(shade.color);
@@ -508,7 +521,11 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
       cleanups.push(
         () => mo.disconnect(),
         () => pools.forEach(disposePool),
-        () => letters.forEach((l) => l.morph.geo.dispose()),
+        () =>
+          letters.forEach((l) => {
+            l.morph.geo.dispose();
+            l.flat.material.dispose();
+          }),
         () => backdrop.geometry.dispose(),
       );
 

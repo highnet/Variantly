@@ -25,22 +25,44 @@ const scheduleFor = (index: number) => {
     (_, k) => (k === 0 ? FIRST_HOLD : HOLD_MS + HOLD_GROW * k) + MORPH_MS,
   );
 };
-const SCHEDULES = [...WORD].map((_, i) => scheduleFor(i));
-// How many morphs a letter makes before it locks in (a step is one hold plus
-// the morph after it).
-export const stepCount = (index: number) => SCHEDULES[index].length;
-export const startDelay = (index: number) => 260 + Math.round(jitter(index, 2) * 360);
-// When the last letter has locked (ms after the reveal starts).
-export const REVEAL_MS = Math.max(
-  ...SCHEDULES.map((s, i) => startDelay(i) + s.reduce((a, b) => a + b, 0)),
+// A run of morphs for the whole word: per letter, its start delay and its
+// steps (a step is one hold plus the morph after it), and when the last
+// letter has landed.
+export type Timeline = {
+  kind: 'reveal' | 'swap';
+  delays: number[];
+  schedules: number[][];
+  end: number;
+};
+const timeline = (kind: Timeline['kind'], delays: number[], schedules: number[][]) => ({
+  kind,
+  delays,
+  schedules,
+  end: Math.max(...schedules.map((s, i) => delays[i] + s.reduce((a, b) => a + b, 0))),
+});
+export const REVEAL: Timeline = timeline(
+  'reveal',
+  [...WORD].map((_, i) => 260 + Math.round(jitter(i, 2) * 360)),
+  [...WORD].map((_, i) => scheduleFor(i)),
 );
+// When the concept changes, each letter morphs out to one neighbouring face
+// and back onto its (new) final face, in a quick wave from left to right.
+export const SWAP: Timeline = timeline(
+  'swap',
+  [...WORD].map((_, i) => 40 * i),
+  [...WORD].map(() => [MORPH_MS, 120 + MORPH_MS]),
+);
+export const REVEAL_MS = REVEAL.end;
+// How many morphs a letter makes before it locks in.
+export const stepCount = (index: number, tl = REVEAL) => tl.schedules[index].length;
+export const startDelay = (index: number, tl = REVEAL) => tl.delays[index];
 
-// The step a letter is on `ms` after the intro starts: -1 before it starts,
+// The step a letter is on `ms` after the run starts: -1 before it starts,
 // null once locked.
-export const stepAt = (ms: number, index: number) => {
-  let at = ms - startDelay(index);
+export const stepAt = (ms: number, index: number, tl = REVEAL) => {
+  let at = ms - tl.delays[index];
   if (at < 0) return -1;
-  const schedule = SCHEDULES[index];
+  const schedule = tl.schedules[index];
   for (let k = 0; k < schedule.length; k++) {
     at -= schedule[k];
     if (at < 0) return k;
@@ -71,10 +93,10 @@ export const faceAt = (step: number, index: number, n: number) => {
 
 // Milliseconds until a letter's next face change, `ms` after the reveal
 // starts (so a letter wakes once per change instead of polling).
-export const msToNextStep = (ms: number, index: number) => {
-  let at = ms - startDelay(index);
+export const msToNextStep = (ms: number, index: number, tl = REVEAL) => {
+  let at = ms - tl.delays[index];
   if (at < 0) return -at;
-  for (const d of SCHEDULES[index]) {
+  for (const d of tl.schedules[index]) {
     at -= d;
     if (at < 0) return -at;
   }
@@ -126,13 +148,13 @@ export type MorphPhase = {
 // allocation per frame): on face `step` (0 before it starts), `e` of the way
 // to the next step's face, the final face after its last step. Returns false
 // once the letter has locked.
-export const morphAt = (ms: number, index: number, out: MorphPhase) => {
-  let at = ms - startDelay(index);
+export const morphAt = (ms: number, index: number, out: MorphPhase, tl = REVEAL) => {
+  let at = ms - tl.delays[index];
   out.step = 0;
   out.e = 0;
   out.c = 0;
   if (at < 0) return true;
-  const schedule = SCHEDULES[index];
+  const schedule = tl.schedules[index];
   for (let k = 0; k < schedule.length; k++) {
     if (at < schedule[k]) {
       const hold = schedule[k] - MORPH_MS;
@@ -177,11 +199,12 @@ const unit = (a: number, b: number) => {
   x = Math.imul(x ^ (x >>> 15), 0x85ebca6b) >>> 0;
   return ((x ^ (x >>> 13)) >>> 0) / 4294967296;
 };
-export const glitchAt = (ms: number, index: number, out: Glitch) => {
-  const schedule = SCHEDULES[index];
+export const glitchAt = (ms: number, index: number, out: Glitch, tl = REVEAL) => {
+  if (tl.kind !== 'reveal') return 0;
+  const schedule = tl.schedules[index];
   // The step whose morph lands into the glitch: one of the middle ones.
   const k = 1 + Math.floor(unit(index, 1) * (schedule.length - 2));
-  let land = startDelay(index);
+  let land = tl.delays[index];
   for (let s = 0; s <= k; s++) land += schedule[s];
   // Just after the spring's first swing past the face.
   const at = ms - (land - MORPH_MS * 0.55);

@@ -20,9 +20,6 @@ type Style = 'clay' | 'riso' | 'crt' | 'toon' | 'facet' | 'paper' | 'flat';
 export type LetterLook = {
   // Front/back faces, then the extruded sides and bevel (TextGeometry groups).
   body: [THREE.Material, THREE.Material];
-  extra: THREE.Material | null;
-  // Where the extra layer sits relative to the glyph (letter units).
-  offset: [number, number, number];
   // Lit by the studio environment (built only when a pool needs it).
   env?: boolean;
 };
@@ -176,8 +173,6 @@ const patch = (key: string, glitter: boolean) => (m: THREE.Material) => {
 
 const plain = (face: THREE.Material, side: THREE.Material, env = false): LetterLook => ({
   body: [face, side],
-  extra: null,
-  offset: [0, 0, 0],
   env,
 });
 
@@ -294,7 +289,6 @@ export const lookPool = (variant: VariantKey, ink: LetterInk, dark: boolean, pho
 export const disposePool = (pool: LetterLook[]) =>
   pool.forEach((l) => {
     l.body.forEach((m) => m.dispose());
-    l.extra?.dispose();
   });
 
 /*
