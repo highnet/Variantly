@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.7.0](https://github.com/highnet/Variantly/compare/variantly-v0.6.0...variantly-v0.7.0) (2026-10-18)
+
+
+### Features
+
+* **site:** concepts k Ink & Stitch, p Tenango Thread, n Orientation Reel ([#143](https://github.com/highnet/Variantly/issues/143)) ([49b6e78](https://github.com/highnet/Variantly/commit/49b6e780e20828c0698a591c533eb2eb47bfc410))
+* support Grok Build, Antigravity, OpenCode, Pi and Hermes Agent ([#132](https://github.com/highnet/Variantly/issues/132)) ([0a4c1d2](https://github.com/highnet/Variantly/commit/0a4c1d2719ea4976eafa983675f67e438e648521))
+
+
+### Bug Fixes
+
+* **session:** a cancelled variant stops its clock ([0765222](https://github.com/highnet/Variantly/commit/07652225d4bdedb06b8c6cfd3c89797800477213))
+* **session:** a cancelled variant stops its clock ([db2795f](https://github.com/highnet/Variantly/commit/db2795f0570f1b28bfa660d65830752fb9db3826))
+* **ui:** phone side by side, header overflow on phones, file count ([5a9474b](https://github.com/highnet/Variantly/commit/5a9474bb3d4869483df3de532b0187ac943ba3ce))
+* **ui:** phone side by side, header overflow on phones, file count ([8fbbd34](https://github.com/highnet/Variantly/commit/8fbbd34214581dfe162f35cba23c2a26d28c256a))
+
 ## [0.6.0](https://github.com/highnet/Variantly/compare/variantly-v0.5.0...variantly-v0.6.0) (2026-10-18)
 
 
