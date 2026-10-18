@@ -8,8 +8,9 @@
   --rule: #ddd3fb;
   --steel: #5b5280;
   --ink: #1a1033;
-  --alert: #7c5cff;
-  --alert-hover: #9479ff;
+  /* A shade deeper than the title violet so white button text holds 5:1. */
+  --alert: #6a48f0;
+  --alert-hover: #5a38e0;
   --on-alert: #ffffff;
   --hero-bg: #f1ebff;
   --hero-ink: #1a1033;

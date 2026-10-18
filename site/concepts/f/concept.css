@@ -5,8 +5,9 @@
   --rule: #c9b48f;
   --steel: #5b4c36;
   --ink: #1b1b1b;
-  --alert: #e5322d;
-  --alert-hover: #f04e49;
+  /* Deep enough to carry white button text (5:1); hover deepens. */
+  --alert: #d42a25;
+  --alert-hover: #bd221d;
   --hero-bg: #e7d9bf;
   --hero-ink: #1b1b1b;
   --hero-mute: #5b4c36;
@@ -26,6 +27,8 @@
   --ink: #f3ead6;
   --alert: #ff5a4f;
   --alert-hover: #ff7a70;
+  /* The bright red takes ink, not white, for its button text. */
+  --on-alert: #1b1b1b;
   --hero-bg: #1d1a16;
   --hero-ink: #f3ead6;
   --hero-mute: #c8b896;

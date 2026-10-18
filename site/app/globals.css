@@ -1376,6 +1376,18 @@ a:hover > .brand-mark .brand-grip {
 :root[data-variant='b'] .on-slate [aria-pressed='true'] {
   color: #ffffff;
 }
+/* Text on the board accent (the pressed run segment, an improved score):
+   black or white, whichever reads on that concept's accent. Relative
+   luminance Y = 0.1791 is where both give the same contrast, so the switch
+   always lands on >= 4.58:1. Solid fallback first. */
+:root[data-variant] .vy-on-ok,
+:root[data-variant] .vy-on-ok-pressed[aria-pressed='true'] {
+  color: #000000;
+  color: color(
+    from var(--ok-on-slate) xyz-d65 calc(clamp(0, (0.1791 - y) * 100000, 1) * 0.9505)
+      clamp(0, (0.1791 - y) * 100000, 1) calc(clamp(0, (0.1791 - y) * 100000, 1) * 1.089)
+  );
+}
 /* Boards nested in the hero (its command box) stay on the hero palette. */
 :root[data-variant] section.on-slate .on-slate {
   --surface: var(--hero-ink);

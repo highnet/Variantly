@@ -163,7 +163,7 @@ const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
   const better = lowerIsBetter ? diff < 0 : diff > 0;
   return (
     <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
-      <span className="text-steel-on-slate text-[10px] tracking-[0.08em] uppercase">{label}</span>
+      <span className="text-steel-on-slate text-[11px] tracking-[0.08em] uppercase">{label}</span>
       {/* Only the change against the original: nobody reads the new value.
           A fixed width, so a change from "+9" to "+13" (or "same") never
           resizes the dock, which is centred and would slide sideways. */}
@@ -171,7 +171,13 @@ const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
         className={cn(
           'inline-block text-left text-[15px] font-bold tabular-nums',
           lowerIsBetter ? 'min-w-[8ch]' : 'min-w-[4ch]',
-          diff === 0 ? 'text-surface' : better ? 'text-ok-on-slate' : 'text-fail-on-slate',
+          // An improvement is a chip in the board accent: the accent as text
+          // can fall under 3:1 on a light board.
+          diff === 0
+            ? 'text-surface'
+            : better
+              ? 'bg-ok-on-slate vy-on-ok rounded-[4px] px-1'
+              : 'text-fail-on-slate',
         )}
       >
         {diff === 0 ? (
@@ -1246,13 +1252,13 @@ const Showcase = () => {
           >
             <Typography
               variant="tag"
-              className="bg-ink text-surface rounded-flap px-1.5 py-1 text-[10px] opacity-[var(--before-o,1)] sm:px-2 sm:py-1.5 sm:text-[length:inherit]"
+              className="bg-ink text-surface rounded-flap px-1.5 py-1 text-[11px] opacity-[var(--before-o,1)] sm:px-2 sm:py-1.5 sm:text-[length:inherit]"
             >
               Before<span className="hidden sm:inline"> · today’s site</span>
             </Typography>
             <Typography
               variant="tag"
-              className="bg-ink text-surface rounded-flap mr-4 px-1.5 py-1 text-[10px] opacity-[var(--after-o,1)] sm:mr-0 sm:px-2 sm:py-1.5 sm:text-[length:inherit]"
+              className="bg-ink text-surface rounded-flap mr-4 px-1.5 py-1 text-[11px] opacity-[var(--after-o,1)] sm:mr-0 sm:px-2 sm:py-1.5 sm:text-[length:inherit]"
             >
               After<span className="hidden sm:inline"> · {current.direction}</span>
             </Typography>
@@ -1357,7 +1363,7 @@ const Showcase = () => {
                   className="gap-1.5 rounded-[6px] px-2.5 py-1.5 max-sm:flex-1"
                 >
                   {r.label}
-                  <span className="font-mono text-[11px] tabular-nums opacity-70">
+                  <span className="font-mono text-[11px] tabular-nums">
                     {r.variants.length}
                     <span className="sr-only"> redesigns</span>
                   </span>
@@ -1443,7 +1449,7 @@ const Showcase = () => {
                     {/* Above the pill; lit as the goo arrives, not before. */}
                     <span
                       className={cn(
-                        'text-surface/55 group-hover/cell:text-surface/90 relative z-[2] inline-block transition-[color,scale,translate] duration-[90ms,460ms,460ms] ease-[linear,var(--ease-spring-pop),var(--ease-spring-pop)]',
+                        'text-surface/80 group-hover/cell:text-surface relative z-[2] inline-block transition-[color,scale,translate] duration-[90ms,460ms,460ms] ease-[linear,var(--ease-spring-pop),var(--ease-spring-pop)]',
                         lit === v.n &&
                           'text-ink group-hover/cell:text-ink -translate-y-0.5 scale-160',
                       )}

@@ -96,5 +96,15 @@
 }
 
 :root[data-variant='q'] main > div h2.figure { color: #111111; }
-/* Pages without the hero: the art steps back behind the reading. */
+/* Pages without the hero: the art steps back behind the reading, and the
+   page intro sits on its own plain sticker so stickers never show through it. */
+:root[data-variant='q'] main div:has(> h1:first-child + p) {
+  padding: 18px 22px 20px;
+  border-radius: 20px;
+  background: var(--hero-box);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.07), 0 14px 28px -16px rgb(0 0 0 / 0.42);
+}
+:root[data-variant='q'][data-theme='dark'] main div:has(> h1:first-child + p) {
+  box-shadow: 0 0 0 2px #2e2f33, 0 14px 28px -16px rgb(0 0 0 / 0.8);
+}
 :root[data-variant='q']:not(:has(#hero-title)) { --blob-o: 0.28; }
