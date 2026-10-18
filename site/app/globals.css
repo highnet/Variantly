@@ -2246,3 +2246,16 @@ main > div p {
     transition: none !important;
   }
 }
+
+/* The phone's concept wipe (lib/variant.ts panelWipe): one panel in the
+   outgoing concept's ink with a leaning edge, like the before/after line. */
+.vy-wipe {
+  position: fixed;
+  inset: 0 -12vw;
+  z-index: 60;
+  pointer-events: none;
+  background: var(--ink);
+  clip-path: polygon(12vw 0, 100% 0, calc(100% - 12vw) 100%, 0 100%);
+  transform: translateX(-115%);
+  will-change: transform;
+}
