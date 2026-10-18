@@ -395,24 +395,25 @@ export const detectProject = async (repo, defaults = {}) => {
 
 
 /**
- * A mix of agents starts only when every one of them can run: installed and
- * not known to be signed out. One agent alone keeps today's behaviour, where
- * its variants fail with the agent's own message.
+ * A run starts only when its agents can run. Every agent in a mix must be
+ * installed and not known to be signed out; one agent alone must be
+ * installed (a sign-in it lacks still shows as the agent's own message on
+ * each variant, since the sign-in check can't always tell).
  * @param {import('./session.mjs').Config} config @param {string} repo
  */
 export const assertAgentsReady = async (config, repo) => {
-  if (!config.mix) return;
-  const ids = [...new Set(config.mix.map((r) => r.agent))].filter((id) => id !== 'demo');
+  const ids = [...new Set(config.mix ? config.mix.map((r) => r.agent) : [config.agent])].filter((id) => id !== 'demo');
   if (!ids.length) return;
   const found = await detectAgents(repo);
   const problems = ids.flatMap((id) => {
     const a = found.find((x) => x.id === id);
     if (!a) return [`"${id}" is not an agent variantly knows.`];
     if (!a.installed) return [`${a.name} isn't installed (${a.install}).`];
-    if (a.signedIn === false) return [`${a.name} isn't signed in (run \`${a.login}\`).`];
+    if (config.mix && a.signedIn === false) return [`${a.name} isn't signed in (run \`${a.login}\`).`];
     return [];
   });
-  if (problems.length) throw new Error(`Not started: every agent in the mix must be ready.\n${problems.join('\n')}`);
+  if (!problems.length) return;
+  throw new Error(config.mix ? `Not started: every agent in the mix must be ready.\n${problems.join('\n')}` : `Not started: ${problems.join('\n')}`);
 };
 
 /**
