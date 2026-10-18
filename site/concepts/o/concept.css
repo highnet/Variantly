@@ -16,14 +16,14 @@
   background: linear-gradient(90deg, var(--l) 1px, #0000 1px) 0 0 / calc(100% / 12) 100%, linear-gradient(var(--l) 1px, #0000 1px) 0 0 / 100% 12.5%;
 }
 :root[data-variant='o'] .vy-o-num {
-  top: -0.16em; right: -0.1em; font: 900 86vh/0.8 var(--font-archivo); font-stretch: 62%; letter-spacing: -0.05em; color: var(--art-2);
+  top: -0.16em; right: -0.1em; font: 900 62vh/0.8 var(--font-archivo); font-stretch: 62%; letter-spacing: -0.05em; color: var(--art-2);
   will-change: transform; animation: vy-o-cut 24s step-end infinite;
 }
 :root[data-variant='o'] .vy-o-bar {
   position: absolute; left: 0; background: var(--art-1); will-change: transform; animation: vy-o-slide-a 24s cubic-bezier(0.8, 0, 0.2, 1) infinite;
 }
-:root[data-variant='o'] .vy-o-bar-a { top: 31vh; width: 25vw; height: 18px; }
-:root[data-variant='o'] .vy-o-bar-b { top: 70vh; left: 8.333vw; width: 41.667vw; height: 6px; animation-name: vy-o-slide-b; animation-duration: 12s; }
+:root[data-variant='o'] .vy-o-bar-a { top: 14vh; width: 25vw; height: 18px; }
+:root[data-variant='o'] .vy-o-bar-b { top: 88vh; left: 8.333vw; width: 41.667vw; height: 6px; animation-name: vy-o-slide-b; animation-duration: 12s; }
 :root[data-variant='o'] .vy-o-bar-c { top: 0; left: 75vw; width: 12px; height: 44vh; animation-name: vy-o-slide-c; animation-duration: 8s; }
 /* Holds, then a hard slide by whole columns; the numeral cuts without easing. 0% is the poster. */
 @keyframes vy-o-slide-a {
@@ -57,20 +57,16 @@
 /* The page as a poster: condensed caps, hard top rules, numbered sections in Plex Mono. */
 :root[data-variant='o'] .vy-title { text-shadow: 0 5px 0 var(--side); }
 :root[data-variant='o'] #hero-title {
-  font-weight: 900; font-stretch: 62%; text-transform: uppercase; font-size: clamp(2.9rem, 5.4vw, 5.6rem); line-height: 0.86;
+  font-weight: 900; font-stretch: 62%; text-transform: uppercase; font-size: clamp(2.4rem, 4.4vw, 4.6rem); line-height: 0.86;
   letter-spacing: -0.015em;
 }
 :root[data-variant='o'] #hero-title::before {
-  content: '(01)  variantly'; display: block; margin-bottom: 0.9rem; padding-top: 0.6rem; border-top: 14px solid var(--alert);
-  font: 400 13px/1.4 var(--font-plex); letter-spacing: 0.02em; text-transform: none; white-space: pre; color: var(--hero-mute);
+  content: ''; display: block; width: 3.5em; margin-bottom: 0.25em; border-top: 0.16em solid var(--alert);
 }
 :root[data-variant='o'] #hero-title .vy-fresh { color: var(--title); text-decoration: none; }
 :root[data-variant='o'] [data-hero-side] { position: relative; padding: 18px 20px 22px; border-top: 3px solid var(--hero-line); background: var(--hero-box); }
-:root[data-variant='o'] [data-hero-side]::before {
-  content: '(02)  Install'; position: absolute; top: -26px; left: 0; white-space: pre; font: 400 13px/1 var(--font-plex); color: var(--hero-mute);
-}
 :root[data-variant='o'] .rounded-md, :root[data-variant='o'] .rounded-lg { border-radius: 0; }
-:root[data-variant='o'] main { counter-reset: o-sec 2; }
+:root[data-variant='o'] main { counter-reset: o-sec; }
 :root[data-variant='o'] main > div h2.figure:not(h3) {
   counter-increment: o-sec; font-weight: 900; font-stretch: 62%; text-transform: uppercase; line-height: 0.88; letter-spacing: -0.01em;
   border-top: 2px solid var(--ink); padding-top: 0.2em; color: var(--ink);

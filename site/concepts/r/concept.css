@@ -56,8 +56,9 @@
 57% { transform: scale(1.02, 0.99); }
 }
 :root[data-variant='r'] [data-hero-title] { border-bottom: 1px solid var(--hero-line); }
-:root[data-variant='r'] #hero-title { font-weight: 300; font-stretch: 150%; font-size: clamp(2.1rem, 4.2vw, 4.2rem); line-height: 1; letter-spacing: -0.02em; }
-:root[data-variant='r'] #hero-title .vy-fresh { font-weight: 900; font-stretch: 50%; letter-spacing: -0.01em; color: var(--alert); text-decoration-color: var(--alert); }
+:root[data-variant='r'] #hero-title { font-weight: 900; font-stretch: 58%; text-transform: uppercase; font-size: clamp(2.6rem, 5.4vw, 5.2rem); line-height: 0.9; letter-spacing: -0.005em; }
+/* Same face, same cut: the payoff only changes width and ink, like a row of the backdrop. */
+:root[data-variant='r'] #hero-title .vy-fresh { font-stretch: 80%; color: var(--alert); text-decoration-color: var(--alert); }
 :root[data-variant='r'] [data-hero-side] { border-left: 1px solid var(--hero-line); padding-left: 32px; }
 :root[data-variant='r'] main > div h2 { font-weight: 900; font-stretch: 58%; text-transform: uppercase; letter-spacing: -0.005em; line-height: 0.92; }
 :root[data-variant='r'] main > div .bg-surface { border: 1px solid var(--rule); border-radius: 0; box-shadow: none; }
@@ -81,16 +82,20 @@
   font-family: var(--font-anybody);
   font-size: 13vh;
   line-height: 0.86;
+  /* A quiet texture, and it clears out before the hero copy. */
+  opacity: 0.45;
+  -webkit-mask-image: linear-gradient(#000 0 48%, #0000 60%);
+  mask-image: linear-gradient(#000 0 48%, #0000 60%);
 }
-.vy-r-row { display: flex; width: max-content; will-change: transform; animation: vy-r-tick 24s cubic-bezier(0.75, 0, 0.2, 1) infinite; color: transparent; -webkit-text-stroke: 1px color-mix(in srgb, var(--art-1) 30%, transparent); }
+.vy-r-row { display: flex; width: max-content; will-change: transform; animation: vy-r-tick 24s cubic-bezier(0.75, 0, 0.2, 1) infinite; color: transparent; -webkit-text-stroke: 1px color-mix(in srgb, var(--art-1) 16%, transparent); }
 .vy-r-row > span { padding-right: 0.35em; }
 .vy-r-row:nth-child(even) { animation-direction: reverse; margin-left: -1.5em; }
 .vy-r-row:nth-child(1) { font-stretch: 50%; font-weight: 900; }
 .vy-r-row:nth-child(2) { font-stretch: 150%; font-weight: 200; }
-.vy-r-row:nth-child(3) { font-stretch: 80%; font-weight: 800; color: var(--art-2); opacity: 0.16; -webkit-text-stroke: 0; }
+.vy-r-row:nth-child(3) { font-stretch: 80%; font-weight: 800; color: var(--art-2); opacity: 0.12; -webkit-text-stroke: 0; }
 .vy-r-row:nth-child(4) { font-stretch: 120%; font-weight: 500; }
 .vy-r-row:nth-child(5) { font-stretch: 60%; font-weight: 300; }
-.vy-r-row:nth-child(6) { font-stretch: 140%; font-weight: 900; color: var(--art-3); opacity: 0.13; -webkit-text-stroke: 0; }
+.vy-r-row:nth-child(6) { font-stretch: 140%; font-weight: 900; color: var(--art-3); opacity: 0.1; -webkit-text-stroke: 0; }
 .vy-r-row:nth-child(7) { font-stretch: 95%; font-weight: 100; }
 :root[data-scrolled] .vy-r-row { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce), (pointer: coarse) {
@@ -116,7 +121,7 @@
 100% { transform: translateX(-16.6667%); }
 }
 @media (max-width: 639px) {
-.vy-r-rows { opacity: 0.55; font-size: 9vh; }
+.vy-r-rows { opacity: 0.35; font-size: 9vh; }
 :root[data-variant='r'] .vy-title { font-size: 12.5vw; }
 }
 
