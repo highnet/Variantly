@@ -109,6 +109,35 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-spring-pop: cubic-bezier(0.34, 1.7, 0.5, 1);
+  /* A damped spring: past the target by ~9%, back, settled (the title
+     morph's spring, lib/titleTiming). */
+  --ease-spring-settle: linear(
+    0,
+    0.065,
+    0.217,
+    0.406,
+    0.596,
+    0.763,
+    0.896,
+    0.992,
+    1.053,
+    1.085,
+    1.095,
+    1.09,
+    1.076,
+    1.058,
+    1.04,
+    1.024,
+    1.011,
+    1.001,
+    0.995,
+    0.992,
+    0.991,
+    0.992,
+    0.994,
+    0.997,
+    1
+  );
   --ease-wipe: cubic-bezier(0.7, 0, 0.2, 1);
   --dur-fast: 200ms;
   --dur-base: 420ms;
@@ -984,6 +1013,32 @@ a:hover > .brand-mark .brand-grip {
   vertical-align: 0.42em;
   stroke-width: 3;
   animation: vy-nudge 2.6s 1.2s ease-in-out 3;
+  /* Hover and focus spin it (rotate/scale compose with the nudge and the
+     press's spin, which animate transform). */
+  transition:
+    rotate 360ms var(--ease-out-expo),
+    scale 360ms var(--ease-out-expo);
+}
+/* A quick half turn that swings past and settles, a touch bigger. */
+@media (hover: hover) {
+  .vy-fresh:hover .vy-fresh-icon {
+    rotate: 180deg;
+    scale: 1.14;
+    transition:
+      rotate 640ms var(--ease-spring-settle),
+      scale 640ms var(--ease-spring-settle);
+  }
+}
+.vy-fresh:focus-visible .vy-fresh-icon {
+  rotate: 180deg;
+  scale: 1.14;
+  transition:
+    rotate 640ms var(--ease-spring-settle),
+    scale 640ms var(--ease-spring-settle);
+}
+:root[data-motion='calm'] .vy-fresh .vy-fresh-icon {
+  rotate: none !important;
+  scale: none !important;
 }
 @keyframes vy-nudge {
   0%,
@@ -1002,7 +1057,9 @@ a:hover > .brand-mark .brand-grip {
   .vy-fresh,
   .vy-fresh .vy-fresh-icon {
     animation: none !important;
-    transition: none;
+    transition: none !important;
+    rotate: none !important;
+    scale: none !important;
   }
 }
 
