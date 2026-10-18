@@ -2595,3 +2595,28 @@ main > div p {
   transform: translateX(-115%);
   will-change: transform;
 }
+
+/* The concept dock on touch screens: swipe it sideways to step (lib/dockSwipe).
+   The page does not pan under the finger, and the arrow on the side the face
+   is heading toward lights up and nudges outward. */
+@media (pointer: coarse) {
+  .vy-switcher {
+    touch-action: none;
+  }
+}
+.vy-dock-face {
+  will-change: transform;
+}
+.vy-switcher [data-dir] svg {
+  transition:
+    transform 220ms var(--ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)),
+    color 160ms ease;
+}
+.vy-switcher[data-lean='next'] [data-dir='next'] svg {
+  transform: translateX(3px) scale(1.25);
+  color: var(--alert);
+}
+.vy-switcher[data-lean='prev'] [data-dir='prev'] svg {
+  transform: translateX(-3px) scale(1.25);
+  color: var(--alert);
+}
