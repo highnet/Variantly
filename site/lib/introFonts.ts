@@ -6,12 +6,16 @@ import {
   Grandstander,
   Jost,
   Limelight,
+  Inter_Tight,
+  Italiana,
+  Major_Mono_Display,
   Monoton,
   Orbitron,
   Press_Start_2P,
   Righteous,
   Rubik_Mono_One,
   Special_Elite,
+  Syne,
 } from 'next/font/google';
 import localFont from 'next/font/local';
 
@@ -122,6 +126,26 @@ const reel = Limelight({
   preload: false,
   variable: '--font-reel',
 });
+// i Liquid Glass, l Inflated Chrome (+ its captions), m Uncanny Mirror.
+const interTight = Inter_Tight({
+  weight: '600',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-glass',
+});
+const syne = Syne({ weight: '800', subsets: ['latin'], preload: false, variable: '--font-chrome' });
+const majorMono = Major_Mono_Display({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-caption',
+});
+const italiana = Italiana({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-mirror',
+});
 
 export const HERO_FONT_VARS = [
   abril,
@@ -134,6 +158,10 @@ export const HERO_FONT_VARS = [
   brush,
   stitch,
   reel,
+  interTight,
+  syne,
+  majorMono,
+  italiana,
 ]
   .map((f) => f.variable)
   .join(' ');

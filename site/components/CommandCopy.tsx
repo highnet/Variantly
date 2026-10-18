@@ -1,11 +1,11 @@
 'use client';
 
 import { Check, Copy, SquareTerminal } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 
 import { Button } from '@/components/ui/Button';
+import { copyCommand } from '@/lib/copy';
 import { useRunner, withRunner } from '@/lib/runner';
-import { toast } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 type CommandCopyProps = {
@@ -29,18 +29,10 @@ const CommandCopy = ({
   const runner = useRunner();
   const shown = withRunner(command, runner);
 
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(shown);
-      setCopied(true);
-      toast('Command copied', {
-        body: 'Paste it into a new terminal in your site’s folder and press Enter.',
-      });
-      setTimeout(() => setCopied(false), 1600);
-    } catch {
-      setCopied(false);
-      toast('Couldn’t copy', { body: 'Select the command and copy it yourself.', tone: 'warn' });
-    }
+  const copy = async (e: MouseEvent<HTMLButtonElement>) => {
+    const ok = await copyCommand(shown, e.currentTarget);
+    setCopied(ok);
+    if (ok) setTimeout(() => setCopied(false), 1600);
   };
 
   const slate = tone === 'slate';

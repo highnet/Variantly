@@ -16,8 +16,20 @@ const sha = (() => {
   .trim()
   .slice(0, 7);
 
+// The day that commit was made (YYYY-MM-DD), else the day of the build.
+const builtOn =
+  (() => {
+    try {
+      return execSync('git log -1 --format=%cs', { stdio: ['ignore', 'pipe', 'ignore'] })
+        .toString()
+        .trim();
+    } catch {
+      return '';
+    }
+  })() || new Date().toISOString().slice(0, 10);
+
 const nextConfig: NextConfig = {
-  env: { NEXT_PUBLIC_VERSION: version, NEXT_PUBLIC_BUILD: sha },
+  env: { NEXT_PUBLIC_VERSION: version, NEXT_PUBLIC_BUILD: sha, NEXT_PUBLIC_BUILD_DATE: builtOn },
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
