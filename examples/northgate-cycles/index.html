@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Northgate Cycles - Bike Repair and Service</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="container nav-inner">
+        <a class="brand" href="index.html">Northgate Cycles</a>
+        <ul class="nav-links">
+          <li><a class="active" href="index.html">Home</a></li>
+          <li><a href="#services">Services</a></li>
+          <li><a href="#prices">Prices</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <header class="jumbotron">
+      <div class="container">
+        <h1 class="display">Welcome to Northgate Cycles</h1>
+        <p class="lead">Your local bike repair shop. We fix all kinds of bikes: road, mountain, city and e-bikes. Fast service, fair prices and friendly staff.</p>
+        <hr />
+        <p>Open Tuesday to Saturday. Walk-ins welcome, or book a service online.</p>
+        <a class="btn btn-primary btn-lg" href="#contact">Book a service</a>
+        <a class="btn btn-secondary btn-lg" href="#prices">See prices</a>
+      </div>
+    </header>
+
+    <section id="services" class="container section">
+      <h2 class="text-center">Our Services</h2>
+      <p class="text-center muted">Everything your bike needs, under one roof.</p>
+      <div class="row">
+        <div class="card">
+          <div class="icon-circle">&#9881;</div>
+          <h3>Repairs</h3>
+          <p>Flat tyres, brakes, gears, wheels and more. Most repairs are done the same day.</p>
+          <a class="btn btn-outline" href="#prices">Learn more</a>
+        </div>
+        <div class="card">
+          <div class="icon-circle">&#10003;</div>
+          <h3>Servicing</h3>
+          <p>A full check and tune-up to keep your bike running smoothly all year round.</p>
+          <a class="btn btn-outline" href="#prices">Learn more</a>
+        </div>
+        <div class="card">
+          <div class="icon-circle">&#9889;</div>
+          <h3>E-Bikes</h3>
+          <p>Battery checks, motor diagnostics and software updates for most major brands.</p>
+          <a class="btn btn-outline" href="#prices">Learn more</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="prices" class="bg-light section">
+      <div class="container">
+        <h2 class="text-center">Prices</h2>
+        <table class="table table-striped">
+          <thead>
+            <tr><th>Service</th><th>What's included</th><th>Price</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Puncture repair</td><td>Tube patch or replacement, tyre check</td><td>&euro;15</td></tr>
+            <tr><td>Brake adjustment</td><td>Pads checked, cables tensioned, per wheel</td><td>&euro;20</td></tr>
+            <tr><td>Basic service</td><td>Gears, brakes, tyres, chain clean and lube</td><td>&euro;59</td></tr>
+            <tr><td>Full service</td><td>Basic service plus bearings, wheel truing, deep clean</td><td>&euro;119</td></tr>
+            <tr><td>E-bike check</td><td>Battery health, motor test, firmware update</td><td>&euro;49</td></tr>
+          </tbody>
+        </table>
+        <p class="small muted">Parts are charged separately. We always ask before replacing anything.</p>
+      </div>
+    </section>
+
+    <section class="container section">
+      <div class="alert alert-info"><strong>New!</strong> Free pick-up and delivery within 5 km for full services.</div>
+    </section>
+
+    <section id="contact" class="container section">
+      <h2>Book a service</h2>
+      <form class="form">
+        <label>Name<input type="text" placeholder="Your name" /></label>
+        <label>Email<input type="email" placeholder="you@example.com" /></label>
+        <label>Service
+          <select><option>Basic service</option><option>Full service</option><option>Repair</option><option>E-bike check</option></select>
+        </label>
+        <label>Message<textarea rows="3" placeholder="Tell us what's wrong with your bike"></textarea></label>
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </form>
+    </section>
+
+    <footer class="footer">
+      <div class="container">
+        <p>&copy; Northgate Cycles &middot; 12 Mill Lane &middot; Tue&ndash;Sat 9:00&ndash;18:00</p>
+        <p><a href="#">Facebook</a> &middot; <a href="#">Instagram</a> &middot; <a href="#">Privacy</a></p>
+      </div>
+    </footer>
+  </body>
+</html>
