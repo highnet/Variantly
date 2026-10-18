@@ -10,6 +10,9 @@ export const EASE = {
   spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
   /** Pops and presses: a bigger overshoot. */
   springPop: 'cubic-bezier(0.34, 1.7, 0.5, 1)',
+  /** A damped spring: ~9% past the target, back, settled (--ease-spring-settle). */
+  settle:
+    'linear(0, 0.065, 0.217, 0.406, 0.596, 0.763, 0.896, 0.992, 1.053, 1.085, 1.095, 1.09, 1.076, 1.058, 1.04, 1.024, 1.011, 1.001, 0.995, 0.992, 0.991, 0.992, 0.994, 0.997, 1)',
   /** Full-page and pane swaps. */
   wipe: 'cubic-bezier(0.7, 0, 0.2, 1)',
 } as const;

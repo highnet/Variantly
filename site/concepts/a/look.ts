@@ -11,7 +11,7 @@ export const look: ConceptLook = {
   shadow: (dark) => ({
     color: dark ? '#1a0408' : '#8a3a1c',
     opacity: dark ? 0.5 : 0.3,
-    radius: 8,
+    radius: 1,
     dir: [-0.3, 0.6, 1],
   }),
 };

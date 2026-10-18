@@ -52,9 +52,8 @@ void main() {
   if (!gl_FrontFacing) n = -n;
   vec3 v = normalize(vV);
   vec3 r = reflect(-v, n);
-  float fres = pow(1.0 - abs(dot(n, v)), 4.0);
+  // The reflected world only: no white fresnel rim.
   vec3 c = world(r) * uTint;
-  c = mix(c, vec3(1.0), fres * 0.35);
   gl_FragColor = vec4(c, 1.0);
   #include <colorspace_fragment>
 }`;

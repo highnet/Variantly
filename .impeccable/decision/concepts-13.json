@@ -74,7 +74,8 @@
     ],
     "5 Retro-tech nostalgia": [
       "h",
-      "j"
+      "j",
+      "n"
     ],
     "6 Expressive typography": [
       "k",
@@ -475,58 +476,61 @@
     },
     {
       "id": "n",
-      "label": "Noir Velvet",
+      "label": "Orientation Reel",
       "family": "Light & Illusion",
       "kind": "grounded",
       "kicker": "WINTER 26-27 · GROUNDED",
-      "origin": "new",
+      "origin": "new; replaced Noir Velvet at the owner's request (2026-10)",
       "trends": [
-        "3 Cinematic drama"
+        "3 Cinematic drama",
+        "5 Retro-tech nostalgia"
       ],
-      "lineage": "cinematic drama: film-noir shadow, theatrical spotlight and velvet, as in A24 titles and Saul Bass sequences",
-      "thesis": "variantly as an opening title: one spotlight on oxblood velvet, venetian-blind shadows sweeping across a high-contrast Didone wordmark.",
+      "lineage": "1930s-40s black-and-white instructional and orientation films: projected title cards, iris transitions, film grain and gate weave, with a rubber-hose-style mascot (a generic period style; the character is original)",
+      "thesis": "variantly as a black-and-white orientation reel: a projected title card in a dim theatre, grain and dust on the frame, and Swatch, an original paint-chip mascot, flipping through greys like variants.",
       "palette": [
-        "#efe7dc",
-        "#140d0c",
-        "#6e1420",
-        "#c79a5b",
-        "#3a2e2b"
+        "#e7e5e1",
+        "#141312",
+        "#f4f2ee",
+        "#8f8b85",
+        "#4f4c48"
       ],
       "paletteDark": [
-        "#080506",
-        "#f1e6d8",
-        "#9b1c2c",
-        "#d4a96a",
-        "#231a19"
+        "#0f0e0d",
+        "#eeebe6",
+        "#4b4844",
+        "#8a8680",
+        "#b9b5ae"
       ],
       "materials": [
-        "crushed velvet",
-        "hard spotlight pool",
-        "venetian-blind shadow bars"
+        "projected film frame",
+        "coarse film grain and dust",
+        "iris-in / iris-out circles",
+        "rubber-hose cartoon linework"
       ],
-      "typography": "Bodoni Moda for the title, Cormorant Garamond small caps for credits",
+      "typography": "Limelight (1930s cinema deco) for headings; the site's mono for small captions",
       "displayFonts": [
-        "Bodoni Moda",
-        "Cormorant Garamond"
+        "Limelight"
       ],
-      "background": "velvet fold gradients with a radial spotlight pool and diagonal blind-shadow bars sweeping across on a 24s loop; pre-baked film-grain tile",
-      "letterLook": "velvet lacquer: MeshPhysical sheen 1 with oxblood sheenColor and a gold rim bevel",
-      "backdropScene": "a curtain opening on a stage, one shadow-mapped SpotLight casting blind shadows across the title",
-      "motion": "slow, theatrical curtain timing; one dramatic cut per change",
+      "background": "coarse pre-baked grain tile on a gently weaving gate (sub-pixel transform jitter on a 24s loop), a drawn radial corner vignette, occasional vertical scratches and dust flecks (pre-made pieces, transform/opacity only); iris circles divide the sections; the hero title card is a projected frame with a thin double rule and rounded corners",
+      "letterLook": "matte white letters with soft grey sides, a hard projector shadow and a slight shared-clock luminance flicker; no glow",
+      "backdropScene": "a dusty projector beam: a soft light fan from the booth with low-opacity dust drifting through it on a 24s loop",
+      "motion": "projector cadence: grain flicker at 12-24fps steps, a gentle gate weave, a bouncy rubber-hose idle for the mascot (wave, wink, hop) and a split-flap flip to a new grey every 6s",
       "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
-      "risk": "Hollywood cliche, too dark; red-on-black text can fail contrast.",
+      "risk": "Pastiche of a specific studio character, or nostalgia that hides the product; strictly no hue, no clock faces, no franchise references, and no fake copy in CSS content.",
       "sources": [
-        "A24 film title design",
-        "Saul Bass title sequences",
-        "The Third Man (1949) cinematography",
+        "1930s-40s educational and orientation films (public-domain archive reels)",
+        "Iris-wipe and title-card conventions of early sound film",
+        "Rubber-hose animation as a period style (generic)",
         "Winter 2026-27 cinematic-drama forecast"
       ],
       "raised": [
         {
           "from": "own",
-          "raise": "Light is the layout: only the spotlit area holds readable text."
+          "raise": "Monochrome discipline: every surface, state and the mascot itself stay neutral grey; variation is shown by shade alone."
         }
-      ]
+      ],
+      "replaces": "Noir Velvet",
+      "mascot": "Swatch: an original rubber-hose paint-chip character (rounded card with a darker top band, pie-cut eyes, smile, white four-finger gloves, hose limbs) standing on the hero's side card; decorative, aria-hidden, still under calm / reduced motion / perf=low"
     },
     {
       "id": "o",

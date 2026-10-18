@@ -114,13 +114,11 @@ export const FreshLook = ({ children = 'a fresh look' }: FreshLookProps) => {
         ],
         { duration: 640, easing: 'ease-out' },
       );
+      // A full turn on the spring that swings past and settles (on top of
+      // the hover's half turn, which uses the rotate property).
       el.querySelector('svg')?.animate(
-        [
-          { transform: 'rotate(0deg) scale(1)' },
-          { transform: 'rotate(200deg) scale(1.5)', offset: 0.4 },
-          { transform: 'rotate(360deg) scale(1)' },
-        ],
-        { duration: 640, easing: EASE.spring },
+        [{ transform: 'rotate(0deg)' }, { transform: 'rotate(360deg)' }],
+        { duration: 720, easing: EASE.settle },
       );
     }
     navigator.vibrate?.(12);

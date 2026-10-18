@@ -358,7 +358,7 @@ export const CHECKLIST: { id: string; need: string; how: string; prompt: string 
   {
     id: 'agent',
     need: 'An {{agent}} on your computer',
-    how: '**[Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)**, **[Codex](https://github.com/openai/codex)**, **[Copilot CLI](https://github.com/github/copilot-cli)**, **[Gemini CLI](https://github.com/google-gemini/gemini-cli)** or **[Cursor CLI](https://cursor.com/cli)**, signed in or on [OpenRouter](https://openrouter.ai). variantly **finds the one you have**, or installs one and opens its sign-in. [Lovable](https://lovable.dev)/v0 only? Those run in the browser; install Claude Code.',
+    how: '**[Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)**, **[Codex](https://github.com/openai/codex)**, **[Copilot CLI](https://github.com/github/copilot-cli)**, **[Gemini CLI](https://github.com/google-gemini/gemini-cli)**, **[Cursor CLI](https://cursor.com/cli)**, **[OpenCode](https://opencode.ai)**, **[Grok Build](https://x.ai/cli)**, **[Hermes Agent](https://hermes-agent.nousresearch.com)**, **[Pi](https://pi.dev)** or **[Antigravity CLI](https://antigravity.google)**, signed in or on [OpenRouter](https://openrouter.ai). variantly **finds the one you have**, or installs one and opens its sign-in. [Lovable](https://lovable.dev)/v0 only? Those run in the browser; install Claude Code.',
     prompt:
       'Help me install Claude Code on this computer and sign in. Tell me each command to run and check it works with `claude --version`.',
   },

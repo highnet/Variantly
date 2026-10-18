@@ -85,7 +85,7 @@ export const hasAnswers = (a) => Boolean(a && (a.users.trim() || a.purpose.trim(
  * @property {boolean} hasProduct PRODUCT.md exists (theirs or written from answers)
  * @property {boolean} hasDesign  DESIGN.md exists
  * @property {string} stackId
- * @property {string} [agent]     claude | codex | copilot | gemini | cursor | demo: how the skill is named
+ * @property {string} [agent]     an agent id (claude, codex, opencode, ...) or demo: how the skill is named
  * @property {string} [previewUrl] the variant's live preview, when the agent has a browser
  * @property {string} [shots] where browser output (screenshots) goes, outside the worktree
  */
@@ -111,8 +111,8 @@ const verifyRule = (previewUrl, shots) =>
     : `7. Verify by reading your code, not by screenshots: there is no browser for
    you here. Run the project's type check or linter if it is quick.`;
 
-/** How each agent's prompt names a skill. Codex mentions skills with a dollar sign. */
-const SKILL_CALL = /** @type {Record<string, string>} */ ({ codex: "$impeccable" });
+/** How each agent's prompt names a skill. Codex mentions skills with a dollar sign, Pi as /skill:name. */
+const SKILL_CALL = /** @type {Record<string, string>} */ ({ codex: "$impeccable", pi: "/skill:impeccable" });
 
 /** @param {BriefInput} b */
 export const writeBrief = (b) => {

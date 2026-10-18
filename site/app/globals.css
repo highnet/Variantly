@@ -109,6 +109,35 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-spring-pop: cubic-bezier(0.34, 1.7, 0.5, 1);
+  /* A damped spring: past the target by ~9%, back, settled (the title
+     morph's spring, lib/titleTiming). */
+  --ease-spring-settle: linear(
+    0,
+    0.065,
+    0.217,
+    0.406,
+    0.596,
+    0.763,
+    0.896,
+    0.992,
+    1.053,
+    1.085,
+    1.095,
+    1.09,
+    1.076,
+    1.058,
+    1.04,
+    1.024,
+    1.011,
+    1.001,
+    0.995,
+    0.992,
+    0.991,
+    0.992,
+    0.994,
+    0.997,
+    1
+  );
   --ease-wipe: cubic-bezier(0.7, 0, 0.2, 1);
   --dur-fast: 200ms;
   --dur-base: 420ms;
@@ -876,24 +905,10 @@ a:hover > .brand-mark .brand-grip {
     opacity: 1;
   }
 }
-@keyframes vy-lock {
-  from {
-    transform: scale(1.12);
-    filter: brightness(1.6);
-  }
-  to {
-    transform: none;
-    filter: none;
-  }
-}
 @keyframes vy-ticker {
   to {
     transform: translateX(-50%);
   }
-}
-/* Same curve as the 3D word's pop (lockPop in lib/titleTiming): ease-out quad. */
-.vy-letter-locked {
-  animation: vy-lock 0.35s cubic-bezier(0.5, 1, 0.89, 1);
 }
 @media (prefers-reduced-motion: reduce) {
   .vy-title,
@@ -1137,6 +1152,32 @@ a:hover > .brand-mark .brand-grip {
   vertical-align: 0.42em;
   stroke-width: 3;
   animation: vy-nudge 2.6s 1.2s ease-in-out 3;
+  /* Hover and focus spin it (rotate/scale compose with the nudge and the
+     press's spin, which animate transform). */
+  transition:
+    rotate 360ms var(--ease-out-expo),
+    scale 360ms var(--ease-out-expo);
+}
+/* A quick half turn that swings past and settles, a touch bigger. */
+@media (hover: hover) {
+  .vy-fresh:hover .vy-fresh-icon {
+    rotate: 180deg;
+    scale: 1.14;
+    transition:
+      rotate 640ms var(--ease-spring-settle),
+      scale 640ms var(--ease-spring-settle);
+  }
+}
+.vy-fresh:focus-visible .vy-fresh-icon {
+  rotate: 180deg;
+  scale: 1.14;
+  transition:
+    rotate 640ms var(--ease-spring-settle),
+    scale 640ms var(--ease-spring-settle);
+}
+:root[data-motion='calm'] .vy-fresh .vy-fresh-icon {
+  rotate: none !important;
+  scale: none !important;
 }
 @keyframes vy-nudge {
   0%,
@@ -1155,7 +1196,9 @@ a:hover > .brand-mark .brand-grip {
   .vy-fresh,
   .vy-fresh .vy-fresh-icon {
     animation: none !important;
-    transition: none;
+    transition: none !important;
+    rotate: none !important;
+    scale: none !important;
   }
 }
 
@@ -1225,6 +1268,19 @@ a:hover > .brand-mark .brand-grip {
 }
 ::view-transition-new(root) {
   animation: vy-swap-wipe 760ms var(--ease-wipe) both;
+}
+/* The title is left out of the wipe: it is its own layer, shown live and
+   in place throughout, so its letters' morph into the new concept carries the
+   change (VariantTitle's swap timeline). */
+[data-hero-title] {
+  view-transition-name: vy-title;
+}
+::view-transition-group(vy-title),
+::view-transition-new(vy-title) {
+  animation: none;
+}
+::view-transition-old(vy-title) {
+  display: none;
 }
 /* The trailing shadow of the edge, drawn on the old page as it is covered. */
 ::view-transition-image-pair(root) {
@@ -1700,16 +1756,22 @@ header.vy-header-glass {
 
 /* ---- G · Candy 3D: extruded glossy letters, pastel candy ground ---------- */
 
+/* The title card is a picture of a word: dragging or double-clicking never
+   highlights its letters or tiles (screen readers still read its aria-label). */
+[data-hero-title] {
+  -webkit-user-select: none;
+  user-select: none;
+}
 .vy-letters3d {
   pointer-events: none;
 }
-/* The 3D word has taken over. It sits exactly over the 2D word with the same
-   faces, sizes and colours, so the two crossfade: the 2D glyphs (and their
-   text-shadows, which the 3D word renders as extrusion, offset shadow or glow)
-   fade out while the concept's decorations (Cut & Paste's paper tiles, the
-   Brutal highlighter) stay under the 3D letters. The HTML word stays for screen
-   readers; its parallax and title animations stop so it holds still under the
-   canvas. */
+/* The 3D word has taken over. It starts flat and matte exactly over the 2D
+   word (same outlines, sizes and colours), so the 2D glyphs hide in that same
+   frame (no crossfade dip) while their text-shadows fade as the 3D letters
+   extrude into their own sides and shadow. The concept's decorations (Cut &
+   Paste's paper tiles, the Brutal highlighter) stay under the 3D letters. The
+   HTML word stays for screen readers; its parallax and title animations stop
+   so it holds still under the canvas. */
 .vy-title-solid {
   animation: none !important;
   translate: none !important;
@@ -1717,9 +1779,7 @@ header.vy-header-glass {
 .vy-title-solid .vy-letter > * {
   color: transparent !important;
   text-shadow: none !important;
-  transition:
-    color 0.6s ease-in,
-    text-shadow 0.6s ease-in;
+  transition: text-shadow 0.5s ease-out;
 }
 
 .vy-swatch-g {
@@ -2370,4 +2430,17 @@ main > div p {
   .vy-menu li {
     transition: none !important;
   }
+}
+
+/* The phone's concept wipe (lib/variant.ts panelWipe): one panel in the
+   outgoing concept's ink with a leaning edge, like the before/after line. */
+.vy-wipe {
+  position: fixed;
+  inset: 0 -12vw;
+  z-index: 60;
+  pointer-events: none;
+  background: var(--ink);
+  clip-path: polygon(12vw 0, 100% 0, calc(100% - 12vw) 100%, 0 100%);
+  transform: translateX(-115%);
+  will-change: transform;
 }

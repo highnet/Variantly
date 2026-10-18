@@ -35,8 +35,7 @@ void main() {
   vec3 h = normalize(L + v);
   vec3 c;
   if (uMetal > 0.5) {
-    float fres = pow(1.0 - abs(dot(n, v)), 3.0);
-    c = uA * (0.42 + 0.7 * d) + uA * pow(max(dot(n, h), 0.0), 28.0) * 1.1 + vec3(1.0, 0.86, 0.6) * fres * 0.35;
+    c = uA * (0.42 + 0.7 * d) + uA * pow(max(dot(n, h), 0.0), 28.0) * 1.1;
   } else {
     vec2 p = vObj.xy * uScale + uSeed;
     float g = p.y * 11.0 + noise(p * vec2(0.8, 3.0)) * 2.4 + sin(p.x * 0.9) * 0.7;
@@ -83,7 +82,7 @@ export const look: ConceptLook = {
   shadow: (dark) => ({
     color: dark ? '#050201' : '#4a2410',
     opacity: dark ? 0.55 : 0.3,
-    radius: 10,
+    radius: 1,
     dir: [0.45, 0.6, 1],
   }),
 };

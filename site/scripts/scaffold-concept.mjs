@@ -200,7 +200,7 @@ export const look: ConceptLook = {
   shadow: (dark) => ({
     color: dark ? '#000000' : '${L.ink}',
     opacity: dark ? 0.45 : 0.22,
-    radius: 6,
+    radius: 1,
     dir: [-0.3, 0.55, 1],
   }),
 };

@@ -5,9 +5,12 @@ import {
   Cormorant,
   Fraunces,
   Archivo_Black,
+  Caveat_Brush,
   Bricolage_Grotesque,
   Fredoka,
+  Grandstander,
   Jost,
+  Limelight,
   Doto,
   IBM_Plex_Mono,
   Inter_Tight,
@@ -103,6 +106,19 @@ const silkscreen = localFont({ src: '../app/fonts/wild/silkscreen.woff2', preloa
 const rye = localFont({ src: '../app/fonts/wild/rye.woff2', preload: true, display: 'block' });
 const fascinate = localFont({ src: '../app/fonts/wild/fascinate.woff2', preload: false });
 const wetPaint = localFont({ src: '../app/fonts/wild/wet-paint.woff2', preload: false });
+// The wider wardrobe: a stencil, two wide grotesks, a didone, a slab, a soft
+// rounded face, a soft serif, a brush and a military stencil. Only shown
+// mid-reveal (and only by the font-swapping reveal; the morph draws their
+// outlines), so never preloaded.
+const stencil = localFont({ src: '../app/fonts/wild/stencil.woff2', preload: false });
+const krona = localFont({ src: '../app/fonts/wild/krona.woff2', preload: false });
+const unbounded = localFont({ src: '../app/fonts/wild/unbounded.woff2', preload: false });
+const bodoni = localFont({ src: '../app/fonts/wild/bodoni.woff2', preload: false });
+const alfaSlab = localFont({ src: '../app/fonts/wild/alfa-slab.woff2', preload: false });
+const baloo = localFont({ src: '../app/fonts/wild/baloo.woff2', preload: false });
+const frauncesWild = localFont({ src: '../app/fonts/wild/fraunces.woff2', preload: false });
+const knewave = localFont({ src: '../app/fonts/wild/knewave.woff2', preload: false });
+const blackOps = localFont({ src: '../app/fonts/wild/black-ops.woff2', preload: false });
 // Hero display faces, one per variant concept.
 const fredoka = Fredoka({
   weight: '700',
@@ -163,6 +179,20 @@ const fraunces = Fraunces({
 const cormorant = Cormorant({ subsets: ['latin'], preload: false, variable: '--font-cormorant' });
 const qrst = [bricolage, anybody, fraunces, cormorant];
 
+// Concepts k, p, n: brushed hand, stitched outline, 1930s film titles.
+const brush = Caveat_Brush({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-brush',
+});
+const stitch = Grandstander({ subsets: ['latin'], preload: false, variable: '--font-stitch' });
+const reel = Limelight({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-reel',
+});
 // i Liquid Glass, l Inflated Chrome (+ its captions), m Uncanny Mirror.
 const interTight = Inter_Tight({
   weight: '600',
@@ -192,6 +222,9 @@ export const HERO_FONT_VARS = [
   jost,
   archivo,
   rubik,
+  brush,
+  stitch,
+  reel,
   interTight,
   syne,
   majorMono,
@@ -224,6 +257,15 @@ export const INTRO_FONTS = [
   rye,
   fascinate,
   wetPaint,
+  stencil,
+  krona,
+  unbounded,
+  bodoni,
+  alfaSlab,
+  baloo,
+  frauncesWild,
+  knewave,
+  blackOps,
 ].map((f) => f.className);
 
 // Final lockup per letter of "variantly": deliberately mismatched, wild faces

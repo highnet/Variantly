@@ -103,6 +103,61 @@ export const morphMesh = (t: MorphTrack, o: MorphMeshOptions) => {
     nor[v * 3 + 2] = c;
   };
 
+  // Whether two inset (row 0) edges cross, within or between live contours.
+  const side = (ax: number, ay: number, bx: number, by: number, cx: number, cy: number) =>
+    (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
+  const tangled = () => {
+    for (let u = 0; u < slots; u++) {
+      if (!t.live[u]) continue;
+      for (let v = u; v < slots; v++) {
+        if (!t.live[v]) continue;
+        for (let i = 0; i < m; i++) {
+          const p = vi(u, 0, i) * 3;
+          const p2 = vi(u, 0, i + 1) * 3;
+          const [px1, py1, px2, py2] = [pos[p], pos[p + 1], pos[p2], pos[p2 + 1]];
+          // Edge bounds, to skip most pairs cheaply.
+          const x0 = Math.min(px1, px2);
+          const x1 = Math.max(px1, px2);
+          const y0 = Math.min(py1, py2);
+          const y1 = Math.max(py1, py2);
+          for (let j = u === v ? i + 2 : 0; j < m; j++) {
+            if (u === v && i === 0 && j === m - 1) continue;
+            const q = vi(v, 0, j) * 3;
+            const q2 = vi(v, 0, j + 1) * 3;
+            const [qx1, qy1, qx2, qy2] = [pos[q], pos[q + 1], pos[q2], pos[q2 + 1]];
+            if (
+              Math.max(qx1, qx2) < x0 ||
+              Math.min(qx1, qx2) > x1 ||
+              Math.max(qy1, qy2) < y0 ||
+              Math.min(qy1, qy2) > y1
+            )
+              continue;
+            if (
+              side(px1, py1, px2, py2, qx1, qy1) * side(px1, py1, px2, py2, qx2, qy2) < 0 &&
+              side(qx1, qy1, qx2, qy2, px1, py1) * side(qx1, qy1, qx2, qy2, px2, py2) < 0
+            )
+              return true;
+          }
+        }
+      }
+    }
+    return false;
+  };
+  // The inset rows (cap, chamfer edges) back onto the exact outline.
+  const flatten = () => {
+    for (let s = 0; s < slots; s++) {
+      if (!t.live[s]) continue;
+      for (let i = 0; i < m; i++) {
+        const x = pos[vi(s, 2, i) * 3];
+        const y = pos[vi(s, 2, i) * 3 + 1];
+        for (const row of [0, 1, 6, 7]) {
+          pos[vi(s, row, i) * 3] = x;
+          pos[vi(s, row, i) * 3 + 1] = y;
+        }
+      }
+    }
+  };
+
   const update = () => {
     const src = t.out;
     for (let s = 0; s < slots; s++) {
@@ -146,8 +201,11 @@ export const morphMesh = (t: MorphTrack, o: MorphMeshOptions) => {
         const y = py[i];
         const a = nx[i];
         const b = ny[i];
-        const ix = x - a * o.inset;
-        const iy = y - b * o.inset;
+        // The bevel's inset, held within the stroke's room there (a thin
+        // stroke's inset outline would otherwise cross itself).
+        const inset = Math.min(o.inset, t.room[s * t.n + i * o.stride] * o.em);
+        const ix = x - a * inset;
+        const iy = y - b * inset;
         pos[vi(s, 0, i) * 3] = ix;
         pos[vi(s, 0, i) * 3 + 1] = iy;
         pos[vi(s, 0, i) * 3 + 2] = 0;
@@ -162,6 +220,12 @@ export const morphMesh = (t: MorphTrack, o: MorphMeshOptions) => {
         pos[vi(s, 7, i) * 3 + 2] = z3;
       }
     }
+    // The room keeps a face's inset outline clean, but an in-between shape
+    // can still pinch: if the inset outlines cross anywhere, this frame goes
+    // without the bevel's inset (caps on the exact outline, which
+    // scripts/build-morph.mjs keeps clean), never a cap triangulated across
+    // a crossed outline.
+    if (tangled()) flatten();
     // Caps: each live outer with the live holes inside it, front and back.
     let c = sideCount;
     for (let s = 0; s < t.outerSlots; s++) {
