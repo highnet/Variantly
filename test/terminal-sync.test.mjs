@@ -5,7 +5,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +15,10 @@ import { detectProject, normalizeConfig, startApp } from '../src/server.mjs';
 import { stateDirFor } from '../src/session.mjs';
 
 const CLI = fileURLToPath(new URL('../bin/variantly.mjs', import.meta.url));
-const tmp = mkdtempSync(path.join(os.tmpdir(), 'variantly-sync-'));
+// The real path, as `git rev-parse --show-toplevel` gives the CLI: macOS's
+// tmpdir is a symlink and Windows' can be a short 8.3 name, and either would
+// make the app and the CLI look in different state folders.
+const tmp = realpathSync.native(mkdtempSync(path.join(os.tmpdir(), 'variantly-sync-')));
 process.env.VARIANTLY_HOME = path.join(tmp, 'home');
 process.env.VARIANTLY_DEMO_DELAY = '0';
 
