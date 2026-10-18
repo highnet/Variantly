@@ -32,8 +32,10 @@ import { lookAt } from '@/lib/titleTiming';
  * (with the glitch's band slices and dropouts, from components/Lens.tsx) is
  * the stencil, so the 2D layer and the 3D letters are cut identically.
  *
- * Attached by Letters3D (attachLens); renders only while the door is shown
- * on a desktop at the high perf tier and the title is not mid-reveal.
+ * Attached by Letters3D (attachLens); renders only while the door is shown,
+ * outside the low perf tier, and the title is not mid-reveal. Phones get it
+ * too (with the phone pools and coarser morph stride), so the word through
+ * the door is the peeked concept's 3D title there as well.
  */
 
 export type LensHostLetter = {
@@ -462,8 +464,6 @@ export const attachLens = (host: LensHost): LensPass => {
   const active = () =>
     !disposed &&
     lensLive.shown &&
-    lensLive.mode !== 'touch' &&
-    !host.phone &&
     !busy &&
     perfTier() !== 'low' &&
     ready &&
@@ -639,7 +639,7 @@ export const attachLens = (host: LensHost): LensPass => {
   let wasShown = false;
   const offTick = onLensTick(() => {
     if (disposed || busy) return;
-    const shown = lensLive.shown && !host.phone;
+    const shown = lensLive.shown;
     if (shown !== wasShown) {
       wasShown = shown;
       // The title's cursor lean stops while the door is up (the door tilts

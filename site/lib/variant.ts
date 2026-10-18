@@ -111,7 +111,12 @@ export const setVariant = (v: ConceptId, opts: SwapOptions = {}) => {
         apply(v);
         unmount = mountSwapFrame();
       });
-      void vt.ready.then(() => openDoor(origin, duration, v)).catch(() => {});
+      // The frame layers go the moment the rings have left the screen (and
+      // at the latest when the transition ends, if it was skipped).
+      void vt.ready
+        .then(() => openDoor(origin, duration, v))
+        .then(() => unmount())
+        .catch(() => unmount());
       void vt.finished.finally(() => {
         unmount();
         done();
