@@ -1,0 +1,20 @@
+/* o · Swiss Punk: placeholder tokens from the roll's palette. */
+:root[data-variant='o'] {
+  --panel: color-mix(in srgb, #f1eee8 94%, #151412); --surface: #f1eee8; --rule: color-mix(in srgb, #151412 18%, #f1eee8); --steel: color-mix(in srgb, #151412 66%, #f1eee8); --ink: #151412;
+  --alert: #8c1c13; --alert-hover: color-mix(in srgb, #8c1c13 85%, #f1eee8); --on-alert: #ffffff;
+  --hero-bg: #f1eee8; --hero-ink: #151412; --hero-mute: color-mix(in srgb, #151412 66%, #f1eee8); --hero-line: color-mix(in srgb, #151412 22%, #f1eee8); --hero-box: color-mix(in srgb, #f1eee8 96%, #151412);
+  --title: #8c1c13;
+  --flap-bg: #8c1c13; --flap-ink: #ffffff;
+  --art-1: #8c1c13; --art-2: #bdb8ae; --art-3: #bdb8ae; --art-ink: #151412; --art-shadow: #151412;
+  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
+  --board-bg: #0d0d0c; --board-raised: color-mix(in srgb, #0d0d0c 88%, #f1eee8); --board-line: color-mix(in srgb, #0d0d0c 70%, #f1eee8);
+  --board-mute: color-mix(in srgb, #f1eee8 72%, #0d0d0c); --board-text: #f1eee8; --board-deep: color-mix(in srgb, #0d0d0c 80%, #000); --board-ok: #c0392b;
+}
+:root[data-variant='o'][data-theme='dark'] {
+  --panel: color-mix(in srgb, #0d0d0c 94%, #f1eee8); --surface: #0d0d0c; --rule: color-mix(in srgb, #f1eee8 18%, #0d0d0c); --steel: color-mix(in srgb, #f1eee8 66%, #0d0d0c); --ink: #f1eee8;
+  --alert: #c0392b; --alert-hover: color-mix(in srgb, #c0392b 85%, #0d0d0c); --on-alert: #ffffff;
+  --hero-bg: #0d0d0c; --hero-ink: #f1eee8; --hero-mute: color-mix(in srgb, #f1eee8 66%, #0d0d0c); --hero-line: color-mix(in srgb, #f1eee8 22%, #0d0d0c); --hero-box: color-mix(in srgb, #0d0d0c 96%, #f1eee8);
+  --title: #c0392b;
+  --flap-bg: #c0392b; --flap-ink: #ffffff;
+  --art-1: #c0392b; --art-2: #3a3835; --art-3: #3a3835; --art-ink: #f1eee8; --art-shadow: #f1eee8;
+}

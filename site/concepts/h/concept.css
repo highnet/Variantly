@@ -1,0 +1,20 @@
+/* h · Dither Machine: placeholder tokens from the roll's palette. */
+:root[data-variant='h'] {
+  --panel: color-mix(in srgb, #efe7d6 94%, #1b1915); --surface: #efe7d6; --rule: color-mix(in srgb, #1b1915 18%, #efe7d6); --steel: color-mix(in srgb, #1b1915 66%, #efe7d6); --ink: #1b1915;
+  --alert: #b5482a; --alert-hover: color-mix(in srgb, #b5482a 85%, #efe7d6); --on-alert: #ffffff;
+  --hero-bg: #efe7d6; --hero-ink: #1b1915; --hero-mute: color-mix(in srgb, #1b1915 66%, #efe7d6); --hero-line: color-mix(in srgb, #1b1915 22%, #efe7d6); --hero-box: color-mix(in srgb, #efe7d6 96%, #1b1915);
+  --title: #b5482a;
+  --flap-bg: #b5482a; --flap-ink: #ffffff;
+  --art-1: #b5482a; --art-2: #b5482a; --art-3: #b5482a; --art-ink: #1b1915; --art-shadow: #1b1915;
+  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
+  --board-bg: #0e0e0e; --board-raised: color-mix(in srgb, #0e0e0e 88%, #e9e2cf); --board-line: color-mix(in srgb, #0e0e0e 70%, #e9e2cf);
+  --board-mute: color-mix(in srgb, #e9e2cf 72%, #0e0e0e); --board-text: #e9e2cf; --board-deep: color-mix(in srgb, #0e0e0e 80%, #000); --board-ok: #d0623f;
+}
+:root[data-variant='h'][data-theme='dark'] {
+  --panel: color-mix(in srgb, #0e0e0e 94%, #e9e2cf); --surface: #0e0e0e; --rule: color-mix(in srgb, #e9e2cf 18%, #0e0e0e); --steel: color-mix(in srgb, #e9e2cf 66%, #0e0e0e); --ink: #e9e2cf;
+  --alert: #d0623f; --alert-hover: color-mix(in srgb, #d0623f 85%, #0e0e0e); --on-alert: #ffffff;
+  --hero-bg: #0e0e0e; --hero-ink: #e9e2cf; --hero-mute: color-mix(in srgb, #e9e2cf 66%, #0e0e0e); --hero-line: color-mix(in srgb, #e9e2cf 22%, #0e0e0e); --hero-box: color-mix(in srgb, #0e0e0e 96%, #e9e2cf);
+  --title: #d0623f;
+  --flap-bg: #d0623f; --flap-ink: #ffffff;
+  --art-1: #d0623f; --art-2: #d0623f; --art-3: #d0623f; --art-ink: #e9e2cf; --art-shadow: #e9e2cf;
+}

@@ -1,26 +1,33 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-import { markLoaded } from '@/lib/loadProgress';
-import { calmMotion } from '@/lib/prefs';
-import { holdFrame, seekTime } from '@/lib/seek';
+import { useEffect, useState, type ComponentType } from 'react';
 
 import dynamic from 'next/dynamic';
-import { useVariant } from '@/lib/variant';
 
-import { VARIANTS } from './variants';
+import { CONCEPT_BY_ID, CONCEPT_LOADERS, isLive, type ConceptId } from '@/concepts';
+import { markLoaded } from '@/lib/loadProgress';
+import { startPerfTier } from '@/lib/perfTier';
+import { calmMotion } from '@/lib/prefs';
+import { holdFrame, releaseFrame, seekTime } from '@/lib/seek';
+import { useConcept } from '@/lib/variant';
 
 // three.js stays out of the first load: the scene arrives after the page is up.
 const GlField = dynamic(() => import('./GlField').then((m) => m.GlField), { ssr: false });
 
+const htmlTheme = () => {
+  const html = document.documentElement;
+  // seekreel renders pin the theme from the URL before the first draw.
+  const forced = new URLSearchParams(location.search).get('theme');
+  if (forced === 'light' || forced === 'dark') html.dataset.theme = forced;
+  return html.dataset.theme === 'dark' ? 'dark' : 'light';
+};
+
+// Client-only (ssr: false), so the first render already has the painted
+// theme: the scene never builds in light only to rebuild in dark.
 const useTheme = () => {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>(htmlTheme);
   useEffect(() => {
     const html = document.documentElement;
-    // seekreel renders pin the theme from the URL before the first draw.
-    const forced = new URLSearchParams(location.search).get('theme');
-    if (forced === 'light' || forced === 'dark') html.dataset.theme = forced;
     const read = () => setTheme(html.dataset.theme === 'dark' ? 'dark' : 'light');
     read();
     const mo = new MutationObserver(read);
@@ -30,21 +37,45 @@ const useTheme = () => {
   return theme;
 };
 
+// A previewed draft's background composition (concepts/<id>/Backdrop.tsx),
+// loaded on demand. Live concepts' art is already in the server HTML
+// (BackdropPoster), so for them this loads nothing.
+const useDraftArt = (key: ConceptId | null) => {
+  const [art, setArt] = useState<{ id: ConceptId; Art: ComponentType } | null>(null);
+  useEffect(() => {
+    if (!key || isLive(key)) return;
+    let live = true;
+    // Seekreel captures wait for the art before taking the frame.
+    const seek = seekTime() !== null;
+    if (seek) holdFrame('art');
+    void CONCEPT_LOADERS[key]
+      .backdrop()
+      .then((m) => live && setArt({ id: key, Art: m.default }))
+      .catch(() => {})
+      .finally(() => seek && releaseFrame('art'));
+    return () => {
+      live = false;
+    };
+  }, [key]);
+  return art;
+};
+
 /*
- * Page-wide decorative layer: the variant's three.js scene, over the static
- * background art that the server already painted (BackdropPoster). Grain lives
- * on the scene's shapes (GlField).
+ * Page-wide decorative layer: the concept's three.js scene, over the
+ * background art the server already painted (BackdropPoster; a previewed
+ * draft's art loads here). Grain lives on the scene's shapes (GlField).
+ * Fixed behind content.
  */
 export const Backdrop = () => {
-  const key = useVariant();
+  // html[data-variant] (set before first paint, then by setVariant), not the
+  // store: the backdrop starts loading on mount instead of after hydration.
+  const key = useConcept();
   const theme = useTheme();
-  // Concept styles in globals.css key off html[data-variant].
-  useEffect(() => {
-    if (key) document.documentElement.dataset.variant = key;
-  }, [key]);
+  const art = useDraftArt(key);
   // Reduced motion never loads the scene, so there is nothing to wait for.
   useEffect(() => {
     if (calmMotion() && seekTime() === null) markLoaded('scene');
+    startPerfTier();
   }, []);
   useEffect(() => {
     const html = document.documentElement;
@@ -60,16 +91,23 @@ export const Backdrop = () => {
     return () => removeEventListener('scroll', onScroll);
   }, []);
   if (!key) return null;
-  const v = VARIANTS[key];
+  const Art = art && art.id === key ? art.Art : null;
   return (
     <div
       className="vy-backdrop pointer-events-none fixed inset-0 -z-10 overflow-hidden"
       aria-hidden="true"
     >
+      {Art && (
+        <div className="vy-blobs vy-art absolute inset-0">
+          <Art key={key} />
+        </div>
+      )}
       <div className="vy-scene absolute inset-0">
-        {/* Reduced motion: the CSS layers only; the three.js chunk never loads. */}
+        {/* Reduced motion: the CSS layers only; the three.js chunk never loads.
+            Not keyed: GlField cross-fades a concept or theme change itself, so
+            the old scene stays up until the new one has drawn. */}
         {(!calmMotion() || seekTime() !== null) && (
-          <GlField key={key + theme} scene={v.scene} colors={v.colors[theme]} grain={v.grain} />
+          <GlField concept={key} theme={theme} grain={CONCEPT_BY_ID[key].grain} />
         )}
       </div>
     </div>

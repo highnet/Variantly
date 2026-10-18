@@ -1,0 +1,867 @@
+{
+  "title": "variantly — 13 more concepts (h–t), Winter 26-27 re-roll",
+  "seed": "seed:347c81f99c52957b",
+  "brief": "Owner pins: (1) the Winter 2026-27 trend forecast (10 trends; palette oxblood, burnt sienna, warm ivory, muted teal, glacial blue, charcoal; key line 'human-made texture meets digital surrealism'), (2) the most popular contemporary graphic/web styles a 2025-26 NYU / Parsons / SVA class would study. A pinned brief beats the roll; the dealt challengers were fused and declined against it and their disciplines kept as raises.",
+  "supersedes": {
+    "version": "v1",
+    "seed": "seed:1c22451124ce250d",
+    "names": [
+      "Pixel Metropolis",
+      "Data Sublime",
+      "Night Cockpit",
+      "Tension Rig",
+      "Event Horizon",
+      "Cyanotype Plan",
+      "Delft Tile",
+      "Herbarium Sheet",
+      "Urushi Lacquer",
+      "Transit Wayfinding",
+      "Stained Glass",
+      "Survey Contour",
+      "Terrazzo Floor"
+    ],
+    "kept": {
+      "h": "Pixel Metropolis -> Dither Machine",
+      "j": "Night Cockpit -> Instrument OS"
+    }
+  },
+  "question": "Which of the 13 new worlds join the switcher?",
+  "families": {
+    "Print & Type": [
+      "b",
+      "d",
+      "e",
+      "f",
+      "o",
+      "q",
+      "r"
+    ],
+    "Hand & Material": [
+      "a",
+      "k",
+      "p",
+      "s",
+      "t"
+    ],
+    "Screen & Signal": [
+      "c",
+      "h",
+      "j"
+    ],
+    "Light & Illusion": [
+      "g",
+      "i",
+      "l",
+      "m",
+      "n"
+    ]
+  },
+  "trendCoverage": {
+    "1 Tactile imperfection": [
+      "h",
+      "k",
+      "p"
+    ],
+    "2 Surrealism & reality distortion": [
+      "i",
+      "m"
+    ],
+    "3 Cinematic drama": [
+      "n"
+    ],
+    "4 Maximalist collage": [
+      "q"
+    ],
+    "5 Retro-tech nostalgia": [
+      "h",
+      "j"
+    ],
+    "6 Expressive typography": [
+      "k",
+      "l",
+      "o",
+      "r"
+    ],
+    "7 Warm eclecticism / modern nostalgia": [
+      "j",
+      "s"
+    ],
+    "8 Neo-folk & cultural craft": [
+      "p"
+    ],
+    "9 Sensory 3D & material fantasy": [
+      "i",
+      "l",
+      "m"
+    ],
+    "10 Quiet organic minimalism": [
+      "t"
+    ]
+  },
+  "textureMeetsSurreal": [
+    "h",
+    "k",
+    "m",
+    "p",
+    "s",
+    "t"
+  ],
+  "declined": [
+    {
+      "catalogId": "design-canon-factory-silkscreen-loft",
+      "verdict": "declined",
+      "reason": "historical (Warhol Factory); the brief pins contemporary styles",
+      "kept": "editions of one subject: variation shown as re-renders of the same thing"
+    },
+    {
+      "catalogId": "vernacular-ephemera-jet-age-ticket-wallet",
+      "verdict": "declined",
+      "reason": "mid-century ephemera; the brief pins contemporary styles",
+      "kept": "states stamp themselves and stay visible; provenance and state on the surface"
+    },
+    {
+      "catalogId": "risograph-web-system",
+      "verdict": "declined",
+      "reason": "duplicates b Riso Poster",
+      "kept": "a small fixed ink set per theme"
+    },
+    {
+      "catalogId": "scientific-notation-particle-detector-event-display",
+      "verdict": "declined",
+      "reason": "scientific vernacular, not a contemporary design style",
+      "kept": "every readout is real data; one physical rule governs the page"
+    }
+  ],
+  "switcher": "Twenty concepts overflow the 7-chip row, so the switcher becomes a two-level picker grouped into four renamed families that fit the Winter 2026-27 set better than the v1 ones: Print & Type: b, d, e, f, o, q, r; Hand & Material: a, k, p, s, t; Screen & Signal: c, h, j; Light & Illusion: g, i, l, m, n. Desktop: a compact trigger (current swatch, letter, name) opens a 4-column popover, one family per column; each tile is a 3-colour chip plus the name set in that concept's display face. Keyboard order stays a to t with roving arrow focus and [ / ] stepping through all 20 without opening the grid. Mobile: bottom sheet with family tabs over a snap-scroll strip of large tiles and 44px prev/next. Persist the choice, deep-link with ?v=<id>, and include a 'shuffle' tile.",
+  "options": [
+    {
+      "id": "h",
+      "label": "Dither Machine",
+      "family": "Screen & Signal",
+      "kind": "grounded",
+      "kicker": "WINTER 26-27 · GROUNDED",
+      "origin": "reworked from v1 h Pixel Metropolis (kept the integer-grid discipline, dropped the eBoy city costume)",
+      "trends": [
+        "5 Retro-tech nostalgia",
+        "1 Tactile imperfection",
+        "texture-meets-surreal"
+      ],
+      "lineage": "1-bit / bitmap revival: Bayer and Atkinson dithering as a contemporary image language (Obra Dinn, Low-Tech Magazine's solar site, Playdate)",
+      "thesis": "Every variant is printed through one 1-bit dither on toothy paper: two inks, a pixel grid, and tone made entirely of pattern, with a digital light sweeping across it.",
+      "palette": [
+        "#efe7d6",
+        "#1b1915",
+        "#1b1915",
+        "#b5482a"
+      ],
+      "paletteDark": [
+        "#0e0e0e",
+        "#e9e2cf",
+        "#e9e2cf",
+        "#d0623f"
+      ],
+      "materials": [
+        "ordered Bayer 4x4 dither tiles",
+        "pre-baked paper tooth tile under the ink",
+        "one rust accent pixel colour"
+      ],
+      "typography": "Silkscreen for the title (dithered fill) with contemporary Space Grotesk UI; all sizes are integer multiples of the 8px cell",
+      "displayFonts": [
+        "Silkscreen",
+        "Space Grotesk"
+      ],
+      "background": "four pre-baked Bayer threshold tiles stacked as a gradient field; a tonal light sweeps across by stepping background-position in steps(48) over 24s",
+      "letterLook": "dithered voxel: unlit MeshBasic with a 2-tone ordered-dither shader on lit faces, nearest-filtered",
+      "backdropScene": "low-poly landscape rendered through a dither ShaderMaterial (threshold per fragment); orthographic camera orbiting one full turn per 24s",
+      "motion": "stepped and quantised; frames hold, then snap",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Reads as a retro-game filter or Mac Classic nostalgia; 1-bit text below 12px gets illegible; must stay distinct from c Amber Terminal (no green phosphor, no CRT).",
+      "sources": [
+        "Lucas Pope, Return of the Obra Dinn (2018)",
+        "Low-Tech Magazine solar website",
+        "Panic, Playdate console UI",
+        "Surma, 'Ditherpunk' (2021)"
+      ],
+      "raised": [
+        {
+          "from": "challenger-silkscreen-loft",
+          "raise": "Variation is real: every variant swatch is the same image re-dithered with a different threshold, never decorative noise."
+        }
+      ],
+      "pairing": "paper-tooth print grain + a digital light sweep through the dither"
+    },
+    {
+      "id": "i",
+      "label": "Liquid Glass",
+      "family": "Light & Illusion",
+      "kind": "grounded",
+      "kicker": "WINTER 26-27 · GROUNDED",
+      "origin": "new",
+      "trends": [
+        "9 Sensory 3D & material fantasy",
+        "2 Surrealism & reality distortion"
+      ],
+      "lineage": "Apple's 2025 Liquid Glass UI (WWDC25): refractive, lensing glass controls floating over content",
+      "thesis": "Variants sit under one sheet of liquid glass that bends and lenses whatever is behind it; choosing is looking through.",
+      "palette": [
+        "#eef2f6",
+        "#0b0c10",
+        "#5b8db8",
+        "#ffffff",
+        "#b8c3d1"
+      ],
+      "paletteDark": [
+        "#05070b",
+        "#f2f5f9",
+        "#8fb4e6",
+        "#1b1e27",
+        "#3a3f4c"
+      ],
+      "materials": [
+        "refractive glass slabs with specular rims",
+        "content-coloured caustics",
+        "soft pill controls"
+      ],
+      "typography": "Inter Tight variable for the title, Instrument Sans for UI",
+      "displayFonts": [
+        "Inter Tight",
+        "Instrument Sans"
+      ],
+      "background": "large soft colour fields (radial-gradients) drifting under glass-rim highlights drawn with conic-gradients on a closed 24s path, no backdrop-filter",
+      "letterLook": "glass: MeshPhysicalMaterial transmission 1, thickness 0.6, ior 1.45, light iridescence, thin specular bevel",
+      "backdropScene": "rounded glass capsules merging and separating over a glacial gradient plane, refracting it; 24s cycle",
+      "motion": "fluid, elastic, spring-settled; glass stretches toward the pointer",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Becomes a dated glassmorphism card or an Apple knock-off; text on glass fails contrast fast.",
+      "sources": [
+        "Apple, Liquid Glass (WWDC 2025)",
+        "Apple Human Interface Guidelines, Materials (2025)",
+        "Brand New coverage of the iOS 26 redesign"
+      ],
+      "raised": [
+        {
+          "from": "challenger-detector-display",
+          "raise": "One physical rule everywhere: everything refracts the same way, controls included."
+        }
+      ]
+    },
+    {
+      "id": "j",
+      "label": "Instrument OS",
+      "family": "Screen & Signal",
+      "kind": "grounded",
+      "kicker": "WINTER 26-27 · GROUNDED",
+      "origin": "reworked from v1 j Night Cockpit (kept honest, state-driven readouts; dropped aviation skeuomorphism)",
+      "trends": [
+        "5 Retro-tech nostalgia",
+        "7 Warm eclecticism / modern nostalgia"
+      ],
+      "lineage": "retro-futurist hardware UI: Teenage Engineering OP-1, Nothing's dot-matrix glyph UI, Braun via Dieter Rams",
+      "thesis": "variantly as a beautiful little device: each variant is a preset on a hardware synth, dialled with knobs and read off a dot-matrix display.",
+      "palette": [
+        "#e9e6df",
+        "#161514",
+        "#c4462a",
+        "#9a978f",
+        "#3c6e71"
+      ],
+      "paletteDark": [
+        "#111111",
+        "#efebe3",
+        "#e0583a",
+        "#3a3936",
+        "#5a9a9d"
+      ],
+      "materials": [
+        "matte anodised aluminium",
+        "dot-matrix LED readouts",
+        "coloured rubber knobs and keycaps"
+      ],
+      "typography": "Doto (dot-matrix) for the title and readouts, Space Grotesk for UI",
+      "displayFonts": [
+        "Doto",
+        "Space Grotesk"
+      ],
+      "background": "grid of dot-matrix cells (radial-gradient dots) with a level-meter waveform scrolling by background-position over 24s; knob ticks rotate on looped keyframes",
+      "letterLook": "machined: brushed-aluminium MeshStandard bodies with rust and grey rubber inset keys",
+      "backdropScene": "exploded-view hardware unit: knobs, keys and screen parts floating apart and reassembling on a 24s loop",
+      "motion": "tactile and clicky; detents, snaps, short springs",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Product-render cosplay of Teenage Engineering or Nothing; knobs as UI can frustrate on touch.",
+      "sources": [
+        "Teenage Engineering, OP-1 field and TP-7",
+        "Nothing, Phone glyph interface",
+        "Dieter Rams / Braun ET66",
+        "Doto typeface (Google Fonts, 2024)"
+      ],
+      "raised": [
+        {
+          "from": "challenger-ticket-wallet",
+          "raise": "Every state stamps itself on the device: active preset, loading and kept are visible, nothing disappears."
+        }
+      ]
+    },
+    {
+      "id": "k",
+      "label": "Ink & Stitch",
+      "family": "Hand & Material",
+      "kind": "grounded",
+      "kicker": "WINTER 26-27 · GROUNDED",
+      "origin": "new",
+      "trends": [
+        "1 Tactile imperfection",
+        "6 Expressive typography (handwritten)",
+        "texture-meets-surreal"
+      ],
+      "lineage": "tactile imperfection: raw cotton paper, dry-brush ink and visible machine stitching, the handmade-mark revival",
+      "thesis": "Every variant is a swatch-book page of torn ivory paper, brushed ink and rust running stitches, and the stitches lift off the page and hover in 3D.",
+      "palette": [
+        "#f3ecdf",
+        "#1d1a17",
+        "#a8432a",
+        "#c9962e",
+        "#7d8b86"
+      ],
+      "paletteDark": [
+        "#15120f",
+        "#efe6d6",
+        "#d0623f",
+        "#d8a640",
+        "#4b5a56"
+      ],
+      "materials": [
+        "deckle-edged cotton paper",
+        "dry-brush ink strokes",
+        "running-stitch thread"
+      ],
+      "typography": "Caveat Brush for the title (brushed), Newsreader for UI",
+      "displayFonts": [
+        "Caveat Brush",
+        "Newsreader"
+      ],
+      "background": "pre-scanned paper-fibre tile under SVG brushstroke paths revealed by stroke-dashoffset, stitch dashes travelling along seams; 24s loop",
+      "letterLook": "thread-bound: matte paper-white MeshStandard glyphs sewn with rust TubeGeometry stitches piercing the faces",
+      "backdropScene": "a paper sheet with a slow vertex wave whose stitches detach, hover as floating thread loops, then re-sew; 24s",
+      "motion": "hand-paced: strokes draw at uneven speed, stitches pull taut",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Etsy craft-fair cliche; scanned textures look fake if the repeat is visible.",
+      "sources": [
+        "It's Nice That, handmade-mark trend coverage (2025)",
+        "Kenya Hara / Nippon Design Center paper work",
+        "Pentagram hand-lettered identities",
+        "Winter 2026-27 tactile-imperfection forecast"
+      ],
+      "raised": [
+        {
+          "from": "challenger-silkscreen-loft",
+          "raise": "Imperfection is editioned: each variant gets its own stitch path, never random jitter."
+        }
+      ],
+      "pairing": "real hand stitching + stitches levitating off the page"
+    },
+    {
+      "id": "l",
+      "label": "Inflated Chrome",
+      "family": "Light & Illusion",
+      "kind": "grounded",
+      "kicker": "WINTER 26-27 · GROUNDED",
+      "origin": "new (absorbs the contemporary-list acid / chrome-type style)",
+      "trends": [
+        "6 Expressive typography",
+        "9 Sensory 3D & material fantasy"
+      ],
+      "lineage": "inflated and liquid-chrome display type from the acid-graphics and Y2K poster revival",
+      "thesis": "The word is a balloon of liquid chrome: puffy, warped letters reflecting an acid-green wireframe world, with tiny technical captions.",
+      "palette": [
+        "#e6e6e6",
+        "#0a0a0a",
+        "#c6ff00",
+        "#9b9b9b",
+        "#8fb4e6"
+      ],
+      "paletteDark": [
+        "#050505",
+        "#eaeaea",
+        "#c6ff00",
+        "#4a4a4a",
+        "#8fb4e6"
+      ],
+      "materials": [
+        "inflated liquid chrome",
+        "acid-green vector wireframes",
+        "micro technical captions"
+      ],
+      "typography": "Syne ExtraBold for the title (inflated in 3D), Major Mono Display for captions",
+      "displayFonts": [
+        "Syne",
+        "Major Mono Display"
+      ],
+      "background": "perspective wireframe grid (repeating-linear-gradient on a rotateX plane) scrolling toward the viewer, starburst glints rotating; 24s loop",
+      "letterLook": "chrome: MeshStandard metalness 1, roughness 0.05, mirrored environment, inflated (pillowed) extrusions",
+      "backdropScene": "the pillowed chrome wordmark and floating starbursts orbiting over a green wireframe terrain",
+      "motion": "bouncy inflation, glints on a 120bpm grid",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Cheap 2000s screensaver chrome; overlaps g Candy 3D if it goes candy-coloured (it stays mirror-silver only).",
+      "sources": [
+        "Acid Graphics (Are.na / Instagram movement)",
+        "Hassan Rahim / 12:01 Studio chrome work",
+        "Warp Records reissue sleeves",
+        "Brand New, chrome/inflated type trend notes"
+      ],
+      "raised": [
+        {
+          "from": "challenger-detector-display",
+          "raise": "Captions carry real data (port, variant count, build ms) like a detector printout."
+        }
+      ]
+    },
+    {
+      "id": "m",
+      "label": "Uncanny Mirror",
+      "family": "Light & Illusion",
+      "kind": "grounded",
+      "kicker": "WINTER 26-27 · GROUNDED",
+      "origin": "new",
+      "trends": [
+        "2 Surrealism & reality distortion",
+        "9 Sensory 3D & material fantasy",
+        "texture-meets-surreal"
+      ],
+      "lineage": "surrealism and reality distortion: Magritte reread through Erik Johansson and Alex Prager, impossible scale and dreamlike light",
+      "thesis": "A cold dream room: a rough plaster wordmark stands on an endless mirror floor, and its reflection shows a different variant than the object.",
+      "palette": [
+        "#e7ecf1",
+        "#1f2229",
+        "#6f8fb8",
+        "#a7a9b4",
+        "#7a63b8"
+      ],
+      "paletteDark": [
+        "#0d0f14",
+        "#e3e8ef",
+        "#8fb4e6",
+        "#3c3f4a",
+        "#9a82e0"
+      ],
+      "materials": [
+        "chalky plaster",
+        "glacial mirror floor",
+        "violet dream haze (gradient, no blur)"
+      ],
+      "typography": "Italiana for the title, Manrope for UI",
+      "displayFonts": [
+        "Italiana",
+        "Manrope"
+      ],
+      "background": "horizon split: sky gradient above, mirrored duplicate below with shifted hue; a giant moon disc slides along the horizon on a 24s loop",
+      "letterLook": "plaster cast: rough matte white MeshStandard with hairline cracks; the Reflector copy is recoloured as another variant",
+      "backdropScene": "oversized plaster letters and a tiny doorway on a Reflector floor; the reflection runs a beat out of sync",
+      "motion": "slow and dreamlike; object and reflection slightly out of time",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Surreal stock-art cliche (floating rocks, desert doors); the trick reads as a bug if it isn't clearly intentional.",
+      "sources": [
+        "Erik Johansson, photo-surrealism",
+        "Alex Prager, staged film stills",
+        "René Magritte, La reproduction interdite (1937)",
+        "Winter 2026-27 surrealism forecast"
+      ],
+      "raised": [
+        {
+          "from": "challenger-detector-display",
+          "raise": "Break one physical rule only: reflections lie, everything else obeys."
+        }
+      ],
+      "pairing": "rough plaster object + a lying digital reflection"
+    },
+    {
+      "id": "n",
+      "label": "Noir Velvet",
+      "family": "Light & Illusion",
+      "kind": "grounded",
+      "kicker": "WINTER 26-27 · GROUNDED",
+      "origin": "new",
+      "trends": [
+        "3 Cinematic drama"
+      ],
+      "lineage": "cinematic drama: film-noir shadow, theatrical spotlight and velvet, as in A24 titles and Saul Bass sequences",
+      "thesis": "variantly as an opening title: one spotlight on oxblood velvet, venetian-blind shadows sweeping across a high-contrast Didone wordmark.",
+      "palette": [
+        "#efe7dc",
+        "#140d0c",
+        "#6e1420",
+        "#c79a5b",
+        "#3a2e2b"
+      ],
+      "paletteDark": [
+        "#080506",
+        "#f1e6d8",
+        "#9b1c2c",
+        "#d4a96a",
+        "#231a19"
+      ],
+      "materials": [
+        "crushed velvet",
+        "hard spotlight pool",
+        "venetian-blind shadow bars"
+      ],
+      "typography": "Bodoni Moda for the title, Cormorant Garamond small caps for credits",
+      "displayFonts": [
+        "Bodoni Moda",
+        "Cormorant Garamond"
+      ],
+      "background": "velvet fold gradients with a radial spotlight pool and diagonal blind-shadow bars sweeping across on a 24s loop; pre-baked film-grain tile",
+      "letterLook": "velvet lacquer: MeshPhysical sheen 1 with oxblood sheenColor and a gold rim bevel",
+      "backdropScene": "a curtain opening on a stage, one shadow-mapped SpotLight casting blind shadows across the title",
+      "motion": "slow, theatrical curtain timing; one dramatic cut per change",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Hollywood cliche, too dark; red-on-black text can fail contrast.",
+      "sources": [
+        "A24 film title design",
+        "Saul Bass title sequences",
+        "The Third Man (1949) cinematography",
+        "Winter 2026-27 cinematic-drama forecast"
+      ],
+      "raised": [
+        {
+          "from": "own",
+          "raise": "Light is the layout: only the spotlit area holds readable text."
+        }
+      ]
+    },
+    {
+      "id": "o",
+      "label": "Swiss Punk",
+      "family": "Print & Type",
+      "kind": "grounded",
+      "kicker": "WINTER 26-27 · GROUNDED",
+      "origin": "new",
+      "trends": [
+        "6 Expressive typography",
+        "contemporary list: Swiss punk / new grotesk"
+      ],
+      "lineage": "Swiss punk / new grotesk editorial: Weingart's broken grid reread by Experimental Jetset, Studio Dumbar and Order",
+      "thesis": "A typographic poster that won't sit still: one enormous grotesk word, a visible hard grid, and oxblood rules cutting across it.",
+      "palette": [
+        "#f1eee8",
+        "#151412",
+        "#8c1c13",
+        "#bdb8ae"
+      ],
+      "paletteDark": [
+        "#0d0d0c",
+        "#f1eee8",
+        "#c0392b",
+        "#3a3835"
+      ],
+      "materials": [
+        "oversized grotesk set solid",
+        "cutting rules",
+        "visible modular grid"
+      ],
+      "typography": "Archivo (variable width/weight) for the title at poster scale, IBM Plex Mono for captions",
+      "displayFonts": [
+        "Archivo",
+        "IBM Plex Mono"
+      ],
+      "background": "hairline 12-column grid with red bars sliding across columns and giant cropped numerals translating on a 24s loop",
+      "letterLook": "enamel sign: flat matte oxblood and black MeshStandard with crisp chamfers",
+      "backdropScene": "monumental extruded letters rotating as slabs on a grid floor, cropping each other",
+      "motion": "abrupt, sliding, editorial cuts",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "A design-student homage poster; the broken grid hurts dense reading. Distinct from e Bauhaus (geometry, primaries) by being type-only.",
+      "sources": [
+        "Experimental Jetset, Stedelijk Museum identity",
+        "Studio Dumbar, Dutch identities",
+        "Order (NYC), editorial systems",
+        "Wolfgang Weingart, Typography (2000)"
+      ],
+      "raised": [
+        {
+          "from": "challenger-silkscreen-loft",
+          "raise": "Grid density courage: show the grid lines, never hide the structure."
+        }
+      ]
+    },
+    {
+      "id": "p",
+      "label": "Tenango Thread",
+      "family": "Hand & Material",
+      "kind": "grounded",
+      "kicker": "WINTER 26-27 · GROUNDED",
+      "origin": "new",
+      "trends": [
+        "8 Neo-folk & cultural craft",
+        "1 Tactile imperfection",
+        "texture-meets-surreal"
+      ],
+      "lineage": "neo-folk and cultural craft: Tenango embroidery by Otomí (Hñähñu) artisans of Tenango de Doria, Hidalgo, Mexico",
+      "thesis": "Variants as embroidered panels: flat single-colour animals and flowers in dense satin stitch on white cotton, credited to the craft, with threads that drift as if weightless.",
+      "palette": [
+        "#fbf8f2",
+        "#1d1b1a",
+        "#c2263a",
+        "#1b8a7f",
+        "#e08a3c"
+      ],
+      "paletteDark": [
+        "#14110f",
+        "#f6f1e8",
+        "#ef476f",
+        "#2ec4b6",
+        "#ffb563"
+      ],
+      "materials": [
+        "satin-stitch thread fields",
+        "white cotton manta",
+        "one colour per motif"
+      ],
+      "typography": "Grandstander for the title (stitched outline), Work Sans for UI",
+      "displayFonts": [
+        "Grandstander",
+        "Work Sans"
+      ],
+      "background": "symmetric motif panel from SVG stitch-direction hatching; motifs breathe and a thread line runs round the border, 24s loop",
+      "letterLook": "embroidered: MeshStandard with anisotropic thread normal map, glossy satin",
+      "backdropScene": "an embroidered cloth panel whose birds and deer gently lift off and settle back, loose threads swaying in zero gravity",
+      "motion": "gentle, folkloric, small sway",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Appropriation or generic 'Mexican' decoration; it must credit Tenango de Doria artisans by name, use real motif grammar and avoid pastiche.",
+      "sources": [
+        "Tenango de Doria embroidery cooperatives, Hidalgo",
+        "Museo de Arte Popular, Mexico City",
+        "Carla Fernández, design with Mexican artisans",
+        "It's Nice That, neo-folk coverage (2025)"
+      ],
+      "raised": [
+        {
+          "from": "challenger-ticket-wallet",
+          "raise": "Provenance on the surface: a credit line names the craft origin and stays visible."
+        }
+      ],
+      "pairing": "real satin stitch + threads floating weightless"
+    },
+    {
+      "id": "q",
+      "label": "Sticker Bomb",
+      "family": "Print & Type",
+      "kind": "grounded",
+      "kicker": "WINTER 26-27 · GROUNDED",
+      "origin": "new",
+      "trends": [
+        "4 Maximalist collage"
+      ],
+      "lineage": "digital maximalism: sticker-bombed laptop lids and Gen-Z brand identities, clashing patterns kept readable",
+      "thesis": "Variants arrive as stickers slapped on one device lid: holographic, die-cut, overlapping, yet the wordmark stays clear on a clean white sticker.",
+      "palette": [
+        "#f7f7f2",
+        "#111111",
+        "#ff3ea5",
+        "#00c2ff",
+        "#c4f000"
+      ],
+      "paletteDark": [
+        "#121212",
+        "#fafafa",
+        "#ff3ea5",
+        "#00c2ff",
+        "#c4f000"
+      ],
+      "materials": [
+        "vinyl die-cut stickers with white kiss-cut borders",
+        "holographic foil",
+        "clashing checker and flame patterns"
+      ],
+      "typography": "Rubik Mono One for the title sticker, Bricolage Grotesque for UI",
+      "displayFonts": [
+        "Rubik Mono One",
+        "Bricolage Grotesque"
+      ],
+      "background": "dense sticker tiles (CSS shapes and gradients) on brushed aluminium, a few peeling and re-sticking on a 24s loop",
+      "letterLook": "vinyl: glossy MeshPhysical clearcoat, iridescence on holo stickers, white border extrusions",
+      "backdropScene": "a laptop lid where stickers drop in, slap flat with a bounce, and one peels its corner; 24s",
+      "motion": "slap, bounce, peel",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Chaos with no hierarchy. Differs from f Cut & Paste by being glossy digital vinyl on a device, not paper collage.",
+      "sources": [
+        "MSCHF drops and packaging",
+        "Collins, Spotify Wrapped maximalism",
+        "Sticker culture (Redbubble, laptop lids)",
+        "Winter 2026-27 maximalist-collage forecast"
+      ],
+      "raised": [
+        {
+          "from": "own",
+          "raise": "One clean zone: the title sticker and CTA are never overlapped."
+        }
+      ]
+    },
+    {
+      "id": "r",
+      "label": "Kinetic Type",
+      "family": "Print & Type",
+      "kind": "grounded",
+      "kicker": "WINTER 26-27 · GROUNDED",
+      "origin": "new",
+      "trends": [
+        "6 Expressive typography",
+        "contemporary list: kinetic / variable type"
+      ],
+      "lineage": "kinetic and variable typography: type as motion, from DIA Studio to variable-font identities",
+      "thesis": "The wordmark is the whole show: 'variantly' stretches, compresses and morphs through its axes, one shape per variant.",
+      "palette": [
+        "#efece6",
+        "#0f0f0f",
+        "#3c6e71",
+        "#8c1c13"
+      ],
+      "paletteDark": [
+        "#0b0b0b",
+        "#efece6",
+        "#5a9a9d",
+        "#c0392b"
+      ],
+      "materials": [
+        "variable-width letterforms",
+        "type-on-path and tiled type",
+        "flat ink and two signal colours"
+      ],
+      "typography": "Anybody (variable width 50-150, weight 100-900) for display, Fragment Mono for UI",
+      "displayFonts": [
+        "Anybody",
+        "Fragment Mono"
+      ],
+      "background": "rows of the word sliding in alternating directions, font-variation-settings animated through wdth and wght on a 24s loop",
+      "letterLook": "elastic letter: flat MeshStandard with morph targets between condensed and expanded extrusions",
+      "backdropScene": "a ribbon of extruded type wrapped round a rotating cylinder, letters stretching as they pass the front",
+      "motion": "rhythmic, typographic, beat-synced",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "A motion-reel gimmick that makes reading impossible; heavy variable animation can jank on low-end devices.",
+      "sources": [
+        "DIA Studio (Mitch Paone) kinetic identities",
+        "Pentagram / Order variable-type identities",
+        "Google Fonts Knowledge, variable fonts",
+        "SVA MFA Design motion-type coursework"
+      ],
+      "raised": [
+        {
+          "from": "challenger-silkscreen-loft",
+          "raise": "One subject in many editions: the same word reshaped per variant, never new imagery."
+        }
+      ]
+    },
+    {
+      "id": "s",
+      "label": "Lived-in Den",
+      "family": "Hand & Material",
+      "kind": "grounded",
+      "kicker": "WINTER 26-27 · GROUNDED",
+      "origin": "new",
+      "trends": [
+        "7 Warm eclecticism / modern nostalgia",
+        "texture-meets-surreal"
+      ],
+      "lineage": "warm eclecticism / modern nostalgia: walnut, mixed-era objects and amber lamps, as in record-bar and hospitality interiors",
+      "thesis": "A warm listening room: walnut shelves of objects from different decades, an amber lamp, the variants as records you slide out, and one object quietly floating.",
+      "palette": [
+        "#f4ead9",
+        "#2a1d15",
+        "#a0522d",
+        "#5b8a86",
+        "#d9a441"
+      ],
+      "paletteDark": [
+        "#1a120c",
+        "#f2e4cc",
+        "#c8693a",
+        "#6fa39e",
+        "#e6b450"
+      ],
+      "materials": [
+        "oiled walnut grain",
+        "amber lamplight",
+        "boucle and brass"
+      ],
+      "typography": "Fraunces (soft, wonky axis) for the title, DM Sans for UI",
+      "displayFonts": [
+        "Fraunces",
+        "DM Sans"
+      ],
+      "background": "wood-grain gradient bands with an amber glow pool; record sleeves slide along a shelf by translateX, 24s loop",
+      "letterLook": "walnut: MeshStandard wood map with clearcoat and brass inlay edges",
+      "backdropScene": "a shelf vignette (lamp, records, plant, vintage phone) where one object levitates slightly while the lamp light breathes",
+      "motion": "unhurried, warm, slide-and-settle",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Pinterest mid-century cliche; too cosy for a developer tool.",
+      "sources": [
+        "Studio Ashby interiors",
+        "Japanese listening bars (JBS Tokyo)",
+        "Kinfolk magazine",
+        "Winter 2026-27 warm-eclecticism forecast"
+      ],
+      "raised": [
+        {
+          "from": "own",
+          "raise": "Mixed eras, one light: everything is lit by the same amber source."
+        }
+      ],
+      "pairing": "real wood grain + one object hovering against gravity"
+    },
+    {
+      "id": "t",
+      "label": "Stone & Linen",
+      "family": "Hand & Material",
+      "kind": "grounded",
+      "kicker": "WINTER 26-27 · GROUNDED",
+      "origin": "new",
+      "trends": [
+        "10 Quiet organic minimalism",
+        "texture-meets-surreal"
+      ],
+      "lineage": "quiet organic minimalism: natural materials, soft silhouettes and negative space (Aesop, Studio Mumbai, Japandi)",
+      "thesis": "Almost nothing: a linen field, one soft stone silhouette and the word, with a window shadow drifting across as if the sun is moving.",
+      "palette": [
+        "#efe9df",
+        "#2b2824",
+        "#7d8f86",
+        "#b9a48a",
+        "#d8d1c4"
+      ],
+      "paletteDark": [
+        "#171512",
+        "#ece5d8",
+        "#9aaa9b",
+        "#7e6c58",
+        "#2a2622"
+      ],
+      "materials": [
+        "washed linen weave",
+        "honed limestone",
+        "soft window light"
+      ],
+      "typography": "Cormorant for the title (light weight), Karla for UI",
+      "displayFonts": [
+        "Cormorant",
+        "Karla"
+      ],
+      "background": "linen weave tile with a large soft window-shadow shape moving across the page and one pebble silhouette; 24s loop",
+      "letterLook": "honed stone: rough MeshStandard limestone with soft micro-normals",
+      "backdropScene": "pebbles on a linen plane under a slowly turning light that casts a window shadow; one pebble floats a few millimetres up",
+      "motion": "barely moving; only the light travels",
+      "viewport": "Title lockup centred over the background composition; switcher and CTA rendered as this world's own objects.",
+      "risk": "Reads as empty or an Aesop knock-off; too little for a tool that sells variety.",
+      "sources": [
+        "Aesop store design",
+        "Studio Mumbai",
+        "Kinfolk / Japandi interiors",
+        "Winter 2026-27 quiet-organic forecast"
+      ],
+      "raised": [
+        {
+          "from": "own",
+          "raise": "Negative space is measured: two-thirds of the viewport stays empty around the wordmark."
+        }
+      ],
+      "pairing": "linen and stone + an impossible floating pebble"
+    }
+  ]
+}

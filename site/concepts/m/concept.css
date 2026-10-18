@@ -1,0 +1,20 @@
+/* m · Uncanny Mirror: placeholder tokens from the roll's palette. */
+:root[data-variant='m'] {
+  --panel: color-mix(in srgb, #e7ecf1 94%, #1f2229); --surface: #e7ecf1; --rule: color-mix(in srgb, #1f2229 18%, #e7ecf1); --steel: color-mix(in srgb, #1f2229 66%, #e7ecf1); --ink: #1f2229;
+  --alert: #6f8fb8; --alert-hover: color-mix(in srgb, #6f8fb8 85%, #e7ecf1); --on-alert: #ffffff;
+  --hero-bg: #e7ecf1; --hero-ink: #1f2229; --hero-mute: color-mix(in srgb, #1f2229 66%, #e7ecf1); --hero-line: color-mix(in srgb, #1f2229 22%, #e7ecf1); --hero-box: color-mix(in srgb, #e7ecf1 96%, #1f2229);
+  --title: #1f2229;
+  --flap-bg: #6f8fb8; --flap-ink: #ffffff;
+  --art-1: #6f8fb8; --art-2: #a7a9b4; --art-3: #7a63b8; --art-ink: #1f2229; --art-shadow: #1f2229;
+  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
+  --board-bg: #0d0f14; --board-raised: color-mix(in srgb, #0d0f14 88%, #e3e8ef); --board-line: color-mix(in srgb, #0d0f14 70%, #e3e8ef);
+  --board-mute: color-mix(in srgb, #e3e8ef 72%, #0d0f14); --board-text: #e3e8ef; --board-deep: color-mix(in srgb, #0d0f14 80%, #000); --board-ok: #8fb4e6;
+}
+:root[data-variant='m'][data-theme='dark'] {
+  --panel: color-mix(in srgb, #0d0f14 94%, #e3e8ef); --surface: #0d0f14; --rule: color-mix(in srgb, #e3e8ef 18%, #0d0f14); --steel: color-mix(in srgb, #e3e8ef 66%, #0d0f14); --ink: #e3e8ef;
+  --alert: #8fb4e6; --alert-hover: color-mix(in srgb, #8fb4e6 85%, #0d0f14); --on-alert: #111111;
+  --hero-bg: #0d0f14; --hero-ink: #e3e8ef; --hero-mute: color-mix(in srgb, #e3e8ef 66%, #0d0f14); --hero-line: color-mix(in srgb, #e3e8ef 22%, #0d0f14); --hero-box: color-mix(in srgb, #0d0f14 96%, #e3e8ef);
+  --title: #8fb4e6;
+  --flap-bg: #8fb4e6; --flap-ink: #111111;
+  --art-1: #8fb4e6; --art-2: #3c3f4a; --art-3: #9a82e0; --art-ink: #e3e8ef; --art-shadow: #e3e8ef;
+}
