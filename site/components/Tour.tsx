@@ -9,27 +9,35 @@ type ShotProps = {
 };
 
 /*
- * One screen of the local app in both themes. Only the one matching the
- * site's theme is displayed, so the browser fetches just that one.
+ * One screen of the local app in both themes, captured twice: on a phone
+ * (390 wide) for small screens, where a shrunk desktop capture is
+ * unreadable, and on a laptop (1440 wide) for the rest. Only the theme
+ * matching the site's is displayed, so the browser fetches just that one.
  */
 const Shot = ({ shot, alt, eager }: ShotProps) => (
   <>
     {(['light', 'dark'] as const).map((t) => (
-      // eslint-disable-next-line @next/next/no-img-element -- pre-sized static WebP
-      <img
-        key={t}
-        src={`/how/${shot}-${t}.webp`}
-        srcSet={`/how/${shot}-${t}.webp 1440w, /how/${shot}-${t}@2x.webp 2880w`}
-        sizes="(min-width: 1024px) 66vw, 100vw"
-        width={1440}
-        height={900}
-        alt={alt}
-        loading={eager ? 'eager' : 'lazy'}
-        decoding="async"
-        className={
-          t === 'light' ? 'vy-shot-light block h-auto w-full' : 'vy-shot-dark h-auto w-full'
-        }
-      />
+      <picture key={t} className={t === 'light' ? 'vy-shot-light block' : 'vy-shot-dark'}>
+        <source
+          media="(max-width: 1023px)"
+          srcSet={`/how/${shot}-${t}-phone.webp 390w, /how/${shot}-${t}-phone@2x.webp 780w`}
+          sizes="390px"
+          width={390}
+          height={844}
+        />
+        {}
+        <img
+          src={`/how/${shot}-${t}.webp`}
+          srcSet={`/how/${shot}-${t}.webp 1440w, /how/${shot}-${t}@2x.webp 2880w`}
+          sizes="66vw"
+          width={1440}
+          height={900}
+          alt={alt}
+          loading={eager ? 'eager' : 'lazy'}
+          decoding="async"
+          className="block h-auto w-full"
+        />
+      </picture>
     ))}
   </>
 );
@@ -79,10 +87,10 @@ const Tour = () => (
           </ul>
         </div>
         <figure className="m-0 grid gap-3">
-          <div className="rounded-pass bg-surface shadow-lift overflow-hidden">
+          <div className="rounded-pass bg-surface shadow-lift mx-auto w-full max-w-[390px] overflow-hidden lg:max-w-none">
             <Shot shot={s.shot} alt={s.alt} eager={i === 0} />
           </div>
-          <figcaption className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <figcaption className="mx-auto flex w-full max-w-[390px] flex-wrap items-baseline justify-between gap-x-4 gap-y-1 lg:max-w-none">
             <Typography variant="data" color="steel">
               localhost:4477
             </Typography>
