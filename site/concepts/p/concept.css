@@ -72,7 +72,7 @@
   border: 0; border-radius: 6px; position: relative;
   box-shadow: 0 0 0 1px var(--rule), 0 16px 30px -22px rgb(60 30 10 / 0.45);
 }
-:root[data-variant='p'] [data-hero-side] { background: var(--hero-box); padding: 30px 22px 22px; box-shadow: 0 0 0 1px var(--hero-line), 0 16px 30px -22px rgb(60 30 10 / 0.45); }
+:root[data-variant='p'] [data-hero-side] { background: var(--hero-box); padding: 30px 22px 22px; box-shadow: 0 0 0 1px var(--hero-line), 0 16px 30px -22px rgb(0 0 0 / 0.35); }
 :root[data-variant='p'] :is([data-hero-side], main > div .bg-surface)::before {
   content: ''; position: absolute; inset: 0 0 auto; height: 6px; border-radius: 6px 6px 0 0; pointer-events: none;
   background:
