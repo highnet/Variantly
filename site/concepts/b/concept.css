@@ -125,5 +125,5 @@
 }
 /* Grain on surfaces (see Grainy gradients in app/globals.css). */
 :root[data-variant='b'] {
-  --grain-tile: var(--grain-strong);
+  --grain-tile: var(--grain-mid);
 }
