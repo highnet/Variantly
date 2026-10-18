@@ -47,6 +47,8 @@ import {
   type Timeline,
 } from '@/lib/titleTiming';
 
+// The most one drawn frame advances the title's run, ms (see `now`).
+const STALL_MS = 50;
 const WORD = 'variantly';
 // The 3D wardrobe is the 2D title's: the same faces in the same order. Each
 // letter is one morphing mesh (lib/morphMesh) built from the shared outline
@@ -807,7 +809,23 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         renderer.autoClear = autoClear;
         renderer.shadowMap.autoUpdate = autoShadow;
       };
-      const now = () => seek ?? (still ? 30 : (performance.now() - clock.current) / 1000);
+      // The run's time, advanced at most STALL_MS per drawn frame: a stalled
+      // main thread (a concept switch loading its look) pauses the morph
+      // rather than skipping it, so a quick swap still plays on screen.
+      let runStart = -1;
+      let runMs = 0;
+      let lastMs = 0;
+      const now = () => {
+        if (seek !== null) return seek;
+        if (still) return 30;
+        const ms = performance.now() - clock.current;
+        if (clock.current !== runStart) {
+          runStart = clock.current;
+          runMs = Math.min(ms, STALL_MS);
+        } else runMs += Math.min(STALL_MS, Math.max(0, ms - lastMs));
+        lastMs = ms;
+        return runMs / 1000;
+      };
 
       let last = 0;
       const frame = (stamp = performance.now()) => {
