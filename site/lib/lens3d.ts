@@ -4,6 +4,7 @@ import { Earcut } from 'three/src/extras/Earcut.js';
 import { CONCEPT_BY_ID, CONCEPT_LOADERS, type ConceptId } from '@/concepts';
 import type { Built } from '@/concepts/types';
 import { blendMorph, loadMorph, morphTrack, planMorph, type MorphData } from '@/lib/glyphMorph';
+import { glTier } from '@/lib/glTier';
 import { kickGlitch, lensLive, onLensTick } from '@/lib/lens';
 import { glitchOn } from '@/lib/lensGlitch';
 import {
@@ -250,6 +251,25 @@ export const attachLens = (host: LensHost): LensPass => {
   const tintScene = new THREE.Scene();
   tintScene.add(tint);
 
+  // ---- The lens scene's frame, rendered small and laid into the door. ----
+  const rt = new THREE.WebGLRenderTarget(1, 1);
+  const copyMat = new THREE.ShaderMaterial({
+    uniforms: { tMap: { value: rt.texture } },
+    vertexShader:
+      'varying vec2 vUv; void main() { vUv = position.xy * 0.5 + 0.5; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader:
+      'uniform sampler2D tMap; varying vec2 vUv; void main() { gl_FragColor = texture2D(tMap, vUv); }',
+    transparent: true,
+    premultipliedAlpha: true,
+    depthTest: false,
+    depthWrite: false,
+  });
+  setStencil(copyMat, THREE.EqualStencilFunc);
+  const copy = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), copyMat);
+  copy.frustumCulled = false;
+  const copyScene = new THREE.Scene();
+  copyScene.add(copy);
+
   // ---- The lens concept's letters, shadow, scene. ----
   const group = new THREE.Group();
   host.scene.add(group);
@@ -298,9 +318,15 @@ export const attachLens = (host: LensHost): LensPass => {
   const dark = () => html.dataset.theme === 'dark';
 
   // Dress the lens letters in the lens concept's looks, from its 2D word.
+  let dressedFor: HTMLElement | null = null;
+  // The lens hero has taken the lens concept (React may lag a frame behind).
+  const replicaIs = (want: string | null) =>
+    !!lensLive.word &&
+    lensLive.word.closest('.vy-lens-root')?.getAttribute('data-variant') === want;
   const dress = () => {
     const word = lensLive.word;
-    if (!word || !id || !letters.length) return;
+    if (!word || !id || !letters.length || !replicaIs(id)) return;
+    dressedFor = word;
     pools.forEach(disposePool);
     const els = [...word.children];
     pools = letters.map((_, i) => lookPool(id!, inkOf(els[i] ?? word, word), dark(), host.phone));
@@ -334,6 +360,7 @@ export const attachLens = (host: LensHost): LensPass => {
     disposeLetters();
     disposeScene();
     ready = false;
+    dressedFor = null;
     id = next;
     const d = data;
     if (!d) return;
@@ -396,10 +423,6 @@ export const attachLens = (host: LensHost): LensPass => {
         const sc = new THREE.Scene();
         const colors = def.colors[dark() ? 'dark' : 'light'];
         const built = def.build(sc, colors);
-        sc.traverse((o) => {
-          const m = (o as THREE.Mesh).material;
-          if (m) eachMat(m, (mat) => setStencil(mat, THREE.EqualStencilFunc));
-        });
         lensScene = { scene: sc, built, colors };
         sceneT0 = performance.now();
       })
@@ -443,7 +466,7 @@ export const attachLens = (host: LensHost): LensPass => {
     !busy &&
     perfTier() !== 'low' &&
     ready &&
-    !!lensLive.word &&
+    replicaIs(id) &&
     id === lensLive.id &&
     html.dataset.variant !== id;
 
@@ -466,6 +489,10 @@ export const attachLens = (host: LensHost): LensPass => {
       lensLive.scene = false;
       group.visible = false;
       return false;
+    }
+    if (dressedFor !== lensLive.word) {
+      laid = '';
+      dress();
     }
     layout();
     const W = host.el.clientWidth;
@@ -551,12 +578,23 @@ export const attachLens = (host: LensHost): LensPass => {
       }
       (cam as THREE.PerspectiveCamera).updateProjectionMatrix();
       lensScene.built.update((performance.now() - sceneT0) / 1000, 0);
+      // At the backdrop's own resolution (GlField renders at ~0.55x, and
+      // the scenes' screen-space patterns are sized in its pixels), then
+      // laid into the door.
+      const pr = glTier(0.55).pixelRatio;
+      const rw = Math.max(1, Math.ceil(W * pr));
+      const rh = Math.max(1, Math.ceil(H * pr));
+      if (rt.width !== rw || rt.height !== rh) rt.setSize(rw, rh);
+      rt.viewport.set(-r.left * pr, (r.top + H - vh) * pr, vw * pr, vh * pr);
       const tone = renderer.toneMapping;
       renderer.toneMapping = THREE.NoToneMapping;
-      renderer.setViewport(-r.left, r.top + H - vh, vw, vh);
+      renderer.setRenderTarget(rt);
+      renderer.setClearColor(0x000000, 0);
+      renderer.clear(true, true, false);
       renderer.render(lensScene.scene, cam);
-      renderer.setViewport(0, 0, W, H);
+      renderer.setRenderTarget(null);
       renderer.toneMapping = tone;
+      renderer.render(copyScene, camera);
       if (tintRGBA[3] > 0) renderer.render(tintScene, camera);
       renderer.clearDepth();
     }
@@ -633,6 +671,9 @@ export const attachLens = (host: LensHost): LensPass => {
       maskGeo.dispose();
       maskMat.dispose();
       tintMat.dispose();
+      rt.dispose();
+      copyMat.dispose();
+      copy.geometry.dispose();
       tint.geometry.dispose();
       shadowMat.dispose();
       splitMats.forEach((m) => m.dispose());

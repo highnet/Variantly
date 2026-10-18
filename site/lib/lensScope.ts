@@ -55,7 +55,7 @@ export const lensSheet = (): CSSStyleSheet | null => {
   // The Lens's own: the 2D letters hide while the 3D lens draws them.
   out.push(
     '.vy-lens-root[data-lens-3d] .vy-title .vy-letter > *{color:transparent!important;text-shadow:none!important}',
-    '.vy-lens-root[data-lens-3d][data-lens-scene] [data-hero-title]{background:transparent!important}',
+    '.vy-lens-root[data-lens-3d][data-lens-scene] [data-hero-title]{background-color:transparent!important}',
   );
   const sheet = cached?.sheet ?? new CSSStyleSheet();
   sheet.replaceSync(out.join('\n'));
