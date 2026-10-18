@@ -885,7 +885,7 @@ const Showcase = () => {
     const fit = () => {
       title.style.fontSize = '';
       const room = title.clientWidth;
-      const need = line.scrollWidth;
+      const need = line.getBoundingClientRect().width;
       if (need > room) {
         const px = parseFloat(getComputedStyle(title).fontSize);
         title.style.fontSize = `${Math.floor((px * room) / need)}px`;
