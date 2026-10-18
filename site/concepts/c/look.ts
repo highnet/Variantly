@@ -15,7 +15,7 @@ export const look: ConceptLook = {
     // Flat phosphor ink and scanlines: no glow hull.
     return tubes.map(([cell, noise], k) =>
       both(ink, (a) =>
-        shader('crt', { a, cell: cell * px, noise, seed: k * 3.7, grain: dark ? 0.05 : 0.04 }),
+        shader('crt', { a, cell: cell * px, noise, seed: k * 3.7, grain: dark ? 0.08 : 0.06 }),
       ),
     );
   },

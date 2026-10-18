@@ -5,6 +5,7 @@ import { useEffect, useState, type ComponentType } from 'react';
 import dynamic from 'next/dynamic';
 
 import { CONCEPT_BY_ID, CONCEPT_LOADERS, isLive, type ConceptId } from '@/concepts';
+import { GrainDefs } from '@/components/backdrop/artKit';
 import { markLoaded } from '@/lib/loadProgress';
 import { startPerfTier } from '@/lib/perfTier';
 import { calmMotion } from '@/lib/prefs';
@@ -99,6 +100,7 @@ export const Backdrop = () => {
     >
       {Art && (
         <div className="vy-blobs vy-art absolute inset-0">
+          <GrainDefs />
           <Art key={key} />
         </div>
       )}
@@ -107,7 +109,12 @@ export const Backdrop = () => {
             Not keyed: GlField cross-fades a concept or theme change itself, so
             the old scene stays up until the new one has drawn. */}
         {(!calmMotion() || seekTime() !== null) && (
-          <GlField concept={key} theme={theme} grain={CONCEPT_BY_ID[key].grain} />
+          <GlField
+            concept={key}
+            theme={theme}
+            grain={CONCEPT_BY_ID[key].grain}
+            chroma={CONCEPT_BY_ID[key].grainChroma ?? 0.35}
+          />
         )}
       </div>
     </div>

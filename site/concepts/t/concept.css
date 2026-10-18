@@ -81,7 +81,7 @@
   transform-origin: 30% 30%;
   animation: vy-t-sun 24s ease-in-out infinite;
 }
-.vy-t-window > i { background: var(--art-sun); box-shadow: 0 0 3.6vmax 1.4vmax var(--art-sun); }
+.vy-t-window > i { background: var(--art-sun); }
 .vy-t-pebble { background: radial-gradient(ellipse 70% 60% at 38% 32%, var(--art-stone-hi), var(--art-stone-lo)); border-radius: 52% 48% 46% 54% / 58% 54% 46% 42%; box-shadow: 1.2vmax 1.4vmax 2.4vmax -0.6vmax var(--art-shade); }
 :root[data-scrolled] .vy-t-window { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) {

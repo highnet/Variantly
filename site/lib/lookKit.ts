@@ -106,7 +106,7 @@ void main() {
   ${BODIES[style]}
   gl_FragColor = vec4(c, uOpacity);
   #include <colorspace_fragment>
-  // Film grain to match the page's grain overlay.
+  // Film grain to match the backdrop's (GlField) and surfaces' grain.
   gl_FragColor.rgb += (hash(gl_FragCoord.xy + uSeed) - 0.5) * uGrain;
 }`;
 
@@ -135,7 +135,7 @@ export const shader = (style: Style, o: ShaderOpts) =>
       uB: { value: new THREE.Color(o.b ?? o.a) },
       uCell: { value: o.cell ?? 6 },
       uSeed: { value: o.seed ?? 0 },
-      uGrain: { value: o.grain ?? 0.035 },
+      uGrain: { value: o.grain ?? 0.06 },
       uOpacity: { value: o.opacity ?? 1 },
       uPush: { value: o.push ?? 0 },
       uSheen: { value: o.sheen ?? 0 },
@@ -165,7 +165,7 @@ export const patch = (key: string, glitter: boolean) => (m: THREE.Material) => {
         gl_FragColor.rgb += step(0.975, g) * 0.35;`
             : ''
         }
-        gl_FragColor.rgb += (h - 0.5) * 0.03;
+        gl_FragColor.rgb += (h - 0.5) * 0.05;
       }`,
     );
   };

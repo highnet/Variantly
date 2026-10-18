@@ -745,11 +745,106 @@ a:hover > .brand-mark .brand-grip {
   }
 }
 
+/* ---- Grainy gradients ----------------------------------------------------
+ * Film grain on the page's large flat surfaces, the CSS twin of the backdrop's
+ * grain (GlField, artKit). Three pre-baked tiles (scripts/build-grain.mjs:
+ * 96px indexed PNGs, ~2.7 KB each, hashed and cached by the build) carry the
+ * same noise at three strengths. A surface layers the active tile over a
+ * gentle wash, as a static background-image under its text, so the grain
+ * reads as a grainy gradient and never touches type. No filter, blend mode or
+ * mask: it paints once with the surface.
+ *
+ * Tokens (set per concept in concepts/<id>/concept.css):
+ *   --grain-tile  the active tile: var(--grain-soft | --grain-mid |
+ *                 --grain-strong), or none to turn surface grain off
+ *   --grain-tile-light  the tile for the hero, primary buttons and footer
+ *                 (soft by default; none with --grain-tile: none)
+ *   --grain-o     0–1, for layers that hold the tile as their own element
+ *                 and fade it with opacity (1 = as baked; 0 = off)
+ *   --grain-size  tile size (96px: one noise pixel per CSS pixel)
+ *   --grain-wash  the gradient under the grain
+ * Anything else that wants the grain (e.g. the liquid numerals) layers
+ * var(--grain-tile) as a background-image inside its own clipped area.
+ * ------------------------------------------------------------------------- */
+:root {
+  --grain-soft: url('./_grain/grain-soft.png');
+  --grain-mid: url('./_grain/grain-mid.png');
+  --grain-strong: url('./_grain/grain-strong.png');
+  --grain-tile: var(--grain-mid);
+  /* Translucent or text-dense surfaces (the hero, primary buttons, the
+     footer) take a lighter tile and no wash, which keeps their text at AA.
+     The demo dock is all small controls and stays flat. */
+  --grain-tile-light: var(--grain-soft);
+  --grain-o: 1;
+  --grain-size: 96px;
+  --grain-wash: linear-gradient(165deg, rgb(255 255 255 / 0.1), transparent 50%, rgb(0 0 0 / 0.04));
+}
+:root[data-theme='dark'] {
+  --grain-wash: linear-gradient(
+    165deg,
+    rgb(255 255 255 / 0.05),
+    transparent 50%,
+    rgb(0 0 0 / 0.14)
+  );
+}
+/* Surfaces: .vy-grain (tile + wash) and the top-level cards and boards in
+   the page body; .vy-grain-light (lighter tile, no wash) and the hero's side
+   card, whose concept backgrounds are shorthand, so these selectors outrank
+   them. Nested cards, buttons and links are left alone: they sit on a
+   grained surface already or are small controls. */
+.vy-grain-light,
+:root[data-variant] main [data-hero-side] {
+  background-image: var(--grain-tile-light);
+  background-size: var(--grain-size) var(--grain-size);
+  background-repeat: repeat;
+}
+.vy-grain,
+:root[data-variant]
+  main
+  :is(.bg-surface, .on-slate):not(
+    button,
+    a,
+    section,
+    .bg-surface .bg-surface,
+    .on-slate .bg-surface,
+    .on-slate .on-slate,
+    .bg-surface .on-slate
+  ) {
+  background-image: var(--grain-tile), var(--grain-wash);
+  background-size:
+    var(--grain-size) var(--grain-size),
+    100% 100%;
+  background-repeat: repeat, no-repeat;
+}
+/* The hero: its title band takes the tile directly (it is translucent over
+   the backdrop, so no wash). The grid's tint runs past its 1440px cap to the
+   screen edges as a box-shadow; its grain does the same as a border-image
+   drawn 100vmax outside it, so wide screens show no seam. Soft Clay and
+   Amber Terminal frame the grid as a card and Brutal Zine draws its border,
+   so it is a plain background there. */
+:root[data-variant]:not([data-variant='a']) [data-hero-title] {
+  background-image: var(--grain-tile-light);
+  background-size: var(--grain-size) var(--grain-size);
+}
+:root[data-variant]:is([data-variant='a'], [data-variant='c'], [data-variant='d'])
+  [data-hero-grid] {
+  background-image: var(--grain-tile-light);
+  background-size: var(--grain-size) var(--grain-size);
+}
+:root[data-variant]:not([data-variant='a'], [data-variant='c'], [data-variant='d'])
+  [data-hero-grid] {
+  border-image: var(--grain-tile-light) 0 fill / 0 / 0 100vmax repeat;
+}
+
 /* =========================================================================
  * Homepage concepts. Each [data-variant] is its own direction: page tokens,
  * hero tokens (light hero in light theme, dark in dark), display face, hero
  * layout and title-card treatment. The 3D scene and morph shapes live in
  * components/backdrop.
+ * No glow anywhere: shadows are crisp offsets (no blur) or neutral elevation,
+ * never a blurred coloured halo on text, numerals, buttons, cards or focus
+ * rings (focus is a solid outline). The one allowed exception is the Lens
+ * (components/Lens*.tsx), a glowing amber doorway by design.
  * ========================================================================= */
 :root[data-variant] {
   background: var(--panel);
@@ -767,7 +862,11 @@ a:hover > .brand-mark .brand-grip {
   --rule: var(--hero-line);
   --surface: var(--hero-ink);
   --ink: var(--hero-box);
-  background: transparent;
+  background-color: transparent;
+}
+/* The footer is a band in the hero's tint (grained, see Grainy gradients). */
+:root[data-variant] footer.on-slate {
+  background-color: color-mix(in srgb, var(--hero-bg) var(--hero-alpha, 70%), transparent);
 }
 :root[data-variant] [data-hero-title],
 :root[data-variant] [data-hero-grid] {
@@ -1275,6 +1374,28 @@ a:hover > .brand-mark .brand-grip {
 :root[data-scrolled] .vy-blobs {
   opacity: 0.16;
 }
+/* Grain on the art's shapes (artKit's Piece draws each shape again with the
+   tile pattern). Soft-edged helpers (contact shadows, rims, specular
+   highlights, dot and hatch screens) and unfilled strokes are skipped: grain
+   there would outline their full geometry. A concept tunes it with
+   --art-grain (0 turns it off). */
+.vy-art-grain {
+  opacity: var(--art-grain, 0.9);
+  pointer-events: none;
+}
+.vy-art-grain * {
+  fill: url(#vy-art-grain);
+  stroke: none;
+}
+.vy-art-grain [fill='none'],
+.vy-art-grain [fill='none'] *,
+.vy-art-grain [fill*='-ao'],
+.vy-art-grain [fill*='-rim'],
+.vy-art-grain [fill*='-spec'],
+.vy-art-grain [fill*='dots'],
+.vy-art-grain [fill*='hatch'] {
+  display: none;
+}
 
 /* The press burst sits above everything; it finishes before the concept wipe. */
 .vy-burst {
@@ -1387,15 +1508,35 @@ a:hover > .brand-mark .brand-grip {
 .vy-switcher [aria-pressed='true'] {
   color: var(--surface);
 }
-/* 10 · hero parallax: scene, shapes and title drift at different speeds */
-:root:not([data-scrolled]) .vy-scene {
-  translate: 0 calc(var(--px-y, 0px) * 0.35);
-}
-:root:not([data-scrolled]) .vy-blobs {
-  translate: 0 calc(var(--px-y, 0px) * -0.15);
-}
+/* 10 · parallax: the title drifts through the hero; the backdrop keeps going
+   for the whole page. --px-p (0 → 1, set by Delight on .vy-scene/.vy-blobs,
+   fine pointers only; touch keeps drift only) maps scroll to layered depth:
+   the blurred scene is farthest and sinks a little, the art's shapes rise
+   faster the nearer they are (float-0 is the big foreground piece) and the
+   full-bleed textures stay put. The scene is overscaled by more than its
+   travel so its edges never show; the shapes are free-standing, so leaving
+   the top is just them passing by. */
 .vy-title {
   translate: 0 calc(var(--px-y, 0px) * 0.18);
+}
+:root.vy-parallax .vy-scene {
+  scale: 1.14;
+  translate: 0 calc(var(--px-p, 0) * 6vh);
+}
+:root.vy-parallax .vy-blobs .vy-art-float-0 {
+  translate: 0 calc(var(--px-p, 0) * -26vh);
+}
+:root.vy-parallax .vy-blobs .vy-art-float-1 {
+  translate: 0 calc(var(--px-p, 0) * -16vh);
+}
+:root.vy-parallax .vy-blobs .vy-art-float-2 {
+  translate: 0 calc(var(--px-p, 0) * -9vh);
+}
+:root.vy-parallax .vy-blobs .vy-art-radar {
+  translate: 0 calc(var(--px-p, 0) * -10vh);
+}
+:root[data-perf='low'] .vy-backdrop * {
+  translate: none !important;
 }
 /* 5 · "How it works" progress line and steps lighting up */
 .vy-steps {
@@ -1447,12 +1588,11 @@ a:hover > .brand-mark .brand-grip {
    the bottom, clipped
    to the glyph (and to the liquid by the same mask as the fill). Neutral
    black and white over the theme's fill colour, so every concept keeps its
-   own ink. The tile is a 2 kB bake (scripts/bake-liquid.mjs); switch to the
-   shared --grain-tile token once it lands on main. */
+   own ink. The grain is the page's shared tile (--grain-tile, see Grainy
+   gradients), so a concept that turns surface grain off turns it off here. */
 .vy-step-tone {
-  --liq-grain: url('/liquid/grain.png');
   background:
-    var(--grain-tile, var(--liq-grain)) 0 0 / 40px 40px,
+    var(--grain-tile) 0 0 / var(--grain-size) var(--grain-size),
     linear-gradient(
       to bottom,
       rgb(255 255 255 / 0.16),
@@ -1593,7 +1733,8 @@ header.vy-header-glass {
 @media (prefers-reduced-motion: reduce) {
   .vy-title,
   .vy-scene,
-  .vy-blobs {
+  .vy-blobs,
+  .vy-blobs * {
     translate: none !important;
   }
   .vy-steps > li {
@@ -1617,7 +1758,8 @@ header.vy-header-glass {
 }
 :root[data-seek] .vy-title,
 :root[data-seek] .vy-scene,
-:root[data-seek] .vy-blobs {
+:root[data-seek] .vy-blobs,
+:root[data-seek] .vy-blobs * {
   translate: none !important;
 }
 :root[data-seek] .vy-steps > li,
@@ -1864,14 +2006,9 @@ main > div p {
       color-mix(in srgb, var(--art-ink) 5%, transparent) 23px 24px
     );
 }
-/* Terminal: phosphor bloom, grid and vignette; scanlines over the top. */
+/* Terminal: grid and vignette (no phosphor bloom); scanlines over the top. */
 .vy-art-crt {
   background:
-    radial-gradient(
-      ellipse at 30% 40%,
-      color-mix(in srgb, var(--art-1) 26%, transparent),
-      transparent 60%
-    ),
     radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 0.32)),
     linear-gradient(color-mix(in srgb, var(--art-1) 14%, transparent) 1px, transparent 1px) 0 0 /
       44px 44px,

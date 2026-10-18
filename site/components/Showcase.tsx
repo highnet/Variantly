@@ -1340,7 +1340,7 @@ const Showcase = () => {
         >
           {DEMO_RUNS.length > 1 && (
             // Which batch of redesigns: a segmented switch in an ink well,
-            // like the dock's mode switch, the pressed run glowing green.
+            // like the dock's mode switch, the pressed run lit green.
             <div
               role="group"
               aria-label="Redesign run"

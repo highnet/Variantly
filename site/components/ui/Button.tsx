@@ -8,7 +8,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'bg-alert text-on-alert hover:bg-alert-hover active:translate-y-px',
+        primary: 'vy-grain-light bg-alert text-on-alert hover:bg-alert-hover active:translate-y-px',
         ink: 'bg-ink text-surface hover:bg-slate-raised active:translate-y-px',
         outline: 'border border-ink bg-transparent text-ink hover:bg-surface active:translate-y-px',
         'outline-slate':
@@ -19,7 +19,7 @@ const buttonVariants = cva(
         // Round header control (theme, accessibility); lit while its menu is open.
         'header-icon':
           'text-steel hover:bg-surface hover:text-ink aria-expanded:bg-surface aria-expanded:text-ink [&_svg]:size-4.5',
-        // One option of a segmented control on slate; the pressed one glows green.
+        // One option of a segmented control on slate; the pressed one is lit green.
         segment:
           'normal-case tracking-normal font-sans text-steel-on-slate hover:text-surface aria-pressed:bg-ok-on-slate aria-pressed:text-ink',
         // A small on/off switch in the slate dock.
