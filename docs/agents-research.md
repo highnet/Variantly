@@ -1,6 +1,7 @@
 # Research notes: Grok Build, Antigravity, OpenCode, Pi, Hermes Agent
 
-Notes behind the adapters in `src/agents.mjs`, gathered 2026-10-17/18. Each
+Notes behind the adapters in `src/agents.mjs`, gathered 2026-10-17/18 and
+used for PR #132. Each
 fact names its source. "Ran" means the real binary was downloaded and run here
 (in a throwaway `$HOME`, no account) to check flags, errors and output shapes;
 nothing below was run against a signed-in account except where it says so.
@@ -156,6 +157,12 @@ home_skills_dir_override), and its README "Option 5: Copy from Repository".
 - Sign-in: OS keyring after an interactive `agy`, `AGY_ADC_AUTH=true`, or
   `modelProvider: "gemini"` plus `GEMINI_API_KEY`. Unsigned headless runs print
   `Authentication required` and wait up to 60 s for a code (ran).
-- Skills: Impeccable installs to `.agent/skills` / `~/.gemini/config/skills`.
+- Skills (https://antigravity.google/docs/skills, CLI tab): the CLI reads
+  `<workspace>/.agents/skills` (and `.agent/skills` for compatibility) and
+  `~/.gemini/antigravity-cli/skills`. Impeccable's `--providers=antigravity`
+  installs to `.agent/skills` or `~/.gemini/config/skills`; the latter is the
+  Antigravity **app/IDE** folder, which the CLI docs don't list. variantly
+  copies whichever copy it finds into each worktree's `.agents/skills`.
+- Not verified: that skills load in a headless `agy -p` run (needs a sign-in).
 </content>
 </invoke>
