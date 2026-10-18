@@ -46,8 +46,14 @@ import { Button } from '@/components/ui/Button';
 const WORD = 'variantly';
 // Room around the door for its glitch slices, tilt and side edge, px.
 const M = 28;
-// How far the door trails the cursor (time constant, ms), and its tilt.
-const LAG = 70;
+// The door's motion: a damped spring per coordinate (x, y, w, h). Coming
+// out to the cursor or finger it is stiff and barely overshoots (a magnet
+// snapping on); going home it is softer and bouncier, flying back and
+// settling into its tab with a wobble. k is stiffness (1/s², omega squared).
+const SNAP = { k: 520, zeta: 0.72 };
+const HOME = { k: 170, zeta: 0.42 };
+const KEYS = ['x', 'y', 'w', 'h'] as const;
+// The door's tilt toward its motion.
 const TILT_Y = 7;
 const TILT_X = 5;
 // Above this speed (px/ms) the inner 3D scene pauses.
@@ -175,6 +181,8 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   let shown = false;
   let target: Rect = { x: 0, y: 0, w: 180, h: 360 };
   let rect: Rect = { ...target };
+  // The spring's velocity per coordinate, px/s.
+  const vel: Rect = { x: 0, y: 0, w: 0, h: 0 };
   const tilt = { rx: 0, ry: 0 };
   let last = 0;
   let glitchUntil = 0;
@@ -307,15 +315,25 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     const t0 = lensPerf ? performance.now() : 0;
     const dt = Math.min(64, last ? now - last : 16);
     last = now;
-    const k = mode === 'fixed' || fixedOpen ? 1 : 1 - Math.exp(-dt / LAG);
     const px = rect.x + rect.w / 2;
     const py = rect.y + rect.h / 2;
-    rect = {
-      x: rect.x + (target.x - rect.x) * k,
-      y: rect.y + (target.y - rect.y) * k,
-      w: rect.w + (target.w - rect.w) * k,
-      h: rect.h + (target.h - rect.h) * k,
-    };
+    if (mode === 'fixed' || fixedOpen) {
+      rect = { ...target };
+      KEYS.forEach((key) => (vel[key] = 0));
+    } else {
+      // Semi-implicit Euler in 8ms substeps (stable at any frame rate).
+      const sp = dragging ? SNAP : HOME;
+      const c = 2 * sp.zeta * Math.sqrt(sp.k);
+      const next = { ...rect };
+      for (let left = dt / 1000; left > 0; left -= 0.008) {
+        const h = Math.min(left, 0.008);
+        KEYS.forEach((key) => {
+          vel[key] += (sp.k * (target[key] - next[key]) - c * vel[key]) * h;
+          next[key] += vel[key] * h;
+        });
+      }
+      rect = next;
+    }
     // Tilt toward the motion (desktop), eased.
     const vx = (rect.x + rect.w / 2 - px) / Math.max(1, dt);
     const vy = (rect.y + rect.h / 2 - py) / Math.max(1, dt);
@@ -390,6 +408,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
       Math.abs(target.y - rect.y) < 0.2 &&
       Math.abs(target.w - rect.w) < 0.2 &&
       Math.abs(target.h - rect.h) < 0.2 &&
+      KEYS.every((key) => Math.abs(vel[key]) < 2) &&
       Math.abs(tilt.rx) + Math.abs(tilt.ry) < 0.02 &&
       !glitching;
     if (settled) {
