@@ -5048,3 +5048,37 @@ body::before {
 .pc-chevron.pc-flip {
   transform: rotate(180deg);
 }
+
+/* Phones: nothing in the page may widen it past the screen. The header's
+   Keys button (keyboard shortcuts) goes on narrow screens, so the phase
+   badge fits beside the wordmark and the preferences. */
+body {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 560px) {
+  .bar {
+    gap: 10px;
+    padding: 0 12px;
+  }
+  .bar > .ghost {
+    display: none;
+  }
+}
+
+/* Phone preview side by side: two phones next to each other, each at a
+   phone's width (up to 390px), instead of one phone split in two halves. */
+.compare[data-device='mobile'] .stage[data-mode='side'] {
+  --pair-w: min(390px, calc((100% - 36px) / 2));
+  left: calc(50% - var(--pair-w) - 6px);
+  width: calc(var(--pair-w) * 2 + 12px);
+}
+
+.compare[data-device='mobile'] .stage[data-mode='side'] .pane.before {
+  right: calc(50% + 6px);
+  border-right: 0;
+}
+
+.compare[data-device='mobile'] .stage[data-mode='side'] .pane.after {
+  left: calc(50% + 6px);
+}

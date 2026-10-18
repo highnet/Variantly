@@ -165,3 +165,36 @@ id.
   transition wipe on desktop, a short hero crossfade on touch / low tier), and
   writes `?v=`. `stepVariant`, `shuffleVariant` serve the switcher, `[` / `]`
   and "a fresh look".
+
+## The Lens and the doorway swap
+
+The hero's **Lens** (`components/Lens.tsx`) is a doorway that follows the
+cursor and shows the hero in another concept; a click keeps it. Every concept
+switch (the switcher, `[` / `]`, shuffle, "a fresh look", the Lens) opens the
+same doorway: `setVariant(id, { origin })` (`lib/lensSwap.ts`).
+
+Your concept works in the Lens with no extra code, as long as it follows the
+rules above:
+
+- **Scoping hook.** The Lens renders your hero inside a shadow root whose
+  stylesheet is the page's, copied once, with every `:root` (and `html` type
+  selector) rewritten to `.vy-lens-root`, an element that carries your id as
+  `data-variant` plus the page's other html attributes (theme, perf, motion)
+  (`lib/lensScope.ts`). So key everything on `:root[data-variant='x']`, as
+  now. Do not style the hero from `body`, from JS-set inline styles on
+  `<html>`, or with `@font-face` / `@property` declared only in concept.css
+  (those stay document-level, which the shadow root still sees).
+- **What shows inside the door.** Your page ground (`--panel`), your
+  `Backdrop.tsx` laid over the viewport, your title card (`[data-hero-title]`)
+  and 2D word (`.vy-title`, `.vy-letter`). On desktop at the high tier the
+  title's canvas also draws your `look.ts` letters and your `scene.ts` (at
+  the backdrop's ~0.55x resolution) through the door; phones and the low tier
+  show the 2D hero only. Keep the 0% pose of your art a good still: it is
+  what phones see in the door.
+- **Typefaces.** The Lens gives each concept its own per-letter faces, picked
+  from those that morph cleanly from the page's (`lensFace` in
+  `lib/lens3d.ts`, stable per id).
+- **Glitch.** `lib/lensGlitch.ts` (`glitchIntensity(id)`) is stronger for
+  Screen & Signal concepts, gentler for Hand & Material. `?glitch=0` turns it
+  off; calm and seek renders never glitch.
+- **Off switches.** `?lens=0` hides the Lens; `?t=` seek renders never show it.

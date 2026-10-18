@@ -19,6 +19,12 @@
   --fail: #b3261e;
   --fail-on-slate: #ff8a80;
   --ok-on-slate: #7ee2a8;
+  /* The Lens's doorway: a frosted-amber slab (its frame, its side edge, its
+     light). The only light on the site; see components/Lens.tsx. */
+  --lens-frame: #ffb648;
+  --lens-edge: #a8611a;
+  --lens-light: #ffc56b;
+  --lens-ink: #2a1600;
 }
 
 /* Dark theme: the light grounds go dark and ink goes light. The slate board
@@ -146,6 +152,9 @@
 }
 
 @theme inline {
+  --color-lens-frame: var(--lens-frame);
+  --color-lens-edge: var(--lens-edge);
+  --color-lens-ink: var(--lens-ink);
   --color-ink: var(--ink);
   --color-slate: var(--slate);
   --color-slate-raised: var(--slate-raised);
@@ -1274,16 +1283,18 @@ a:hover > .brand-mark .brand-grip {
   }
 }
 
-/* ---- Concept swap: the new page wipes in behind a leaning edge ---------- */
-::view-transition-old(root) {
+/* ---- Concept swap: the new page opens through a doorway ----------------- */
+/* lib/lensSwap drives it: the new page's clip-path grows from a door-sized
+   rounded rect at the trigger point to past the screen's edges, on a spring,
+   with the Lens's amber frame (.vy-swap-frame, three thin rings) riding the
+   edge. The old page stays put underneath. */
+::view-transition-old(root),
+::view-transition-new(root) {
   animation: none;
 }
-::view-transition-new(root) {
-  animation: vy-swap-wipe 760ms var(--ease-wipe) both;
-}
-/* The title is left out of the wipe: it is its own layer, shown live and
-   in place throughout, so its letters' morph into the new concept carries the
-   change (VariantTitle's swap timeline). */
+/* The title card is left out of the doorway: it is its own layer, shown live
+   and in place throughout, so its letters' morph into the new concept carries
+   the change (VariantTitle's swap timeline). */
 [data-hero-title] {
   view-transition-name: vy-title;
 }
@@ -1294,23 +1305,29 @@ a:hover > .brand-mark .brand-grip {
 ::view-transition-old(vy-title) {
   display: none;
 }
-/* The trailing shadow of the edge, drawn on the old page as it is covered. */
 ::view-transition-image-pair(root) {
   isolation: auto;
 }
-@keyframes vy-swap-wipe {
-  from {
-    clip-path: polygon(-20% 0, -10% 0, -20% 100%, -30% 100%);
-    filter: brightness(1.15);
-  }
-  70% {
-    filter: brightness(1.03);
-  }
-  to {
-    clip-path: polygon(-20% 0, 130% 0, 120% 100%, -30% 100%);
-    filter: none;
-  }
+.vy-swap-frame {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
 }
+/* Lives only in the new state of a swap, as rings clipped by lib/lensSwap;
+   until its keyframes start it shows nothing. */
+::view-transition-new(vy-swap-frame-0),
+::view-transition-new(vy-swap-frame-1),
+::view-transition-new(vy-swap-frame-2) { clip-path: inset(50%); }
+.vy-swap-frame[data-ring='0'] { view-transition-name: vy-swap-frame-0; background: var(--lens-frame); }
+/* The doorway's light, only while it opens: two faint stepped bands. */
+.vy-swap-frame[data-ring='1'] { view-transition-name: vy-swap-frame-1; background: color-mix(in srgb, var(--lens-light) 34%, transparent); }
+.vy-swap-frame[data-ring='2'] { view-transition-name: vy-swap-frame-2; background: color-mix(in srgb, var(--lens-light) 13%, transparent); }
+::view-transition-group(vy-swap-frame-0),
+::view-transition-group(vy-swap-frame-1),
+::view-transition-group(vy-swap-frame-2),
+::view-transition-new(vy-swap-frame-0),
+::view-transition-new(vy-swap-frame-1),
+::view-transition-new(vy-swap-frame-2) { animation: none; }
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-new(root) {
     animation: none;
@@ -2292,6 +2309,58 @@ main > div p {
     transform: none !important;
   }
 }
+
+/* ---- The Lens: a doorway that shows the hero in another concept ---------- */
+/* components/Lens.tsx. A thin frosted-amber slab: a crisp front frame, a side
+   edge offset by its depth, and (only here on the site) a warm light: an inner
+   luminance, a halo and a spill on the ground below. All small layers moved
+   with transforms; the light is plain gradients (no filter). Calm and the low
+   perf tier get the solid frame only (no data-glow). */
+.vy-lens:not([data-shown]),
+.vy-lens-frame:not([data-shown]) { visibility: hidden; }
+.vy-lens[data-over] { z-index: 3; }
+.vy-lens-port,
+.vy-lens-frame,
+.vy-lens-glow { will-change: transform; }
+.vy-lens-front { stroke: var(--lens-frame); stroke-width: 2.5px; stroke-linejoin: round; }
+.vy-lens-frame:not([data-glow]) .vy-lens-lum,
+.vy-lens:not([data-glow]) .vy-lens-glow { display: none; }
+.vy-lens-glow {
+  background:
+    radial-gradient(closest-side, color-mix(in srgb, var(--lens-light) 30%, transparent), transparent),
+    radial-gradient(50% 9% at 50% calc(100% - 22px), color-mix(in srgb, var(--lens-light) 42%, transparent), transparent);
+  /* The halo sits a little wider than the slab; the spill on its "floor". */
+  margin: -20px 0 0 -20px;
+  padding: 20px;
+  box-sizing: content-box;
+}
+.vy-lens-label {
+  position: absolute;
+  left: 28px;
+  top: 28px;
+  translate: 0 calc(-100% - 4px);
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: var(--lens-frame);
+  color: var(--lens-ink);
+  font: 600 10px/1.3 var(--font-mono, ui-monospace, monospace);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.vy-lens-hint {
+  position: absolute;
+  left: 0;
+  top: calc(var(--door-h) + 100% + 14px);
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--lens-ink) 82%, transparent);
+  color: var(--lens-frame);
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+.vy-lens-frame[data-peek] .vy-lens-label { display: none; }
+.vy-lens-handle { will-change: transform; }
 
 /* Tips ---------------------------------------------------------------------
  * The bubble grows from the side facing its trigger. Calm or reduced motion
