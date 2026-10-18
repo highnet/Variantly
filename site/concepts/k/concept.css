@@ -1,20 +1,94 @@
-/* k · Ink & Stitch: placeholder tokens from the roll's palette. */
+/* k · Ink & Stitch: cotton paper, dry-brush ink, rust running stitch. */
 :root[data-variant='k'] {
-  --panel: color-mix(in srgb, #f3ecdf 94%, #1d1a17); --surface: #f3ecdf; --rule: color-mix(in srgb, #1d1a17 18%, #f3ecdf); --steel: color-mix(in srgb, #1d1a17 66%, #f3ecdf); --ink: #1d1a17;
-  --alert: #a8432a; --alert-hover: color-mix(in srgb, #a8432a 85%, #f3ecdf); --on-alert: #ffffff;
-  --hero-bg: #f3ecdf; --hero-ink: #1d1a17; --hero-mute: color-mix(in srgb, #1d1a17 66%, #f3ecdf); --hero-line: color-mix(in srgb, #1d1a17 22%, #f3ecdf); --hero-box: color-mix(in srgb, #f3ecdf 96%, #1d1a17);
-  --title: #a8432a;
-  --flap-bg: #a8432a; --flap-ink: #ffffff;
-  --art-1: #a8432a; --art-2: #c9962e; --art-3: #7d8b86; --art-ink: #1d1a17; --art-shadow: #1d1a17;
-  --hero-face: var(--font-martian); --hero-alpha: 55%; --blob-o: 0.6;
-  --board-bg: #15120f; --board-raised: color-mix(in srgb, #15120f 88%, #efe6d6); --board-line: color-mix(in srgb, #15120f 70%, #efe6d6);
-  --board-mute: color-mix(in srgb, #efe6d6 72%, #15120f); --board-text: #efe6d6; --board-deep: color-mix(in srgb, #15120f 80%, #000); --board-ok: #d0623f;
+  --panel: #f3ecdf; --surface: #fbf7ef; --rule: #d8ccb6; --steel: #5f574c; --ink: #1d1a17;
+  --alert: #a8432a; --alert-hover: #8f3620; --on-alert: #fffaf2;
+  --hero-bg: #f3ecdf; --hero-ink: #1d1a17; --hero-mute: #5f574c; --hero-line: #cdbfa6; --hero-box: #fbf7ef;
+  --hero-face: var(--font-brush); --title: #a8432a; --hero-alpha: 52%; --blob-o: 1;
+  --flap-bg: #1d1a17; --flap-ink: #f3ecdf;
+  --board-bg: #1d1a17; --board-raised: #2a2622; --board-line: #463e35; --board-mute: #cfc4b3; --board-text: #f3ecdf; --board-deep: #0f0d0b; --board-ok: #e0714f;
+  --art-1: #a8432a; --art-2: #c9962e; --art-3: #7d8b86; --art-ink: #1d1a17; --art-paper: #f3ecdf; --art-shadow: #3a2a1c;
+  --k-letter: #fbf6ec; --k-edge: #d6c9b1; --k-stitch: #a8432a;
 }
 :root[data-variant='k'][data-theme='dark'] {
-  --panel: color-mix(in srgb, #15120f 94%, #efe6d6); --surface: #15120f; --rule: color-mix(in srgb, #efe6d6 18%, #15120f); --steel: color-mix(in srgb, #efe6d6 66%, #15120f); --ink: #efe6d6;
-  --alert: #d0623f; --alert-hover: color-mix(in srgb, #d0623f 85%, #15120f); --on-alert: #ffffff;
-  --hero-bg: #15120f; --hero-ink: #efe6d6; --hero-mute: color-mix(in srgb, #efe6d6 66%, #15120f); --hero-line: color-mix(in srgb, #efe6d6 22%, #15120f); --hero-box: color-mix(in srgb, #15120f 96%, #efe6d6);
-  --title: #d0623f;
-  --flap-bg: #d0623f; --flap-ink: #ffffff;
-  --art-1: #d0623f; --art-2: #d8a640; --art-3: #4b5a56; --art-ink: #efe6d6; --art-shadow: #efe6d6;
+  --panel: #15120f; --surface: #1d1915; --rule: #3a332b; --steel: #b9ad9b; --ink: #efe6d6;
+  --alert: #d0623f; --alert-hover: #e0774f; --on-alert: #15120f;
+  --hero-bg: #15120f; --hero-ink: #efe6d6; --hero-mute: #b9ad9b; --hero-line: #3d352c; --hero-box: #1c1814;
+  --title: #e0714f;
+  --flap-bg: #efe6d6; --flap-ink: #15120f;
+  --board-bg: #0e0c0a; --board-raised: #1d1915; --board-line: #3a332b; --board-deep: #000000;
+  --art-1: #d0623f; --art-2: #d8a640; --art-3: #4b5a56; --art-ink: #e9dfcd; --art-paper: #e9dfcd; --art-shadow: #000000;
+  --k-letter: #f1e8d8; --k-edge: #a8987f; --k-stitch: #e06a45;
 }
+
+/* the paper: faint mottling, deckle-dark edges */
+:root[data-variant='k'] .k-paper {
+  background:
+    radial-gradient(ellipse 60% 50% at 62% 58%, color-mix(in srgb, var(--art-2) 7%, transparent), transparent 70%),
+    radial-gradient(ellipse at center, transparent 62%, color-mix(in srgb, var(--art-ink) 7%, transparent));
+}
+
+/* a wipe of plain paper lets each stroke fade, then re-draws it at a hand's uneven pace */
+:root[data-variant='k'] .k-wipe { opacity: 0; will-change: transform, opacity; animation: k-draw 24s linear infinite; }
+:root[data-variant='k'] .k-wipe-a { background: linear-gradient(90deg, transparent, var(--panel) 9%); }
+@keyframes k-draw {
+  0%, 50% { transform: none; opacity: 0; }
+  55%, 58% { transform: none; opacity: 1; }
+  63% { transform: translateX(34%); }
+  66% { transform: translateX(41%); }
+  73% { transform: translateX(78%); }
+  77%, 78% { transform: translateX(101%); opacity: 1; }
+  79%, 100% { transform: none; opacity: 0; }
+}
+
+/* running stitch along a seam: each stitch pulls through, rests, pulls again */
+:root[data-variant='k'] .k-seam { height: 8px; overflow: hidden; }
+:root[data-variant='k'] .k-thread {
+  position: absolute; inset: 0 0 0 -22px;
+  background:
+    radial-gradient(ellipse 6px 1.2px at 7px 3.4px, color-mix(in srgb, #fff 35%, var(--art-1)) 60%, transparent 100%) 0 0 / 22px 100%,
+    radial-gradient(ellipse 7.5px 2.4px at 7px 4px, var(--art-1) 82%, transparent 100%) 0 0 / 22px 100%;
+  will-change: transform; animation: k-pull 3s cubic-bezier(0.7, 0, 0.2, 1) infinite;
+}
+:root[data-variant='k'] .k-seam-v { width: 8px; height: auto; }
+:root[data-variant='k'] .k-seam-v .k-thread {
+  inset: -22px 0 0;
+  background:
+    radial-gradient(ellipse 1.2px 6px at 3.4px 7px, color-mix(in srgb, #fff 35%, var(--art-1)) 60%, transparent 100%) 0 0 / 100% 22px,
+    radial-gradient(ellipse 2.4px 7.5px at 4px 7px, var(--art-1) 82%, transparent 100%) 0 0 / 100% 22px;
+  animation-name: k-pull-v;
+}
+@keyframes k-pull { 0%, 100% { transform: none; } 70% { transform: translateX(22px); } 70.01% { transform: none; } }
+@keyframes k-pull-v { 0%, 100% { transform: none; } 70% { transform: translateY(22px); } 70.01% { transform: none; } }
+:root[data-variant='k'][data-scrolled] .k-wipe, :root[data-variant='k'][data-scrolled] .k-thread { animation-play-state: paused; }
+@media (pointer: coarse) { :root[data-variant='k'] .k-wipe, :root[data-variant='k'] .k-thread { animation: none; } }
+
+/* the title: cotton-paper letters, cut and sewn */
+:root[data-variant='k'] .vy-title {
+  color: var(--k-letter);
+  text-shadow: 0 1px 0 var(--k-edge), 0 2px 0 var(--k-edge), 0 3px 0 var(--k-edge), 0 10px 16px rgb(40 26 14 / 0.28);
+}
+:root[data-variant='k'] [data-hero-title] { border-bottom: 0; }
+:root[data-variant='k'] #hero-title { font-size: clamp(2.8rem, 5.4vw, 5.6rem); line-height: 0.98; letter-spacing: 0.005em; }
+:root[data-variant='k'] .vy-fresh { text-decoration-style: dashed; text-decoration-thickness: 0.07em; text-underline-offset: 0.14em; }
+:root[data-variant='k'] main > div h2 { text-transform: none; font-size: 1.45em; letter-spacing: 0; line-height: 1; }
+
+/* cards are swatches: paper stitched to the page with a rust running stitch */
+:root[data-variant='k'] [data-hero-side],
+:root[data-variant='k'] main > div .bg-surface {
+  border: 0; border-radius: 3px;
+  outline: 1.5px dashed color-mix(in srgb, var(--k-stitch) 75%, transparent); outline-offset: -8px;
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.05), 0 14px 26px -18px rgb(60 36 18 / 0.5);
+}
+:root[data-variant='k'] [data-hero-side] { background: var(--hero-box); padding: 26px 22px 22px; }
+:root[data-variant='k'][data-theme='dark'] [data-hero-side],
+:root[data-variant='k'][data-theme='dark'] main > div .bg-surface { box-shadow: 0 0 0 1px #2b251f, 0 18px 30px -18px #000; }
+:root[data-variant='k'] main > div .bg-surface .bg-surface { outline: 0; }
+:root[data-variant='k'] .flap-cell { border-radius: 2px; }
+:root[data-variant='k'] .flap-cell:nth-child(3n + 2) { --flap-bg: var(--alert); --flap-ink: var(--on-alert); }
+:root[data-variant='k'] .vy-loadbar { height: 4px; inset: 6px 12px auto; }
+:root[data-variant='k'] .vy-loadbar-fill { background: repeating-linear-gradient(90deg, var(--k-stitch) 0 12px, transparent 12px 20px); }
+@media (max-width: 639px) {
+:root[data-variant='k'] [data-hero-side] { outline-offset: -6px; }
+}
+/* the hero's pressed toggles and up-deltas: readable on the light page */
+:root[data-variant='k']:not([data-theme='dark']) section.on-slate { --ok-on-slate: #8f3620; }

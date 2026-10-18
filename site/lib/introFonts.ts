@@ -5,9 +5,12 @@ import {
   Cormorant,
   Fraunces,
   Archivo_Black,
+  Caveat_Brush,
   Bricolage_Grotesque,
   Fredoka,
+  Grandstander,
   Jost,
+  Limelight,
   Doto,
   IBM_Plex_Mono,
   Inter_Tight,
@@ -163,6 +166,20 @@ const fraunces = Fraunces({
 const cormorant = Cormorant({ subsets: ['latin'], preload: false, variable: '--font-cormorant' });
 const qrst = [bricolage, anybody, fraunces, cormorant];
 
+// Concepts k, p, n: brushed hand, stitched outline, 1930s film titles.
+const brush = Caveat_Brush({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-brush',
+});
+const stitch = Grandstander({ subsets: ['latin'], preload: false, variable: '--font-stitch' });
+const reel = Limelight({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-reel',
+});
 // i Liquid Glass, l Inflated Chrome (+ its captions), m Uncanny Mirror.
 const interTight = Inter_Tight({
   weight: '600',
@@ -192,6 +209,9 @@ export const HERO_FONT_VARS = [
   jost,
   archivo,
   rubik,
+  brush,
+  stitch,
+  reel,
   interTight,
   syne,
   majorMono,
