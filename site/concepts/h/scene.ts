@@ -93,7 +93,7 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
     update: (t) => {
       const aspect = camera.right / 5;
       const narrow = aspect < 1;
-      camera.zoom = narrow ? 0.3 : 0.8;
+      camera.zoom = narrow ? 0.26 : 0.8;
       camera.top = 5;
       camera.bottom = -5;
       camera.updateProjectionMatrix();
@@ -105,8 +105,8 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
       // under the title on phones.
       const halfW = (5 * aspect) / camera.zoom;
       const halfH = 5 / camera.zoom;
-      camera.translateX(narrow ? -halfW * 0.4 : -halfW * 0.57);
-      camera.translateY(narrow ? -halfH * 0.4 : halfH * 0.09);
+      camera.translateX(narrow ? -halfW * 0.62 : -halfW * 0.57);
+      camera.translateY(narrow ? -halfH * 0.62 : halfH * 0.09);
       const span = halfW + 4;
       sweep.value = -span + (((2 * span * step) / FRAMES + span * 0.6) % (2 * span));
     },

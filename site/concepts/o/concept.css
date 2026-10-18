@@ -61,13 +61,13 @@
   letter-spacing: -0.015em;
 }
 :root[data-variant='o'] #hero-title::before {
-  content: '(01) One command, several designs'; display: block; margin-bottom: 0.9rem; padding-top: 0.6rem; border-top: 14px solid var(--alert);
+  content: '(01)  variantly'; display: block; margin-bottom: 0.9rem; padding-top: 0.6rem; border-top: 14px solid var(--alert);
   font: 400 13px/1.4 var(--font-plex); letter-spacing: 0.02em; text-transform: none; white-space: pre; color: var(--hero-mute);
 }
 :root[data-variant='o'] #hero-title .vy-fresh { color: var(--title); text-decoration: none; }
 :root[data-variant='o'] [data-hero-side] { position: relative; padding: 18px 20px 22px; border-top: 3px solid var(--hero-line); background: var(--hero-box); }
 :root[data-variant='o'] [data-hero-side]::before {
-  content: '(02) Install'; position: absolute; top: -26px; left: 0; white-space: pre; font: 400 13px/1 var(--font-plex); color: var(--hero-mute);
+  content: '(02)  Install'; position: absolute; top: -26px; left: 0; white-space: pre; font: 400 13px/1 var(--font-plex); color: var(--hero-mute);
 }
 :root[data-variant='o'] .rounded-md, :root[data-variant='o'] .rounded-lg { border-radius: 0; }
 :root[data-variant='o'] main { counter-reset: o-sec 2; }
