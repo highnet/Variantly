@@ -206,8 +206,22 @@ export const swapSequence = (
   seq = new Int16Array(count + 1).fill(to);
   seq[0] = from;
   if (from === to) {
-    const back = successors(data, ch, from).filter((f) => data.ok[ch][f * data.faces + from]);
+    const ok = (a: number, b: number) => data.ok[ch][a * data.faces + b];
+    const back = successors(data, ch, from).filter((f) => ok(f, from));
     if (back.length && count >= 2) seq[1] = back[hash(7, index) % Math.min(4, back.length)];
+    // Three morphs: out to one face, on to a second, then home. The second
+    // must morph back cleanly; without one, the run keeps a single detour.
+    if (count >= 3) {
+      const first = successors(data, ch, from).filter((f) => f !== from);
+      for (let k = 0; k < Math.min(4, first.length); k++) {
+        const a = first[(hash(7, index) + k) % first.length];
+        const on = successors(data, ch, a).filter((f) => f !== from && f !== a && ok(f, from));
+        if (!on.length) continue;
+        seq[1] = a;
+        seq[2] = on[hash(9, index) % Math.min(4, on.length)];
+        break;
+      }
+    }
   } else {
     // Breadth-first over compatible morphs.
     const prev = new Int16Array(data.faces).fill(-1);

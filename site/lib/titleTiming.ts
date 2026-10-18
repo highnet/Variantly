@@ -45,12 +45,12 @@ export const REVEAL: Timeline = timeline(
   [...WORD].map((_, i) => 260 + Math.round(jitter(i, 2) * 360)),
   [...WORD].map((_, i) => scheduleFor(i)),
 );
-// When the concept changes, each letter morphs out to one neighbouring face
-// and back onto its (new) final face, in a quick wave from left to right.
+// When the concept changes, each letter morphs out through two neighbouring
+// faces and back onto its (new) final face, in a quick wave from left to right.
 export const SWAP: Timeline = timeline(
   'swap',
   [...WORD].map((_, i) => 40 * i),
-  [...WORD].map(() => [MORPH_MS, 120 + MORPH_MS]),
+  [...WORD].map(() => [MORPH_MS, 120 + MORPH_MS, 120 + MORPH_MS]),
 );
 export const REVEAL_MS = REVEAL.end;
 // How many morphs a letter makes before it locks in.
