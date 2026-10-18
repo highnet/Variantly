@@ -4,69 +4,95 @@ import { persp } from '@/components/backdrop/sceneKit';
 import type { Built, ConceptScene } from '@/concepts/types';
 
 /*
- * n · Noir Velvet: a stage. Two oxblood velvet drapes and a valance frame the
- * page; one spotlight from above throws venetian-blind bars across the
- * velvet, sweeping on the same 24s loop as the wall. Once per loop the drapes
- * draw in (theatrical, slow) and part again: the one cut per change.
+ * n · Orientation Reel: the projector beam. A soft cone of light comes down
+ * from the booth behind the audience (top right) onto the title frame; dust
+ * drifts through it, catching the light, and the lamp flickers on the shared
+ * clock. Neutral greys only; a 24s loop (every drift is a whole number of
+ * laps).
  */
 
 const W = (Math.PI * 2) / 24;
-
-const velvet = (colour: string, hi: string, uT: { value: number }) =>
-  new THREE.ShaderMaterial({
-    uniforms: { uT, uC: { value: new THREE.Color(colour) }, uH: { value: new THREE.Color(hi) } },
-    vertexShader: `uniform float uT; varying vec3 vN; varying vec3 vV; varying vec3 vW;
-void main(){
-  vec3 p = position;
-  // folds: deep regular pleats that sway a little at the hem
-  float hem = clamp(-p.y / 8.0 + 0.5, 0.0, 1.0);
-  float ph = p.x * 5.2 + sin(uT * ${W * 2} + p.x) * 0.25 * hem;
-  p.z += sin(ph) * 0.22;
-  vec3 n = normalize(vec3(-cos(ph) * 0.22 * 5.2, 0.0, 1.0));
-  vec4 w = modelMatrix * vec4(p, 1.0); vW = w.xyz;
-  vec4 mv = viewMatrix * w; vV = -mv.xyz;
-  vN = normalize(normalMatrix * n);
-  gl_Position = projectionMatrix * mv;
-}`,
-    fragmentShader: `uniform float uT; uniform vec3 uC; uniform vec3 uH; varying vec3 vN; varying vec3 vV; varying vec3 vW;
-float h(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233)))*43758.5453); }
-void main(){
-  vec3 N = normalize(vN); vec3 V = normalize(vV);
-  // the spotlight: a pool centred high on the stage
-  vec2 q = (vW.xy - vec2(0.0, 1.2)) / vec2(6.5, 4.2);
-  float spot = 0.25 + 0.75 * (1.0 - smoothstep(0.35, 1.0, length(q)));
-  // venetian blinds: bars in light space, sweeping 4 periods per loop
-  float bar = fract((vW.y * 0.94 + vW.x * 0.34) * 1.35 + uT / 6.0);
-  float blind = mix(0.42, 1.0, smoothstep(0.38, 0.46, bar) * (1.0 - smoothstep(0.92, 1.0, bar)));
-  float lit = max(dot(N, normalize(vec3(0.2, 0.6, 0.8))), 0.0);
-  // velvet: dark where it faces you, a soft bloom where it turns away
-  float rim = pow(1.0 - max(dot(N, V), 0.0), 2.0);
-  vec3 c = uC * (0.35 + 0.65 * lit) * spot * blind + uH * rim * 0.55 * spot * blind;
-  c *= 0.94 + 0.06 * h(floor(gl_FragCoord.xy));
-  gl_FragColor = vec4(c, 1.0);
-  #include <colorspace_fragment>
-}`,
-  });
-
-const smooth = (a: number, b: number, x: number) => {
-  const k = Math.min(1, Math.max(0, (x - a) / (b - a)));
-  return k * k * (3 - 2 * k);
-};
+const DUST = 260;
 
 const build = (scene: THREE.Scene, colors: string[]): Built => {
-  const [cloth, hi, gold] = colors;
+  const [beam, mote, strength] = colors;
   const camera = persp(9);
   const uT = { value: 0 };
-  const mat = velvet(cloth, hi, uT);
-  const drape = new THREE.PlaneGeometry(2.4, 9, 72, 18);
-  const left = new THREE.Mesh(drape, mat);
-  const right = new THREE.Mesh(drape, mat);
-  const valance = new THREE.Mesh(new THREE.PlaneGeometry(16, 1.1, 160, 2), mat);
-  const fringe = new THREE.Mesh(
-    new THREE.PlaneGeometry(16, 0.07),
-    new THREE.MeshBasicMaterial({ color: gold }),
+  const uA = { value: Number(strength) };
+
+  // The beam: a flat fan from the lens to the frame, soft at its edges, fading
+  // toward the lens, flickering a little.
+  const fan = new THREE.BufferGeometry();
+  fan.setAttribute(
+    'position',
+    new THREE.Float32BufferAttribute([0, 0, 0, -1, 1, 0, -1, -1, 0, 0, 0, 0], 3),
   );
-  scene.add(left, right, valance, fringe);
+  fan.setAttribute('uv', new THREE.Float32BufferAttribute([0, 0.5, 1, 1, 1, 0, 0, 0.5], 2));
+  fan.setIndex([0, 1, 2]);
+  const cone = new THREE.Mesh(
+    fan,
+    new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      uniforms: { uT, uA, uC: { value: new THREE.Color(beam) } },
+      vertexShader: `varying vec2 vU; void main(){ vU = uv;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: `uniform float uT; uniform float uA; uniform vec3 uC; varying vec2 vU;
+float h(float n){ return fract(sin(n * 12.9898) * 43758.5453); }
+void main(){
+  float across = abs(vU.y - 0.5) * 2.0 / max(vU.x, 0.001);
+  float edge = 1.0 - smoothstep(0.55, 1.0, across);
+  float along = smoothstep(0.0, 0.5, vU.x) * (1.0 - smoothstep(0.85, 1.0, vU.x) * 0.4);
+  float flick = 1.0 - 0.18 * h(floor(mod(uT, 24.0) * 12.0));
+  float a = edge * along * uA * flick;
+  gl_FragColor = vec4(uC, a);
+  #include <colorspace_fragment>
+}`,
+    }),
+  );
+  scene.add(cone);
+
+  // Dust: each mote drifts a whole number of laps through the beam per loop.
+  const seed = new Float32Array(DUST * 3);
+  for (let i = 0; i < DUST; i++) {
+    const r = (k: number) => {
+      const x = Math.sin((i + 1) * 91.17 + k * 17.3) * 43758.5453;
+      return x - Math.floor(x);
+    };
+    seed.set([r(1), r(2), r(3)], i * 3);
+  }
+  const pts = new THREE.BufferGeometry();
+  pts.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(DUST * 3), 3));
+  pts.setAttribute('aSeed', new THREE.Float32BufferAttribute(seed, 3));
+  const dust = new THREE.Points(
+    pts,
+    new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      uniforms: { uT, uC: { value: new THREE.Color(mote) } },
+      vertexShader: `attribute vec3 aSeed; uniform float uT; varying float vA;
+void main(){
+  float laps = 1.0 + floor(aSeed.z * 2.0);
+  float s = fract(aSeed.x + uT / 24.0 * laps * (aSeed.z > 0.5 ? 1.0 : -1.0));
+  // along the beam (x 0..1) and across it, inside the fan
+  float x = 0.08 + 0.9 * s;
+  float y = (aSeed.y * 2.0 - 1.0) * x * 0.85 + sin(uT * ${W} * 2.0 + aSeed.x * 40.0) * 0.03;
+  vec3 p = vec3(-x, y, 0.02);
+  vA = (0.35 + 0.65 * fract(aSeed.y * 7.0 + aSeed.x * 3.0))
+     * (0.5 + 0.5 * sin(uT * ${W} * 3.0 + aSeed.z * 30.0)) * smoothstep(0.0, 0.15, s) * (1.0 - smoothstep(0.85, 1.0, s));
+  vec4 mv = modelViewMatrix * vec4(p, 1.0);
+  gl_PointSize = 1.5 + 2.5 * aSeed.z;
+  gl_Position = projectionMatrix * mv;
+}`,
+      fragmentShader: `uniform vec3 uC; varying float vA;
+void main(){ float r = length(gl_PointCoord - 0.5); if (r > 0.5) discard;
+  gl_FragColor = vec4(uC, vA * (1.0 - smoothstep(0.2, 0.5, r)));
+  #include <colorspace_fragment>
+}`,
+    }),
+  );
+  dust.frustumCulled = false;
+  scene.add(dust);
   const halfH = 9 * Math.tan((20 * Math.PI) / 180);
 
   return {
@@ -75,26 +101,20 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
       uT.value = t;
       const aspect = (camera as THREE.PerspectiveCamera).aspect || 1.6;
       const halfW = halfH * aspect;
-      const narrow = aspect < 1;
-      // Drapes rest open; at 18-21s they draw in, then part by 24s.
-      const u = ((t % 24) + 24) % 24;
-      const close = smooth(17, 20, u) * (1 - smooth(20.5, 23.5, u));
-      const edge = narrow ? 0.12 : 0.85;
-      const x = halfW + 1.2 - edge - close * (narrow ? 0.5 : 1.6);
-      left.position.set(-x, 0.2, -0.5);
-      right.position.set(x, 0.2, -0.5);
-      left.rotation.y = 0.18;
-      right.rotation.y = -0.18;
-      valance.position.set(0, halfH - (narrow ? 0.15 : 0.28), -0.3);
-      fringe.position.set(0, valance.position.y - 0.57, -0.25);
+      // From the booth (just off the top right corner) down to the frame.
+      for (const o of [cone, dust]) {
+        o.position.set(halfW + 0.6, halfH + 0.8, -1);
+        o.rotation.z = Math.atan2(halfH + 0.8 - 0.6, halfW + 0.6) - 0.02 * Math.sin(t * W);
+        o.scale.set(Math.hypot(halfW + 0.6, halfH + 0.2) * 1.05, aspect < 1 ? 1.4 : 2.2, 1);
+      }
     },
   };
 };
 
 export const scene: ConceptScene = {
   colors: {
-    light: ['#6e1420', '#e0727c', '#c79a5b'],
-    dark: ['#5c0f1b', '#c4404f', '#a07a45'],
+    light: ['#ffffff', '#3a3734', '0.55'],
+    dark: ['#f2efe9', '#f2efe9', '0.16'],
   },
   build,
 };

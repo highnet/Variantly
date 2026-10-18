@@ -1,13 +1,12 @@
-import { useState } from 'react';
-import { createPortal } from 'react-dom';
+import { cn } from '@/lib/utils';
 
-import Swatch from './Swatch';
+import SwatchPortal from './SwatchPortal';
 
 /* ---- N · Orientation Reel: a black-and-white instructional film ----------
  * Coarse film grain on a gently weaving gate, a soft corner vignette, and the
  * odd vertical scratch and fleck of dust crossing the frame. All pre-made
  * pieces, moved with transform and opacity only. The mascot, Swatch, sits on
- * the hero's side card (portalled there, decorative). */
+ * the hero's side card (a client island portals it there; decorative). */
 
 // Park-Miller: the grain plate is the same on every load.
 const seeded = (s: number) => () => (s = (s * 16807) % 2147483647) / 2147483647;
@@ -18,8 +17,8 @@ const specks = (n: number, seed: number, size: number) => {
     () => `M${Math.floor(r() * 120)} ${Math.floor(r() * 120)}h${size}v${size}h-${size}z`,
   ).join('');
 };
-const GRAIN_D = specks(520, 23, 2);
-const GRAIN_L = specks(360, 71, 2);
+const GRAIN_D = specks(520, 23, 1.5);
+const GRAIN_L = specks(360, 71, 1.5);
 
 // Dust: little irregular flecks and hairs, each with its own moment on screen.
 const DUST = [
@@ -30,33 +29,30 @@ const DUST = [
   'M4 1C6 1 8 3 7 5 5 7 1 6 1 4 1 2 3 1 4 1Z',
 ];
 
-const Reel = () => {
-  const [side] = useState(() => document.querySelector('[data-hero-side]'));
-  return (
-    <>
-      <div className="r-weave absolute inset-[-12px]">
-        <svg className="r-grain absolute inset-0 size-full">
-          <defs>
-            <pattern id="r-grain" width="120" height="120" patternUnits="userSpaceOnUse">
-              <path d={GRAIN_D} className="fill-(--art-ink)" fillOpacity="0.16" />
-              <path d={GRAIN_L} className="fill-(--art-hi)" fillOpacity="0.2" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#r-grain)" />
+const Reel = () => (
+  <>
+    <div className="r-weave absolute inset-[-12px]">
+      <svg className="r-grain absolute inset-0 size-full">
+        <defs>
+          <pattern id="r-grain" width="120" height="120" patternUnits="userSpaceOnUse">
+            <path d={GRAIN_D} className="fill-(--art-ink)" fillOpacity="0.11" />
+            <path d={GRAIN_L} className="fill-(--art-hi)" fillOpacity="0.16" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#r-grain)" />
+      </svg>
+      <i className="r-scratch r-scratch-0" />
+      <i className="r-scratch r-scratch-1" />
+      <i className="r-scratch r-scratch-2" />
+      {DUST.map((d, i) => (
+        <svg key={i} viewBox="0 0 14 9" className={cn('r-dust', `r-dust-${i}`)}>
+          <path d={d} className="fill-(--art-ink) stroke-(--art-ink)" strokeWidth="0.8" />
         </svg>
-        <i className="r-scratch r-scratch-0" />
-        <i className="r-scratch r-scratch-1" />
-        <i className="r-scratch r-scratch-2" />
-        {DUST.map((d, i) => (
-          <svg key={i} viewBox="0 0 14 9" className={`r-dust r-dust-${i}`}>
-            <path d={d} className="fill-(--art-ink) stroke-(--art-ink)" strokeWidth="0.8" />
-          </svg>
-        ))}
-      </div>
-      <div className="r-vignette absolute inset-0" />
-      {side && createPortal(<Swatch />, side)}
-    </>
-  );
-};
+      ))}
+    </div>
+    <div className="r-vignette absolute inset-0" />
+    <SwatchPortal />
+  </>
+);
 
 export default Reel;

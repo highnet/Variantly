@@ -88,7 +88,9 @@
 :root[data-variant='n'] .vy-loadbar-fill { background: var(--ink); }
 
 /* Swatch, the mascot: perched on the side card's top edge, never over text */
-:root[data-variant='n'] .n-swatch { position: absolute; right: 18px; top: -128px; width: 108px; height: 135px; pointer-events: none; overflow: visible; }
+:root[data-variant='n'] .n-swatch { display: block; position: absolute; right: 26px; top: -124px; width: 104px; height: 130px; pointer-events: none; overflow: visible; }
+/* room above the card for Swatch to stand on its rule (the hero grid clips anything above it) */
+:root[data-variant='n'] [data-hero-side] { margin-top: 64px; }
 :root[data-variant='n'] .n-swatch * { transform-box: view-box; }
 :root[data-variant='n'] .n-swatch :is(.sw-hose, .sw-hose-thin, .sw-line) { fill: none; stroke: var(--sw-ink); stroke-linecap: round; stroke-linejoin: round; }
 :root[data-variant='n'] .n-swatch .sw-hose { stroke-width: 4.5; }
@@ -130,4 +132,4 @@
 :root[data-variant='n'][data-perf='low'] .n-swatch *, :root[data-variant='n'][data-perf='low'] [data-hero-title] { animation: none !important; }
 :root[data-variant='n'][data-swapping] .n-swatch * { animation-play-state: paused !important; }
 :root[data-variant='n'][data-scrolled] .n-swatch * { animation-play-state: paused; }
-@media (max-width: 1023px) { :root[data-variant='n'] .n-swatch { top: -52px; width: 64px; height: 80px; right: 12px; } }
+@media (max-width: 1023px) { :root[data-variant='n'] .n-swatch { top: -76px; width: 64px; height: 80px; right: 18px; } :root[data-variant='n'] [data-hero-side] { margin-top: 44px; } }

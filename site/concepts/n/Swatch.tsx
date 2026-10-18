@@ -24,7 +24,7 @@ const Glove = ({ x, y, r }: GloveProps) => (
 );
 
 const Swatch = () => (
-  <svg viewBox="0 0 120 150" className="n-swatch" aria-hidden="true">
+  <svg viewBox="0 0 120 150" className="n-swatch hidden" aria-hidden="true">
     <g className="sw-bob">
       <g className="sw-hop">
         {/* hose legs and shoes */}

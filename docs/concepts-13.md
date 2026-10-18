@@ -17,7 +17,7 @@ Two v1 concepts were kept in reworked form: **h Pixel Metropolis → Dither Mach
 - **2 Surrealism & reality distortion:** i, m
 - **3 Cinematic drama:** n
 - **4 Maximalist collage:** q
-- **5 Retro-tech nostalgia:** h, j
+- **5 Retro-tech nostalgia:** h, j, n
 - **6 Expressive typography:** k, l, o, r
 - **7 Warm eclecticism / modern nostalgia:** j, s
 - **8 Neo-folk & cultural craft:** p
@@ -142,24 +142,27 @@ Two v1 concepts were kept in reworked form: **h Pixel Metropolis → Dither Mach
 - **Sources:** Erik Johansson, photo-surrealism; Alex Prager, staged film stills; René Magritte, La reproduction interdite (1937); Winter 2026-27 surrealism forecast
 - **Raise (challenger-detector-display):** Break one physical rule only: reflections lie, everything else obeys.
 
-## n — Noir Velvet  ·  Light & Illusion
+## n — Orientation Reel  ·  Light & Illusion
 
-*variantly as an opening title: one spotlight on oxblood velvet, venetian-blind shadows sweeping across a high-contrast Didone wordmark.*
+*variantly as a black-and-white orientation reel: a projected title card in a dim theatre, grain and dust on the frame, and Swatch, an original paint-chip mascot, flipping through greys like variants.*
 
-- **Trends:** 3 Cinematic drama
-- **Origin:** new
-- **Lineage:** cinematic drama: film-noir shadow, theatrical spotlight and velvet, as in A24 titles and Saul Bass sequences
-- **Palette light:** #efe7dc #140d0c #6e1420 #c79a5b #3a2e2b
-- **Palette dark:** #080506 #f1e6d8 #9b1c2c #d4a96a #231a19
-- **Materials:** crushed velvet; hard spotlight pool; venetian-blind shadow bars
-- **Type:** Bodoni Moda for the title, Cormorant Garamond small caps for credits
-- **Background:** velvet fold gradients with a radial spotlight pool and diagonal blind-shadow bars sweeping across on a 24s loop; pre-baked film-grain tile
-- **3D title (letterLook):** velvet lacquer: MeshPhysical sheen 1 with oxblood sheenColor and a gold rim bevel
-- **three.js scene:** a curtain opening on a stage, one shadow-mapped SpotLight casting blind shadows across the title
-- **Motion:** slow, theatrical curtain timing; one dramatic cut per change
-- **Risk:** Hollywood cliche, too dark; red-on-black text can fail contrast.
-- **Sources:** A24 film title design; Saul Bass title sequences; The Third Man (1949) cinematography; Winter 2026-27 cinematic-drama forecast
-- **Raise (own):** Light is the layout: only the spotlit area holds readable text.
+> Replaced **Noir Velvet** at the owner's request (October 2026). Same id `n`, same folder.
+
+- **Trends:** 3 Cinematic drama; 5 Retro-tech nostalgia
+- **Origin:** new (replaces Noir Velvet)
+- **Lineage:** 1930s–40s black-and-white instructional and orientation films: projected title cards, iris transitions, film grain and gate weave; a rubber-hose-style mascot (a generic period style; the character is original)
+- **Palette light:** #e7e5e1 #141312 #f4f2ee #8f8b85 #4f4c48 (strictly neutral, no hue)
+- **Palette dark:** #0f0e0d #eeebe6 #4b4844 #8a8680 #b9b5ae
+- **Materials:** projected film frame; coarse film grain and dust; iris-in / iris-out circles; rubber-hose cartoon linework
+- **Type:** Limelight (1930s cinema deco) for headings; the site's mono for small captions
+- **Background:** coarse pre-baked grain tile on a gently weaving gate (sub-pixel transform jitter, 24s loop); a drawn radial corner vignette (no glow, no blur); occasional vertical scratches and dust flecks as pre-made pieces (transform/opacity only); iris circles divide the sections; the hero title card is a projected frame with a thin double rule and rounded corners
+- **3D title (letterLook):** matte white letters with soft grey sides, a hard projector shadow and a slight luminance flicker on the shared clock; no glow
+- **three.js scene:** a dusty projector beam: a soft fan of light from the booth with low-opacity dust drifting through it, 24s loop
+- **Motion:** projector cadence: stepped grain flicker, gentle gate weave; the mascot's bouncy idle (wave, wink, hop) and a split-flap flip to a new grey every 6s
+- **Mascot:** **Swatch**, an original rubber-hose paint-chip character (rounded card with a darker top band, pie-cut eyes, smile, white four-finger gloves, hose limbs) standing on the hero's side card; decorative and aria-hidden; still under calm, reduced motion and `perf=low`
+- **Risk:** Pastiche of a specific studio character, or nostalgia that hides the product. Rules: no hue, no clock faces, no franchise names or slogans, no fake copy in CSS `content`.
+- **Sources:** 1930s–40s educational and orientation films (public-domain archive reels); iris-wipe and title-card conventions of early sound film; rubber-hose animation as a period style; Winter 2026-27 cinematic-drama forecast
+- **Raise (own):** Monochrome discipline: every surface, state and the mascot itself stay neutral grey; variation is shown by shade alone.
 
 ## o — Swiss Punk  ·  Print & Type
 
