@@ -156,7 +156,6 @@ type Els = {
   inner: HTMLDivElement;
   frame: HTMLDivElement;
   glow: HTMLDivElement;
-  edge: SVGPathElement;
   front: SVGPathElement;
   lum: SVGPathElement;
   handle: HTMLDivElement | null;
@@ -410,12 +409,9 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     if (clip !== clipNow) {
       clipNow = clip;
       els.port.style.clipPath = clip;
-      // The slab: its side edge (the back outline, offset by its depth),
-      // the front frame, the inner light.
-      const dx = 3 + clamp(-tilt.ry * 0.9, -6, 6);
-      const dy = 3 + clamp(tilt.rx * 0.7, -4, 4);
+      // The door of light: its rim, bloom and energy all reuse this outline
+      // (<use>), and so does the inner light.
       const front = ringsPath([local], M, M);
-      els.edge.setAttribute('d', ringsPath([offset(local, dx, dy), local], M, M));
       els.front.setAttribute('d', front);
       els.lum.setAttribute('d', front);
     }
@@ -775,7 +771,6 @@ export const Lens = () => {
   const inner = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLDivElement>(null);
   const glowEl = useRef<HTMLDivElement>(null);
-  const edge = useRef<SVGPathElement>(null);
   const front = useRef<SVGPathElement>(null);
   const lum = useRef<SVGPathElement>(null);
   const handle = useRef<HTMLDivElement>(null);
@@ -817,10 +812,9 @@ export const Lens = () => {
     const i = inner.current;
     const f = frame.current;
     const g = glowEl.current;
-    const e = edge.current;
     const fr = front.current;
     const lu = lum.current;
-    if (!mode || !card || !shadow || !l || !p || !i || !f || !g || !e || !fr || !lu) return;
+    if (!mode || !card || !shadow || !l || !p || !i || !f || !g || !fr || !lu) return;
     const c = lensController(
       mode,
       {
@@ -831,7 +825,6 @@ export const Lens = () => {
         inner: i,
         frame: f,
         glow: g,
-        edge: e,
         front: fr,
         lum: lu,
         handle: handle.current,
@@ -899,32 +892,31 @@ export const Lens = () => {
           <svg className="absolute top-0 left-0 overflow-visible" width="1" height="1">
             <defs>
               {/* The door's outline, written each frame (lensController);
-                  the rim, its highlight and the inner shade all reuse it. */}
+                  the rim, its bloom, the energy and the inner light all
+                  reuse it. */}
               <path id="vy-lens-door" ref={front} />
               <radialGradient id="vy-lens-lum" cx="50%" cy="50%" r="72%">
-                <stop offset="58%" stopColor="var(--lens-light)" stopOpacity="0" />
-                <stop offset="100%" stopColor="var(--lens-light)" stopOpacity="0.3" />
+                <stop offset="55%" stopColor="var(--lens-light)" stopOpacity="0" />
+                <stop offset="100%" stopColor="var(--lens-light)" stopOpacity="0.4" />
               </radialGradient>
-              {/* The rim: lit from the top left, like the title's key light. */}
-              <linearGradient id="vy-lens-rim" x1="0" y1="0" x2="1" y2="1">
+              {/* The rim: hottest at the top, cooling to deep amber below. */}
+              <linearGradient id="vy-lens-rim" x1="0" y1="0" x2="0.35" y2="1">
                 <stop offset="0%" stopColor="var(--lens-rim-hi)" />
-                <stop offset="38%" stopColor="var(--lens-frame)" />
+                <stop offset="45%" stopColor="var(--lens-frame)" />
                 <stop offset="100%" stopColor="var(--lens-rim-lo)" />
               </linearGradient>
-              <linearGradient id="vy-lens-side" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="var(--lens-edge)" />
-                <stop offset="100%" stopColor="var(--lens-rim-deep)" />
-              </linearGradient>
-              <clipPath id="vy-lens-inside">
-                <use href="#vy-lens-door" />
-              </clipPath>
             </defs>
             <path ref={lum} className="vy-lens-lum" fill="url(#vy-lens-lum)" />
-            {/* Depth: a soft shade just inside the rim, clipped to the door. */}
-            <use href="#vy-lens-door" className="vy-lens-shade" clipPath="url(#vy-lens-inside)" />
-            <path ref={edge} className="vy-lens-side" fillRule="evenodd" />
+            {/* Bloom: three widening, fading strokes instead of a blur filter,
+                so a door redrawn every frame of a drag stays cheap. */}
+            <use href="#vy-lens-door" className="vy-lens-bloom vy-lens-bloom-3" />
+            <use href="#vy-lens-door" className="vy-lens-bloom vy-lens-bloom-2" />
+            <use href="#vy-lens-door" className="vy-lens-bloom vy-lens-bloom-1" />
             <use href="#vy-lens-door" className="vy-lens-front" />
-            <use href="#vy-lens-door" className="vy-lens-bevel" />
+            {/* Energy running round the rim, two streams at two speeds. */}
+            <use href="#vy-lens-door" className="vy-lens-energy vy-lens-energy-a" />
+            <use href="#vy-lens-door" className="vy-lens-energy vy-lens-energy-b" />
+            <use href="#vy-lens-door" className="vy-lens-core" />
           </svg>
           {id && <span className="vy-lens-label">{name}</span>}
         </div>
