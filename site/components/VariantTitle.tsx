@@ -9,21 +9,38 @@ import {
   morphPose,
   morphTrack,
   planStep,
+  runSequence,
   type MorphData,
   type MorphPose,
 } from '@/lib/glyphMorph';
 import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime, useSeekTime } from '@/lib/seek';
+import {
+  colourAt,
+  cssOf,
+  letterPalette,
+  rgba,
+  toLab,
+  type Lab,
+  type LetterPalette,
+} from '@/lib/titleColor';
 import { useSiteStore } from '@/lib/store';
 import {
   faceAt,
   morphAt,
   msToNextStep,
-  scaleAt,
+  REVEAL,
   startDelay,
   stepAt,
+  SWAP,
+  titleColorOn,
+  titleGlitchOn,
+  glitchAt,
+  glitchBuffer,
+  glitchStrength,
   type MorphPhase,
+  type Timeline,
 } from '@/lib/titleTiming';
 import { useVariant } from '@/lib/variant';
 import { cn } from '@/lib/utils';
@@ -91,15 +108,19 @@ type LetterProps = {
   // the low power tier, both fixed for the run.
   morph: MorphData | null;
   low: boolean;
+  // The run's timeline: the reveal, or the quick morph of a concept change.
+  tl: Timeline;
   variant: string | null;
 };
 
 /* One letter that shape-shifts through the font wardrobe, then locks in. */
-const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProps) => {
+const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: LetterProps) => {
   // 'idle' = resting on the final face, a number = flickering, null = just locked.
   const [live, setLive] = useState<number | null | 'idle'>('idle');
   // performance.now() when this letter's reveal started.
   const t0 = useRef(0);
+  // The colour this letter last rested in (a concept change morphs from it).
+  const rested = useRef<Lab | null>(null);
 
   useEffect(() => {
     if (seekTime() !== null || calmMotion()) return;
@@ -113,19 +134,19 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
     t0.current = start;
     let timer = 0;
     const tick = () => {
-      const step = stepAt(performance.now() - start, index);
+      const step = stepAt(performance.now() - start, index, tl);
       setLive(step === null ? null : Math.max(step, 0));
       // Wake exactly when the face next changes, not on a fixed poll.
       if (step !== null)
-        timer = window.setTimeout(tick, msToNextStep(performance.now() - start, index) + 4);
+        timer = window.setTimeout(tick, msToNextStep(performance.now() - start, index, tl) + 4);
     };
-    timer = window.setTimeout(tick, startDelay(index));
+    timer = window.setTimeout(tick, startDelay(index, tl));
     return () => clearTimeout(timer);
-  }, [index, run, solid, go]);
+  }, [index, run, solid, go, tl]);
 
   // seekreel frames derive the step from ?t instead of the clock.
   const seek = useSeekTime();
-  const raw = seek === null ? live : stepAt(seek * 1000, index);
+  const raw = seek === null ? live : stepAt(seek * 1000, index, tl);
   // Before its start delay (-1) a letter rests on its final face.
   const step = solid || raw === null || raw === 'idle' || raw < 0 ? null : raw;
 
@@ -144,7 +165,7 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
     if (!g || !box || !text || step === null || morph) return;
     const fit = () => {
       const k = Math.min(1, box.offsetWidth / Math.max(1, text.offsetWidth));
-      g.style.transform = `scale(${k * scaleAt(step, index)})`;
+      g.style.transform = `scale(${k})`;
     };
     fit();
     // A face still loading measures with its fallback: fit again once it lands.
@@ -166,9 +187,19 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
     const ctx = el?.getContext('2d');
     if (!morph || !shifting || !el || !box || !ctx) return;
     const track = morphTrack(morph, char);
-    const phase: MorphPhase = { step: 0, e: 0 };
+    const phase: MorphPhase = { step: 0, e: 0, c: 0 };
+    const seq = runSequence(morph, char, index, FINAL[index], tl, low);
     const pose: MorphPose = { k: 1, y: 0 };
     const shadows = shadowLayers(box);
+    // Palette colours while morphing (lib/titleColor), and each shadow layer
+    // as OKLab so it can follow the face's colour.
+    const tint = titleColorOn();
+    const shadowLab = shadows.map((l) => ({ lab: toLab(rgba(l.color)), a: rgba(l.color)[3] }));
+    let pal: LetterPalette | null = null;
+    const from = rested.current;
+    const face: Lab = [0, 0, 0];
+    const side: Lab = [0, 0, 0];
+    const layer: Lab = [0, 0, 0];
     const dpr = Math.min(devicePixelRatio || 1, 3);
     let w = 0;
     let h = 0;
@@ -183,6 +214,7 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
       const css = getComputedStyle(box);
       fontPx = parseFloat(css.fontSize) || 16;
       color = css.color;
+      pal = tint ? letterPalette(box, color, color) : null;
       const mark = box.querySelector<HTMLElement>('[data-base]');
       finalBase = (mark?.offsetTop ?? h) - h / 2;
       // Room around the slot for a glyph wider than it and its shadows.
@@ -195,6 +227,16 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
     };
     measure();
     let lastStep = -1;
+    let lastG = -1;
+    // The glitch: how hard this concept glitches, and its two accent colours.
+    const strength = titleGlitchOn() ? glitchStrength(variant ?? undefined) : 0;
+    const glitchy = strength > 0;
+    const glitch = glitchBuffer();
+    const rootCss = getComputedStyle(document.documentElement);
+    const splits = ['--art-1', '--art-2', '--alert', '--title']
+      .map((t) => rootCss.getPropertyValue(t).trim())
+      .filter(Boolean)
+      .slice(0, 2);
     let lastE = -1;
     let lastFrom = -1;
     let lastTo = -1;
@@ -202,51 +244,109 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
       const seekAt = seekTime();
       const ms = seekAt === null ? now - t0.current : seekAt * 1000;
       // Past the lock (React swaps in the final letter next): hold the end.
-      if (!morphAt(ms, index, phase)) {
+      if (!morphAt(ms, index, phase, tl)) {
         phase.step = Math.max(lastStep, 0);
         phase.e = 1;
+        phase.c = 1;
       }
-      const toFinal = planStep(morph, track, phase, index, FINAL[index], low);
+      planStep(morph, track, phase, seq, low);
+      // The glitch accent (lib/titleTiming): its beat, or -1 when quiet.
+      const g = glitchy && glitchAt(ms, index, glitch, tl) ? glitch.seed : -1;
       if (
         !force &&
         phase.step === lastStep &&
         phase.e === lastE &&
         track.from === lastFrom &&
-        track.to === lastTo
+        track.to === lastTo &&
+        g === lastG
       )
         return;
+      lastG = g;
       lastStep = phase.step;
       lastE = phase.e;
       lastFrom = track.from;
       lastTo = track.to;
       blendMorph(track, phase.e);
-      morphPose(morph, track, index, phase.e, toFinal, w, h, fontPx, finalBase, pose);
+      morphPose(morph, track, phase.e, FINAL[index], w, h, fontPx, finalBase, pose);
       const k = fontPx * pose.k;
       const ox = pad + w / 2;
       const oy = pad + h / 2 + pose.y;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w + pad * 2, h + pad * 2);
-      ctx.beginPath();
       const out = track.out;
       const n = track.n;
-      for (let s = 0; s < track.slots; s++) {
-        if (!track.live[s]) continue;
-        const at = s * n * 2;
-        ctx.moveTo(ox + out[at] * k, oy - out[at + 1] * k);
-        for (let i = 1; i < n; i++)
-          ctx.lineTo(ox + out[at + i * 2] * k, oy - out[at + i * 2 + 1] * k);
-        ctx.closePath();
-      }
-      ctx.fillStyle = color;
+      const trace = (p: CanvasPath) => {
+        for (let s = 0; s < track.slots; s++) {
+          if (!track.live[s]) continue;
+          const at = s * n * 2;
+          p.moveTo(ox + out[at] * k, oy - out[at + 1] * k);
+          for (let i = 1; i < n; i++)
+            p.lineTo(ox + out[at + i * 2] * k, oy - out[at + i * 2 + 1] * k);
+          p.closePath();
+        }
+      };
+      ctx.beginPath();
+      trace(ctx);
+      if (pal) {
+        colourAt(
+          pal,
+          index,
+          tl,
+          seq.length - 1,
+          track.fromStep,
+          track.toStep,
+          phase.c,
+          from,
+          face,
+          side,
+        );
+        ctx.fillStyle = cssOf(face);
+      } else ctx.fillStyle = color;
       for (const l of shadows) {
         ctx.shadowColor = l.color;
+        if (pal) {
+          const k = shadows.indexOf(l);
+          for (let c = 0; c < 3; c++) layer[c] = shadowLab[k].lab[c] + face[c] - pal.face[c];
+          ctx.shadowColor = cssOf(layer, shadowLab[k].a);
+        }
         ctx.shadowOffsetX = l.x * dpr;
         ctx.shadowOffsetY = l.y * dpr;
         ctx.shadowBlur = l.blur * dpr;
         ctx.fill();
       }
       ctx.shadowColor = 'transparent';
-      ctx.fill();
+      if (g < 0) {
+        ctx.fill();
+        return;
+      }
+      // Glitching: two hard-edged copies in the concept's accents pulled
+      // apart sideways (a channel split), then the letter sliced into bands
+      // nudged sideways, with a dropped scanline between bands. No blur.
+      const fill = ctx.fillStyle;
+      const glyph = new Path2D();
+      trace(glyph);
+      const W = w + pad * 2;
+      const H = h + pad * 2;
+      const shove = fontPx * strength;
+      ctx.clearRect(0, 0, W, H);
+      splits.forEach((c, j) => {
+        ctx.save();
+        ctx.translate((j ? 1 : -1) * glitch.split * shove, 0);
+        ctx.fillStyle = c;
+        ctx.fill(glyph);
+        ctx.restore();
+      });
+      const band = H / glitch.bands;
+      for (let b = 0; b < glitch.bands; b++) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, b * band, W, band - Math.max(1, fontPx * 0.012));
+        ctx.clip();
+        ctx.translate(glitch.shift[b] * shove, 0);
+        ctx.fillStyle = fill;
+        ctx.fill(glyph);
+        ctx.restore();
+      }
     };
     const resize = () => {
       measure();
@@ -258,18 +358,13 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
     return () => {
       stop();
       removeEventListener('resize', resize);
+      if (pal) rested.current = pal.face;
     };
     // A new run or concept restyles the letter: measure and draw afresh.
-  }, [morph, shifting, char, index, low, run, variant]);
+  }, [morph, shifting, char, index, low, tl, run, variant]);
 
   return (
-    <span
-      ref={slot}
-      className={cn(
-        'vy-letter relative inline-block leading-none',
-        live === null && seek === null && 'vy-letter-locked',
-      )}
-    >
+    <span ref={slot} className="vy-letter relative inline-block leading-none">
       <span className={cn(INTRO_FINAL[index], step !== null && 'invisible')}>
         {char}
         {/* Marks the final glyph's baseline for the 3D word's layout. */}
@@ -293,8 +388,8 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
 
 /*
  * Mixed-type title card: "variantly" spelled in nine mismatched typefaces,
- * each letter flickering through variants before it settles. It plays on
- * load and again whenever the concept switches (clicking does not replay).
+ * each letter morphing through other faces before it settles. It plays on
+ * load; a concept change morphs each letter out and back in the new colours.
  */
 export const VariantTitle = () => {
   const [run, setRun] = useState(0);
@@ -317,7 +412,12 @@ export const VariantTitle = () => {
   // MORPH_WAIT ms), or plays the font-swapping reveal throughout: it never
   // changes mode mid-run. The low power tier is read once, here. Reduced
   // motion shows the final lockup and never fetches the outlines.
-  const [stage, setStage] = useState<{ run: number; morph: MorphData | null; low: boolean }>();
+  const [stage, setStage] = useState<{
+    run: number;
+    morph: MorphData | null;
+    low: boolean;
+    tl: Timeline;
+  }>();
   useEffect(() => {
     if (calmMotion()) return;
     let live = true;
@@ -328,7 +428,11 @@ export const VariantTitle = () => {
       if (!live) return;
       clock.current = performance.now();
       const low = !seek && document.documentElement.dataset.perf === 'low';
-      setStage({ run, morph, low });
+      // The first run is the reveal; each later one, a concept change.
+      // (Seeked frames can show a concept change with ?titlerun=swap.)
+      const swap =
+        run > 0 || (seek && new URLSearchParams(location.search).get('titlerun') === 'swap');
+      setStage({ run, morph, low, tl: swap ? SWAP : REVEAL });
     });
     return () => {
       live = false;
@@ -354,7 +458,8 @@ export const VariantTitle = () => {
     return () => clearTimeout(id);
   }, [variant]);
   useEffect(
-    // A new concept gets its own title reveal.
+    // A new concept: each letter morphs out and back onto its final face in
+    // the new concept's colours (the swap timeline).
     () =>
       useSiteStore.subscribe((s, prev) => {
         if (prev.hydrated && s.variant !== prev.variant) setRun((r) => r + 1);
@@ -387,6 +492,7 @@ export const VariantTitle = () => {
             go={go}
             morph={go ? stage.morph : null}
             low={go && stage.low}
+            tl={go ? stage.tl : REVEAL}
             variant={variant}
           />
         ))}
@@ -395,6 +501,7 @@ export const VariantTitle = () => {
         <Letters3D
           run={stage?.run ?? -1}
           low={!!stage?.low}
+          tl={stage?.tl ?? REVEAL}
           clock={clock}
           title={word}
           onReady={onReady}

@@ -21,7 +21,7 @@ export const look: ConceptLook = {
       ),
     ];
     if (phone) return looks;
-    const grain = patch('chrome', false, false);
+    const grain = patch('chrome', false);
     const metal = (roughness: number, color: string) =>
       grain(new THREE.MeshStandardMaterial({ color, metalness: 1, roughness }));
     looks.push(
@@ -35,7 +35,7 @@ export const look: ConceptLook = {
   shadow: (dark) => ({
     color: dark ? '#c6ff00' : '#0a0a0a',
     opacity: dark ? 0.16 : 0.28,
-    radius: dark ? 9 : 3,
+    radius: 1,
     dir: [-0.25, 0.55, 1],
   }),
 };

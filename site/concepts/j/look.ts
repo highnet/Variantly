@@ -22,15 +22,9 @@ const brushed = (m: THREE.MeshStandardMaterial) => {
   return m;
 };
 
-// Caps glow a little from within, so the letter keeps its CSS colour under the studio light.
+// Matte painted caps in the letter's CSS colour (no emissive glow).
 const cap = (c: string, roughness: number) =>
-  new THREE.MeshStandardMaterial({
-    color: c,
-    roughness,
-    metalness: 0,
-    emissive: c,
-    emissiveIntensity: 0.32,
-  });
+  new THREE.MeshStandardMaterial({ color: c, roughness, metalness: 0 });
 
 const pool = (ink: LetterInk, dark: boolean) => {
   const alu = new THREE.Color(ink.side);
@@ -60,7 +54,7 @@ export const look: ConceptLook = {
   shadow: (dark) => ({
     color: dark ? '#000000' : '#2b2925',
     opacity: dark ? 0.55 : 0.28,
-    radius: 9,
+    radius: 1,
     dir: [-0.2, 0.62, 1],
   }),
 };
