@@ -6,7 +6,7 @@ import { useRef, type MouseEvent } from 'react';
 import { Button } from '@/components/ui/Button';
 import { EASE } from '@/lib/motion';
 import { calmMotion } from '@/lib/prefs';
-import { currentVariant, stepVariant } from '@/lib/variant';
+import { currentVariant, pressOrigin, stepVariant } from '@/lib/variant';
 
 const SPARKS = 26;
 const GLYPHS = ['✦', '✶', '●', '■', '▲'];
@@ -94,7 +94,9 @@ export const FreshLook = ({ children = 'a fresh look' }: FreshLookProps) => {
 
   const next = (e: MouseEvent<HTMLButtonElement>) => {
     // The next shown concept (drafts are skipped unless ?drafts=1).
-    const go = () => stepVariant(currentVariant(), 1);
+    // The doorway opens from the press (or the word's centre from the keyboard).
+    const origin = pressOrigin(e);
+    const go = () => stepVariant(currentVariant(), 1, { origin });
     if (calmMotion()) return go();
 
     const el = self.current;
