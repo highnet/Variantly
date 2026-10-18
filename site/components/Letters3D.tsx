@@ -349,29 +349,13 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     // layers (its 2D hero under the canvas, its frame above it) cover the same
     // box and lean with the same transform, so the door's stencil in the
     // canvas and its 2D frame stay together while the word tilts.
-    // Phones lean the same way from the device's tilt (see the gyro below).
     // `u`, `v` in -1..1: toward the right, toward the bottom.
-    // Phones lean further (a tipped phone is a bigger gesture than a cursor
-    // drift) and follow faster (0.15s: the sensor already moves smoothly).
-    // Phones turn much further and with a closer perspective: on a narrow
-    // card a 10° turn at 900px barely changes the word's shape.
-    const leanX = phone ? 16 : 5;
-    const leanY = phone ? 24 : 7;
-    const depth = phone ? 520 : 900;
-    // `w` in -1..1: the phone twisted about its screen (phones only).
-    const leanTo = (u: number, v: number, w = 0) => {
-      // Phones shrink a little as they turn, so the near end of a full-width
-      // word stays inside the card.
-      const k = phone ? 1 - 0.07 * Math.min(1, Math.hypot(u, v, w)) : 1;
-      const lean = `perspective(${depth}px) rotateX(${(-v * leanX).toFixed(2)}deg) rotateY(${(u * leanY).toFixed(2)}deg) rotateZ(${(w * 10).toFixed(2)}deg) scale(${k.toFixed(3)})`;
-      const layers = [
-        el,
-        ...(el.parentElement?.querySelectorAll<HTMLElement>('[data-lens-lean]') ?? []),
-      ];
-      layers.forEach((l) => {
-        if (phone) l.style.transition = 'transform 0.15s ease-out';
-        l.style.transform = lean;
-      });
+    const leanTo = (u: number, v: number) => {
+      const lean = `perspective(900px) rotateX(${(-v * 5).toFixed(2)}deg) rotateY(${(u * 7).toFixed(2)}deg)`;
+      el.style.transform = lean;
+      el.parentElement
+        ?.querySelectorAll<HTMLElement>('[data-lens-lean]')
+        .forEach((l) => (l.style.transform = lean));
     };
     if (!phone && !still && seek === null) {
       const move = (e: PointerEvent) =>
@@ -880,86 +864,6 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         cleanups.push(() => {
           removeEventListener('pointermove', onPoint);
           removeEventListener('pointerdown', onPoint);
-        });
-      }
-      // Phones: the device's tilt leans the word (as the cursor does on
-      // desktop) and steers the light, so highlights slide as the phone tips.
-      // The neutral pose is however the phone is held, drifting slowly, so
-      // lying down or standing up reads the same. iOS asks permission, which
-      // needs a tap: the first tap anywhere on the page asks (captured, so no
-      // control can swallow it; touchend and click both count as the gesture).
-      if (phone && !still && seek === null && typeof DeviceOrientationEvent !== 'undefined') {
-        let base: [number, number, number] | null = null;
-        let baseT = 0;
-        // ?tilt=debug: the raw sensor and the lean, on screen.
-        const debug =
-          new URLSearchParams(location.search).get('tilt') === 'debug'
-            ? document.body.appendChild(document.createElement('pre'))
-            : null;
-        if (debug)
-          debug.style.cssText =
-            'position:fixed;left:8px;top:8px;z-index:9999;margin:0;padding:6px 8px;font:11px/1.4 ui-monospace,monospace;background:rgb(0 0 0/0.75);color:#fff;border-radius:4px;pointer-events:none';
-        const onTilt = (e: DeviceOrientationEvent) => {
-          if (e.beta === null || e.gamma === null) return;
-          const turned = Math.abs(screen.orientation?.angle ?? 0) === 90;
-          const side = turned ? e.beta : e.gamma;
-          const tip = turned ? -e.gamma : e.beta;
-          const now = performance.now();
-          // Twist: alpha (rotation about the screen's normal), relative to
-          // the neutral pose and wrapped, so north or 359°→0° never jumps.
-          const twist = e.alpha ?? 0;
-          if (!base) base = [side, tip, twist];
-          // The neutral pose drifts toward however the phone is held, over
-          // ~15s: a held tilt keeps its lean; lying down or standing still
-          // re-centres in a while.
-          const k = 1 - Math.exp(-Math.min(100, baseT ? now - baseT : 16) / 15000);
-          baseT = now;
-          base[0] += (side - base[0]) * k;
-          base[1] += (tip - base[1]) * k;
-          const dTwist = ((twist - base[2] + 540) % 360) - 180;
-          base[2] = (base[2] + dTwist * k + 360) % 360;
-          // Full lean at ~22° of tilt: past it a phone soon flips to landscape,
-          // so the lean builds across the whole usable range.
-          const u = Math.max(-1, Math.min(1, (side - base[0]) / 22));
-          const v = Math.max(-1, Math.min(1, (tip - base[1]) / 22));
-          // Full twist at ~25°: turning the phone like a wheel turns the word.
-          const w = Math.max(-1, Math.min(1, -dTwist / 25));
-          leanTo(u, v, w);
-          if (debug)
-            debug.textContent = `beta ${e.beta.toFixed(1)}  gamma ${e.gamma.toFixed(1)}  alpha ${twist.toFixed(1)}\nlean u ${u.toFixed(2)}  v ${v.toFixed(2)}  w ${w.toFixed(2)}`;
-          const yaw = u * 0.8;
-          const pitch = v * 0.55;
-          if (Math.abs(yaw - lightTo.yaw) + Math.abs(pitch - lightTo.pitch) < 0.01) return;
-          sweepT0 = -1;
-          swept = true;
-          lightTo.yaw = yaw;
-          lightTo.pitch = pitch;
-          wake();
-        };
-        const listen = () => addEventListener('deviceorientation', onTilt);
-        const ask = (
-          DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }
-        ).requestPermission;
-        let asked = false;
-        const onTap = () => {
-          if (asked) return;
-          asked = true;
-          document.removeEventListener('touchend', onTap, true);
-          document.removeEventListener('click', onTap, true);
-          void ask
-            ?.call(DeviceOrientationEvent)
-            .then((r) => r === 'granted' && listen())
-            .catch(() => {});
-        };
-        if (typeof ask === 'function') {
-          document.addEventListener('touchend', onTap, true);
-          document.addEventListener('click', onTap, true);
-        } else listen();
-        cleanups.push(() => {
-          removeEventListener('deviceorientation', onTilt);
-          debug?.remove();
-          document.removeEventListener('touchend', onTap, true);
-          document.removeEventListener('click', onTap, true);
         });
       }
       // Once, as the first reveal settles: the light sweeps across the word
