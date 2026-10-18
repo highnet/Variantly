@@ -168,18 +168,18 @@ export const morphAt = (ms: number, index: number, out: MorphPhase, tl = REVEAL)
   return false;
 };
 
-// Switches for the owner's experiments, both on by default: the letters'
-// colour walking the concept's palette as they morph (`?titlecolor=0` turns it
-// off), and a short glitch accent on one face change per letter (`?glitch=0`).
+// Switches for the owner's experiments: the letters' colour walking the
+// concept's palette as they morph (on; `?titlecolor=0` turns it off). The
+// glitch accents (the title's, the Lens door's and the swap's) are retired:
+// off everywhere, with no flag to bring them back.
 export const TITLE_COLOR = true;
-export const TITLE_GLITCH = true;
 const flag = (name: string, on: boolean) => {
   if (typeof location === 'undefined') return on;
   const q = new URLSearchParams(location.search).get(name);
   return q === null ? on : q !== '0';
 };
 export const titleColorOn = () => flag('titlecolor', TITLE_COLOR);
-export const titleGlitchOn = () => flag('glitch', TITLE_GLITCH);
+export const titleGlitchOn = () => false;
 
 // The glitch: once per letter per reveal, at the moment one morph lands (a
 // step picked per letter, never the lockup), for GLITCH_MS. Returns its

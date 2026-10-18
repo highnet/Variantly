@@ -686,10 +686,6 @@ export const attachLens = (host: LensHost): LensPass => {
     const changed = shown !== wasShown;
     if (changed) {
       wasShown = shown;
-      // The title's cursor lean stops while the door is up (the door tilts
-      // instead), at once so the stencil lines up with the 2D layer.
-      host.el.style.transition = shown ? 'opacity 0.6s ease-out' : '';
-      if (shown) host.el.style.transform = '';
       laid = '';
     }
     // One more paint as the door goes, or the title keeps its last frame,
@@ -731,6 +727,3 @@ export const attachLens = (host: LensHost): LensPass => {
     },
   };
 };
-
-// While the door is up the title's cursor lean holds still.
-export const lensHoldsTitle = () => lensLive.shown;

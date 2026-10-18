@@ -5,7 +5,7 @@ import * as THREE from 'three';
 
 import type { VariantKey } from '@/components/backdrop/variants';
 import { glTier, markFallback } from '@/lib/glTier';
-import { attachLens, lensHoldsTitle, type LensPass } from '@/lib/lens3d';
+import { attachLens, type LensPass } from '@/lib/lens3d';
 import {
   blendMorph,
   loadMorph,
@@ -345,13 +345,19 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     );
 
     // Desktop: the word leans toward the cursor via a CSS transform with a
-    // transition, so following the pointer costs no WebGL frames.
+    // transition, so following the pointer costs no WebGL frames. The Lens's
+    // layers (its 2D hero under the canvas, its frame above it) cover the same
+    // box and lean with the same transform, so the door's stencil in the
+    // canvas and its 2D frame stay together while the word tilts.
     if (!phone && !still && seek === null) {
       const move = (e: PointerEvent) => {
-        if (lensHoldsTitle()) return;
         const x = (e.clientX / innerWidth - 0.5) * 14;
         const y = (e.clientY / innerHeight - 0.5) * -10;
-        el.style.transform = `perspective(900px) rotateX(${y.toFixed(2)}deg) rotateY(${x.toFixed(2)}deg)`;
+        const lean = `perspective(900px) rotateX(${y.toFixed(2)}deg) rotateY(${x.toFixed(2)}deg)`;
+        el.style.transform = lean;
+        el.parentElement
+          ?.querySelectorAll<HTMLElement>('[data-lens-lean]')
+          .forEach((l) => (l.style.transform = lean));
       };
       addEventListener('pointermove', move, { passive: true });
       cleanups.push(() => removeEventListener('pointermove', move));

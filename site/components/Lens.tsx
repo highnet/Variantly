@@ -774,7 +774,9 @@ export const Lens = () => {
         ref={layerRef}
         aria-hidden="true"
         data-glow={glow || undefined}
-        className="vy-lens pointer-events-none absolute inset-0 z-1 overflow-hidden"
+        // Leans with the 3D title (Letters3D sets the transform).
+        data-lens-lean
+        className="vy-lens pointer-events-none absolute inset-0 z-1 overflow-hidden [transition:transform_0.7s_ease-out]"
       >
         {/* The slab's light: a halo and a warm spill on the ground below it. */}
         <div ref={glowEl} className="vy-lens-glow absolute top-0 left-0" />
@@ -784,32 +786,40 @@ export const Lens = () => {
           </div>
         </div>
       </div>
+      {/* The frame rides a full-card layer that leans with the 3D title, so
+          it stays on the door the canvas stencils while the word tilts. */}
       <div
-        ref={frame}
+        data-lens-lean
         aria-hidden="true"
-        data-glow={glow || undefined}
-        data-peek={peek || undefined}
-        className="vy-lens-frame pointer-events-none absolute top-0 left-0 z-3"
+        className="pointer-events-none absolute inset-0 z-3 [transition:transform_0.7s_ease-out]"
       >
-        <svg className="absolute top-0 left-0 overflow-visible" width="1" height="1">
-          <defs>
-            <radialGradient id="vy-lens-lum" cx="50%" cy="50%" r="72%">
-              <stop offset="58%" stopColor="var(--lens-light)" stopOpacity="0" />
-              <stop offset="100%" stopColor="var(--lens-light)" stopOpacity="0.3" />
-            </radialGradient>
-          </defs>
-          <path ref={lum} className="vy-lens-lum" fill="url(#vy-lens-lum)" />
-          <path ref={edge} className="fill-lens-edge" fillRule="evenodd" />
-          <path ref={front} className="vy-lens-front" fill="none" />
-        </svg>
-        {id && (
-          <span className="vy-lens-label">
-            {name}
-            {mode === 'pointer' && !fixedOpen && (
-              <span className="vy-lens-hint">click to keep</span>
-            )}
-          </span>
-        )}
+        <div
+          ref={frame}
+          aria-hidden="true"
+          data-glow={glow || undefined}
+          data-peek={peek || undefined}
+          className="vy-lens-frame pointer-events-none absolute top-0 left-0 z-3"
+        >
+          <svg className="absolute top-0 left-0 overflow-visible" width="1" height="1">
+            <defs>
+              <radialGradient id="vy-lens-lum" cx="50%" cy="50%" r="72%">
+                <stop offset="58%" stopColor="var(--lens-light)" stopOpacity="0" />
+                <stop offset="100%" stopColor="var(--lens-light)" stopOpacity="0.3" />
+              </radialGradient>
+            </defs>
+            <path ref={lum} className="vy-lens-lum" fill="url(#vy-lens-lum)" />
+            <path ref={edge} className="fill-lens-edge" fillRule="evenodd" />
+            <path ref={front} className="vy-lens-front" fill="none" />
+          </svg>
+          {id && (
+            <span className="vy-lens-label">
+              {name}
+              {mode === 'pointer' && !fixedOpen && (
+                <span className="vy-lens-hint">click to keep</span>
+              )}
+            </span>
+          )}
+        </div>
       </div>
       {mode === 'touch' && (
         <div
