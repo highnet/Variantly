@@ -139,3 +139,6 @@
 :root[data-variant='n'][data-swapping] .n-swatch * { animation-play-state: paused !important; }
 :root[data-variant='n'][data-scrolled] .n-swatch * { animation-play-state: paused; }
 @media (max-width: 1023px) { :root[data-variant='n'] .n-swatch { top: -76px; width: 64px; height: 80px; right: 18px; } :root[data-variant='n'] [data-hero-side] { margin-top: 44px; } }
+/* the hero's pressed toggles and up-deltas: ink on the light frame, paper on the dark */
+:root[data-variant='n'] section.on-slate { --ok-on-slate: #141312; }
+:root[data-variant='n'][data-theme='dark'] section.on-slate { --ok-on-slate: #eeebe6; }

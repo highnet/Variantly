@@ -90,3 +90,5 @@
 @media (max-width: 639px) {
 :root[data-variant='k'] [data-hero-side] { outline-offset: -6px; }
 }
+/* the hero's pressed toggles and up-deltas: readable on the light page */
+:root[data-variant='k']:not([data-theme='dark']) section.on-slate { --ok-on-slate: #8f3620; }

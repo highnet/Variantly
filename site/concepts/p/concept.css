@@ -91,3 +91,5 @@
 :root[data-variant='p'][data-theme='dark'] .vy-letter { text-shadow: 0 2px 0 var(--p-red-s); }
 :root[data-variant='p'][data-theme='dark'] .vy-letter:nth-child(3n + 2) { text-shadow: 0 2px 0 var(--p-teal-s); }
 :root[data-variant='p'][data-theme='dark'] .vy-letter:nth-child(3n) { text-shadow: 0 2px 0 var(--p-ochre-s); }
+/* the hero's pressed toggles and up-deltas: readable on the white cotton */
+:root[data-variant='p']:not([data-theme='dark']) section.on-slate { --ok-on-slate: #157066; }
