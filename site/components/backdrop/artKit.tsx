@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 
-import grainTile from '@/app/_grain/grain-strong.png';
+import grainTile from '@/app/_grain/grain-strong@3x.png';
 
 /*
  * Each concept's own background art, drawn once and never repainted: plain

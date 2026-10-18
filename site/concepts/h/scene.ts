@@ -117,4 +117,5 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
 export const scene: ConceptScene = {
   colors: { light: ['#1b1915', '#b5482a'], dark: ['#e9e2cf', '#d0623f'] },
   build,
+  pixelArt: true,
 };

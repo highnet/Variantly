@@ -3,12 +3,15 @@
 // surfaces (see .vy-grain in app/globals.css). The noise is clumped (a soft
 // blur, then quantised to five levels) so it reads as grain at 1x and 3x, and
 // stored as an indexed PNG whose palette carries the strength, which keeps
-// each tile around a kilobyte.
+// each tile a few kilobytes. Each strength is baked at 1x, 2x and 3x (the
+// @2x/@3x tiles hold 2× and 3× the specks for the same 96px CSS tile, picked
+// by image-set), so a dense screen shows grain at its own device pixels, never
+// a 96px tile upsampled into soft 3×3 blobs.
 // Usage: node scripts/build-grain.mjs   (writes app/_grain/grain-*.png)
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { deflateSync } from 'node:zlib';
 
-const SIZE = 96;
+const BASE = 96;
 const OUT = new URL('../app/_grain/', import.meta.url);
 
 // Alpha (0–255) of the outer and inner dark and light specks, per tile.
@@ -31,29 +34,6 @@ const rand = (() => {
   };
 })();
 
-// White noise, then a wrapped 3×3 blur so specks clump a little (coarser
-// grain), renormalised to unit variance.
-const white = Float32Array.from({ length: SIZE * SIZE }, () => rand() + rand() + rand() - 1.5);
-const at = (x, y) => white[((y + SIZE) % SIZE) * SIZE + ((x + SIZE) % SIZE)];
-const K = [
-  [0.1, 0.3, 0.1],
-  [0.3, 2, 0.3],
-  [0.1, 0.3, 0.1],
-];
-const field = new Float32Array(SIZE * SIZE);
-for (let y = 0; y < SIZE; y++)
-  for (let x = 0; x < SIZE; x++) {
-    let v = 0;
-    for (let j = -1; j <= 1; j++)
-      for (let i = -1; i <= 1; i++) v += K[j + 1][i + 1] * at(x + i, y + j);
-    field[y * SIZE + x] = v;
-  }
-const sd = Math.sqrt(field.reduce((s, v) => s + v * v, 0) / field.length);
-
-// Five levels: 0 strong dark, 1 dark, 2 clear, 3 light, 4 strong light.
-const level = (v) => (v < -1.25 ? 0 : v < -0.45 ? 1 : v <= 0.45 ? 2 : v <= 1.25 ? 3 : 4);
-const idx = Uint8Array.from(field, (v) => level(v / sd));
-
 const crcTable = Array.from({ length: 256 }, (_, n) => {
   let c = n;
   for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
@@ -73,7 +53,7 @@ const chunk = (type, data) => {
   return out;
 };
 
-const png = ({ dark, light }) => {
+const png = (SIZE, idx, { dark, light }) => {
   const ihdr = Buffer.alloc(13);
   ihdr.writeUInt32BE(SIZE, 0);
   ihdr.writeUInt32BE(SIZE, 4);
@@ -97,12 +77,43 @@ const png = ({ dark, light }) => {
   ]);
 };
 
+const bake = (SIZE) => {
+  // White noise, then a wrapped 3×3 blur so specks clump a little (coarser
+  // grain), renormalised to unit variance.
+  const white = Float32Array.from({ length: SIZE * SIZE }, () => rand() + rand() + rand() - 1.5);
+  const at = (x, y) => white[((y + SIZE) % SIZE) * SIZE + ((x + SIZE) % SIZE)];
+  const K = [
+    [0.1, 0.3, 0.1],
+    [0.3, 2, 0.3],
+    [0.1, 0.3, 0.1],
+  ];
+  const field = new Float32Array(SIZE * SIZE);
+  for (let y = 0; y < SIZE; y++)
+    for (let x = 0; x < SIZE; x++) {
+      let v = 0;
+      for (let j = -1; j <= 1; j++)
+        for (let i = -1; i <= 1; i++) v += K[j + 1][i + 1] * at(x + i, y + j);
+      field[y * SIZE + x] = v;
+    }
+  const sd = Math.sqrt(field.reduce((s, v) => s + v * v, 0) / field.length);
+
+  // Five levels: 0 strong dark, 1 dark, 2 clear, 3 light, 4 strong light.
+  const level = (v) => (v < -1.25 ? 0 : v < -0.45 ? 1 : v <= 0.45 ? 2 : v <= 1.25 ? 3 : 4);
+  const idx = Uint8Array.from(field, (v) => level(v / sd));
+  return idx;
+};
+
 mkdirSync(OUT, { recursive: true });
 let total = 0;
-for (const [name, alpha] of Object.entries(TILES)) {
-  const buf = png(alpha);
-  total += buf.length;
-  writeFileSync(new URL(`grain-${name}.png`, OUT), buf);
-  console.log(`grain-${name}.png  ${SIZE}×${SIZE}  ${buf.length} B`);
+for (const x of [1, 2, 3]) {
+  const size = BASE * x;
+  const idx = bake(size);
+  for (const [name, alpha] of Object.entries(TILES)) {
+    const file = `grain-${name}${x > 1 ? `@${x}x` : ''}.png`;
+    const buf = png(size, idx, alpha);
+    total += buf.length;
+    writeFileSync(new URL(file, OUT), buf);
+    console.log(`${file}  ${size}×${size}  ${buf.length} B`);
+  }
 }
 console.log(`total ${total} B`);
