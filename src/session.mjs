@@ -143,11 +143,17 @@ export const stateDirFor = (repo) => {
 
 export class Session extends EventEmitter {
   /**
-   * @param {{ repo: string, maxLive?: number, local?: import('./proxy.mjs').ProxyOptions['local'] }} opts
+   * @param {{ repo: string, maxLive?: number, local?: import('./proxy.mjs').ProxyOptions['local'], shared?: boolean }} opts
+   *   shared: the app's long-lived session. The CLI (`variantly keep`, `clean`)
+   *   may change the state file behind it; it then adopts what is on disk
+   *   instead of writing its stale copy over it.
    */
   constructor(opts) {
     super();
     this.repo = opts.repo;
+    this.shared = Boolean(opts.shared);
+    /** The state file as this session last read or wrote it; null = no file. @type {string | null} */
+    this.onDisk = null;
     this.dir = stateDirFor(opts.repo);
     /** @type {State} */
     this.state = { version: 1, phase: 'setup', runId: '', base: '', config: null, variants: [], chosen: null, result: null };
@@ -182,8 +188,9 @@ export class Session extends EventEmitter {
    *   treated as interrupted
    */
   async load(opts = {}) {
+    this.onDisk = await this.#readDisk();
     try {
-      const saved = JSON.parse(await readFile(path.join(this.dir, 'state.json'), 'utf8'));
+      const saved = JSON.parse(this.onDisk ?? '');
       if (saved.version === 1) this.state = saved;
     } catch {}
     if (opts.inspect) return this.state;
@@ -218,14 +225,86 @@ export class Session extends EventEmitter {
   save() {
     // One at a time, written aside and renamed: concurrent writes interleave.
     const next = this.saveQueue.then(async () => {
+      // Kept or cleaned from the terminal since: that wins over this copy.
+      if (this.shared && (await this.#syncDisk())) return;
+      // No file and no run (`variantly clean` removed it): nothing worth recreating it for.
+      if (this.shared && this.onDisk === null && !this.state.runId) {
+        this.emit('state', this.snapshot());
+        return;
+      }
       await mkdir(this.dir, { recursive: true });
       const file = path.join(this.dir, 'state.json');
-      await writeFile(file + '.tmp', JSON.stringify(this.state, null, 2));
+      const text = JSON.stringify(this.state, null, 2);
+      await writeFile(file + '.tmp', text);
       await rename(file + '.tmp', file);
+      this.onDisk = text;
       this.emit('state', this.snapshot());
     });
     this.saveQueue = next.catch(() => {});
     return next;
+  }
+
+  /**
+   * Re-read the state file and adopt it if something else (`variantly keep`
+   * or `clean` in a terminal) changed it since this session last wrote it.
+   * @returns {Promise<ExternalChange | null>}
+   */
+  refresh() {
+    const next = this.saveQueue.then(() => this.#syncDisk());
+    this.saveQueue = next.then(
+      () => {},
+      () => {},
+    );
+    return next;
+  }
+
+  async #readDisk() {
+    try {
+      return await readFile(path.join(this.dir, 'state.json'), 'utf8');
+    } catch {
+      return null;
+    }
+  }
+
+  /** @returns {Promise<ExternalChange | null>} */
+  async #syncDisk() {
+    const text = await this.#readDisk();
+    if (text === this.onDisk) return null;
+    /** @type {State | null} */
+    let saved = null;
+    if (text !== null) {
+      try {
+        saved = JSON.parse(text);
+      } catch {
+        return null; // not ours to judge; the next write replaces it
+      }
+      if (saved?.version !== 1) return null;
+    }
+    const before = this.state;
+    /** @type {ExternalChange} */
+    const change = !saved || !saved.runId
+      ? { kind: before.runId ? 'cleaned' : 'updated', message: 'This run was cleaned up from the terminal. Start a new one when you’re ready.' }
+      : saved.runId !== before.runId
+        ? { kind: 'replaced', message: 'This run was replaced by one started elsewhere; showing that one.' }
+        : saved.phase === 'finalized' && before.phase !== 'finalized'
+          ? { kind: 'kept', n: saved.chosen ?? undefined, message: `This run was kept from the terminal: variant ${saved.chosen} is in your working tree.` }
+          : { kind: 'updated', message: '' };
+    // Whatever this session still runs belongs to a run that is over here.
+    if (change.kind !== 'updated') {
+      for (const run of [...this.runs.values(), ...(this.rolloutRun ? [this.rolloutRun] : [])]) {
+        run.cancelled = true;
+        if (run.child) await killTree(run.child).catch(() => {});
+      }
+      this.runs.clear();
+      this.rolloutRun = undefined;
+      await this.pool.closeAll();
+    }
+    this.state = saved?.runId ? saved : { version: 1, phase: 'setup', runId: '', base: '', config: saved?.config ?? before.config, variants: [], chosen: null, result: null };
+    this.onDisk = text;
+    if (change.kind !== 'updated' && this.state.phase === 'ready' && this.state.config) await this.#registerTargets();
+    this.emit('state', this.snapshot());
+    if (change.kind !== 'updated') this.emit('external', change);
+    return change.kind === 'updated' ? null : change;
   }
 
   snapshot() {
@@ -873,10 +952,17 @@ export class Session extends EventEmitter {
    * @param {{ sitewide?: boolean }} [opts]
    */
   async finalize(n, opts = {}) {
+    const elsewhere = await this.refresh();
+    if (elsewhere) throw new Error(elsewhere.message);
     if (this.state.phase === 'finalized') throw new Error(`A variant was already kept (v${this.state.chosen}). Run \`variantly clean\` to start over.`);
     if (this.state.phase === 'rolling-out') throw new Error(`Variant ${this.state.chosen} is already being rolled out to the whole site.`);
     const v = this.state.variants.find((x) => x.n === n);
     if (!v || v.status !== 'done') throw new Error(`Variant ${n} isn't finished.`);
+    // Its branch and base must still be there: a run cleaned up behind this
+    // session has nothing left to apply.
+    if (!(await git.refExists(this.repo, `refs/heads/${this.branchFor(n)}`)) || !(await git.refExists(this.repo, `${this.state.base}^{commit}`))) {
+      throw new Error(`Variant ${n}’s branch is gone, so there is nothing to apply. Was this run cleaned up from the terminal? Start a new run.`);
+    }
     if (this.state.phase === 'generating') {
       for (const other of this.state.variants) await this.cancel(other.n);
     }
@@ -890,7 +976,22 @@ export class Session extends EventEmitter {
       await this.save();
       throw new Error('Rollout cancelled. Nothing was applied; pick again when ready.');
     }
-    const result = await git.applyBranch(this.repo, this.state.base, this.branchFor(n));
+    /** @type {Awaited<ReturnType<typeof git.applyBranch>>} */
+    let result;
+    try {
+      result = await git.applyBranch(this.repo, this.state.base, this.branchFor(n));
+    } catch (err) {
+      // Nothing was applied: back to choosing, with a reason a person can act on.
+      this.state.phase = 'ready';
+      this.state.chosen = null;
+      await this.#registerTargets();
+      await this.save();
+      const detail = err instanceof Error ? err.message : String(err);
+      const why = /does not match index|already exists in working directory|patch does not apply/.test(detail)
+        ? 'your working tree already has changes to the same files that git can’t merge with it (was a variant already kept from the terminal?)'
+        : 'git could not apply its changes';
+      throw new Error(`Variant ${n} wasn’t applied: ${why}. Nothing in your working tree was changed.`);
+    }
     const depsChanged = result.files.some((f) => /(^|\/)(package\.json|package-lock\.json|pnpm-lock\.yaml|yarn\.lock|bun\.lockb?|composer\.(json|lock)|Gemfile(\.lock)?|go\.(mod|sum)|Cargo\.(toml|lock)|requirements.*\.txt|pyproject\.toml)$/.test(f));
     // The change is already applied: a worktree Windows won't release yet is
     // left for `variantly clean` rather than failing the keep.
@@ -1028,6 +1129,14 @@ export class Session extends EventEmitter {
     await this.saveQueue;
   }
 }
+
+/**
+ * The state file changed behind a shared session.
+ * @typedef {object} ExternalChange
+ * @property {'kept' | 'cleaned' | 'replaced' | 'updated'} kind
+ * @property {number} [n]       kept: the variant
+ * @property {string} message   for the person, in the app
+ */
 
 /** The agent CLI can't do any work here (missing, a shim, not signed in). */
 export class AgentUnavailable extends Error {}

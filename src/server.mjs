@@ -78,7 +78,7 @@ export const serveUi = (req, res) => {
  * @param {{ repo: string, port: number, maxLive?: number, defaults?: Partial<import('./session.mjs').Config> }} opts
  */
 export const startApp = async (opts) => {
-  const session = new Session({ repo: opts.repo, maxLive: opts.maxLive, local: serveUi });
+  const session = new Session({ repo: opts.repo, maxLive: opts.maxLive, local: serveUi, shared: true });
   await session.load();
   /** @type {Set<http.ServerResponse>} */
   const clients = new Set();
@@ -102,6 +102,8 @@ export const startApp = async (opts) => {
   session.on('log', (l) => send('log', l));
   session.on('chat', (c) => send('chat', c));
   session.on('error', (e) => send('problem', { message: String(e?.message ?? e) }));
+  // Kept or cleaned from the terminal: every open page says so and moves on.
+  session.on('external', (c) => send('notice', c));
 
   let port = opts.port;
   const allowedHost = (/** @type {string | undefined} */ host) =>
@@ -164,6 +166,12 @@ export const startApp = async (opts) => {
     switch (`${method} ${name}`) {
       case 'GET state':
         return session.snapshot();
+      case 'POST sync': {
+        // The page re-reads the run when it regains focus and before Keep or
+        // Clean: the CLI may have kept or cleaned it in the meantime.
+        const change = await session.refresh();
+        return { change, state: session.snapshot() };
+      }
       case 'GET detect':
         return detectProject(opts.repo, opts.defaults);
       case 'GET log':
@@ -193,9 +201,15 @@ export const startApp = async (opts) => {
         session.audit(arg).catch(() => {});
         return { ok: true };
       case 'POST finalize':
+        // finalize re-reads the state file first and refuses a run kept or cleaned elsewhere.
         return session.finalize(n, { sitewide: body.sitewide !== false });
-      case 'POST discard':
-        return session.discard();
+      case 'POST discard': {
+        // Already kept or cleaned from the terminal: that answer stands, the page catches up.
+        const change = await session.refresh();
+        if (change) return { change, state: session.snapshot() };
+        await session.discard();
+        return { ok: true };
+      }
       case 'POST install-impeccable':
         return installImpeccable(String(body.agent ?? 'claude'));
       case 'POST install-agent':

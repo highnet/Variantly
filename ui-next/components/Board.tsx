@@ -7,7 +7,7 @@ import { Icon } from './Icon';
 import { ProgressCard, Segments } from './Progress';
 import { Terminal } from './Terminal';
 import { api } from '@/lib/api';
-import { clearLog, fetchLog } from '@/lib/live';
+import { clearLog, fetchLog, syncRun } from '@/lib/live';
 import { LIVE, STATUS, STEPS, agentLabel, agentShort, boardDirection, clock, compactTokens, elapsed, isPickable, pad, progressLabel, scoreText, stepAt, stepState, statusKey, madeBy, vname } from '@/lib/format';
 import { seen, setState, toast, useStore } from '@/lib/store';
 import type { Variant } from '@/lib/types';
@@ -157,6 +157,8 @@ const Board = () => {
   const discard = async () => {
     setDiscarding(true);
     try {
+      // Kept or cleaned from the terminal meanwhile: that stands; the page catches up.
+      if (await syncRun()) return;
       // Going back to change settings lands on Review, every answer kept, so
       // each section's Edit link is one click away.
       if (asking === 'change') {

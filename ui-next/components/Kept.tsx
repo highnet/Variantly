@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import { CommandBlock } from './CommandBlock';
 import { PromptCopy } from './PromptCopy';
 import { api } from '@/lib/api';
-import { resetRun } from '@/lib/live';
+import { resetRun, syncRun } from '@/lib/live';
 import { directionLabel, madeBy, pad, plural, scoreText, usageText, vname } from '@/lib/format';
 import { setState, toast, useStore } from '@/lib/store';
 
@@ -41,6 +41,8 @@ const Kept = () => {
 
   const newRun = async () => {
     try {
+      // Cleaned up from the terminal already: the sync has moved the page on.
+      if (await syncRun()) return;
       await api('POST', 'discard', {});
       resetRun();
       setState({ detect: null, form: null });

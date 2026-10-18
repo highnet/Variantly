@@ -94,6 +94,12 @@ export async function removeWorktree(root, dir) {
   await run("git", ["worktree", "prune"], { cwd: root });
 }
 
+/** Whether `ref` (a branch, a commit) exists. @param {string} root @param {string} ref */
+export async function refExists(root, ref) {
+  if (!ref) return false;
+  return (await run("git", ["rev-parse", "--verify", "--quiet", ref], { cwd: root })).code === 0;
+}
+
 /** @param {string} root @param {string} prefix */
 export async function deleteBranches(root, prefix) {
   const list = await git(root, ["branch", "--list", `${prefix}*`, "--format=%(refname:short)"]);

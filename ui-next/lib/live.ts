@@ -113,20 +113,56 @@ export const fetchLog = async (n: number) => {
   }
 };
 
+/** Take a snapshot from the server: the screen follows its phase. */
+const applySnapshot = (snap: Snapshot) => {
+  const prev = getState().snap?.phase;
+  const fresh = noteStatusChanges(snap);
+  const backToSetup = prev && prev !== snap.phase && snap.phase === 'setup';
+  setState((s) => ({
+    snap,
+    reconnecting: false,
+    unseen: [...new Set([...s.unseen, ...fresh])],
+    ...(backToSetup ? { detect: null, form: null, wantCompare: false, forceBoard: false } : {}),
+  }));
+  if (backToSetup) resetRun();
+};
+
+type ExternalChange = { kind: 'kept' | 'cleaned' | 'replaced'; n?: number; message: string };
+
+/** One toast per change, whether the sync answer or the event stream says it first. */
+let lastNotice = { message: '', at: 0 };
+const notice = (c: ExternalChange) => {
+  const now = Date.now();
+  if (c.message === lastNotice.message && now - lastNotice.at < 5000) return;
+  lastNotice = { message: c.message, at: now };
+  toast(c.message, { tone: 'info' });
+};
+
+/**
+ * Re-read the run from the server. `variantly keep` or `clean` in a terminal
+ * changes it behind the page; the server notices and this catches up. True
+ * when the run was kept, cleaned or replaced elsewhere: whatever the person
+ * was about to do to it is off.
+ */
+export const syncRun = async (): Promise<boolean> => {
+  try {
+    const { change, state } = await api<{ change: ExternalChange | null; state: Snapshot }>('POST', 'sync', {});
+    if (!change) return false;
+    setState({ confirming: false, applying: null });
+    applySnapshot(state);
+    notice(change);
+    return true;
+  } catch {
+    return false; // the server is gone or busy: the action itself will say so
+  }
+};
+
 export const connect = () => {
   const es = new EventSource('/api/events');
-  es.addEventListener('state', (e) => {
-    const snap = JSON.parse((e as MessageEvent).data) as Snapshot;
-    const prev = getState().snap?.phase;
-    const fresh = noteStatusChanges(snap);
-    const backToSetup = prev && prev !== snap.phase && snap.phase === 'setup';
-    setState((s) => ({
-      snap,
-      reconnecting: false,
-      unseen: [...new Set([...s.unseen, ...fresh])],
-      ...(backToSetup ? { detect: null, form: null, wantCompare: false, forceBoard: false } : {}),
-    }));
-    if (backToSetup) resetRun();
+  es.addEventListener('state', (e) => applySnapshot(JSON.parse((e as MessageEvent).data) as Snapshot));
+  es.addEventListener('notice', (e) => {
+    setState({ confirming: false });
+    notice(JSON.parse((e as MessageEvent).data) as ExternalChange);
   });
   es.addEventListener('server', (e) => {
     const srv = JSON.parse((e as MessageEvent).data) as ServerState;
@@ -168,5 +204,16 @@ export const connect = () => {
   es.onerror = () => {
     if (getState().snap) setState({ reconnecting: true });
   };
-  return () => es.close();
+  // Back from the terminal: the run may have been kept or cleaned there.
+  const onFocus = () => {
+    if (getState().snap && !getState().stopped) syncRun();
+  };
+  const onVisible = () => document.visibilityState === 'visible' && onFocus();
+  window.addEventListener('focus', onFocus);
+  document.addEventListener('visibilitychange', onVisible);
+  return () => {
+    es.close();
+    window.removeEventListener('focus', onFocus);
+    document.removeEventListener('visibilitychange', onVisible);
+  };
 };
