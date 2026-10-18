@@ -33,12 +33,10 @@ const Instrument = () => (
           <div className="vy-j-ring">
             <i className="vy-j-cap" />
           </div>
-          <b>{label}</b>
         </div>
       ))}
     </div>
     <div className="vy-j-lcd absolute top-[51vh] right-[3vw] max-lg:hidden">
-      <span>PRESET J · LEVEL</span>
       <div className="vy-j-window">
         <Meter />
       </div>

@@ -46,6 +46,10 @@ name and type. Nothing else changes.
      `concept.css`; see "Grainy gradients" in `app/globals.css`.
    - `status`: `'draft'` while the concept is being built; delete the line
      (or set `'live'`) when it is finished. See **Drafts**.
+     **No text around the title.** Nothing is written above or below the 3D
+     word: no captions, credits, labels, figure numbers or readouts in the
+     title card or the backdrop art around it. Credits belong in the source
+     (a comment in `Backdrop.tsx`), not on the page.
 2. **`concept.css`**: every rule starts with `:root[data-variant='<id>']`
    (theme: add `[data-theme='dark']`). It must set the page tokens in **both
    themes**:
