@@ -540,8 +540,10 @@ export const planStep = (
   let from = phase.step;
   let to = from + 1;
   // Low power tier (html[data-perf='low']): half the morphs, each from an even
-  // step's face to the one two steps on, flowing through the odd step.
-  if (low) {
+  // step's face to the one two steps on, flowing through the odd step. Not
+  // for a two-morph run (a concept change: final -> other -> final), where
+  // skipping the middle face would morph the final face onto itself.
+  if (low && count > 2) {
     from -= from % 2;
     to = Math.min(from + 2, count);
     if (phase.step === from && to > from + 1) {
