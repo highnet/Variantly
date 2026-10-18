@@ -19,12 +19,12 @@ import { PageSkeleton } from '@/components/PageSkeleton';
 import { PromptCopy } from '@/components/PromptCopy';
 import { RollingNumber } from '@/components/RollingNumber';
 import { RunnerPicker } from '@/components/RunnerPicker';
+import { SlatFlip, slatCount, type Flip } from '@/components/SlatFlip';
 import { VariantTitle } from '@/components/VariantTitle';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
 import { markLoaded } from '@/lib/loadProgress';
 import { bakeGoo } from '@/lib/goo';
-import { EASE } from '@/lib/motion';
 import { applyPrefsToFrame, calmMotion, PREFS_EVENT, readPrefs, type Prefs } from '@/lib/prefs';
 import { whenIdle } from '@/lib/scrollIdle';
 import { DEMO_RUNS, PROMPTS } from '@/lib/content';
@@ -65,10 +65,6 @@ const SCROLL_QUIET_MS = 500;
 // How long a freshly loaded live page plays its entrance under the poster.
 const FRAME_SETTLE_MS = 1400;
 
-// The swap wipe: a leaning edge (top ahead, like the divider) crossing the
-// stage from right to left, uncovering the new redesign behind it.
-const SWAP_FROM = 'polygon(125% 0, 125% 0, 125% 100%, 115% 100%)';
-const SWAP_TO = 'polygon(-15% 0, 125% 0, 125% 100%, -25% 100%)';
 type Theme = Prefs['theme'];
 // A pane is one design of one run; the original is the same for every run.
 type Pane = { run: number; n: number };
@@ -630,39 +626,66 @@ const Showcase = () => {
   }, []);
 
   /*
-   * Changing redesign or run: the new one wipes in over the old behind a
-   * leaning edge, like the concept swap, while the old one stays fully drawn
-   * underneath. (A crossfade let the original show through mid-way and
-   * faded in pages that were still blank.) A pane with nothing to show yet
-   * is held back until its poster or page arrives, for a second at most;
-   * in calm mode it then simply replaces the old one, with no wipe.
+   * Changing redesign or run: the after pane turns over like a split-flap
+   * board (SlatFlip), slat by slat in the direction of travel, from the old
+   * poster to the new one, while the old pane stays fully drawn underneath.
+   * The new pane stays hidden (live page included) until every slat has
+   * landed, then takes their place in one cut, on the same pixels. A pane
+   * with nothing to show yet is held back until its poster or page
+   * arrives, for a second at most; in calm mode it simply replaces the old
+   * one. A pick mid-flip turns the board on, quickly, to the latest pick.
    */
+  const [flip, setFlip] = useState<Flip | null>(null);
+  const flipDone = useRef<(() => void) | null>(null);
+  const onLanded = useCallback((id: number) => {
+    flipDone.current?.();
+    flipDone.current = null;
+    setFlip((f) => (f?.id === id ? null : f));
+  }, []);
   useEffect(() => {
     if (under === null) return;
     const from = under;
     const el = swaps.current.get(selKey);
     if (!el) return;
     const queue = waiting.current;
-    const animate = !calm;
-    // Hidden until it has something to show, so the old pane stays in view.
-    el.style.clipPath = animate ? SWAP_FROM : 'inset(0 0 0 100%)';
-    let wipe: Animation | undefined;
+    // Hidden until the slats land on it, so the old pane stays in view.
+    el.style.clipPath = 'inset(0 0 0 100%)';
     let timer = 0;
+    let started = false;
     let gone = false;
     const done = () => setUnder((u) => (u === from ? null : u));
+    const reveal = () => {
+      el.style.clipPath = '';
+      done();
+    };
     const run = () => {
       queue.delete(selKey);
       clearTimeout(timer);
-      if (wipe || gone) return;
-      el.style.clipPath = '';
-      if (!animate) return done();
-      wipe = el.animate([{ clipPath: SWAP_FROM }, { clipPath: SWAP_TO }], {
-        duration: 680,
-        easing: EASE.wipe,
-      });
-      wipe.onfinish = done;
+      if (started || gone) return;
+      started = true;
+      const box = stage.current;
+      if (calm || !theme || !box) return reveal();
+      // Next and later numbers (and the tour wrapping round) ripple left to
+      // right; earlier ones, right to left.
+      const n = DEMO_RUNS[runIdx].variants.length;
+      const ahead =
+        from.run !== runIdx
+          ? runIdx > from.run
+          : (selected > from.n && !(from.n === 1 && selected === n)) ||
+            (from.n === n && selected === 1);
+      flipDone.current = reveal;
+      setFlip((f) => ({
+        id: (f?.id ?? 0) + 1,
+        from: posterFor(DEMO_RUNS[from.run].base, from.n, phone, theme),
+        to: posterFor(DEMO_RUNS[runIdx].base, selected, phone, theme),
+        dir: ahead ? 1 : -1,
+        fast: f !== null,
+        w: box.clientWidth,
+        h: box.clientHeight,
+        count: slatCount(phone),
+      }));
     };
-    // Wipe in only once there is something to show: the poster or the page.
+    // Turn only once there is something to show: the poster or the page.
     const still = theme && posterFor(DEMO_RUNS[runIdx].base, selected, phone, theme);
     if (shownLive(frames.current, selKey) || (still && posterLoaded.current.has(still))) run();
     else {
@@ -673,7 +696,8 @@ const Showcase = () => {
       gone = true;
       queue.delete(selKey);
       clearTimeout(timer);
-      wipe?.cancel();
+      // A newer pick takes the board over; this pane shows as it was.
+      if (flipDone.current === reveal) flipDone.current = null;
       el.style.clipPath = '';
     };
   }, [under, selKey, calm, theme, runIdx, selected, phone]);
@@ -1199,6 +1223,7 @@ const Showcase = () => {
               </div>
             );
           })}
+          <SlatFlip flip={flip} phone={phone} onLanded={onLanded} />
           {/* The panes stay scrollable; this band either side of the line is
             the drag surface, so nobody has to hit the grip exactly. */}
           <div
