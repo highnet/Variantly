@@ -266,8 +266,32 @@ const installSkillCommand = async (o) => {
   }
 };
 
+/**
+ * An app left open on this project holds its worktrees (agents, audits, the
+ * preview servers run in them), and Windows will not delete a folder a live
+ * process sits in. Ask it to let go first; no app, or no answer, is fine.
+ * @param {string} repo
+ */
+const releaseOpenApp = async (repo) => {
+  const { appFileFor } = await import('../src/session.mjs');
+  let url = '';
+  try {
+    url = JSON.parse(readFileSync(appFileFor(repo), 'utf8')).url;
+  } catch {
+    return;
+  }
+  if (!url) return;
+  await fetch(`${url}/api/release`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-variantly': '1' },
+    body: '{}',
+    signal: AbortSignal.timeout(10_000),
+  }).catch(() => {});
+};
+
 /** @param {string} repo */
 const clean = async (repo) => {
+  await releaseOpenApp(repo);
   const { Session, stateDirFor } = await import('../src/session.mjs');
   const git = await import('../src/git.mjs');
   const session = new Session({ repo });
@@ -313,6 +337,7 @@ const status = async (repo) => {
 /** @param {string} repo @param {number} n @param {boolean} sitewide */
 const keep = async (repo, n, sitewide) => {
   if (!Number.isInteger(n) || n < 1) return fail('Usage: variantly keep <n>   (n is the variant number)');
+  await releaseOpenApp(repo);
   const { Session, agentOf } = await import('../src/session.mjs');
   const { agentById } = await import('../src/agents.mjs');
   const session = new Session({ repo });

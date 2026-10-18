@@ -30,19 +30,26 @@
 :root[data-variant='p'] .p-breathe { transform-origin: 50% 60%; will-change: transform; animation: p-breathe 8s ease-in-out infinite; }
 @keyframes p-breathe { 0%, 100% { transform: none; } 50% { transform: scale(1.035) rotate(-1deg); } }
 
-/* one red thread running round the border, a stitch every 3s */
-:root[data-variant='p'] .p-run { position: absolute; overflow: hidden; inset: 12px 12px auto; height: 3px; }
-:root[data-variant='p'] .p-run-b { inset: auto 12px 12px; }
-:root[data-variant='p'] .p-run-l { inset: 12px auto 12px 12px; width: 3px; height: auto; }
-:root[data-variant='p'] .p-run-r { inset: 12px 12px 12px auto; width: 3px; height: auto; }
+/* one red thread running round the border, a stitch every 3s: twisted floss
+   (a sheen line along each stitch), slanted stitch ends, needle holes between */
+:root[data-variant='p'] .p-run { position: absolute; overflow: hidden; inset: 64px 10px auto; height: 4px; opacity: 0.75; }
+:root[data-variant='p'] .p-run-b { inset: auto 10px 10px; }
+:root[data-variant='p'] .p-run-l { inset: 64px auto 10px 10px; width: 4px; height: auto; }
+:root[data-variant='p'] .p-run-r { inset: 64px 10px 10px auto; width: 4px; height: auto; }
 :root[data-variant='p'] .p-run::before {
-  content: ''; position: absolute; inset: 0 -16px; border-radius: 2px; will-change: transform;
-  background: repeating-linear-gradient(90deg, var(--art-1) 0 10px, transparent 10px 16px);
+  content: ''; position: absolute; inset: 0 -16px; will-change: transform;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 1px, rgb(255 255 255 / 0.35) 1px 9px, transparent 9px 16px) 0 1px / 100% 1px no-repeat,
+    repeating-linear-gradient(90deg, var(--art-1) 0 10px, transparent 10px 16px);
+  border-radius: 2px; filter: drop-shadow(0 1px 0 rgb(60 20 10 / 0.25));
   animation: p-run-x 3s linear infinite;
 }
 :root[data-variant='p'] .p-run-b::before { animation-direction: reverse; }
 :root[data-variant='p'] :is(.p-run-l, .p-run-r)::before {
-  inset: -16px 0; background: repeating-linear-gradient(180deg, var(--art-1) 0 10px, transparent 10px 16px);
+  inset: -16px 0;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 1px, rgb(255 255 255 / 0.35) 1px 9px, transparent 9px 16px) 1px 0 / 1px 100% no-repeat,
+    repeating-linear-gradient(180deg, var(--art-1) 0 10px, transparent 10px 16px);
   animation-name: p-run-y;
 }
 :root[data-variant='p'] .p-run-l::before { animation-direction: reverse; }
@@ -57,13 +64,6 @@
 :root[data-variant='p'] .vy-letter { color: var(--p-red); text-shadow: 0 2px 0 var(--p-red-s), 0 8px 14px rgb(40 20 10 / 0.18); }
 :root[data-variant='p'] .vy-letter:nth-child(3n + 2) { color: var(--p-teal); text-shadow: 0 2px 0 var(--p-teal-s), 0 8px 14px rgb(40 20 10 / 0.18); }
 :root[data-variant='p'] .vy-letter:nth-child(3n) { color: var(--p-ochre); text-shadow: 0 2px 0 var(--p-ochre-s), 0 8px 14px rgb(40 20 10 / 0.18); }
-:root[data-variant='p'] [data-hero-title] { padding-bottom: 72px; }
-/* provenance on the surface: the credit stays with the work */
-:root[data-variant='p'] [data-hero-title]::after {
-  content: 'Motifs after Tenango embroidery · Otomí (Hñähñu) artisans of Tenango de Doria, Hidalgo, México';
-  position: absolute; inset: auto 16px 22px; text-align: center;
-  font: 500 12px/1.4 var(--font-sans); letter-spacing: 0.04em; color: var(--hero-mute);
-}
 :root[data-variant='p'] #hero-title { font-weight: 800; letter-spacing: -0.01em; line-height: 1.05; }
 :root[data-variant='p'] main > div h2 { text-transform: none; font-weight: 800; letter-spacing: -0.01em; }
 /* cards: cotton panels with a satin-stitched band along the top */
@@ -72,7 +72,7 @@
   border: 0; border-radius: 6px; position: relative;
   box-shadow: 0 0 0 1px var(--rule), 0 16px 30px -22px rgb(60 30 10 / 0.45);
 }
-:root[data-variant='p'] [data-hero-side] { background: var(--hero-box); padding: 30px 22px 22px; box-shadow: 0 0 0 1px var(--hero-line), 0 16px 30px -22px rgb(60 30 10 / 0.45); }
+:root[data-variant='p'] [data-hero-side] { background: var(--hero-box); padding: 30px 22px 22px; box-shadow: 0 0 0 1px var(--hero-line), 0 16px 30px -22px rgb(0 0 0 / 0.35); }
 :root[data-variant='p'] :is([data-hero-side], main > div .bg-surface)::before {
   content: ''; position: absolute; inset: 0 0 auto; height: 6px; border-radius: 6px 6px 0 0; pointer-events: none;
   background:
@@ -85,9 +85,6 @@
 :root[data-variant='p'][data-theme='dark'] .flap-cell:nth-child(3n + 1) { --flap-ink: #14110f; }
 :root[data-variant='p'] .vy-loadbar { height: 4px; inset: 6px 12px auto; }
 :root[data-variant='p'] .vy-loadbar-fill { border-radius: 2px; background: repeating-linear-gradient(90deg, var(--art-1) 0 10px, transparent 10px 16px); }
-@media (max-width: 639px) {
-:root[data-variant='p'] [data-hero-title] { padding-bottom: 84px; }
-}
 :root[data-variant='p'][data-theme='dark'] .vy-letter { text-shadow: 0 2px 0 var(--p-red-s); }
 :root[data-variant='p'][data-theme='dark'] .vy-letter:nth-child(3n + 2) { text-shadow: 0 2px 0 var(--p-teal-s); }
 :root[data-variant='p'][data-theme='dark'] .vy-letter:nth-child(3n) { text-shadow: 0 2px 0 var(--p-ochre-s); }

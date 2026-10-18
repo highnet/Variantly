@@ -7,8 +7,9 @@ type BrandMarkProps = {
 /*
  * The variantly mark: the product in one tile. An angled before/after divider
  * with its grip splits a plain page (thin lines) from its redesign (bold
- * blocks). Under `[data-audience='agent']` the split folds away into a
- * terminal prompt with a blinking cursor: the same tool, driven by an agent. Geometry and motion live in globals.css under `.brand-mark`.
+ * blocks). Under `[data-audience='agent']` (the /agents page) the split folds
+ * away into a small wall clock whose hand ticks round: a quiet nod to the
+ * agents who keep the timeline in order. Geometry and motion live in globals.css under `.brand-mark`.
  */
 const BrandMark = ({ className }: BrandMarkProps) => {
   return (
@@ -26,9 +27,13 @@ const BrandMark = ({ className }: BrandMarkProps) => {
         <circle className="brand-grip" cx="16" cy="16" r="3.2" />
       </g>
       <g className="brand-agent">
-        <path className="brand-prompt" d="M8 11.5 13.5 16 8 20.5" />
-        <rect className="brand-cursor" x="16" y="18.5" width="8" height="3" rx="1.2" />
-        <circle className="brand-spark" cx="24.5" cy="9" r="2" />
+        {/* A plain wall clock: dial, four hour ticks, an hour hand and a
+            thin hand that ticks round once a minute. */}
+        <circle className="brand-dial" cx="16" cy="16" r="10" />
+        <path className="brand-ticks" d="M16 7.6v1.8M24.4 16h-1.8M16 24.4v-1.8M7.6 16h1.8" />
+        <path className="brand-hour" d="M16 16 12.2 12.6" />
+        <path className="brand-tick-hand" d="M16 17.6V8.8" />
+        <circle className="brand-pin" cx="16" cy="16" r="1.5" />
       </g>
     </svg>
   );

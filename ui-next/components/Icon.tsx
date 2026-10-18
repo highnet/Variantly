@@ -1,6 +1,7 @@
 const PATHS: Record<string, string[]> = {
   slider: ['M3 5h18v14H3z', 'M12 3v18'],
   single: ['M3 5h18v14H3z'],
+  lens: ['M3 5h18v14H3z', 'M9.5 8h5a1.5 1.5 0 0 1 1.5 1.5v5a1.5 1.5 0 0 1-1.5 1.5h-5A1.5 1.5 0 0 1 8 14.5v-5A1.5 1.5 0 0 1 9.5 8z'],
   side: ['M3 5h8v14H3z', 'M13 5h8v14h-8z'],
   board: ['M4 6h16', 'M4 10h16', 'M4 14h16', 'M4 18h10'],
   chat: ['M4 5h16v11H9l-5 4z', 'M8 9.5h8', 'M8 12.5h5'],

@@ -165,7 +165,8 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
         const u = (((t / 24 + m.phase) % 1) + 1) % 1;
         const lift = 0.5 - 0.5 * Math.cos(u * Math.PI * 2);
         const s = narrow ? 0.62 : isBird ? 2.1 : 1.6;
-        m.g.visible = isBird || !narrow;
+        // The left bird would sit on every page's top-left heading, so it stays home.
+        m.g.visible = isBird ? m.side === 1 : !narrow;
         m.g.scale.set(-m.side * s, s, s);
         m.g.position.set(
           m.side * (halfW - (narrow ? 0.38 : isBird ? 1.45 : 0.75)),

@@ -127,7 +127,10 @@ test('cleaned from the terminal: Keep in the stale app refuses plainly, and its 
 
 test('Keep checks the run is still there: a missing branch is a plain error, not git\'s', async () => {
   await makeRun();
-  // Gone behind every session's back, with the state file untouched.
+  // Gone behind every session's back, with the state file untouched. (The
+  // previews let go first, as a person closing the app would: Windows will
+  // not delete a folder a live process sits in.)
+  await app.session.release();
   await git('worktree', 'remove', '--force', app.session.worktreeFor(1));
   await git('branch', '-D', app.session.branchFor(1));
   const fin = await api('POST', 'finalize/1', { sitewide: false });

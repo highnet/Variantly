@@ -4,12 +4,11 @@ import { plain, type LetterLook } from '@/lib/lookKit';
 import type { ConceptLook } from '@/concepts/types';
 
 /*
- * k · Ink & Stitch: matte cotton-paper letters, sewn. A running stitch of
- * rust thread pierces each face along its own seam (every look is one
- * editioned seam: height, angle, pitch); some letters wear a dry-brush ink
- * pass, and on a few the stitches have lifted off and hover in front of the
- * face, leaving their needle holes behind.
- * Glyph units: 1em = 2, baseline y = 0, front face at z = 0.
+ * k · Ink & Stitch: inked letterforms, sewn. Each face is a solid pass of
+ * brush ink (bristle streaks inside it, never gaps), and a running stitch of
+ * thread follows the letter's rim (the bevel and the top of its wall), so
+ * every glyph reads as an appliqué sewn down around its own outline.
+ * Glyph units: 1em = 2, baseline y = 0, front face at z = 0, walls to -0.4.
  */
 
 const VERT = /* glsl */ `
@@ -27,11 +26,10 @@ void main() {
 }`;
 
 const FRAG = /* glsl */ `
-uniform vec3 uA;
+uniform vec3 uFace;
+uniform vec3 uWall;
 uniform vec3 uT;
-uniform vec3 uInk;
-uniform vec4 uSeam;   // angle, height, pitch, thread on face (0/1)
-uniform vec4 uMode;   // brush coverage, only thread (lifted layer), holes, seed
+uniform vec4 uStitch; // pitch, bristle strength, seed, stroke angle
 varying vec3 vN;
 varying vec3 vV;
 varying vec3 vObj;
@@ -45,120 +43,76 @@ void main() {
   vec3 n = normalize(vN);
   if (!gl_FrontFacing) n = -n;
   vec3 L = normalize(vec3(-0.45, 0.6, 0.65));
-  vec3 v = normalize(vV);
-  float face = step(0.92, vFront);
-  // The seam: s runs along it, a across it.
-  vec2 d = vec2(cos(uSeam.x), sin(uSeam.x));
-  float s = dot(vObj.xy, d) / uSeam.z;
-  float a = (dot(vObj.xy, vec2(-d.y, d.x)) - uSeam.y) / 0.055;
-  float k = fract(s);
-  float dash = smoothstep(0.0, 0.08, k) * (1.0 - smoothstep(0.58, 0.66, k));
-  float thread = face * dash * (1.0 - smoothstep(0.75, 1.0, abs(a)));
-  // Needle holes where each stitch dives through the paper.
-  float hole = face * (1.0 - smoothstep(0.3, 0.7, length(vec2((k - 0.62) * uSeam.z / 0.055, a))))
-             + face * (1.0 - smoothstep(0.3, 0.7, length(vec2(min(k, 1.0 - k) * uSeam.z / 0.055, a))));
-  if (uMode.y > 0.5) {
-    // The lifted layer: only the thread itself.
-    if (thread < 0.5) discard;
-  }
-  // Matte cotton paper: wrapped diffuse, fibre speckle, a slightly darker edge.
   float wrap = clamp((dot(n, L) + 0.55) / 1.55, 0.0, 1.0);
-  float fibre = hash(floor(vObj.xy * 70.0) + uMode.w);
-  vec3 c = uA * (0.52 + 0.55 * wrap) * (0.94 + 0.06 * fibre);
-  // Dry-brush ink: bristle rows that break up along the stroke.
-  if (uMode.x > 0.0) {
-    float row = vnoise(vec2(vObj.x * 1.6 + uMode.w, vObj.y * 34.0));
-    float drag = vnoise(vec2(vObj.x * 7.0, vObj.y * 9.0 + uMode.w));
-    float edge = abs(vObj.y - 0.42 - 0.14 * sin(vObj.x * 1.7 + uMode.w)) - uMode.x;
-    float band = 1.0 - smoothstep(-0.02, 0.02, edge + (row - 0.5) * 0.12);
-    float ink = face * band * step(0.36, row * 0.75 + drag * 0.45);
-    c = mix(c, uInk * (0.85 + 0.25 * wrap), ink);
+  float face = step(0.92, vFront);
+  vec3 c;
+  if (face > 0.5) {
+    // Brush ink: bristle streaks along one stroke direction, a gentle sheen.
+    vec2 d = vec2(cos(uStitch.w), sin(uStitch.w));
+    vec2 q = vec2(dot(vObj.xy, d), dot(vObj.xy, vec2(-d.y, d.x)));
+    float streak = vnoise(vec2(q.x * 1.2 + uStitch.z, q.y * 42.0));
+    c = uFace * (0.82 + 0.22 * wrap) * (1.0 - uStitch.y * (streak - 0.5));
+  } else {
+    // The wall: matte cotton with a running stitch around the rim.
+    float fibre = hash(floor(vObj.xy * 70.0) + uStitch.z);
+    c = uWall * (0.55 + 0.5 * wrap) * (0.95 + 0.05 * fibre);
+    float rim = 1.0 - smoothstep(0.1, 0.14, -vObj.z);
+    float s = (vObj.x + vObj.y) / uStitch.x;
+    float k = fract(s);
+    float dash = smoothstep(0.0, 0.06, k) * (1.0 - smoothstep(0.56, 0.62, k));
+    float hole = (1.0 - smoothstep(0.0, 0.05, abs(k - 0.78))) * rim;
+    c *= 1.0 - 0.45 * hole;
+    vec3 cord = uT * (0.6 + 0.5 * wrap);
+    c = mix(c, cord, rim * dash);
   }
-  // Holes darken the paper; the thread is a round cord with a sheen.
-  c *= 1.0 - 0.55 * clamp(hole, 0.0, 1.0) * uMode.z * (1.0 - thread * uSeam.w);
-  float lit = sqrt(max(0.0, 1.0 - a * a));
-  vec3 cord = uT * (0.45 + 0.65 * lit) + pow(lit, 6.0) * 0.12;
-  c = mix(c, cord, thread * max(uSeam.w, uMode.y));
   gl_FragColor = vec4(c, 1.0);
   #include <colorspace_fragment>
-  gl_FragColor.rgb += (hash(gl_FragCoord.xy + uMode.w) - 0.5) * 0.03;
+  gl_FragColor.rgb += (hash(gl_FragCoord.xy + uStitch.z) - 0.5) * 0.025;
 }`;
 
-type Seam = { angle: number; y: number; pitch: number; sewn: boolean };
-type Opts = { seam: Seam; brush?: number; lifted?: boolean; holes?: boolean; seed: number };
+type Opts = {
+  face: string;
+  wall: string;
+  thread: string;
+  pitch: number;
+  bristle: number;
+  seed: number;
+  angle: number;
+};
 
-const mat = (a: string, thread: string, ink: string, o: Opts, onlyThread = false) =>
+const mat = (o: Opts) =>
   new THREE.ShaderMaterial({
     vertexShader: VERT,
     fragmentShader: FRAG,
     uniforms: {
-      uA: { value: new THREE.Color(a) },
-      uT: { value: new THREE.Color(thread) },
-      uInk: { value: new THREE.Color(ink) },
-      uSeam: {
-        value: new THREE.Vector4(o.seam.angle, o.seam.y, o.seam.pitch, o.seam.sewn ? 1 : 0),
-      },
-      uMode: {
-        value: new THREE.Vector4(o.brush ?? 0, onlyThread ? 1 : 0, o.holes ? 1 : 0, o.seed),
-      },
+      uFace: { value: new THREE.Color(o.face) },
+      uWall: { value: new THREE.Color(o.wall) },
+      uT: { value: new THREE.Color(o.thread) },
+      uStitch: { value: new THREE.Vector4(o.pitch, o.bristle, o.seed, o.angle) },
     },
     toneMapped: false,
   });
 
 export const look: ConceptLook = {
-  pool: (ink, dark) => {
+  pool: (_ink, dark) => {
+    // Light: sumi ink on cream paper. Dark: chalk-white ink on the dark sheet.
+    const ink = dark ? '#f1e8d8' : '#1d1a17';
+    const rustInk = dark ? '#e3825f' : '#9c3c25';
+    const wall = dark ? '#cfc4b1' : '#e9dfcc';
     const rust = dark ? '#e06a45' : '#a8432a';
     const ochre = dark ? '#e0ae48' : '#b9862a';
-    const sumi = dark ? '#0f0d0b' : '#1d1a17';
-    const paper = dark ? '#f1e8d8' : '#fbf6ec';
-    const looks: [Opts, string][] = [
-      [{ seam: { angle: 0, y: 0.62, pitch: 0.3, sewn: true }, holes: true, seed: 1 }, rust],
-      [
-        {
-          seam: { angle: 0.32, y: 0.5, pitch: 0.28, sewn: true },
-          brush: 0.16,
-          holes: true,
-          seed: 2,
-        },
-        rust,
-      ],
-      [
-        {
-          seam: { angle: -0.18, y: 0.72, pitch: 0.32, sewn: false },
-          lifted: true,
-          holes: true,
-          seed: 3,
-        },
-        rust,
-      ],
-      [
-        { seam: { angle: 0.0, y: 0.36, pitch: 0.3, sewn: true }, brush: 0.9, holes: true, seed: 4 },
-        paper,
-      ],
-      [{ seam: { angle: 1.25, y: 0.1, pitch: 0.3, sewn: true }, holes: true, seed: 5 }, ochre],
-      [
-        {
-          seam: { angle: 0.12, y: 0.9, pitch: 0.28, sewn: false },
-          lifted: true,
-          brush: 0.14,
-          holes: true,
-          seed: 6,
-        },
-        ochre,
-      ],
+    const thread = dark ? '#1d1a17' : '#f3ecdf';
+    const looks: Opts[] = [
+      { face: ink, wall, thread: rust, pitch: 0.16, bristle: 0.22, seed: 1, angle: 0.2 },
+      { face: rustInk, wall, thread, pitch: 0.14, bristle: 0.18, seed: 2, angle: -0.3 },
+      { face: ink, wall, thread: ochre, pitch: 0.18, bristle: 0.3, seed: 3, angle: 1.2 },
+      { face: ink, wall, thread: rust, pitch: 0.12, bristle: 0.12, seed: 4, angle: 0.0 },
+      { face: rustInk, wall, thread: ochre, pitch: 0.16, bristle: 0.24, seed: 5, angle: 0.6 },
+      { face: ink, wall, thread: rust, pitch: 0.2, bristle: 0.35, seed: 6, angle: -0.9 },
     ];
-    return looks.map(([o, thread]): LetterLook => {
-      const l = plain(
-        mat(ink.face, thread, sumi, o),
-        mat(ink.side, thread, sumi, { ...o, brush: 0 }),
-      );
-      if (!o.lifted) return l;
-      // The stitches have come loose: they hover in front of the face.
-      return {
-        ...l,
-        extra: mat(ink.face, thread, sumi, { ...o, brush: 0 }, true),
-        offset: [0.05, 0.08, 0.34],
-      };
+    return looks.map((o): LetterLook => {
+      const m = mat(o);
+      return plain(m, m);
     });
   },
   shadow: (dark) => ({

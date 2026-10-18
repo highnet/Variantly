@@ -4,7 +4,7 @@ import type { ConceptLook } from '@/concepts/types';
 export const look: ConceptLook = {
   pool: (ink, _dark, phone) =>
     [0, 1, 0, 1, 0, 1].map((hatch) =>
-      both(ink, (a) => shader('toon', { a, hatch: phone ? 0 : hatch, cell: 5, grain: 0.02 })),
+      both(ink, (a) => shader('toon', { a, hatch: phone ? 0 : hatch, cell: 5, grain: 0.05 })),
     ),
   shadow: (dark) => ({
     color: dark ? '#ff3d00' : '#000000',

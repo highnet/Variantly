@@ -91,9 +91,6 @@
   font-family: var(--font-typewriter);
   color: var(--alert);
 }
-:root[data-variant='c'][data-theme='dark'] main > div .figure:not(h3) {
-  text-shadow: 0 0 16px rgb(255 176 0 / 0.5);
-}
 @media (max-width: 639px) {
   :root[data-variant='c'] [data-hero-grid] {
     margin: 0 12px 24px;
@@ -109,9 +106,6 @@
 :root[data-variant='c'][data-theme='dark'] {
   --flap-bg: #2a1d08;
   --flap-ink: #ffb000;
-}
-:root[data-variant='c'][data-theme='dark'] .flap-cell {
-  text-shadow: 0 0 8px rgb(255 176 0 / 0.6);
 }
 :root[data-variant='c'] {
   --board-bg: #1d2a28;
@@ -161,4 +155,8 @@
   background: var(--panel);
   padding: 6px 8px;
   border: 1px solid var(--rule);
+}
+/* Grain on surfaces (see Grainy gradients in app/globals.css). */
+:root[data-variant='c'] {
+  --grain-tile: var(--grain-soft);
 }

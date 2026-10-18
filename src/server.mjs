@@ -11,7 +11,7 @@
  * approves.
  */
 import http from 'node:http';
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, mkdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findChrome } from './checks.mjs';
@@ -21,7 +21,7 @@ import { detectRoutes } from './routes.mjs';
 import * as git from './git.mjs';
 import { LineBuffer, isUp, run, runOk, spawnShell } from './proc.mjs';
 import { ADAPTERS, detect, packageRunner, projectInfo as projectInfoFor } from './stacks.mjs';
-import { Session } from './session.mjs';
+import { Session, appFileFor } from './session.mjs';
 import { createSiteRunner, openFolder } from './open-site.mjs';
 
 const UI_DIR = fileURLToPath(new URL('../ui/', import.meta.url));
@@ -178,6 +178,10 @@ export const startApp = async (opts) => {
         return { lines: session.logFor(n) };
       case 'GET rollout-log':
         return { lines: session.rolloutLog() };
+      case 'POST release':
+        // `variantly clean` / `keep` in a terminal: let go of the worktrees.
+        await session.release();
+        return { ok: true };
       case 'POST cancel-rollout':
         await session.cancelRollout();
         return { ok: true };
@@ -298,6 +302,14 @@ export const startApp = async (opts) => {
   const address = server.address();
   port = typeof address === 'object' && address ? address.port : port;
 
+  // Announce this app, so `variantly clean` / `keep` in a terminal can ask it
+  // to let go of the worktrees first (see session.release).
+  const appFile = appFileFor(opts.repo);
+  try {
+    mkdirSync(path.dirname(appFile), { recursive: true });
+    writeFileSync(appFile, JSON.stringify({ url: `http://127.0.0.1:${port}`, pid: process.pid }));
+  } catch {}
+
   const app = {
     url: `http://localhost:${port}`,
     port,
@@ -308,6 +320,9 @@ export const startApp = async (opts) => {
       send('problem', { message });
     },
     close: async () => {
+      try {
+        rmSync(appFile, { force: true });
+      } catch {}
       for (const c of clients) c.end();
       await site.close().catch(() => {});
       await session.close();

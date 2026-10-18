@@ -197,6 +197,9 @@ The app's JSON API is on the same port. Every POST needs the header
 GET  /api/state            the run, servers included
 POST /api/sync             re-read the run after `variantly keep`/`clean` in a
                            terminal; { change, state }, change null if none
+POST /api/release          stop the app's agents, audits and previews so a
+                           terminal `clean`/`keep` can remove the worktrees
+                           (the CLI calls it itself; the run stays)
 GET  /api/detect           detected stacks, agents, defaults
 POST /api/generate         start a run (body: the wizard's config)
 POST /api/ensure/v3        start variant 3's dev server

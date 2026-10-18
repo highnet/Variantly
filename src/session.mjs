@@ -141,6 +141,13 @@ export const stateDirFor = (repo) => {
   return path.join(process.env.VARIANTLY_HOME ?? path.join(os.homedir(), '.variantly'), `${slug}-${hash}`);
 };
 
+/**
+ * Where an open app announces itself ({ url, pid }), beside the state folder
+ * rather than in it, so `variantly clean` removing the folder leaves it.
+ * @param {string} repo
+ */
+export const appFileFor = (repo) => `${stateDirFor(repo)}.app.json`;
+
 export class Session extends EventEmitter {
   /**
    * @param {{ repo: string, maxLive?: number, local?: import('./proxy.mjs').ProxyOptions['local'], shared?: boolean }} opts
@@ -1115,6 +1122,22 @@ export class Session extends EventEmitter {
     await rm(path.join(this.dir, 'cargo'), { recursive: true, force: true });
     await rm(path.join(this.dir, 'browser'), { recursive: true, force: true });
     await this.save();
+  }
+
+  /**
+   * Let go of every worktree without ending the run: stop the agents, audits
+   * and preview servers running in them. Asked by `variantly clean` or
+   * `keep` in a terminal while this app is open, so they can remove the
+   * worktrees (Windows will not delete a folder a live process sits in). The
+   * page catches up on its next sync; previews restart on demand.
+   */
+  async release() {
+    for (const run of [...this.runs.values(), ...(this.rolloutRun ? [this.rolloutRun] : [])]) {
+      run.cancelled = true;
+      if (run.child) await killTree(run.child).catch(() => {});
+    }
+    await killAudits().catch(() => {});
+    await this.pool.closeAll();
   }
 
   async close() {

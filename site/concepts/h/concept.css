@@ -48,7 +48,6 @@
 @media (prefers-reduced-motion: reduce), (pointer: coarse) {
   :root[data-variant='h'] .vy-h-sweep { animation: none; }
 }
-:root[data-variant='h'] .vy-h-proofs figcaption { font: 400 16px/1 var(--font-silk); color: var(--art-ink); }
 :root[data-variant='h'] .vy-scene canvas { image-rendering: pixelated; }
 
 /* The page: Silkscreen heads, square corners, 2px rules, rust only where it matters. */
@@ -58,7 +57,6 @@
   color: var(--alert); text-decoration: none; padding-bottom: 0.12em;
   background: repeating-conic-gradient(var(--alert) 0 25%, #0000 0 50%) 0 100% / 4px 4px repeat-x;
 }
-:root[data-variant='h'] [data-hero-grid] { border-top: 2px solid var(--hero-line); }
 :root[data-variant='h'] [data-hero-side] { position: relative; padding: 24px; border: 2px solid var(--hero-line); background: var(--hero-box); }
 :root[data-variant='h'] [data-hero-side]::after {
   content: ''; position: absolute; inset: 8px -10px -10px 8px; z-index: -1;
@@ -79,3 +77,5 @@
 :root[data-variant='h'] .vy-loadbar { height: 8px; }
 :root[data-variant='h'] .vy-loadbar-fill { background: var(--art-1); }
 :root[data-variant='h'] .vy-loadbar::after { content: ''; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, #0000 0 8px, var(--panel) 8px 10px); }
+/* the hero's pressed toggles and up-deltas: readable on the light paper */
+:root[data-variant='h']:not([data-theme='dark']) section.on-slate { --ok-on-slate: #94381f; }

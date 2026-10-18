@@ -10,7 +10,16 @@ import type { ConceptLook } from '@/concepts/types';
  * the slot's own transform in concept.css, which the 3D word copies.
  */
 export const look: ConceptLook = {
-  pool: (ink, _dark, phone) => {
+  pool: (raw, dark, phone) => {
+    // Dark: lift the signal red so it holds against near-black, and keep to flat
+    // print looks (shaded red goes muddy and smears into the ground).
+    const lift = (c: string) => (dark && c.toLowerCase() === '#c0392b' ? '#e0533f' : c);
+    const ink = { face: lift(raw.face), side: lift(raw.side) };
+    if (dark)
+      return [
+        (a: string) => shader('flat', { a, grain: 0 }),
+        (a: string) => shader('flat', { a, grain: 0.02 }),
+      ].map((make) => both(ink, make));
     const looks: ((a: string) => THREE.Material)[] = [
       (a) => shader('flat', { a, grain: 0.02 }),
       (a) => shader('facet', { a, grain: 0.02 }),
@@ -26,7 +35,7 @@ export const look: ConceptLook = {
   },
   shadow: (dark) => ({
     color: dark ? '#000000' : '#0f0f0f',
-    opacity: dark ? 0.5 : 0.22,
+    opacity: dark ? 0.35 : 0.22,
     radius: 1,
     dir: [-0.15, 0.3, 1],
   }),

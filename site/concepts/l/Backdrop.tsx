@@ -1,11 +1,8 @@
 import { Piece } from '@/components/backdrop/artKit';
-import { LIVE_IDS } from '@/concepts/metas';
-import { cn } from '@/lib/utils';
 
 /*
  * l · Inflated Chrome. A horizon over a wireframe floor that rolls toward
- * you (one 72px cell every 3s), chrome starburst glints on the beat, and
- * micro captions that carry real numbers, like a detector printout.
+ * you (one 72px cell every 3s), and chrome starburst glints on the beat.
  */
 type StarProps = {
   spin?: string;
@@ -23,18 +20,6 @@ const Star = ({ spin = 'vy-ll-spin' }: StarProps) => (
     <path d="M50 14 C52 38 56 44 70 48 C56 46 52 44 50 14Z" fill="#fff" fillOpacity="0.85" />
   </g>
 );
-
-const CAPTIONS = [
-  [
-    'top-[12%] left-4 sm:left-8',
-    `l/${LIVE_IDS.length}  inflated chrome\nmetalness 1.00  rough 0.05`,
-  ],
-  ['top-[12%] right-4 text-right sm:right-8 max-sm:hidden', 'port 4477\nloop 24.000s @ 120bpm'],
-  [
-    'bottom-[16%] right-4 text-right sm:right-8 max-sm:hidden',
-    `grid 72px  24px/s\n${LIVE_IDS.length} looks  keep 1`,
-  ],
-] as const;
 
 const InflatedChrome = () => (
   <>
@@ -54,20 +39,15 @@ const InflatedChrome = () => (
     <div className="vy-ll-floor absolute inset-x-0 bottom-0 overflow-hidden">
       <div className="vy-ll-grid" />
     </div>
-    <Piece className="top-[44%] left-[4%] size-[7vmax]" float={0}>
+    <Piece className="top-[44%] left-[4%] size-[7vmax] max-sm:hidden" float={0}>
       <Star />
     </Piece>
-    <Piece className="top-[52%] right-[8%] size-[6vmax]" float={1}>
+    <Piece className="top-[52%] right-[8%] size-[6vmax] max-sm:hidden" float={1}>
       <Star spin="vy-ll-spin vy-ll-spin-b" />
     </Piece>
     <Piece className="top-[9%] right-[30%] size-[3.5vmax] max-sm:hidden" float={2}>
       <Star />
     </Piece>
-    {CAPTIONS.map(([at, text]) => (
-      <p key={at} className={cn('vy-ll-cap absolute m-0', at)}>
-        {text}
-      </p>
-    ))}
   </>
 );
 

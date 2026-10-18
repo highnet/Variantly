@@ -66,10 +66,10 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
   scene.add(sun);
 
   const mats = colors
-    .slice(0, 3)
+    .slice(0, 2)
     .map((c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.62, flatShading: true }));
   const slabs = ROW.map(([ch, x, z, c]) => {
-    const m = new THREE.Mesh(slab(ch), mats[c]);
+    const m = new THREE.Mesh(slab(ch), mats[Math.min(c, 1)]);
     m.position.set(x, 0, z);
     scene.add(m);
     return m;
@@ -85,11 +85,12 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
         m.rotation.y = (dir * (turns(t + phase) * TAU)) / 4 + 0.35 * dir;
       });
       const narrow = camera.aspect < 1;
-      // Low and close: the slabs loom and crop each other at the right. Phones
+      // Low and close: the slabs loom and crop each other at the right edge. Phones
       // see the row from further back, up behind the title, all in grey.
-      slabs[2].material = mats[narrow ? 1 : 2];
-      camera.position.set(narrow ? 2 : -2, narrow ? 1 : 1.6, narrow ? 34 : 15);
-      camera.lookAt(narrow ? 2 : -5.5, narrow ? -4 : 4.4, 0);
+      // Wide: the row is pushed right, past the title's column, and kept grey;
+      // the oxblood stays in the flat bars.
+      camera.position.set(narrow ? 2 : -9, narrow ? 1 : 1.6, narrow ? 34 : 18);
+      camera.lookAt(narrow ? 2 : -10.5, narrow ? -4 : 4.4, 0);
     },
   };
 };

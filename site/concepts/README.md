@@ -38,9 +38,22 @@ name and type. Nothing else changes.
    - `font`: CSS `font-family` for the tile name, e.g. `var(--font-clay)`. Use a
      face the layout already loads (`--font-*` vars in `lib/introFonts.ts` and
      `app/layout.tsx`); a name it does not load falls back to the next entry.
-   - `grain`: opacity (0–0.3) of the shared film-grain overlay.
+   - `grain`: strength (0–0.5) of the film grain GlField puts on the scene's
+     shapes: 0 none, 0.2 clearly grainy, 0.4 heavy print grain. Optional
+     `grainChroma` (0–1, default 0.35) is its share of colour noise. The 2D
+     art's grain is `--art-grain` (0–1) and the page surfaces' grain is
+     `--grain-tile` (`var(--grain-soft|mid|strong)` or `none`), both set in
+     `concept.css`; see "Grainy gradients" in `app/globals.css`.
    - `status`: `'draft'` while the concept is being built; delete the line
      (or set `'live'`) when it is finished. See **Drafts**.
+     **Nothing behind the title.** The 3D word sits on clear ground: no backdrop
+   art, 3D props, patterns or texture with contrast run behind or through it,
+   on any viewport (check desktop and a 390px phone in both themes). A soft,
+   even glow or the page ground itself is fine.
+   **No text around the title.** Nothing is written above or below the 3D
+     word: no captions, credits, labels, figure numbers or readouts in the
+     title card or the backdrop art around it. Credits belong in the source
+     (a comment in `Backdrop.tsx`), not on the page.
 2. **`concept.css`**: every rule starts with `:root[data-variant='<id>']`
    (theme: add `[data-theme='dark']`). It must set the page tokens in **both
    themes**:
