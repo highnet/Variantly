@@ -160,7 +160,11 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
       const k = wide ? 0.78 : 0.28;
       den.scale.setScalar(k);
       // On the Backdrop's shelf: 55% down the screen, 32% on phones.
-      den.position.set(wide ? hh * aspect * 0.64 : hh * aspect * 0.58, (wide ? -0.1 : 0.36) * hh, 0);
+      den.position.set(
+        wide ? hh * aspect * 0.64 : hh * aspect * 0.58,
+        (wide ? -0.1 : 0.36) * hh,
+        0,
+      );
       den.rotation.y = -0.18;
       const p = (t / 24) * Math.PI * 2;
       // The lamp breathes (8s); the handset floats (6s), turning a little.
