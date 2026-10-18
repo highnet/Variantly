@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
+  useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent,
@@ -21,6 +22,7 @@ import { VariantTitle } from '@/components/VariantTitle';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
 import { markLoaded } from '@/lib/loadProgress';
+import { bakeGoo } from '@/lib/goo';
 import { EASE } from '@/lib/motion';
 import { applyPrefsToFrame, calmMotion, PREFS_EVENT, readPrefs, type Prefs } from '@/lib/prefs';
 import { whenIdle } from '@/lib/scrollIdle';
@@ -74,6 +76,10 @@ const paneKey = ({ run, n }: Pane) => (n === 0 ? 'before' : `${DEMO_RUNS[run].id
 // takes its frame with it, so a remount starts over.
 const shownLive = (frames: Map<string, HTMLIFrameElement>, key: string) =>
   frames.get(key)?.style.opacity === '1';
+// The picker's grid area for a number: ten to a row. The spans matter: an
+// absolutely placed grid child with an auto end line runs to the grid's edge.
+const cellArea = (n: number) =>
+  `${Math.floor((n - 1) / 10) + 1} / ${((n - 1) % 10) + 1} / span 1 / span 1`;
 const vname = (n: number) => `V${String(n).padStart(2, '0')}`;
 const LONGEST = Math.max(...DEMO_RUNS.flatMap((r) => r.variants.map((v) => v.direction.length)));
 // Sized so the longest direction's cells fill the row at most.
@@ -278,6 +284,8 @@ const Showcase = () => {
   // Where a newly picked run starts: its first design, or its last when the
   // phone's back button steps across from the run after it.
   const [runStart, setRunStart] = useState(1);
+  // The number drawn lit (the pill's ink): the selection, except mid-hop.
+  const [lit, setLit] = useState<number | null>(selected);
   if (wasRun !== runIdx) {
     // The old run's pane stays drawn underneath until the new one arrives.
     setWasRun(runIdx);
@@ -285,10 +293,14 @@ const Showcase = () => {
     setWas(runStart);
     setUnder({ run: wasRun, n: was });
     setMounted(new Set([runStart]));
+    setLit(runStart);
   } else if (was !== selected) {
     setWas(selected);
     setUnder({ run: runIdx, n: was });
     setMounted((m) => (m.has(selected) ? m : new Set(m).add(selected)));
+    // The old number stays lit until the goo leaves it (the hop hands the
+    // light on); in calm mode the new one lights at once.
+    setLit(calm ? selected : was);
   }
   const selKey = paneKey({ run: runIdx, n: selected });
   const selKeyRef = useRef(selKey);
@@ -828,6 +840,77 @@ const Showcase = () => {
     cells.current[to[e.key]]?.focus();
   };
 
+  // The goo hop between numbers: baked once per pick, played by WAAPI on
+  // transforms. Calm mode, a run switch or a first paint just moves the pill.
+  const picker = useRef<HTMLDivElement>(null);
+  const pill = useRef<HTMLSpanElement>(null);
+  const gooTail = useRef<HTMLSpanElement>(null);
+  const gooNeck = useRef<HTMLSpanElement>(null);
+  const gooFrom = useRef({ run: runIdx, n: selected });
+  const gooPlay = useRef<Animation[]>([]);
+  const gooTimer = useRef(0);
+  useLayoutEffect(() => {
+    const prev = gooFrom.current;
+    gooFrom.current = { run: runIdx, n: selected };
+    const grid = picker.current;
+    const head = pill.current;
+    const tail = gooTail.current;
+    const neck = gooNeck.current;
+    const src = cells.current[prev.n];
+    const dst = cells.current[selected];
+    if (!grid || !head || !tail || !neck || !dst) return;
+    // Phones show a counter instead of the grid: nothing to hop between.
+    const shown = grid.getClientRects().length > 0;
+    const hop = shown && prev.run === runIdx && prev.n !== selected && src && !calmMotion();
+    // The light passes from the old number to the new one as the goo does.
+    clearTimeout(gooTimer.current);
+    const light = (at: number, n: number | null, then?: () => void) =>
+      (gooTimer.current = window.setTimeout(() => {
+        setLit(n);
+        then?.();
+      }, at));
+    // A hop that interrupts another starts from wherever the pill is now.
+    const moving = head.getBoundingClientRect();
+    gooPlay.current.forEach((a) => a.cancel());
+    gooPlay.current = [];
+    if (!hop) {
+      light(0, selected);
+      return;
+    }
+    const still = head.getBoundingClientRect();
+    const centre = (r: DOMRect) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+    const from = centre(src.getBoundingClientRect());
+    const to = centre(dst.getBoundingClientRect());
+    const start = {
+      x: from.x + centre(moving).x - centre(still).x,
+      y: from.y + centre(moving).y - centre(still).y,
+    };
+    const a = cells.current[1]?.getBoundingClientRect();
+    const b = cells.current[2]?.getBoundingClientRect();
+    const pitch = a && b ? b.left - a.left : dst.offsetWidth;
+    const rest = parseFloat(getComputedStyle(head).borderTopLeftRadius) || 6;
+    const plan = bakeGoo(start, from, to, pitch || 40, {
+      rest,
+      round: Math.max(rest, head.offsetHeight / 2),
+    });
+    tail.style.gridArea = cellArea(prev.n);
+    neck.style.gridArea = cellArea(prev.n);
+    const opts = { duration: plan.duration, easing: 'linear' };
+    gooPlay.current = [
+      head.animate(plan.head, opts),
+      tail.animate(plan.tail, opts),
+      neck.animate(plan.neck, opts),
+    ];
+    light(plan.leaveMs, null, () => light(plan.arriveMs - plan.leaveMs, selected));
+  }, [selected, runIdx]);
+  useEffect(() => {
+    const play = gooPlay;
+    return () => {
+      play.current.forEach((a) => a.cancel());
+      clearTimeout(gooTimer.current);
+    };
+  }, []);
+
   return (
     <section
       ref={root}
@@ -1271,12 +1354,40 @@ const Showcase = () => {
             {/* Ten to a row, so twenty fit a phone in two rows and every
                 number stays in view. */}
             <div
+              ref={picker}
               id="demo-picker"
               role="radiogroup"
               aria-label={`${run.label} redesigns, 1 to ${count}`}
               onKeyDown={onCellsKey}
-              className="hidden gap-1 sm:grid sm:grid-cols-[repeat(10,2.5rem)]"
+              className="relative isolate hidden gap-1 sm:grid sm:grid-cols-[repeat(10,2.5rem)]"
             >
+              {/* The lit pill, drawn in the selected cell's grid area under
+                  the numbers; a new pick sends it over as goo (lib/goo.ts)
+                  with the blob it leaves behind and the neck between. */}
+              <span
+                ref={pill}
+                aria-hidden="true"
+                style={{ gridArea: cellArea(selected) }}
+                className="rounded-control bg-surface shadow-cell pointer-events-none absolute inset-0 z-[1] -translate-y-0.5"
+              />
+              <span
+                ref={gooTail}
+                aria-hidden="true"
+                className="rounded-control bg-surface pointer-events-none absolute inset-0 z-[1] opacity-0"
+              />
+              <span
+                ref={gooNeck}
+                aria-hidden="true"
+                className="text-surface pointer-events-none absolute top-0 left-1/2 z-[1] h-full w-[100px] origin-left opacity-0"
+              >
+                {/* An hourglass, so the neck flares into both blobs. */}
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="size-full">
+                  <path
+                    fill="currentColor"
+                    d="M0 0C30 0 35 28 50 28S70 0 100 0V100C70 100 65 72 50 72S30 100 0 100Z"
+                  />
+                </svg>
+              </span>
               {variants.map((v) => {
                 const active = selected === v.n;
                 return (
@@ -1285,7 +1396,7 @@ const Showcase = () => {
                     ref={(el) => {
                       cells.current[v.n] = el;
                     }}
-                    variant="cell"
+                    variant="cell-goo"
                     size="cell-grid"
                     role="radio"
                     aria-checked={active}
@@ -1293,13 +1404,23 @@ const Showcase = () => {
                     title={`${v.direction} (${v.n})`}
                     tabIndex={active ? 0 : -1}
                     onClick={() => choose(v.n)}
+                    className="group/cell"
                   >
-                    {String(v.n).padStart(2, '0')}
+                    {/* Above the pill; lit as the goo arrives, not before. */}
+                    <span
+                      className={cn(
+                        'text-surface/55 group-hover/cell:text-surface/90 relative z-[2] inline-block transition-[color,scale,translate] duration-[90ms,460ms,460ms] ease-[linear,var(--ease-spring-pop),var(--ease-spring-pop)]',
+                        lit === v.n &&
+                          'text-ink group-hover/cell:text-ink -translate-y-0.5 scale-160',
+                      )}
+                    >
+                      {String(v.n).padStart(2, '0')}
+                    </span>
                     {active && auto && !calm && (
                       <span
                         key={selected}
                         aria-hidden="true"
-                        className="bg-ink/50 absolute inset-x-1.5 bottom-1 h-0.5 origin-left animate-[cycle_12s_linear_forwards] motion-reduce:hidden"
+                        className="bg-ink/50 absolute inset-x-1.5 bottom-1.5 z-[2] h-0.5 origin-left animate-[cycle_12s_linear_forwards] motion-reduce:hidden"
                       />
                     )}
                   </Button>

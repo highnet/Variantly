@@ -48,8 +48,8 @@ const progress = (t: number) => {
     return STRETCH * (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
   }
   const u = (t - HOLD) / (1 - HOLD);
-  const a = 6;
-  const w = 13;
+  const a = 4.2;
+  const w = 8.5;
   return (
     STRETCH + (1 - STRETCH) * (1 - Math.exp(-a * u) * (Math.cos(w * u) + (a / w) * Math.sin(w * u)))
   );
@@ -67,14 +67,23 @@ const stretch = (angle: number, along: number) => {
  * when a hop interrupts another. `pitch` is the distance between neighbouring
  * cells, so a hop of one cell and a run across five feel alike.
  */
-export const bakeGoo = (start: Vec, from: Vec, to: Vec, pitch: number): GooPlan => {
+export const bakeGoo = (
+  start: Vec,
+  from: Vec,
+  to: Vec,
+  pitch: number,
+  /** The pill's resting corner radius and its full round, in px. */
+  corners = { rest: 6, round: 18 },
+): GooPlan => {
+  const radius = (k: number) =>
+    `${(corners.rest + (corners.round - corners.rest) * clamp(k)).toFixed(2)}px`;
   const dx = to.x - start.x;
   const dy = to.y - start.y;
   const len = Math.hypot(dx, dy) || 1;
   const angle = Math.atan2(dy, dx);
   const cells = len / pitch;
   // Long runs take a little longer; the tail follows instead of holding.
-  const duration = Math.round(620 + 70 * Math.min(cells - 1, 5));
+  const duration = Math.round(720 + 70 * Math.min(cells - 1, 5));
   const far = cells > 1.5;
   // Overshoot is a fraction of a cell, however far the pill travels.
   const give = Math.min(1, 0.55 / cells);
@@ -108,6 +117,8 @@ export const bakeGoo = (start: Vec, from: Vec, to: Vec, pitch: number): GooPlan 
     const grow = 0.6 + 0.4 * smooth(0.45, 0.95, h);
     head.push({
       offset: t,
+      // Rounder while it is goo, back to the pill's corners as it settles.
+      borderRadius: i === SAMPLES ? radius(0) : radius(1 - smooth(0.82, 1, h)),
       transform:
         i === SAMPLES
           ? 'none'
@@ -128,13 +139,16 @@ export const bakeGoo = (start: Vec, from: Vec, to: Vec, pitch: number): GooPlan 
     tail.push({
       offset: t,
       opacity: ts > 0.02 ? 1 : 0,
+      borderRadius: radius(smooth(0, 0.5, drain) + smooth(0, 0.2, h)),
       transform: `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) ${stretch(angle, lean)} scale(${ts.toFixed(3)})`,
     });
 
     // The neck runs from the blob's centre to the pill's, thinning as they
     // part, and snaps once the gap is too wide.
     const snap = far ? smooth(0.5, 0.84, h) : smooth(0.5, 0.86, h);
-    const thick = (0.74 - 0.5 * snap) * Math.min(ts + 0.3, 1);
+    // Its flared ends never stand taller than the blobs they join.
+    const headTall = grow / Math.sqrt(along);
+    const thick = (1 - 0.6 * snap) * 0.92 * Math.min(ts, headTall, 1);
     const broken = snap >= 0.98 || ts <= 0.02;
     const gap = Math.max(0, len * (h - k));
     neck.push({
@@ -143,11 +157,12 @@ export const bakeGoo = (start: Vec, from: Vec, to: Vec, pitch: number): GooPlan 
       transform: `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) rotate(${angle}rad) scale(${(gap / NECK_BASE).toFixed(4)}, ${broken ? 0 : thick.toFixed(3)})`,
     });
 
-    if (!arrived && h * cells >= cells - 0.25) {
+    if (!arrived && h * cells >= cells - 0.4) {
       arrived = true;
       arriveMs = t * duration;
     }
-    if (!left && ts < 0.5) {
+    // The old number goes dark once the blob drains or moves off it.
+    if (!left && (ts < 0.75 || k * cells > 0.4)) {
       left = true;
       leaveMs = t * duration;
     }
