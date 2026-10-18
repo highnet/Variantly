@@ -16,6 +16,15 @@ import {
 import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime, useSeekTime } from '@/lib/seek';
+import {
+  colourAt,
+  cssOf,
+  letterPalette,
+  rgba,
+  toLab,
+  type Lab,
+  type LetterPalette,
+} from '@/lib/titleColor';
 import { useSiteStore } from '@/lib/store';
 import {
   faceAt,
@@ -25,6 +34,7 @@ import {
   startDelay,
   stepAt,
   SWAP,
+  titleColorOn,
   type MorphPhase,
   type Timeline,
 } from '@/lib/titleTiming';
@@ -105,6 +115,8 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
   const [live, setLive] = useState<number | null | 'idle'>('idle');
   // performance.now() when this letter's reveal started.
   const t0 = useRef(0);
+  // The colour this letter last rested in (a concept change morphs from it).
+  const rested = useRef<Lab | null>(null);
 
   useEffect(() => {
     if (seekTime() !== null || calmMotion()) return;
@@ -175,6 +187,15 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
     const seq = runSequence(morph, char, index, FINAL[index], tl, low);
     const pose: MorphPose = { k: 1, y: 0 };
     const shadows = shadowLayers(box);
+    // Palette colours while morphing (lib/titleColor), and each shadow layer
+    // as OKLab so it can follow the face's colour.
+    const tint = titleColorOn();
+    const shadowLab = shadows.map((l) => ({ lab: toLab(rgba(l.color)), a: rgba(l.color)[3] }));
+    let pal: LetterPalette | null = null;
+    const from = rested.current;
+    const face: Lab = [0, 0, 0];
+    const side: Lab = [0, 0, 0];
+    const layer: Lab = [0, 0, 0];
     const dpr = Math.min(devicePixelRatio || 1, 3);
     let w = 0;
     let h = 0;
@@ -189,6 +210,7 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
       const css = getComputedStyle(box);
       fontPx = parseFloat(css.fontSize) || 16;
       color = css.color;
+      pal = tint ? letterPalette(box, color, color) : null;
       const mark = box.querySelector<HTMLElement>('[data-base]');
       finalBase = (mark?.offsetTop ?? h) - h / 2;
       // Room around the slot for a glyph wider than it and its shadows.
@@ -244,9 +266,28 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
           ctx.lineTo(ox + out[at + i * 2] * k, oy - out[at + i * 2 + 1] * k);
         ctx.closePath();
       }
-      ctx.fillStyle = color;
+      if (pal) {
+        colourAt(
+          pal,
+          index,
+          tl,
+          seq.length - 1,
+          track.fromStep,
+          track.toStep,
+          phase.c,
+          from,
+          face,
+          side,
+        );
+        ctx.fillStyle = cssOf(face);
+      } else ctx.fillStyle = color;
       for (const l of shadows) {
         ctx.shadowColor = l.color;
+        if (pal) {
+          const k = shadows.indexOf(l);
+          for (let c = 0; c < 3; c++) layer[c] = shadowLab[k].lab[c] + face[c] - pal.face[c];
+          ctx.shadowColor = cssOf(layer, shadowLab[k].a);
+        }
         ctx.shadowOffsetX = l.x * dpr;
         ctx.shadowOffsetY = l.y * dpr;
         ctx.shadowBlur = l.blur * dpr;
@@ -265,6 +306,7 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
     return () => {
       stop();
       removeEventListener('resize', resize);
+      if (pal) rested.current = pal.face;
     };
     // A new run or concept restyles the letter: measure and draw afresh.
   }, [morph, shifting, char, index, low, tl, run, variant]);

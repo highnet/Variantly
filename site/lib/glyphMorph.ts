@@ -252,6 +252,9 @@ export type MorphTrack = {
   parent: Int16Array;
   from: number;
   to: number;
+  // The steps of the run those faces belong to (colours follow them).
+  fromStep: number;
+  toStep: number;
 };
 
 export const morphTrack = (data: MorphData, ch: string): MorphTrack => {
@@ -275,6 +278,8 @@ export const morphTrack = (data: MorphData, ch: string): MorphTrack => {
     parent: new Int16Array(slots),
     from: -1,
     to: -1,
+    fromStep: 0,
+    toStep: 0,
   };
 };
 
@@ -544,7 +549,9 @@ export const planStep = (
       phase.c = 0;
     }
   }
-  planMorph(data, t, seq[from], seq[Math.min(to, count)]);
+  t.fromStep = from;
+  t.toStep = Math.min(to, count);
+  planMorph(data, t, seq[from], seq[t.toStep]);
 };
 
 // Write the outline `e` of the way through the planned morph to t.out (e may

@@ -28,6 +28,7 @@ import {
   type LetterLook,
 } from '@/lib/letterLook';
 import { morphMesh } from '@/lib/morphMesh';
+import { colourAt, letterPalette, toRgb, type Lab, type LetterPalette } from '@/lib/titleColor';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
 import {
@@ -35,6 +36,7 @@ import {
   morphAt,
   spring,
   stepAt,
+  titleColorOn,
   type MorphPhase,
   type Timeline,
 } from '@/lib/titleTiming';
@@ -79,6 +81,8 @@ type Letter = {
   e: number;
   look: number;
   locked: boolean;
+  // The face colour it last wore (OKLab), when palette colours are on.
+  ink: Lab | null;
 };
 
 // Where a 2D slot sits, in px of the card (y down), relative to the slot centre.
@@ -384,6 +388,7 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           e: 0,
           look: -1,
           locked: true,
+          ink: null,
         };
       });
       const phase: MorphPhase = { step: 0, e: 0, c: 0 };
@@ -490,6 +495,28 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
       let pools: LetterLook[][] = [];
       let shade = letterShadow('g', false);
       const n = poolSize(phone);
+      // Palette colours while morphing (lib/titleColor): per letter its
+      // palette, and the colour it wore before a concept change.
+      const tint = titleColorOn() && !still;
+      const pals: (LetterPalette | null)[] = [];
+      const swapFrom: (Lab | null)[] = [];
+      const face: Lab = [0, 0, 0];
+      const side: Lab = [0, 0, 0];
+      const rgb: [number, number, number] = [0, 0, 0];
+      const setColour = (m: THREE.Material, lab: Lab) => {
+        toRgb(lab, rgb);
+        const u = (m as THREE.ShaderMaterial).uniforms?.uA?.value as THREE.Color | undefined;
+        const c = u ?? ((m as THREE.MeshStandardMaterial).color as THREE.Color | undefined);
+        c?.setRGB(rgb[0], rgb[1], rgb[2], THREE.SRGBColorSpace);
+      };
+      // The worn look (face, sides) and the flat copy in these colours.
+      const paint3 = (l: Letter, f: Lab, sd: Lab) => {
+        const [fm, sm] = l.mesh.material as THREE.Material[];
+        setColour(fm, f);
+        setColour(sm, sd);
+        setColour(l.flat.material, f);
+        l.ink = [f[0], f[1], f[2]];
+      };
       const wear = (l: Letter, i: number, k: number) => {
         if (l.look === k) return;
         const look = pools[i][k];
@@ -509,11 +536,15 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
       const dress = () => {
         const variant = (html.dataset.variant ?? 'g') as VariantKey;
         const dark = html.dataset.theme === 'dark';
+        // A concept change morphs each letter from the colour it wore.
+        letters.forEach((l, i) => (swapFrom[i] = l.ink ? [...l.ink] : null));
         pools.forEach(disposePool);
         const slotsEls = [...word.children];
         pools = letters.map((l, i) => {
           const ink = inkOf(slotsEls[i]);
           l.flat.material.color.set(ink.face);
+          pals[i] = tint ? letterPalette(slotsEls[i], ink.face, ink.side) : null;
+          l.ink = null;
           return lookPool(variant, ink, dark, phone);
         });
         if (pools.some((p) => p.some((l) => l.env))) lightStudio();
@@ -604,8 +635,10 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           let k = 1;
           let y = s.base;
           l.locked = !live;
-          if (!live) rest(l, i);
-          else {
+          if (!live) {
+            rest(l, i);
+            if (tint && pals[i]) paint3(l, pals[i].face, pals[i].side);
+          } else {
             // Shifting: the outline flows from this step's face to the next,
             // posed exactly as the 2D letter (lib/glyphMorph).
             const seq = runSequence(data, l.ch, i, FINAL[i], tl, lowRef.current);
@@ -620,6 +653,23 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
               l.e = phase.e;
             }
             wear(l, i, lookAt(phase.step, i, n));
+            if (tint && pals[i]) {
+              const seqLen = seq.length - 1;
+              const tr = l.track;
+              colourAt(
+                pals[i],
+                i,
+                tl,
+                seqLen,
+                tr.fromStep,
+                tr.toStep,
+                phase.c,
+                swapFrom[i],
+                face,
+                side,
+              );
+              paint3(l, face, side);
+            }
             morphPose(data, l.track, phase.e, FINAL[i], s.w, s.h, fontPx, s.base, mpose);
             k = mpose.k;
             y = mpose.y;
