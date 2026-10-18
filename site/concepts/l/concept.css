@@ -180,17 +180,6 @@
   padding: 30px 20px 20px;
   border-color: var(--hero-ink);
 }
-:root[data-variant='l'] [data-hero-side]::before {
-  content: 'fig. 01 \2014 one prompt, n variants';
-  position: absolute;
-  top: 9px;
-  left: 20px;
-  font:
-    400 10px/1 var(--font-caption),
-    monospace;
-  letter-spacing: 0.06em;
-  color: var(--hero-mute);
-}
 :root[data-variant='l'] main > div .figure:not(h3) {
   color: var(--ink);
   text-shadow: 0.04em 0.04em 0 #c6ff00;

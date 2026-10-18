@@ -48,7 +48,6 @@
 @media (prefers-reduced-motion: reduce), (pointer: coarse) {
   :root[data-variant='h'] .vy-h-sweep { animation: none; }
 }
-:root[data-variant='h'] .vy-h-proofs figcaption { font: 600 11px/1 var(--font-grotesk); letter-spacing: 0.08em; text-transform: uppercase; color: var(--steel); }
 :root[data-variant='h'] .vy-scene canvas { image-rendering: pixelated; }
 
 /* The page: Silkscreen heads, square corners, 2px rules, rust only where it matters. */
