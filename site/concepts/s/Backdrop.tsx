@@ -31,8 +31,8 @@ const Den = () => (
       </defs>
     </svg>
     <div className="vy-s-glow absolute -top-[30%] -left-[22%] size-[95vmax]" />
-    <div className="vy-s-shelf absolute inset-x-0 top-[55%] h-[2.2vh] max-sm:top-[32%] max-sm:h-[1.4vh]" />
-    <div className="vy-s-row absolute bottom-[45%] left-[3%] aspect-[5/1] h-[10.5vh] max-sm:bottom-[68%] max-sm:left-[2%] max-sm:h-[4.5vh]">
+    <div className="vy-s-shelf absolute inset-x-0 top-[55%] h-[2.2vh] max-sm:hidden" />
+    <div className="vy-s-row absolute bottom-[45%] left-[3%] aspect-[5/1] h-[10.5vh] max-sm:hidden">
       <svg viewBox="0 0 500 100" className="size-full overflow-visible">
         <Sleeve x={0} lean={-2} fill="fill-(--art-1)">
           <circle cx="46" cy="53" r="26" className="fill-(--art-paper)" />
