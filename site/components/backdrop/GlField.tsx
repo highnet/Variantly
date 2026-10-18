@@ -181,10 +181,11 @@ const run = (
   chroma: number,
   swap: boolean,
 ): (() => void) | undefined => {
-  // A soft full-screen wash: rendered at ~half resolution, which the blur
-  // and grain hide completely.
   const tier = glTier(0.55);
   const phone = tier.coarse || innerWidth < 640;
+  // Drawn at the screen's own resolution so the grain stays fine and the
+  // shapes crisp: up to 2x for the one still frame phones paint (below), 1.5x
+  // for a moving scene.
   let renderer: THREE.WebGLRenderer;
   try {
     renderer = new THREE.WebGLRenderer({
@@ -201,7 +202,10 @@ const run = (
     if (seek !== null) releaseFrame('gl');
     return;
   }
-  renderer.setPixelRatio(tier.pixelRatio);
+  const still = seek !== null || phone || calmMotion() || perfTier() === 'low';
+  const ratio = () =>
+    seek !== null ? glTier(0.55).pixelRatio : Math.min(devicePixelRatio || 1, still ? 2 : 1.5);
+  renderer.setPixelRatio(ratio());
   const canvas = renderer.domElement;
   // Stacked, so an outgoing scene can stay under the incoming one.
   canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%';
@@ -214,7 +218,6 @@ const run = (
 
   // Phones get one painted frame of the scene: a moving full-screen WebGL
   // layer behind scrolling content is the costliest thing on the page there.
-  const still = seek !== null || phone || calmMotion() || perfTier() === 'low';
   const t0 = performance.now();
   const draw = () => {
     update(seek ?? (still ? 6 : (performance.now() - t0) / 1000), 0);
@@ -234,7 +237,7 @@ const run = (
   let sized = { w: 0, h: 0, dpr: 0 };
   const size = () => {
     const { clientWidth: w, clientHeight: h } = el;
-    const dpr = glTier(0.55).pixelRatio;
+    const dpr = ratio();
     if (!w || !h || (w === sized.w && h === sized.h && dpr === sized.dpr)) return false;
     sized = { w, h, dpr };
     if (dpr !== renderer.getPixelRatio()) renderer.setPixelRatio(dpr);
