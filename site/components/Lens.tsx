@@ -46,19 +46,28 @@ import { Button } from '@/components/ui/Button';
 const WORD = 'variantly';
 // Room around the door for its glitch slices, tilt and side edge, px.
 const M = 28;
-// How far the door trails the cursor (time constant, ms), and its tilt.
-const LAG = 70;
+// The door's motion: a damped spring per coordinate (x, y, w, h). Coming
+// out to the cursor or finger it is stiff and barely overshoots (a magnet
+// snapping on); going home it is softer and bouncier, flying back and
+// settling into its tab with a wobble. k is stiffness (1/s², omega squared).
+const SNAP = { k: 520, zeta: 0.72 };
+const HOME = { k: 170, zeta: 0.42 };
+const KEYS = ['x', 'y', 'w', 'h'] as const;
+// The door's tilt toward its motion.
 const TILT_Y = 7;
 const TILT_X = 5;
 // Above this speed (px/ms) the inner 3D scene pauses.
 const FAST = 1.1;
 
-type Mode = 'pointer' | 'touch' | 'fixed';
+// One way to use the Lens on every device: 'drag' (a tab resting at the
+// card's edge, dragged out over the word by mouse, pen or finger, with a
+// "Try" button beside it), or 'fixed' (calm: a still door).
+type Mode = 'drag' | 'fixed';
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const offset = (pts: Pt[], dx: number, dy: number): Pt[] => pts.map(([x, y]) => [x + dx, y + dy]);
 
-// How the Lens works here: the pointer, touch, or a still door (calm).
+// How the Lens works here: the dragged tab, or a still door (calm).
 const onPrefs = (cb: () => void) => {
   addEventListener(PREFS_EVENT, cb);
   document.addEventListener('vy:perf', cb);
@@ -69,8 +78,7 @@ const onPrefs = (cb: () => void) => {
 };
 const modeNow = (): Mode | null => {
   if (!lensEnabled()) return null;
-  if (calmMotion()) return 'fixed';
-  return matchMedia('(pointer: coarse)').matches ? 'touch' : 'pointer';
+  return calmMotion() ? 'fixed' : 'drag';
 };
 // The doorway's light: off in calm and at the low tier (a solid frame).
 const glowNow = () => !calmMotion() && perfTier() !== 'low';
@@ -173,6 +181,8 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   let shown = false;
   let target: Rect = { x: 0, y: 0, w: 180, h: 360 };
   let rect: Rect = { ...target };
+  // The spring's velocity per coordinate, px/s.
+  const vel: Rect = { x: 0, y: 0, w: 0, h: 0 };
   const tilt = { rx: 0, ry: 0 };
   let last = 0;
   let glitchUntil = 0;
@@ -305,19 +315,29 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     const t0 = lensPerf ? performance.now() : 0;
     const dt = Math.min(64, last ? now - last : 16);
     last = now;
-    const k = mode === 'fixed' || fixedOpen ? 1 : 1 - Math.exp(-dt / LAG);
     const px = rect.x + rect.w / 2;
     const py = rect.y + rect.h / 2;
-    rect = {
-      x: rect.x + (target.x - rect.x) * k,
-      y: rect.y + (target.y - rect.y) * k,
-      w: rect.w + (target.w - rect.w) * k,
-      h: rect.h + (target.h - rect.h) * k,
-    };
+    if (mode === 'fixed' || fixedOpen) {
+      rect = { ...target };
+      KEYS.forEach((key) => (vel[key] = 0));
+    } else {
+      // Semi-implicit Euler in 8ms substeps (stable at any frame rate).
+      const sp = dragging ? SNAP : HOME;
+      const c = 2 * sp.zeta * Math.sqrt(sp.k);
+      const next = { ...rect };
+      for (let left = dt / 1000; left > 0; left -= 0.008) {
+        const h = Math.min(left, 0.008);
+        KEYS.forEach((key) => {
+          vel[key] += (sp.k * (target[key] - next[key]) - c * vel[key]) * h;
+          next[key] += vel[key] * h;
+        });
+      }
+      rect = next;
+    }
     // Tilt toward the motion (desktop), eased.
     const vx = (rect.x + rect.w / 2 - px) / Math.max(1, dt);
     const vy = (rect.y + rect.h / 2 - py) / Math.max(1, dt);
-    const tilting = mode === 'pointer' && !fixedOpen;
+    const tilting = dragging && !fixedOpen;
     const kt = 1 - Math.exp(-dt / 90);
     tilt.ry += ((tilting ? clamp(vx * 6, -TILT_Y, TILT_Y) : 0) - tilt.ry) * kt;
     tilt.rx += ((tilting ? clamp(-vy * 5, -TILT_X, TILT_X) : 0) - tilt.rx) * kt;
@@ -338,7 +358,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
       ? glitchFrame(Math.floor(now / 40) + glitchSeed, glitchAmount, rect.h)
       : NO_GLITCH;
     // Phones: no RGB split or flicker in the glitch.
-    lensLive.glitch = mode === 'touch' ? { ...g, split: 0, flicker: false } : g;
+    lensLive.glitch = g;
     const { w, h } = rect;
     const local = tiltOutline(doorOutline(w, h, DOOR_RADIUS, g.bands), w, h, tilt);
     const holes = g.dropouts.map((d) => tiltOutline(dropoutRing(w, d.y0, d.y1), w, h, tilt));
@@ -388,6 +408,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
       Math.abs(target.y - rect.y) < 0.2 &&
       Math.abs(target.w - rect.w) < 0.2 &&
       Math.abs(target.h - rect.h) < 0.2 &&
+      KEYS.every((key) => Math.abs(vel[key]) < 2) &&
       Math.abs(tilt.rx) + Math.abs(tilt.ry) < 0.02 &&
       !glitching;
     if (settled) {
@@ -449,9 +470,9 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     if (fixedOpen) {
       ui.setFixed(false);
       fixedOpen = false;
-      if (mode !== 'touch') show(false);
+      if (mode !== 'drag') show(false);
     }
-    if (mode === 'touch' && !dragging) {
+    if (mode === 'drag' && !dragging) {
       target = restRect();
       wake();
     }
@@ -459,63 +480,9 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   mo.observe(html, { attributes: true, attributeFilter: ['data-variant'] });
   cleanups.push(() => mo.disconnect());
 
-  // ---- Desktop: follow the cursor over the card. ----
-  if (mode === 'pointer') {
-    const at = (e: PointerEvent): Rect => {
-      const b = card.getBoundingClientRect();
-      const { w, h } = fitDoor();
-      return { x: e.clientX - b.left - w / 2, y: e.clientY - b.top - h / 2, w, h };
-    };
-    // Followed from the window, not the card: during a switch the view
-    // transition takes hit testing (events land on <html>), and the door
-    // should keep tracking straight through it.
-    const inside = (e: PointerEvent) => {
-      const b = card.getBoundingClientRect();
-      return (
-        e.clientX >= b.left && e.clientX <= b.right && e.clientY >= b.top && e.clientY <= b.bottom
-      );
-    };
-    const onMove = (e: PointerEvent) => {
-      if (e.pointerType === 'touch' || fixedOpen || committing) return;
-      if (!inside(e)) {
-        if (shown) show(false);
-        return;
-      }
-      // Over the Lens's own controls the door steps aside.
-      if ((e.target as Element).closest('[data-lens-ui]')) return show(false);
-      target = at(e);
-      if (!shown) {
-        rect = { ...target };
-        show(true);
-      }
-      wake();
-    };
-    const onLeave = () => {
-      if (!committing && !fixedOpen) show(false);
-    };
-    // The pointer left the window altogether.
-    const onOut = (e: PointerEvent) => {
-      if (!e.relatedTarget) onLeave();
-    };
-    const onClick = (e: MouseEvent) => {
-      if (!shown || fixedOpen || (e.target as Element).closest('[data-lens-ui], a, button')) return;
-      commit();
-    };
-    const onScroll = () => shown && placeRoot();
-    addEventListener('pointermove', onMove, { passive: true });
-    document.addEventListener('pointerout', onOut);
-    card.addEventListener('click', onClick);
-    addEventListener('scroll', onScroll, { passive: true });
-    cleanups.push(() => {
-      removeEventListener('pointermove', onMove);
-      document.removeEventListener('pointerout', onOut);
-      card.removeEventListener('click', onClick);
-      removeEventListener('scroll', onScroll);
-    });
-  }
-
-  // ---- Phones: the resting peek, drag and snap. ----
-  if (mode === 'touch') {
+  const drag = { id: -1, x0: 0, y0: 0, moved: false };
+  // ---- The resting tab, drag and snap (every device). ----
+  if (mode === 'drag') {
     target = restRect();
     rect = { ...target };
     show(true);
@@ -529,12 +496,94 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     const onScroll = () => placeRoot();
     addEventListener('resize', onResize);
     addEventListener('scroll', onScroll, { passive: true });
+
+    // Follow, with nothing to click first: the door leaves its tab for the
+    // cursor while it is over the card (mouse, pen) or for a finger touching
+    // anywhere on the card, and goes home when the cursor leaves or the finger
+    // lifts. The cursor is followed from the window, so it keeps tracking
+    // while a switch's view transition holds hit testing. A finger holds the
+    // door just above it, so the finger does not hide what it shows.
+    const doorAt = (x: number, y: number, finger: boolean): Rect => {
+      const b = card.getBoundingClientRect();
+      const { w, h } = fitDoor();
+      return { x: x - b.left - w / 2, y: y - b.top - (finger ? h * 0.75 : h / 2), w, h };
+    };
+    const inside = (e: PointerEvent) => {
+      const b = card.getBoundingClientRect();
+      return (
+        e.clientX >= b.left && e.clientX <= b.right && e.clientY >= b.top && e.clientY <= b.bottom
+      );
+    };
+    const follow = (on: boolean) => {
+      if (dragging === on) return;
+      dragging = on;
+      ui.setDragging(on);
+      if (!on) target = restRect();
+      wake();
+    };
+    let finger = -1;
+    const onMove = (e: PointerEvent) => {
+      if (fixedOpen || committing || drag.id !== -1) return;
+      const touch = e.pointerType === 'touch';
+      if (touch) {
+        if (e.pointerId !== finger) return;
+      } else if (!inside(e) || (e.target as Element).closest('[data-lens-ui]')) {
+        follow(false);
+        return;
+      }
+      follow(true);
+      target = doorAt(e.clientX, e.clientY, touch);
+      wake();
+    };
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch' || fixedOpen || committing) return;
+      if ((e.target as Element).closest('[data-lens-ui], a, button')) return;
+      finger = e.pointerId;
+      card.setPointerCapture(e.pointerId);
+      follow(true);
+      target = doorAt(e.clientX, e.clientY, true);
+      wake();
+    };
+    const onUp = (e: PointerEvent) => {
+      if (e.pointerId !== finger) return;
+      finger = -1;
+      follow(false);
+    };
+    // The cursor left the window altogether.
+    const onOut = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch' && !e.relatedTarget) follow(false);
+    };
+    // A click while the door is out keeps its concept (mouse; a finger keeps
+    // one with Try, so a casual tap on the title never switches it).
+    const onClick = (e: MouseEvent) => {
+      if (!dragging || fixedOpen || (e.target as Element).closest('[data-lens-ui], a, button'))
+        return;
+      if ((e as PointerEvent).pointerType === 'touch') return;
+      commit();
+    };
+    // A finger on the card drives the door in every direction, so the card
+    // does not pan the page (the rest of the page still scrolls).
+    card.style.touchAction = 'none';
+    addEventListener('pointermove', onMove, { passive: true });
+    card.addEventListener('pointerdown', onDown);
+    card.addEventListener('pointerup', onUp);
+    card.addEventListener('pointercancel', onUp);
+    card.addEventListener('lostpointercapture', onUp);
+    card.addEventListener('click', onClick);
+    document.addEventListener('pointerout', onOut);
     cleanups.push(() => {
       removeEventListener('resize', onResize);
       removeEventListener('scroll', onScroll);
+      removeEventListener('pointermove', onMove);
+      card.removeEventListener('pointerdown', onDown);
+      card.removeEventListener('pointerup', onUp);
+      card.removeEventListener('pointercancel', onUp);
+      card.removeEventListener('lostpointercapture', onUp);
+      card.removeEventListener('click', onClick);
+      document.removeEventListener('pointerout', onOut);
+      card.style.touchAction = '';
     });
   }
-  const drag = { id: -1, x0: 0, y0: 0, moved: false };
   const handleDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     drag.id = e.pointerId;
@@ -589,7 +638,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   const closeFixed = () => {
     fixedOpen = false;
     ui.setFixed(false);
-    if (mode === 'touch') {
+    if (mode === 'drag') {
       target = restRect();
       wake();
     } else show(false);
@@ -599,7 +648,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   // door's concept is fixed by the page's, see stepIds in concepts/index.ts.)
   const onKey = (e: KeyboardEvent) => {
     if (!shown || e.metaKey || e.ctrlKey || e.altKey) return;
-    if (mode === 'touch' && !fixedOpen) return;
+    if (mode === 'drag' && !fixedOpen) return;
     if (e.key === 'Escape' && fixedOpen) closeFixed();
   };
   addEventListener('keydown', onKey, { capture: true });
@@ -631,7 +680,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     rootChanged,
     // The chip's label changed width: line it up again (phones).
     placeChip: () => {
-      if (mode === 'touch') restRect();
+      if (mode === 'drag') restRect();
     },
     dispose: () => {
       cancelAnimationFrame(raf);
@@ -649,12 +698,14 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
  *
  * - The door always shows the page concept's fixed partner (the next on stepIds); only
  *   keeping it changes what the door shows next.
- * - Desktop: the door follows the cursor over the title card with a slight
- *   lag, tilting a few degrees toward its motion, its concept named on its
- *   top edge; a click keeps it: the page turns over to it (setVariant, the
- *   same split-flap turn every concept switch plays).
- * - Phones: the door rests small in a corner (a peek); a finger drags it out
- *   full size, lifting snaps it back; a tap on it, or "Try ...", keeps it.
+ * - Every device the same way, with nothing to click first: the door rests
+ *   small at the card's edge (a peek tab) with "Try ..." beside it, and comes
+ *   out full size to follow the cursor while it is over the card, or a finger
+ *   touching anywhere on the card (held just above it), tilting a few degrees
+ *   toward its motion, its concept named on its top edge; it goes home when
+ *   the cursor leaves or the finger lifts. "Try ...", a click while the door
+ *   is out, or a tap on the resting tab keeps it: the page turns over to it
+ *   (setVariant, the same split-flap turn every concept switch plays).
  * - Calm / reduced motion, and the keyboard: a "Peek another look" button
  *   opens a still door in the middle with its controls; keeping is instant
  *   in calm mode.
@@ -775,7 +826,7 @@ export const Lens = () => {
 
   if (!mode) return null;
   const name = id ? CONCEPT_BY_ID[id].name : '';
-  const peek = mode === 'touch' && !dragging && !fixedOpen;
+  const peek = mode === 'drag' && !dragging && !fixedOpen;
 
   return (
     <>
@@ -839,30 +890,28 @@ export const Lens = () => {
             <use href="#vy-lens-door" className="vy-lens-front" />
             <use href="#vy-lens-door" className="vy-lens-bevel" />
           </svg>
-          {id && (
-            <span className="vy-lens-label">
-              {name}
-              {mode === 'pointer' && !fixedOpen && (
-                <span className="vy-lens-hint">click to keep</span>
-              )}
-            </span>
-          )}
+          {id && <span className="vy-lens-label">{name}</span>}
         </div>
       </div>
-      {mode === 'touch' && (
+      {mode === 'drag' && (
         <div
-          ref={handle}
-          data-lens-ui
-          aria-hidden="true"
-          onPointerDown={(e) => ctl.current?.handleDown(e)}
-          onPointerMove={(e) => ctl.current?.handleMove(e)}
-          onPointerUp={(e) => ctl.current?.handleUp(e)}
-          onPointerCancel={(e) => ctl.current?.handleUp(e)}
-          className="vy-lens-handle absolute top-0 left-0 z-4 grid touch-none place-items-center"
+          data-lens-lean
+          className="pointer-events-none absolute inset-0 z-4 [transition:transform_0.7s_ease-out]"
         >
-          {/* At rest the door peeks in from the edge: a chevron says it is a
+          <div
+            ref={handle}
+            data-lens-ui
+            aria-hidden="true"
+            onPointerDown={(e) => ctl.current?.handleDown(e)}
+            onPointerMove={(e) => ctl.current?.handleMove(e)}
+            onPointerUp={(e) => ctl.current?.handleUp(e)}
+            onPointerCancel={(e) => ctl.current?.handleUp(e)}
+            className="vy-lens-handle pointer-events-auto absolute top-0 left-0 z-4 grid cursor-grab touch-none place-items-center active:cursor-grabbing"
+          >
+            {/* At rest the door peeks in from the edge: a chevron says it is a
               tab to pull, not a stray frame. */}
-          {peek && <ChevronLeft className="vy-lens-grip size-5" strokeWidth={2.75} />}
+            {peek && <ChevronLeft className="vy-lens-grip size-5" strokeWidth={2.75} />}
+          </div>
         </div>
       )}
       {!fixedOpen && (
@@ -879,32 +928,32 @@ export const Lens = () => {
           </Button>
         </div>
       )}
-      {mode === 'touch' && (
-        // Phones: keep the peeked concept, from a chip beside the resting
-        // door (never over the word), shown once the door has been used
-        // (focusable before that).
+      {mode === 'drag' && (
+        // Keep the peeked concept: a chip beside the resting door (never over
+        // the word), on every device, from the start.
         <div
-          ref={chip}
-          data-lens-ui
-          className={cn(
-            'vy-lens-try absolute top-0 left-0 z-4',
-            (dragging || fixedOpen || !id) && 'invisible',
-          )}
+          data-lens-lean
+          className="pointer-events-none absolute inset-0 z-4 [transition:transform_0.7s_ease-out]"
         >
-          <Button
-            variant="lens"
-            size="small"
-            onClick={() => ctl.current?.commit()}
-            // A 32px chip with a 44px touch target: the hit area reaches 6px
-            // past it above and below, invisibly.
+          <div
+            ref={chip}
+            data-lens-ui
             className={cn(
-              used
-                ? "relative before:absolute before:-inset-x-1 before:-inset-y-1.5 before:content-['']"
-                : 'sr-only focus:not-sr-only',
+              'vy-lens-try pointer-events-auto absolute top-0 left-0 z-4',
+              (dragging || fixedOpen || !id) && 'invisible',
             )}
           >
-            Try {name}
-          </Button>
+            <Button
+              variant="lens"
+              size="small"
+              onClick={() => ctl.current?.commit()}
+              // A 32px chip with a 44px touch target: the hit area reaches 6px
+              // past it above and below, invisibly.
+              className="relative before:absolute before:-inset-x-1 before:-inset-y-1.5 before:content-['']"
+            >
+              Try {name}
+            </Button>
+          </div>
         </div>
       )}
       {fixedOpen && id && (

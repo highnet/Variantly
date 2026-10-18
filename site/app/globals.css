@@ -2328,17 +2328,6 @@ main > div p {
   text-transform: uppercase;
   white-space: nowrap;
 }
-.vy-lens-hint {
-  position: absolute;
-  left: 0;
-  top: calc(var(--door-h) + 100% + 14px);
-  padding: 2px 6px;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--lens-ink) 82%, transparent);
-  color: var(--lens-frame);
-  letter-spacing: 0.04em;
-  text-transform: none;
-}
 .vy-lens-frame[data-peek] .vy-lens-label {
   display: none;
 }

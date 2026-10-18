@@ -349,7 +349,6 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     // layers (its 2D hero under the canvas, its frame above it) cover the same
     // box and lean with the same transform, so the door's stencil in the
     // canvas and its 2D frame stay together while the word tilts.
-    // Phones lean the same way from the device's tilt (see the gyro below).
     // `u`, `v` in -1..1: toward the right, toward the bottom.
     const leanTo = (u: number, v: number) => {
       const lean = `perspective(900px) rotateX(${(-v * 5).toFixed(2)}deg) rotateY(${(u * 7).toFixed(2)}deg)`;
@@ -865,51 +864,6 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         cleanups.push(() => {
           removeEventListener('pointermove', onPoint);
           removeEventListener('pointerdown', onPoint);
-        });
-      }
-      // Phones: the device's tilt leans the word (as the cursor does on
-      // desktop) and steers the light, so highlights slide as the phone tips.
-      // The neutral pose is however the phone is held, drifting slowly, so
-      // lying down or standing up reads the same. iOS asks permission, which
-      // needs a tap: the first tap on the title card asks.
-      if (phone && !still && seek === null && typeof DeviceOrientationEvent !== 'undefined') {
-        let base: [number, number] | null = null;
-        const onTilt = (e: DeviceOrientationEvent) => {
-          if (e.beta === null || e.gamma === null) return;
-          const turned = Math.abs(screen.orientation?.angle ?? 0) === 90;
-          const side = turned ? e.beta : e.gamma;
-          const tip = turned ? -e.gamma : e.beta;
-          if (!base) base = [side, tip];
-          base[0] += (side - base[0]) * 0.015;
-          base[1] += (tip - base[1]) * 0.015;
-          const u = Math.max(-1, Math.min(1, (side - base[0]) / 18));
-          const v = Math.max(-1, Math.min(1, (tip - base[1]) / 18));
-          leanTo(u, v);
-          const yaw = u * 0.55;
-          const pitch = v * 0.4;
-          if (Math.abs(yaw - lightTo.yaw) + Math.abs(pitch - lightTo.pitch) < 0.01) return;
-          sweepT0 = -1;
-          swept = true;
-          lightTo.yaw = yaw;
-          lightTo.pitch = pitch;
-          wake();
-        };
-        const listen = () => addEventListener('deviceorientation', onTilt);
-        const ask = (
-          DeviceOrientationEvent as unknown as { requestPermission?: () => Promise<string> }
-        ).requestPermission;
-        const card = el.parentElement;
-        const onTap = () => {
-          void ask
-            ?.call(DeviceOrientationEvent)
-            .then((r) => r === 'granted' && listen())
-            .catch(() => {});
-        };
-        if (typeof ask === 'function') card?.addEventListener('click', onTap, { once: true });
-        else listen();
-        cleanups.push(() => {
-          removeEventListener('deviceorientation', onTilt);
-          card?.removeEventListener('click', onTap);
         });
       }
       // Once, as the first reveal settles: the light sweeps across the word
