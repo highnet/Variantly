@@ -1,5 +1,5 @@
 import scores from '@/lib/demo-scores.json';
-import { SITE_URL, SKILLS_URL } from '@/lib/site';
+import { DEMO, REPO_URL, SITE_URL, SKILLS_URL } from '@/lib/site';
 
 // Everything on the page that is data, in one place.
 //
@@ -335,7 +335,7 @@ export const FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Can it break my site?',
-    a: 'No. Designs are made in **separate copies**. When you press Keep, the change is left **for you to review**.',
+    a: 'Not while you compare: designs are made in **separate git worktrees**, outside your folder. Keep applies one design to your files as an **unstaged change for you to review**; if it is wrong, undo it with git. See [what it does to your repo](/safety).',
   },
   {
     q: 'What if I don’t like any of them?',
@@ -402,4 +402,90 @@ export const EXTRAS: { label: string; hint: string }[] = [
     hint: 'Checks **phone width**, fixes what breaks.',
   },
   { label: 'Harden', hint: '**Accessibility**, focus, long text, errors.' },
+];
+
+// The local walkthrough with the demo agent, checked against a real run of
+// `variantly --demo` on examples/oak-and-iron.
+export const DEMO_STEPS: { title: string; body: string; commands?: string[] }[] = [
+  {
+    title: 'Get a sample project',
+    body:
+      'Any site in a git repository works. Or use the made-up shop from the comparison above, copied out of [the repository](' +
+      REPO_URL +
+      '/tree/main/examples/oak-and-iron) into a fresh git repo of its own.',
+    commands: [
+      `git clone ${REPO_URL}.git`,
+      'cp -r variantly/examples/oak-and-iron oak && cd oak',
+      'git init -q && git add -A && git commit -qm before',
+    ],
+  },
+  {
+    title: 'Start the demo run',
+    body: 'Opens the wizard at **localhost:4477** with the demo agent picked. Each design gets its own git worktree and branch; the demo agent needs no model or account.',
+    commands: [DEMO],
+  },
+  {
+    title: 'Compare them live',
+    body: 'Every design runs as a **live preview** next to the original. Flick between them and drag the line to compare. The demo agent’s looks are crude on purpose: a real agent redesigns from scratch.',
+  },
+  {
+    title: 'Keep one',
+    body: 'Press **Keep** (or run `npx variantly keep 2`). Its change lands in your folder as an **unstaged diff**, merged with any edits you had not committed.',
+  },
+  {
+    title: 'Review the code',
+    body: '`git diff` shows exactly what changed. Commit it like any other edit, or throw it away.',
+    commands: ['git diff'],
+  },
+  {
+    title: 'Undo or clean up',
+    body: '`git restore <file>` drops a kept change (and anything else uncommitted in that file, so commit your own work first). `npx variantly clean` removes the worktrees, branches and state.',
+    commands: ['npx variantly clean'],
+  },
+];
+
+// What variantly does to the repository, each step with the code behind it
+// (a path in the repository, linked from the page). Checked against a run of
+// `variantly --demo` with an uncommitted edit in the tree.
+export const TRUST: { title: string; body: string; source: string }[] = [
+  {
+    title: 'Your uncommitted edits are snapshotted, not touched',
+    body: 'Before a run, `git stash create` turns uncommitted changes to tracked files into a commit without changing your folder, your index or your stash list. Designs start from exactly what you see. Untracked files are not in the snapshot.',
+    source: 'src/git.mjs#L38',
+  },
+  {
+    title: 'Each design gets its own worktree and branch',
+    body: 'Variant n is a git worktree on branch `variantly/<run>/v<n>`, under `~/.variantly/`, outside your folder. The agent works only there. `node_modules` is linked in and `.env`-style files are copied, so an agent editing them cannot reach yours.',
+    source: 'src/git.mjs#L77',
+  },
+  {
+    title: 'variantly commits the agent’s work to that branch',
+    body: 'The agent is told not to commit; variantly does it, as author “variantly”, with hooks skipped. Your branches and your checkout stay where they were.',
+    source: 'src/git.mjs#L265',
+  },
+  {
+    title: 'Keep applies one diff, unstaged',
+    body: 'The kept branch’s diff is applied to your working tree with `git apply`, falling back to a three-way merge if you edited the same files meanwhile; overlaps are left as conflict markers. Nothing is staged or committed: review it with `git diff`.',
+    source: 'src/git.mjs#L287',
+  },
+  {
+    title: 'The other designs stay as branches',
+    body: 'After a keep the worktrees are removed but every `variantly/…` branch stays, so nothing is lost. `npx variantly clean` deletes the worktrees, those branches and the state folder.',
+    source: 'bin/variantly.mjs#L261',
+  },
+  {
+    title: 'Rolling back',
+    body: 'Before Keep there is nothing to undo: your folder is unchanged. After Keep, `git restore <file>` (or `git checkout -- <file>`) drops the change, and the kept branch is still there to re-apply.',
+    source: 'src/session.mjs#L874',
+  },
+];
+
+// Limits and the operations that can change things, said plainly.
+export const TRUST_CAVEATS: string[] = [
+  '**No commits yet?** The wizard offers to make the first one for you: it runs `git add -A` and commits **everything not gitignored** as “Before variantly”. Check your `.gitignore` covers secrets first.',
+  '**Undoing a keep with `git restore` also discards your own uncommitted edits in those files.** Commit your work before you press Keep.',
+  '**Agents run unattended.** By default they may edit files and run only a short list of read-only commands; the wizard’s full-permissions option drops those limits. A worktree keeps edits out of your folder, but it is not a sandbox for your machine.',
+  '**Builds from the main branch roll a kept design out to the rest of the site first** (one more agent run; `--no-rollout` skips it). The npm release 0.4.0 applies only the pages the variants redesigned.',
+  '**Changed dependencies** (package.json, lockfiles…) are applied like any file; run your install command afterwards.',
+  'Each design is **one session on your AI plan**. variantly brings no model and sends nothing to its own servers; the agent you choose talks to its provider as usual.',
 ];
