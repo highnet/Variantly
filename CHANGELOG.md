@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.0](https://github.com/highnet/Variantly/compare/variantly-v0.8.1...variantly-v0.9.0) (2026-10-18)
+
+
+### Features
+
+* **site:** add a How it works page with screenshots of a real run ([#191](https://github.com/highnet/Variantly/issues/191)) ([589cd2d](https://github.com/highnet/Variantly/commit/589cd2dcd7612f294bc86cb2da1caecac407a94d))
+
+
+### Bug Fixes
+
+* Lens portal clears from the 3D title on leave; dry-run Keep step ([#181](https://github.com/highnet/Variantly/issues/181)) ([870d412](https://github.com/highnet/Variantly/commit/870d412d4c76a644e25155596e2835a646fe1ec1))
+* **site:** hero title fits narrow phones; dock steps in the "Try" order ([#180](https://github.com/highnet/Variantly/issues/180)) ([00bf55e](https://github.com/highnet/Variantly/commit/00bf55e9158265367f62c2a479a81d9bb7eda4d6))
+* **site:** one set of thirty redesigns, visible picker arrows ([#178](https://github.com/highnet/Variantly/issues/178)) ([58dc576](https://github.com/highnet/Variantly/commit/58dc57656d9b904eee91e13ff79e2fc7d22ed8f9))
+
 ## [0.8.1](https://github.com/highnet/Variantly/compare/variantly-v0.8.0...variantly-v0.8.1) (2026-10-18)
 
 
