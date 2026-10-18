@@ -15,7 +15,7 @@ export const COMMANDS = [
 ] as const;
 
 export const FLAGS = [
-  ['--agent <id>', 'claude, codex, copilot, gemini, cursor or demo'],
+  ['--agent <id>', 'claude, codex, copilot, gemini, cursor, opencode or demo'],
   ['--agents <mix>', 'split variants across agents: claude:opus:2,gemini:2'],
   ['--blind', 'hide who made each variant until you keep one'],
   ['--count <n>', 'how many variants, 1–10'],

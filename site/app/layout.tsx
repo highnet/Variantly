@@ -39,6 +39,7 @@ export const metadata: Metadata = {
     'Copilot CLI',
     'Gemini CLI',
     'Cursor CLI',
+    'OpenCode',
     'OpenRouter',
     'Impeccable',
     'before/after slider',

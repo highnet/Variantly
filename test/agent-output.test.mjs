@@ -175,3 +175,26 @@ test('Gemini and Cursor sign-in failures (real captures) mean the agent is unava
   cursor.note("Error: Authentication required. Please run 'agent login' first, or set CURSOR_API_KEY environment variable.");
   assert.ok(cursor.unavailable());
 });
+
+test('OpenCode run --format json (real capture): tools, denied command, per-step tokens and cost', () => {
+  const { parser, lines } = feed('opencode', 'opencode-json');
+  assert.ok(lines.includes('→ Read C:/home/.variantly/site-1a2b3c4d/briefs/v1.md'), 'paths outside the worktree stay absolute');
+  assert.ok(lines.includes('→ Bash ls -la'));
+  assert.ok(lines.includes('→ Edit style.css'), 'paths under the worktree are shown relative');
+  assert.ok(lines.includes('→ Bash git status'));
+  assert.ok(lines.includes('→ Bash rm style.css'));
+  assert.ok(lines.some((l) => /^ {2}✗ The user has specified a rule which prevents you/.test(l)), 'a denied command shows as failed');
+  assert.ok(!lines.some((l) => l.includes('</think>')), 'leaked reasoning tags are dropped');
+  assert.equal(extractSummary(parser.text()), 'done.');
+  assert.equal(parser.costUsd(), 0, 'a free model reports $0');
+  const u = parser.usage();
+  assert.ok(u && u.inputTokens > 0 && u.outputTokens > 0 && u.cachedInputTokens > 0);
+  assert.equal(parser.error(), undefined);
+});
+
+test('OpenCode error event is the run\'s error', () => {
+  const parser = createParser('opencode-json');
+  const out = parser.push(JSON.stringify({ type: 'error', sessionID: 's', error: { name: 'UnknownError', data: { message: 'Unexpected server error.' } } }));
+  assert.deepEqual(out, ['Error: Unexpected server error.']);
+  assert.equal(parser.error(), 'Unexpected server error.');
+});

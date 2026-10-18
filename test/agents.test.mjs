@@ -104,6 +104,37 @@ test('Cursor CLI invocation: print mode, stream-json, trusted workspace, brief f
   assert.deepEqual(full.args.slice(-3), ['--force', '--sandbox', 'disabled']);
 });
 
+test('OpenCode invocation: run --format json, permissions and MCP in OPENCODE_CONFIG_CONTENT', () => {
+  const safe = agent('opencode').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', model: 'opencode/big-pickle', ...NO_HOME });
+  assert.equal(safe.file, 'opencode');
+  assert.equal(safe.output, 'opencode-json');
+  assert.deepEqual(safe.args, ['run', '--format', 'json', '-m', 'opencode/big-pickle', PROMPT]);
+  const cfg = JSON.parse(safe.env?.OPENCODE_CONFIG_CONTENT ?? '');
+  assert.deepEqual(cfg.permission, {
+    question: 'deny',
+    doom_loop: 'deny',
+    bash: { '*': 'deny', '*impeccable*': 'allow', 'git status*': 'allow', 'git diff*': 'allow', 'ls*': 'allow' },
+    external_directory: { '*': 'deny', [`${BRIEF_DIR.replace(/\\/g, '/')}/**`]: 'allow' },
+  });
+  assert.deepEqual(Object.keys(cfg.permission.bash)[0], '*', 'the catch-all comes first: the last matching rule wins');
+  assert.equal(cfg.mcp, undefined);
+
+  const full = agent('opencode').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'full', ...NO_HOME });
+  assert.deepEqual(full.args, ['run', '--format', 'json', '--auto', PROMPT]);
+  assert.deepEqual(JSON.parse(full.env?.OPENCODE_CONFIG_CONTENT ?? '').permission, { question: 'deny', doom_loop: 'deny' });
+
+  // User-wide skill folders that exist are readable outside the worktree.
+  const home = tmp();
+  try {
+    mkdirSync(path.join(home, '.config', 'opencode', 'skills', 'impeccable'), { recursive: true });
+    const inv = agent('opencode').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', home, env: {} });
+    const ext = JSON.parse(inv.env?.OPENCODE_CONFIG_CONTENT ?? '').permission.external_directory;
+    assert.equal(ext[`${path.join(home, '.config', 'opencode', 'skills').replace(/\\/g, '/')}/**`], 'allow');
+  } finally {
+    rmSync(home, { recursive: true, force: true });
+  }
+});
+
 test('Codex through OpenRouter: the configured provider and its key variable are read', () => {
   const home = tmp();
   try {
@@ -184,6 +215,20 @@ test('skill locations match where each agent reads skills', () => {
     path.join(home, '.agents', 'skills', 'impeccable'),
     path.join(home, '.claude', 'skills', 'impeccable'),
   ]);
+  assert.deepEqual(skillLocations(agent('opencode'), 'impeccable', where), [
+    path.join(project, '.opencode/skills', 'impeccable'),
+    path.join(project, '.agents/skills', 'impeccable'),
+    path.join(project, '.claude/skills', 'impeccable'),
+    path.join(home, '.config', 'opencode', 'skills', 'impeccable'),
+    path.join(home, '.agents', 'skills', 'impeccable'),
+    path.join(home, '.claude', 'skills', 'impeccable'),
+  ]);
+  // OpenCode's config folder follows OPENCODE_CONFIG_DIR, then XDG_CONFIG_HOME.
+  assert.equal(skillLocations(agent('opencode'), 's', { home, env: { XDG_CONFIG_HOME: path.resolve('XC') } })[0], path.join(path.resolve('XC'), 'opencode', 'skills', 's'));
+  assert.equal(
+    skillLocations(agent('opencode'), 's', { home, env: { XDG_CONFIG_HOME: path.resolve('XC'), OPENCODE_CONFIG_DIR: path.resolve('OC') } })[0],
+    path.join(path.resolve('OC'), 'skills', 's'),
+  );
   // Each CLI's home override is honoured.
   const env = { CLAUDE_CONFIG_DIR: path.resolve('C1'), CODEX_HOME: path.resolve('X1'), COPILOT_HOME: path.resolve('G1') };
   assert.equal(skillLocations(agent('claude'), 's', { home, env })[0], path.join(path.resolve('C1'), 'skills', 's'));
@@ -303,6 +348,12 @@ test('every agent gets the Playwright MCP server when the browser check is on', 
   assert.deepEqual(cursor.args.slice(cursor.args.indexOf('--approve-mcps'), cursor.args.indexOf('--approve-mcps') + 3), ['--approve-mcps', '--plugin-dir', plugin]);
   assert.deepEqual(JSON.parse(cursor.files?.[path.join(plugin, '.mcp.json')] ?? ''), { mcpServers: mcp });
   assert.equal(JSON.parse(cursor.files?.[path.join(plugin, '.cursor-plugin', 'plugin.json')] ?? '').name, 'variantly');
+
+  // OpenCode takes them in its inline config, as a command array.
+  const opencode = agent('opencode').invocation({ cwd: CWD, briefPath: BRIEF, permissions: 'safe', mcp, ...NO_HOME });
+  assert.deepEqual(JSON.parse(opencode.env?.OPENCODE_CONFIG_CONTENT ?? '').mcp, {
+    playwright: { type: 'local', command: ['npx', ...mcp.playwright.args], enabled: true },
+  });
 
   // Without it, nothing changes.
   for (const id of ['claude', 'codex', 'copilot', 'gemini', 'cursor']) {

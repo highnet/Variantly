@@ -60,6 +60,8 @@ import { run } from "./proc.mjs";
  * @property {string} bin
  * @property {string} install     how to get it
  * @property {SkillHomes} skills
+ * @property {false} [mcp]        false: the CLI takes MCP servers only from the
+ *                                user's own config, so runs get no browser
  * @property {(o: InvocationInput) => AgentRun} invocation
  */
 
@@ -73,6 +75,12 @@ const mcpJson = (mcp, extra = {}) =>
 
 /** @param {NodeJS.ProcessEnv} env @param {string} key @param {string} fallback */
 const dirFrom = (env, key, fallback) => (env[key] ? path.resolve(String(env[key])) : fallback);
+
+/** OpenCode's user config folder, the way Impeccable resolves it. @param {string} home @param {NodeJS.ProcessEnv} env */
+const opencodeConfigDir = (home, env) =>
+  env.OPENCODE_CONFIG_DIR
+    ? path.resolve(String(env.OPENCODE_CONFIG_DIR))
+    : path.join(env.XDG_CONFIG_HOME ? path.resolve(String(env.XDG_CONFIG_HOME)) : path.join(home, ".config"), "opencode");
 
 /** Shell commands Gemini CLI may run unasked in safe mode (its policy engine's TOML). */
 const GEMINI_POLICY = `[[rule]]
@@ -301,6 +309,47 @@ export const AGENTS = [
       };
     },
   },
+  {
+    // `opencode run --format json`, checked against opencode-ai 1.19.3 (and
+    // run end to end with a free OpenCode Zen model). Permissions and MCP
+    // servers come from config; OPENCODE_CONFIG_CONTENT carries both for this
+    // run only. Headless, an "ask" can't be answered, so safe mode answers
+    // every one up front: edits yes, the Impeccable and read-only git/ls
+    // commands yes, other shell commands and paths outside the worktree no
+    // (except the brief's folder and the skill folders).
+    id: "opencode",
+    name: "OpenCode",
+    bin: "opencode",
+    install: "npm install -g opencode-ai",
+    skills: {
+      global: (home, env) => [path.join(opencodeConfigDir(home, env), "skills"), path.join(home, ".agents", "skills"), path.join(home, ".claude", "skills")],
+      project: [".opencode/skills", ".agents/skills", ".claude/skills"],
+    },
+    invocation: ({ briefPath, model, permissions, mcp, home = os.homedir(), env = process.env }) => {
+      const outside = [path.dirname(briefPath), ...existingGlobalSkillDirs("opencode", home, env)].map((d) => `${d.replace(/\\/g, "/")}/**`);
+      const config = {
+        permission: {
+          question: "deny",
+          doom_loop: "deny",
+          ...(permissions === "full"
+            ? {}
+            : {
+                bash: { "*": "deny", "*impeccable*": "allow", "git status*": "allow", "git diff*": "allow", "ls*": "allow" },
+                external_directory: { "*": "deny", ...Object.fromEntries(outside.map((d) => [d, "allow"])) },
+              }),
+        },
+        ...(mcp && Object.keys(mcp).length
+          ? { mcp: Object.fromEntries(Object.entries(mcp).map(([k, v]) => [k, { type: "local", command: [v.command, ...v.args], enabled: true }])) }
+          : {}),
+      };
+      return {
+        file: "opencode",
+        args: ["run", "--format", "json", ...(permissions === "full" ? ["--auto"] : []), ...(model ? ["-m", model] : []), pointer(briefPath)],
+        env: { OPENCODE_CONFIG_CONTENT: JSON.stringify(config) },
+        output: "opencode-json",
+      };
+    },
+  },
 ];
 
 /**
@@ -469,7 +518,14 @@ export function codexProvider(codexHome) {
 }
 
 /** The command that signs a person in, run in its own window. */
-const LOGIN = /** @type {Record<string, string>} */ ({ copilot: "copilot login", codex: "codex login", claude: "claude", gemini: "gemini", cursor: "cursor-agent login" });
+const LOGIN = /** @type {Record<string, string>} */ ({
+  copilot: "copilot login",
+  codex: "codex login",
+  claude: "claude",
+  gemini: "gemini",
+  cursor: "cursor-agent login",
+  opencode: "opencode auth login",
+});
 
 /**
  * Free sign-in check (no prompt, no credits). Copilot uses the GitHub CLI's
@@ -480,7 +536,8 @@ const LOGIN = /** @type {Record<string, string>} */ ({ copilot: "copilot login",
  * ANTHROPIC_API_KEY, or a gateway such as OpenRouter (ANTHROPIC_BASE_URL with
  * ANTHROPIC_AUTH_TOKEN); it asks on first run otherwise. Gemini CLI takes an
  * API key, Vertex AI, or its Google sign-in (~/.gemini/oauth_creds.json).
- * Cursor CLI takes CURSOR_API_KEY or its own auth.json. null = unknown.
+ * Cursor CLI takes CURSOR_API_KEY or its own auth.json. OpenCode keeps
+ * provider keys in its auth.json. null = unknown.
  * @param {string} id
  * @returns {Promise<boolean | null>}
  */
@@ -517,6 +574,12 @@ const isSignedIn = async (id) => {
           : path.join(process.env.XDG_CONFIG_HOME || path.join(home, ".config"), "cursor", "auth.json");
     return fs.existsSync(file);
   }
+  if (id === "opencode") {
+    // Its free OpenCode Zen models need no sign-in, so a missing auth.json
+    // doesn't mean it can't run.
+    const data = process.env.XDG_DATA_HOME || path.join(home, ".local", "share");
+    return fs.existsSync(path.join(data, "opencode", "auth.json")) || null;
+  }
   if (id === "claude") {
     if (process.env.ANTHROPIC_API_KEY) return true;
     if (process.env.ANTHROPIC_BASE_URL && process.env.ANTHROPIC_AUTH_TOKEN) return true;
@@ -525,6 +588,19 @@ const isSignedIn = async (id) => {
   }
   return null;
 };
+
+/**
+ * User-wide copies of Impeccable on this machine, any agent's. variantly
+ * copies one into each worktree where that run's agent reads project skills.
+ * @param {string} [home] @param {NodeJS.ProcessEnv} [env]
+ */
+export function impeccableSources(home = os.homedir(), env = process.env) {
+  const dirs = [
+    ...[".claude/skills", ".agents/skills", ".github/skills", ".copilot/skills", ".codex/skills", ".gemini/skills", ".cursor/skills"].map((d) => path.join(home, d)),
+    ...AGENTS.flatMap((a) => a.skills.global(home, env)),
+  ];
+  return [...new Set(dirs)].map((d) => path.join(d, "impeccable")).filter((d) => existsSync(path.join(d, "SKILL.md")));
+}
 
 /** @param {string} projectRoot */
 export async function detectAgents(projectRoot) {
@@ -535,9 +611,7 @@ export async function detectAgents(projectRoot) {
       // a copy in any of them counts.
       const impeccable =
         hasSkill(agent, "impeccable", { projectRoot }) ||
-        [".claude/skills", ".agents/skills", ".github/skills", ".copilot/skills", ".codex/skills", ".gemini/skills", ".cursor/skills"].some((d) =>
-          fs.existsSync(path.join(os.homedir(), d, "impeccable", "SKILL.md")),
-        );
+        impeccableSources().length > 0;
       const variantlySkill = hasSkill(agent, "variantly", { projectRoot });
       const signedIn = binPath ? await isSignedIn(agent.id) : false;
       return { id: agent.id, name: agent.name, installed: Boolean(binPath), path: binPath, note, version, impeccable, variantlySkill, signedIn, install: agent.install, login: LOGIN[agent.id] ?? null };

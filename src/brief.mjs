@@ -85,7 +85,7 @@ export const hasAnswers = (a) => Boolean(a && (a.users.trim() || a.purpose.trim(
  * @property {boolean} hasProduct PRODUCT.md exists (theirs or written from answers)
  * @property {boolean} hasDesign  DESIGN.md exists
  * @property {string} stackId
- * @property {string} [agent]     claude | codex | copilot | gemini | cursor | demo: how the skill is named
+ * @property {string} [agent]     an agent id (claude, codex, opencode, ...) or demo: how the skill is named
  * @property {string} [previewUrl] the variant's live preview, when the agent has a browser
  * @property {string} [shots] where browser output (screenshots) goes, outside the worktree
  */

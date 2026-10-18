@@ -7,6 +7,7 @@ import {
   siCursor,
   siGithubcopilot,
   siGooglegemini,
+  siOpencode,
   siGo,
   siHtml5,
   siLaravel,
@@ -55,4 +56,5 @@ export const AGENT_LOGOS: (Logo & { name: string; install: string })[] = [
   { ...mark(siGithubcopilot), name: 'GitHub Copilot CLI', install: 'npm i -g @github/copilot' },
   { ...mark(siGooglegemini), name: 'Gemini CLI', install: 'npm i -g @google/gemini-cli' },
   { ...mark(siCursor), name: 'Cursor CLI', install: 'curl https://cursor.com/install -fsS | bash' },
+  { ...mark(siOpencode), name: 'OpenCode', install: 'npm i -g opencode-ai' },
 ];

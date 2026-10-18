@@ -15,10 +15,12 @@
  *   tool_use, tool_result, error, result (packages/core/src/output/types.ts).
  * - Cursor CLI 2026.10 `cursor-agent -p --output-format stream-json`: system,
  *   user, assistant, thinking, tool_call (started/completed), result.
+ * - OpenCode 1.19 `opencode run --format json`: step_start, text, tool_use,
+ *   step_finish (tokens and dollar cost per step), error. Captured from a real run.
  */
 import path from 'node:path';
 
-/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'gemini-stream' | 'cursor-stream' | 'text'} OutputKind */
+/** @typedef {'claude-stream' | 'codex-json' | 'copilot-json' | 'gemini-stream' | 'cursor-stream' | 'opencode-json' | 'text'} OutputKind */
 
 /**
  * Token counts as the agent reported them, summed over the session.
@@ -32,7 +34,7 @@ import path from 'node:path';
  * @typedef {object} OutputParser
  * @property {(line: string) => string[]} push  feed one stdout line, get log lines back
  * @property {() => string} text                the agent's own words, for the SUMMARY line
- * @property {() => number | undefined} costUsd  only Claude Code reports a dollar figure
+ * @property {() => number | undefined} costUsd  a dollar figure, when the agent reports one
  * @property {() => Usage | undefined} usage
  * @property {() => number | undefined} credits  Copilot's AI credits, when reported
  * @property {() => string | undefined} error   a fatal error the agent reported, if any
@@ -102,7 +104,7 @@ export function createParser(kind, opts = {}) {
     u.cachedInputTokens += num(cached);
   };
   /** @type {Record<string, (event: any, state: ParseState, rel: Rel, addUsage: AddUsage) => string[]>} */
-  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot, 'gemini-stream': gemini, 'cursor-stream': cursor };
+  const parsers = { 'claude-stream': claude, 'codex-json': codex, 'copilot-json': copilot, 'gemini-stream': gemini, 'cursor-stream': cursor, 'opencode-json': opencode };
   const describe = parsers[kind];
 
   return {
@@ -384,6 +386,42 @@ function cursor(event, state, rel, addUsage) {
     return [`Finished in ${Math.round(num(event.duration_ms) / 1000)}s${u ? `, ${tokens(state.usage)}` : ''}`];
   }
   return [];
+}
+
+/** @param {any} event @param {ParseState} state @param {Rel} rel @param {AddUsage} addUsage */
+function opencode(event, state, rel, addUsage) {
+  const p = event.part ?? {};
+  switch (event.type) {
+    case 'text': {
+      // Some models leak reasoning tags into the text; they are not words.
+      const text = typeof p.text === 'string' ? p.text.replace(/<\/?think>/g, '') : '';
+      if (!text.trim()) return [];
+      state.text.push(text);
+      return [text.trim()];
+    }
+    case 'tool_use': {
+      const st = p.state ?? {};
+      const a = st.input && typeof st.input === 'object' ? st.input : {};
+      const file = a.filePath ?? a.file_path ?? a.path;
+      const target = file ? rel(file) : (a.command ?? a.pattern ?? a.url ?? a.name ?? a.query ?? '');
+      const name = String(p.tool ?? 'tool');
+      const line = tool(name.charAt(0).toUpperCase() + name.slice(1), target);
+      return st.status === 'error' ? [line, `  ✗ ${clip(st.error ?? 'tool failed', 140)}`] : [line];
+    }
+    case 'step_finish': {
+      const t = p.tokens ?? {};
+      addUsage(t.input, t.output, num(t.cache?.read) + num(t.cache?.write));
+      if (typeof p.cost === 'number') state.costUsd = num(state.costUsd) + p.cost;
+      return [];
+    }
+    case 'error': {
+      const e = event.error ?? {};
+      state.error = e.data?.message ?? e.message ?? e.name ?? 'OpenCode reported an error.';
+      return [`Error: ${state.error}`];
+    }
+    default:
+      return [];
+  }
 }
 
 /** @param {string} name @param {unknown} [target] */

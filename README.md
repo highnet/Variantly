@@ -57,6 +57,7 @@ and can install one and open its sign-in for you:
 | GitHub Copilot CLI | `npm install -g @github/copilot` |
 | Gemini CLI | `npm install -g @google/gemini-cli` |
 | Cursor CLI | `curl https://cursor.com/install -fsS \| bash` (Windows: `irm 'https://cursor.com/install?win32=true' \| iex`) |
+| OpenCode | `npm install -g opencode-ai` |
 
 The agent has to be the **command-line** one: variantly runs it headless.
 Lovable, Bolt, v0 and other browser builders can't run on your machine.
@@ -88,7 +89,7 @@ commands for 10–20 minutes per variant.
 and Impeccable installed for it (the wizard offers to run this for you):
 
 ```sh
-npx impeccable install --providers=claude --scope=global --yes --no-hooks   # or codex, copilot, gemini, cursor
+npx impeccable install --providers=claude --scope=global --yes --no-hooks   # or codex, copilot, gemini, cursor, opencode
 ```
 
 **Mix agents in one run.** Split the variants across agents and models, say
@@ -122,6 +123,7 @@ npx variantly install-skill --scope=project              # into this repo, for e
 | GitHub Copilot CLI | `~/.copilot/skills/variantly/` | `.github/skills/variantly/` | "redesign my site with variantly" or `/variantly` |
 | Gemini CLI | `~/.gemini/skills/variantly/` | `.gemini/skills/variantly/` | "redesign my site with variantly" |
 | Cursor CLI | `~/.cursor/skills/variantly/` | `.cursor/skills/variantly/` | "redesign my site with variantly" or `/variantly` |
+| OpenCode | `~/.config/opencode/skills/variantly/` | `.opencode/skills/variantly/` | "redesign my site with variantly" |
 
 **Claude Code plugin** alternative:
 
@@ -215,15 +217,15 @@ Then, under the hood:
 ## Agents and cost
 
 - **variantly never sees a model.** It starts `claude -p`, `codex exec`,
-  `copilot -p`, `gemini -p` or `cursor-agent -p` per worktree, on **your
-  account** (or your OpenRouter key).
+  `copilot -p`, `gemini -p`, `cursor-agent -p` or `opencode run` per
+  worktree, on **your account** (or your OpenRouter key).
 - **One variant = one full agent session.** Ten variants cost ten sessions.
   **Default: four.**
 - **Live board** from each agent's structured events: files read/edited,
   commands, skills, summaries.
-- **Usage as reported:** Claude Code shows **dollars**, Codex, Gemini and
-  Cursor show **tokens**, Copilot shows **premium requests**. variantly
-  **never estimates** a price.
+- **Usage as reported:** Claude Code and OpenCode show **dollars**, Codex,
+  Gemini, Cursor and OpenCode show **tokens**, Copilot shows **premium
+  requests**. variantly **never estimates** a price.
 
 **Default permissions**
 
@@ -241,15 +243,21 @@ Then, under the hood:
 - **Cursor** runs `cursor-agent -p --force` in the worktree. Cursor has no
   per-command allow list on the command line, so safe mode relies on Cursor's
   own sandbox and settings.
+- **OpenCode** runs `opencode run --format json` with a permission config
+  passed in `OPENCODE_CONFIG_CONTENT`: edits allowed, shell commands denied
+  except the ones Impeccable needs (`*impeccable*`, `git status`, `git diff`,
+  `ls`), paths outside the worktree denied except the brief and your
+  user-wide skills, and questions denied (nobody is there to answer).
 
 - **"Full auto"** removes those limits (`--dangerously-skip-permissions`,
   `--dangerously-bypass-approvals-and-sandbox`, `--allow-all`,
-  `--approval-mode yolo`, `--sandbox disabled`). **Trusted projects only.**
+  `--approval-mode yolo`, `--sandbox disabled`, `--auto`). **Trusted projects only.**
 - **Browser check on:** each agent gets the `playwright` MCP server
   (`--mcp-config` + `mcp__playwright` allowed for Claude Code;
   `-c mcp_servers.playwright.*` for Codex; `--additional-mcp-config` for
   Copilot; a settings file via `GEMINI_CLI_SYSTEM_SETTINGS_PATH` for Gemini;
-  a `--plugin-dir` with `--approve-mcps` for Cursor), **headless** and `--isolated`: **no shared browser profile**.
+  a `--plugin-dir` with `--approve-mcps` for Cursor; `mcp` in
+  `OPENCODE_CONFIG_CONTENT` for OpenCode), **headless** and `--isolated`: **no shared browser profile**.
 
 ## Commands
 
@@ -262,7 +270,7 @@ variantly keep <n> [dir]   roll variant n's style out to every page, then apply 
 variantly clean [dir]      remove every worktree, branch and state file
 variantly install-skill    put the variantly skill where your agents read skills
 
-  --agent <id>   claude | codex | copilot | gemini | cursor | demo
+  --agent <id>   claude | codex | copilot | gemini | cursor | opencode | demo
   --agents <mix> split the variants: agent[:model]:count,… e.g. claude:opus:2,gemini:2
   --blind        hide which agent made each variant until you keep one
   --count <n>    1–10
