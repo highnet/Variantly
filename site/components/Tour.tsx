@@ -1,6 +1,4 @@
-import type { CSSProperties } from 'react';
-
-import { TourPour } from '@/components/TourPour';
+import { LiquidNumeral } from '@/components/LiquidNumeral';
 import { Rich } from '@/components/ui/Rich';
 import { Typography } from '@/components/ui/Typography';
 import { TOUR } from '@/lib/content';
@@ -56,30 +54,11 @@ const Tour = () => (
       return (
         <li
           key={s.shot}
-          style={{ '--liq-src': `url('/liquid/step-${n}.svg')` } as CSSProperties}
-          className="vy-pour grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,4fr)_minmax(0,9fr)] lg:gap-12"
+          className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,4fr)_minmax(0,9fr)] lg:gap-12"
         >
           <div className="grid content-start gap-4 lg:sticky lg:top-24 lg:self-start">
             <div className="border-ink flex items-baseline justify-between gap-4 border-t-2 pt-4">
-              {/* The homepage steps' liquid numeral: an outline that fills as it
-                rises up the screen (TourPour picks the frame of its baked
-                sprite, public/liquid/step-0N.svg). */}
-              <span className="vy-step-num relative w-fit" aria-hidden="true">
-                <span className="vy-step-liq absolute inset-x-0 -inset-y-[0.15em] text-[clamp(3rem,5vw,4.5rem)]">
-                  <span className="figure vy-step-fill text-ink block py-[0.15em] leading-[0.8]">
-                    {n}
-                  </span>
-                  <span className="figure vy-step-tone text-ink absolute inset-0 py-[0.15em] leading-[0.8]">
-                    {n}
-                  </span>
-                  <span className="figure vy-step-line text-ink absolute inset-0 py-[0.15em] leading-[0.8]">
-                    {n}
-                  </span>
-                </span>
-                <span className="figure vy-step-ghost text-ink relative text-[clamp(3rem,5vw,4.5rem)] leading-[0.8]">
-                  {n}
-                </span>
-              </span>
+              <LiquidNumeral n={n} className="text-[clamp(3rem,5vw,4.5rem)]" />
               <Typography variant="label" color="steel" className="text-right">
                 {s.where}
               </Typography>
@@ -121,7 +100,6 @@ const Tour = () => (
         </li>
       );
     })}
-    <TourPour />
   </ol>
 );
 

@@ -1628,8 +1628,8 @@ a:hover > .brand-mark .brand-grip {
 .vy-steps > li.vy-step-on {
   opacity: 1;
 }
-/* Step numerals: an outline that fills with liquid as the progress line
-   reaches it, then pops once. The liquid is a copy of the numeral in the
+/* Step numerals on every page (LiquidNumeral): an outline that fills with
+   liquid as it rises up the screen (LiquidPour), then pops once. The liquid is a copy of the numeral in the
    theme's own colour, masked by a prebaked liquid simulation: one SVG sprite
    per numeral (public/liquid, scripts/bake-liquid.mjs), 48 frames side by
    side, the body in the top row and the meniscus line in the bottom row.
@@ -1642,7 +1642,8 @@ a:hover > .brand-mark .brand-grip {
 }
 .vy-step-ghost {
   -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 2px currentColor;
+  /* 2px on the big numerals, never under 1px on small ones. */
+  -webkit-text-stroke: clamp(1px, 0.02em, 2px) currentColor;
   text-shadow: none !important;
   opacity: 0.55;
 }
@@ -1681,29 +1682,19 @@ a:hover > .brand-mark .brand-grip {
   text-shadow: none !important;
   opacity: 0.6;
 }
-:is(.vy-steps > li, .vy-pour) {
+.vy-pour {
   --frame: 0;
 }
-/* The tour's numerals (components/Tour.tsx) name their own sprite. */
+/* Masks load once a numeral comes near the viewport (LiquidPour adds
+   .vy-liquid and points --liq at the numeral's own sprite); until then a
+   numeral that is not full shows only its outline. */
+.vy-pour:not(.vy-liquid):not(.vy-step-full) .vy-step-liq {
+  opacity: 0;
+}
 .vy-pour.vy-liquid {
   --liq: var(--liq-src);
 }
-/* Masks load once the steps come near the viewport (Delight adds .vy-liquid);
-   until then a numeral that is not full shows only its outline. */
-:is(.vy-steps:not(.vy-liquid) > li, .vy-pour:not(.vy-liquid)):not(.vy-step-full) .vy-step-liq {
-  opacity: 0;
-}
-.vy-steps.vy-liquid > li:nth-child(1) {
-  --liq: url('/liquid/step-1.svg');
-}
-.vy-steps.vy-liquid > li:nth-child(2) {
-  --liq: url('/liquid/step-2.svg');
-}
-.vy-steps.vy-liquid > li:nth-child(3) {
-  --liq: url('/liquid/step-3.svg');
-}
-:is(.vy-steps.vy-liquid > li, .vy-pour.vy-liquid):not(.vy-step-full)
-  :is(.vy-step-fill, .vy-step-tone, .vy-step-line) {
+.vy-pour.vy-liquid:not(.vy-step-full) :is(.vy-step-fill, .vy-step-tone, .vy-step-line) {
   -webkit-mask: var(--liq) no-repeat;
   mask: var(--liq) no-repeat;
   -webkit-mask-size: 4800% 200%;
@@ -1711,47 +1702,11 @@ a:hover > .brand-mark .brand-grip {
   -webkit-mask-position: calc(var(--frame) * 100% / 47) var(--row, 0%);
   mask-position: calc(var(--frame) * 100% / 47) var(--row, 0%);
 }
-:is(.vy-steps.vy-liquid > li, .vy-pour.vy-liquid):not(.vy-step-full) .vy-step-line {
+.vy-pour.vy-liquid:not(.vy-step-full) .vy-step-line {
   --row: 100%;
   display: block;
 }
-/* Touch: no scrubbing. A numeral pours in one stepped run through the frames
-   once its step lights up and the scroll has settled; it pauses while a
-   scroll is under way. */
-:root.vy-steps-touch
-  :is(.vy-steps.vy-liquid > li, .vy-pour.vy-liquid).vy-step-on:not(.vy-step-full)
-  :is(.vy-step-fill, .vy-step-tone) {
-  animation: vy-liq-pour 1.5s steps(48, jump-none) forwards;
-}
-:root.vy-steps-touch
-  :is(.vy-steps.vy-liquid > li, .vy-pour.vy-liquid).vy-step-on:not(.vy-step-full)
-  .vy-step-line {
-  animation: vy-liq-pour-line 1.5s steps(48, jump-none) forwards;
-}
-:root.vy-steps-touch[data-scrolling] .vy-step-liq > * {
-  animation-play-state: paused;
-}
-@keyframes vy-liq-pour {
-  from {
-    -webkit-mask-position: 0% 0%;
-    mask-position: 0% 0%;
-  }
-  to {
-    -webkit-mask-position: 100% 0%;
-    mask-position: 100% 0%;
-  }
-}
-@keyframes vy-liq-pour-line {
-  from {
-    -webkit-mask-position: 0% 100%;
-    mask-position: 0% 100%;
-  }
-  to {
-    -webkit-mask-position: 100% 100%;
-    mask-position: 100% 100%;
-  }
-}
-:is(.vy-steps > li, .vy-pour).vy-step-done .vy-step-num {
+.vy-pour.vy-step-done {
   animation: vy-step-pop 620ms var(--ease-spring-pop);
 }
 @keyframes vy-step-pop {
@@ -1812,20 +1767,9 @@ header.vy-header-glass {
   .vy-steps > li {
     opacity: 1;
   }
-  :is(.vy-steps > li, .vy-pour) .vy-step-num,
+  .vy-pour,
   .vy-sheen::after {
     animation: none !important;
-  }
-  /* A still frame at the target level: a lit numeral is simply full. */
-  :is(.vy-steps > li, .vy-pour).vy-step-on .vy-step-liq {
-    opacity: 1 !important;
-  }
-  :is(.vy-steps > li, .vy-pour).vy-step-on :is(.vy-step-fill, .vy-step-tone) {
-    mask: none !important;
-    -webkit-mask: none !important;
-  }
-  :is(.vy-steps > li, .vy-pour).vy-step-on .vy-step-line {
-    display: none !important;
   }
 }
 :root[data-seek] .vy-title,
@@ -1838,10 +1782,10 @@ header.vy-header-glass {
 :root[data-motion='calm'] .vy-steps > li {
   opacity: 1;
 }
-/* Calm and seek: no pour, every numeral is full. Low power: no pour either,
-   a numeral is outlined until its step lights, then full. */
-:root:is([data-seek], [data-motion='calm']) :is(.vy-steps > li, .vy-pour),
-:root[data-perf='low'] :is(.vy-steps > li, .vy-pour).vy-step-on {
+/* Calm (which reduced motion turns on) and seek: no pour, every numeral is
+   full. Low power: no pour either, a numeral is outlined until it scrolls
+   into view, then full (LiquidPour). */
+:root:is([data-seek], [data-motion='calm']) .vy-pour {
   & .vy-step-liq {
     opacity: 1 !important;
   }

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 
+import { LiquidNumeral } from '@/components/LiquidNumeral';
 import { Rich } from '@/components/ui/Rich';
 import { Typography } from '@/components/ui/Typography';
 import { EXTRAS, STEPS } from '@/lib/content';
@@ -21,27 +22,7 @@ const HowItWorks = () => (
     <ol className="m-0 grid list-none gap-10 p-0 md:grid-cols-3 md:gap-8">
       {STEPS.map((s, i) => (
         <li key={s.label} className="border-ink grid content-start gap-3 border-t-2 pt-5">
-          {/* An outlined numeral that fills with liquid as the scroll progress
-              reaches it. The liquid is a copy of the numeral masked by a
-              prebaked simulation (public/liquid, scripts/bake-liquid.mjs);
-              Delight picks the frame. A toned copy adds depth and grain, a lighter
-              copy the meniscus. */}
-          <span className="vy-step-num relative w-fit" aria-hidden="true">
-            <span className="vy-step-liq absolute inset-x-0 -inset-y-[0.15em] text-[clamp(4.5rem,8vw,7rem)]">
-              <span className="figure vy-step-fill text-ink block py-[0.15em] leading-[0.8]">
-                {i + 1}
-              </span>
-              <span className="figure vy-step-tone text-ink absolute inset-0 py-[0.15em] leading-[0.8]">
-                {i + 1}
-              </span>
-              <span className="figure vy-step-line text-ink absolute inset-0 py-[0.15em] leading-[0.8]">
-                {i + 1}
-              </span>
-            </span>
-            <span className="figure vy-step-ghost text-ink relative text-[clamp(4.5rem,8vw,7rem)] leading-[0.8]">
-              {i + 1}
-            </span>
-          </span>
+          <LiquidNumeral n={String(i + 1)} className="text-[clamp(4.5rem,8vw,7rem)]" />
           <Typography variant="title" as="h3">
             <Rich text={s.title} />
           </Typography>

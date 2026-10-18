@@ -33,7 +33,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const site = join(here, '..');
 const out = join(site, 'public/liquid');
 
-// Must match LIQUID_FRAMES in components/Delight.tsx and the 4800% / 47 /
+// Must match LIQUID_FRAMES in components/LiquidPour.tsx and the 4800% / 47 /
 // steps(48) in the liquid rules of app/globals.css.
 const FRAMES = 48;
 // The homepage steps by default; pass others to bake them too (the How it
