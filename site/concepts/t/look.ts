@@ -37,9 +37,12 @@ void main() {
   vec3 v = normalize(vV);
   vec3 L = normalize(vec3(-0.55, 0.6, 0.6));
   float wrap = clamp((dot(n, L) + 0.35) / 1.35, 0.0, 1.0);
+  // A soft warm rim so the honed face separates from the linen in both themes.
+  float rim = pow(1.0 - abs(dot(n, normalize(vV))), 3.0);
   float fleck = step(1.0 - uFleck, hash(floor(vObj.xy * 90.0 + uSeed)));
-  vec3 c = uA * (0.62 + 0.5 * wrap) * (0.94 + 0.1 * h0) * (1.0 - fleck * 0.18);
+  vec3 c = uA * (0.78 + 0.34 * wrap) * (0.94 + 0.1 * h0) * (1.0 - fleck * 0.18);
   c += vec3(1.0, 0.97, 0.92) * pow(max(dot(reflect(-L, n), v), 0.0), 10.0) * 0.06;
+  c = mix(c, uA * 0.6, rim * 0.35);
   c += (hash(gl_FragCoord.xy + uSeed) - 0.5) * 0.025;
   gl_FragColor = vec4(c, 1.0);
   #include <colorspace_fragment>

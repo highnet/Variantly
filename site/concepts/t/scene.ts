@@ -4,8 +4,8 @@ import { persp } from '@/components/backdrop/sceneKit';
 import type { Built, ConceptScene } from '@/concepts/types';
 
 /*
- * t · Stone & Linen: a few pebbles lying on the linen, seen from above, in
- * the corner the Backdrop leaves them. The light turns slowly (24s there and
+ * t · Stone & Linen: a few pebbles lying on the linen, seen from above,
+ * below the word's right end. The light turns slowly (24s there and
  * back) and their shadows swing with it; one pebble hangs a little above the
  * cloth, its shadow loose and soft. Shadows are drawn by one transparent
  * plane's shader, no shadow maps.
@@ -101,9 +101,10 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
       const aspect = (camera as THREE.PerspectiveCamera).aspect || 1.6;
       const wide = aspect > 1;
       const hw = hh * aspect;
-      // In the empty field right of the word, where the Backdrop's pebble lies.
-      cluster.position.set(hw * (wide ? 0.66 : 0.42), -hh * (wide ? 0.04 : 0.24), 0);
-      cluster.scale.setScalar(wide ? 0.72 : 0.5);
+      // Below the word's right end, in the window's light: the stones sit
+      // under the title like a still life on the cloth, never behind a letter.
+      cluster.position.set(hw * (wide ? 0.74 : 0.42), -hh * (wide ? 0.4 : 0.3), 0);
+      cluster.scale.setScalar(wide ? 0.95 : 0.6);
       const p = (t / 24) * Math.PI * 2;
       // The sun swings from upper left toward the top and back.
       const ang = 2.3 - 0.45 * (0.5 - 0.5 * Math.cos(p));

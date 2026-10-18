@@ -17,6 +17,13 @@ const PLASTERS: [string, string, number][] = [
   ['#ece6dc', '#9b958f', 0.75],
   ['#eef0f4', '#9ea4b4', 0.4],
 ];
+// Light theme: the same casts in slate and violet stone, so the word holds
+// against the pale sky (each face >= 4.5:1 on #e7ecf1).
+const STONES: [string, string, number][] = [
+  ['#545a6c', '#2a2e3a', 0.5],
+  ['#5e5280', '#2c2640', 0.6],
+  ['#4a5568', '#252b36', 0.4],
+];
 
 export const look: ConceptLook = {
   pool: (ink, dark, phone) => {
@@ -28,25 +35,26 @@ export const look: ConceptLook = {
         mirror: true,
         reflection: true,
         fade: 2.6,
-        alpha: dark ? 0.55 : 0.38,
+        alpha: dark ? 0.55 : 0.5,
         crack: 0,
       });
-    const looks: LetterLook[] = PLASTERS.map(([col, shade, crack], i) => ({
+    const casts = dark ? PLASTERS : STONES;
+    const looks: LetterLook[] = casts.map(([col, shade, crack], i) => ({
       body: [
         plaster({ col: lift(col), shade, crack, scale: 1.4 + i * 0.3 }),
         plaster({ col: lift(col), shade: ink.side, crack: crack * 0.6, scale: 1.4 }),
       ],
-      extra: ghost(i === 1 ? '#8fb4e6' : ink.face),
+      extra: ghost(i === 1 ? (dark ? '#8fb4e6' : '#4a6a96') : ink.face),
       offset: [0, -0.02, 0],
     }));
     if (phone) return looks;
     // Desktop: studio-lit matte casts (MeshStandard, rough 0.95) with tooth.
-    const grain = patch('plaster', true);
+    const grain = patch('plaster', false);
     const cast = (c: string) =>
       grain(new THREE.MeshStandardMaterial({ color: c, roughness: 0.95, metalness: 0 }));
-    ['#f6f3ec', '#e9e4da', '#f0f2f6'].forEach((c, i) =>
+    (dark ? ['#f6f3ec', '#e9e4da', '#f0f2f6'] : ['#5a6072', '#62578a', '#4d586c']).forEach((c, i) =>
       looks.push({
-        body: [cast(lift(c)), cast(lift(PLASTERS[i][1]))],
+        body: [cast(lift(c)), cast(lift(casts[i][1]))],
         extra: ghost(i === 0 ? '#ffb59a' : ink.face),
         offset: [0, -0.02, 0],
         env: true,

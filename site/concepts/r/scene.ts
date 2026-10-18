@@ -81,8 +81,9 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
     update: (t) => {
       const aspect = (camera as THREE.PerspectiveCamera).aspect || 1.6;
       const wide = aspect > 1;
-      rig.position.set(wide ? hh * aspect * 0.5 : 0, wide ? -1.5 : -2.9, 0);
-      rig.scale.setScalar(wide ? 1.15 : 0.62);
+      // Wide: the whole drum sits inside the right edge, never cropped.
+      rig.position.set(wide ? hh * aspect * 0.56 : 0, wide ? -1.2 : -2.9, 0);
+      rig.scale.setScalar(wide ? 0.72 : 0.62);
       // Step on the beat: a quick eased turn, then hold.
       const s = (((t % 24) + 24) % 24) / BEAT;
       const k = Math.floor(s);

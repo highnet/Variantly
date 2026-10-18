@@ -22,8 +22,13 @@ export type ConceptMeta = {
   swatch: Record<Theme, [string, string, string]>;
   // CSS font-family for the tile name (a --font-* var loaded by the layout).
   font: string;
-  // Strength of the film grain GlField adds to the scene's shapes (0 = none).
+  // Strength of the film grain GlField adds to the scene's shapes (0 = none,
+  // 0.2 is clearly grainy, 0.4 is heavy print grain). Midtones take it all;
+  // deep darks and bright highlights get less.
   grain: number;
+  // Share of that grain that is per-channel colour noise (default 0.35;
+  // 0 = monochrome grain).
+  grainChroma?: number;
   // 'draft' keeps a concept out of the switcher, the cycle order, shuffle and
   // the saved pick until it is finished; `?v=<id>` opens one directly and
   // `?drafts=1` lists every draft for review (concepts/README.md).

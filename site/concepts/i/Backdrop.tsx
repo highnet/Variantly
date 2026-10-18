@@ -77,7 +77,7 @@ const LiquidGlass = () => (
     <div className="vy-li-field absolute inset-0" />
     <Gradients />
     {/* a wide pill, top right */}
-    <Piece className="top-[-16%] right-[-14%] size-[52vmax]" float={0}>
+    <Piece className="top-[-30%] right-[-22%] size-[46vmax]" float={0}>
       <Slab id="a" lines={16} d="M29 30 H71 A20 20 0 0 1 71 70 H29 A20 20 0 0 1 29 30Z" />
     </Piece>
     {/* a round lens, bottom left */}

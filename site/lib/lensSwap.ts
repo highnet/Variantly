@@ -68,7 +68,11 @@ const RINGS = [
 ] as const;
 
 // Adds the frame layers to the page (in the transition's update callback, so
-// they exist only in the new state).
+// they exist only in the new state). Each is a full-screen amber layer that
+// only ever shows through its clipped view-transition snapshot: it must be
+// gone before the transition's pseudo-elements are torn down, or the raw
+// layer paints for a frame (a full-screen amber flash, seen in iOS Safari).
+// globals.css also hides them whenever no transition is active.
 export const mountSwapFrame = () => {
   const els = RINGS.map((_, i) => {
     const el = document.createElement('div');
@@ -110,7 +114,7 @@ export const openDoor = (origin: SwapOrigin, duration: number, concept?: Concept
   const html = document.documentElement;
   const opts = { duration, easing: 'linear', fill: 'both' } as const;
   html.animate(clip, { ...opts, pseudoElement: '::view-transition-new(root)' });
-  RINGS.forEach((_, k) =>
+  const ringAnims = RINGS.map((_, k) =>
     html.animate(rings[k], { ...opts, pseudoElement: `::view-transition-new(vy-swap-frame-${k})` }),
   );
   // One sharp glitch frame as it starts: the new page and its frame jump
@@ -129,4 +133,7 @@ export const openDoor = (origin: SwapOrigin, duration: number, concept?: Concept
     jump(Math.round(4 + 8 * amount), '::view-transition-new(root)');
     jump(-Math.round(3 + 5 * amount), '::view-transition-new(vy-swap-frame-0)');
   }
+  // Settles once the rings have swept past every edge: the frame layers can
+  // go then, before the transition ends (see mountSwapFrame).
+  return Promise.all(ringAnims.map((a) => a.finished)).then(() => undefined);
 };

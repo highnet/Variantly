@@ -95,6 +95,36 @@ const JSON_LD = {
 // The agent page is a plain document: flag it before paint so no styling flashes.
 const AUDIENCE_BOOT = `document.documentElement.dataset.audience=location.pathname==='/agents'||location.hash==='#agent'?'agent':'human'`;
 
+// For whoever reads the source: a notice from a very particular kind of
+// office. An HTML comment in a hidden element, so it shows only in "view
+// source" (not on the page, not to screen readers, not in text extraction).
+const SOURCE_NOTICE = `<!--
+
+  ╔══════════════════════════════════════════════════════════╗
+  ║   OFFICE OF TIMELINE ADMINISTRATION · FORM V-1           ║
+  ║   NOTICE OF VARIANT ACTIVITY                             ║
+  ╠══════════════════════════════════════════════════════════╣
+  ║   Case no.  ..... variantly.style                        ║
+  ║   Status    ..... branched, contained, awaiting choice   ║
+  ║                                                          ║
+  ║   A redesign has branched off your main line.            ║
+  ║   Each variant runs on its own worktree, in its own      ║
+  ║   timeline, where it can do no harm.                     ║
+  ║                                                          ║
+  ║   Nothing returns to the main line until a person        ║
+  ║   chooses. The rest are kept on file as branches.        ║
+  ║                                                          ║
+  ║   To prune the remaining timelines:                      ║
+  ║       $ npx variantly clean                              ║
+  ║                                                          ║
+  ║   Please take a number. Someone will be with you         ║
+  ║   shortly. Time is not a factor here.                    ║
+  ║                                                          ║
+  ║   [ STAMPED ]  REVIEWED · NO PARADOX DETECTED            ║
+  ╚══════════════════════════════════════════════════════════╝
+
+-->`;
+
 type RootLayoutProps = {
   children: ReactNode;
 };
@@ -112,6 +142,7 @@ const RootLayout = ({ children }: RootLayoutProps) => (
       />
     </head>
     <body>
+      <div hidden aria-hidden="true" dangerouslySetInnerHTML={{ __html: SOURCE_NOTICE }} />
       {children}
       <Toaster />
       <StoreHydrator />

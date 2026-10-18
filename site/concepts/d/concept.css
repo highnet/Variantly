@@ -122,3 +122,7 @@
 :root[data-variant='d'] .vy-loadbar-fill {
   background: repeating-linear-gradient(-45deg, var(--art-ink) 0 6px, var(--art-1) 6px 12px);
 }
+/* Grain on surfaces (see Grainy gradients in app/globals.css). */
+:root[data-variant='d'] {
+  --grain-tile: var(--grain-strong);
+}

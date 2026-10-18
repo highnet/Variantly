@@ -13,6 +13,7 @@ import clsx from 'clsx';
 import { act, goCompare } from './Board';
 import { Chat } from './Chat';
 import { Icon, Mark } from './Icon';
+import { LensDoor, lensStartsOpen } from './Lens';
 import { ProgressCard } from './Progress';
 import { PageSkeleton } from './Skeleton';
 import { api } from '@/lib/api';
@@ -34,12 +35,32 @@ const select = (sel: 'original' | number) => {
   if (typeof sel === 'number') seen(sel);
 };
 
+const setMode = (mode: UiState['mode']) => setState(mode === 'lens' && getState().mode !== 'lens' ? { mode, lensOpen: lensStartsOpen() } : { mode });
+
+/**
+ * The Lens's fixed partner for a base: the next ready design after it in
+ * 1..N order, wrapping, never itself; the original when no other design is
+ * ready; design 1 (the first ready one) behind the original.
+ */
+export const lensPartner = (vs: Variant[], base: 'original' | number | null): number | 'original' | null => {
+  const ready = vs.filter((v) => v.status === 'done').map((v) => v.n).sort((a, b) => a - b);
+  if (base === 'original' || base === null) return ready[0] ?? null;
+  const others = ready.filter((n) => n !== base);
+  if (!others.length) return 'original';
+  return others.find((n) => n > base) ?? others[0];
+};
+
 const pickable = (s: UiState) => (s.snap?.variants ?? []).filter(isPickable).map((v) => v.n);
 
 /** Keys work the same whether focus is here or inside a preview frame. */
 const handleKey = (key: string) => {
   const s = getState();
   if (key === 'Escape') {
+    // In the Lens, Escape closes the door, then leaves for the slider.
+    if (s.mode === 'lens' && !s.confirming && !s.infoOpen && !s.chatOpen && !s.helpOpen) {
+      setState(s.lensOpen ? { lensOpen: false } : { mode: 'slider' });
+      return;
+    }
     setState({ confirming: false, infoOpen: false, chatOpen: false, helpOpen: false });
     return;
   }
@@ -51,9 +72,10 @@ const handleKey = (key: string) => {
   }
   if (key === 'o') return select('original');
   if (key === 's') {
-    const modes = ['slider', 'single', 'side'] as const;
-    return setState({ mode: modes[(modes.indexOf(s.mode) + 1) % modes.length] });
+    const modes = ['slider', 'lens', 'single', 'side'] as const;
+    return setMode(modes[(modes.indexOf(s.mode) + 1) % modes.length]);
   }
+  if (key === 'l') return s.mode === 'lens' ? setState({ lensOpen: !s.lensOpen }) : setMode('lens');
   if (key === 'm') return setState({ device: s.device === 'mobile' ? 'desktop' : 'mobile' });
   if (key === 'i') return setState({ infoOpen: !s.infoOpen, chatOpen: false });
   if (key === 'c') return setState({ chatOpen: !s.chatOpen, infoOpen: false });
@@ -255,7 +277,8 @@ const Dock = () => {
     }
   };
 
-  const chosen = vs.find((x) => x.n === sel);
+  const confirmN = useStore((s) => s.confirmN);
+  const chosen = vs.find((x) => x.n === (confirming && confirmN != null ? confirmN : sel));
   if (confirming && chosen) {
     return (
       <nav className="dock" aria-label="Variants">
@@ -288,7 +311,7 @@ const Dock = () => {
   }
 
   const modeBtn = (m: UiState['mode'], label: string) => (
-    <button type="button" aria-pressed={mode === m} aria-label={label} title={`${label} (s)`} onClick={() => setState({ mode: m })}>
+    <button type="button" aria-pressed={mode === m} aria-label={label} title={`${label} (${m === 'lens' ? 'l' : 's'})`} onClick={() => setMode(m)}>
       <Icon name={m} />
     </button>
   );
@@ -330,6 +353,7 @@ const Dock = () => {
       <span className="sep" aria-hidden="true" />
       <div className="modes" role="group" aria-label="View">
         {modeBtn('slider', 'Slider')}
+        {modeBtn('lens', 'Lens')}
         {modeBtn('single', 'Single')}
         {modeBtn('side', 'Side by side')}
       </div>
@@ -362,7 +386,7 @@ const Dock = () => {
         <Icon name="info" />
       </button>
       {chosen?.status === 'done' && (
-        <button ref={keepBtn} className="btn primary" type="button" onClick={() => setState({ confirming: true })}>
+        <button ref={keepBtn} className="btn primary" type="button" onClick={() => setState({ confirming: true, confirmN: null })}>
           Keep {vname(chosen.n)}
         </button>
       )}
@@ -409,6 +433,8 @@ const Compare = () => {
   const frames = { before: useRef<HTMLIFrameElement>(null), after: useRef<HTMLIFrameElement>(null) };
   const shown = useRef<Record<Side, { target: string; path: string }>>({ before: { target: '', path: '' }, after: { target: '', path: '' } });
   const compareRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const lensOpen = useStore((s) => s.lensOpen);
   const [dragging, setDragging] = useState(false);
   const [tucked, setTucked] = useState(false);
   // `?recording=1` keeps the dock shown, for filming the app.
@@ -430,8 +456,9 @@ const Compare = () => {
   const lastVariant = useRef<number | null>(null);
   if (typeof sel === 'number') lastVariant.current = sel;
   const variantTarget = sel === 'original' ? (lastVariant.current ? `v${lastVariant.current}` : '') : sel ? `v${sel}` : '';
-  let effMode = sel === 'original' ? 'single' : mode;
-  if (building && effMode === 'slider') effMode = 'side';
+  const partner = lensPartner(vs, sel);
+  let effMode = sel === 'original' && !(mode === 'lens' && partner !== null) ? 'single' : mode;
+  if (building && (effMode === 'slider' || effMode === 'lens')) effMode = 'side';
   // Side by side: the panes scroll together, so the original drops its bar
   // and the two don't sit back to back in the middle.
   const hideBeforeBar = effMode === 'side';
@@ -441,10 +468,14 @@ const Compare = () => {
     frames.before.current?.contentWindow?.postMessage({ variantly: true, type: 'scrollbar', hidden: hideBeforeBar }, '*');
   }, [hideBeforeBar, frames.before]);
 
-  const want: Record<Side, string> = {
-    before: effMode !== 'single' || sel === 'original' ? 'original' : '',
-    after: building ? '' : variantTarget,
-  };
+  // The Lens: the selection fills the stage, its fixed partner is behind the door.
+  const lens = effMode === 'lens';
+  const want: Record<Side, string> = lens
+    ? { before: sel === 'original' ? 'original' : `v${sel}`, after: partner === 'original' ? 'original' : `v${partner}` }
+    : {
+        before: effMode !== 'single' || sel === 'original' ? 'original' : '',
+        after: building ? '' : variantTarget,
+      };
   const srvBefore = snap ? serverOf(getState(), want.before) : undefined;
   const srvAfter = snap && want.after ? serverOf(getState(), want.after) : undefined;
   const srv: Record<Side, ServerState | undefined> = { before: srvBefore, after: srvAfter };
@@ -498,6 +529,7 @@ const Compare = () => {
       wake();
       if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
       if (t?.getAttribute('role') === 'slider' && e.key.startsWith('Arrow')) return;
+      if (t?.classList.contains('lens-pad') && (e.key.startsWith('Arrow') || e.key === 'Enter' || e.key === ' ')) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       handleKey(e.key.length === 1 ? e.key.toLowerCase() : e.key);
     };
@@ -568,7 +600,7 @@ const Compare = () => {
       data-device={device}
       style={{ ['--split' as string]: `${split}%`, ['--split-n' as string]: split / 100 }}
     >
-      <div className="stage" data-mode={effMode} data-device={device} data-show={sel === 'original' ? 'original' : 'variant'}>
+      <div ref={stageRef} className="stage" data-lens-open={effMode === 'lens' && lensOpen ? 'true' : undefined} data-mode={effMode} data-device={device} data-show={sel === 'original' ? 'original' : 'variant'}>
         <div className="pane before">
           <iframe ref={frames.before} title="Original" allow="clipboard-read; clipboard-write" onLoad={() => settle('before')} />
           <PageSkeleton className={clsx(!pending.before && 'done')} />
@@ -585,6 +617,7 @@ const Compare = () => {
             paneWait('after')
           )}
         </div>
+        {lens && partner !== null && <LensDoor stage={stageRef} before={frames.before} v={partner === 'original' ? null : (vs.find((x) => x.n === partner) ?? null)} base={current ? vname(current.n) : 'the original'} />}
       </div>
       <div className="drag-shield" hidden={!dragging} />
       <div className="divider">

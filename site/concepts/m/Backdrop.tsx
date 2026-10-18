@@ -71,17 +71,17 @@ const UncannyMirror = () => (
     <div className="vy-lm-room absolute inset-0" />
     <div className="vy-lm-line absolute inset-x-0" />
     {/* the moon sits on the horizon; its reflection hangs below, late and wrong */}
-    <div className="vy-lm-slide absolute top-[calc(var(--lm-h)-10vmax)] left-[24%] size-[12vmax]">
+    <div className="vy-lm-slide absolute top-[calc(var(--lm-h)-10vmax)] left-[24%] size-[12vmax] max-sm:hidden">
       <Moon />
     </div>
-    <div className="vy-lm-slide vy-lm-late absolute top-[calc(var(--lm-h)+2vmax)] left-[24%] size-[12vmax] -scale-y-100 opacity-70">
+    <div className="vy-lm-slide vy-lm-late absolute top-[calc(var(--lm-h)+2vmax)] left-[24%] size-[12vmax] -scale-y-100 opacity-70 max-sm:hidden">
       <Crescent />
     </div>
     {/* a tiny doorway on the horizon, opening onto other variants */}
-    <div className="absolute top-[calc(var(--lm-h)-7vmax)] right-[28%] size-[7vmax]">
+    <div className="absolute top-[calc(var(--lm-h)-7vmax)] right-[28%] size-[7vmax] max-sm:hidden">
       <Door id="up" glow="[stop-color:var(--art-lie)]" ink="fill-(--art-moon)" />
     </div>
-    <div className="absolute top-[var(--lm-h)] right-[28%] size-[7vmax] -scale-y-100 opacity-50">
+    <div className="absolute top-[var(--lm-h)] right-[28%] size-[7vmax] -scale-y-100 opacity-50 max-sm:hidden">
       <Door id="down" glow="[stop-color:var(--art-lie-2)]" ink="fill-(--art-ink)" />
     </div>
   </>

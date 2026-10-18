@@ -76,7 +76,7 @@
   background: var(--hero-box);
   box-shadow:
     0 1px 0 rgb(255 255 255 / 0.5) inset,
-    0 22px 34px -24px rgb(90 52 32 / 0.55);
+    0 22px 34px -24px rgb(0 0 0 / 0.32);
 }
 :root[data-variant='s'] main > div .bg-surface { background: var(--surface); }
 :root[data-variant='s'] [data-hero-side] { padding: 22px; }
@@ -109,7 +109,7 @@
       color-mix(in srgb, var(--art-grain) 55%, transparent) 3px 4px,
       transparent 4px 9px
     ),
-    linear-gradient(var(--art-wood), var(--art-grain)); box-shadow: 0 1.6vh 2.4vh -1vh rgb(40 20 8 / 0.45); }
+    linear-gradient(var(--art-wood), var(--art-grain)); box-shadow: 0 1.6vh 2.4vh -1vh rgb(0 0 0 / 0.4); }
 .vy-s-row { animation: vy-s-slide 24s cubic-bezier(0.45, 0, 0.2, 1) infinite; }
 .vy-s-pull { animation: vy-s-pull 24s cubic-bezier(0.45, 0, 0.2, 1) infinite; }
 :root[data-scrolled] .vy-s-glow,
