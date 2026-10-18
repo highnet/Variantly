@@ -1450,6 +1450,17 @@ a:hover > .brand-mark .brand-grip {
   border-radius: 50%;
   will-change: transform, opacity;
 }
+.vy-burst-ring[data-shape='square'] {
+  border-radius: 4px;
+}
+/* The /agents burst: a tall door outline, dashed like a timeline seam. */
+.vy-burst-ring[data-shape='door'] {
+  width: 48px;
+  height: 84px;
+  border-radius: 24px 24px 6px 6px;
+  border-style: dashed;
+  border-width: 3px;
+}
 
 /* ---- Demo picker tiles (01–06) ------------------------------------------ */
 /* The tiles drew "raised slate" behind "surface" text; in the remapped hero
