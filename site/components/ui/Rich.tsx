@@ -4,33 +4,57 @@ import { GlossaryTip } from '@/components/GlossaryTip';
 import { isGlossaryKey } from '@/lib/glossary';
 
 // [Words](https://url) or {{term}} / {{term|words shown}}.
-const TOKEN = /\[([^\]]+)\]\((https?:[^)]+)\)|\{\{([a-z-]+)(?:\|([^}]+))?\}\}/g;
+const TOKEN = /\[([^\]]+)\]\((https?:[^)]+|[#/][\w#/-]*)\)|\{\{([a-z-]+)(?:\|([^}]+))?\}\}/g;
 
 type InlineProps = {
   text: string;
 };
 
 /*
- * [Words](https://url) become a link to that third-party site; {{term}}
- * becomes a glossary tip (lib/glossary.ts).
+ * `text` becomes inline code.
+ */
+const Code = ({ text }: InlineProps) => (
+  <>
+    {text.split(/`([^`]+)`/g).map((part, i) =>
+      i % 2 ? (
+        <code key={i} className="text-ink font-mono text-[0.92em]">
+          {part}
+        </code>
+      ) : (
+        <Fragment key={i}>{part}</Fragment>
+      ),
+    )}
+  </>
+);
+
+/*
+ * [Words](https://url) become a link to that third-party site, [Words](#id)
+ * or [Words](/path) a link on this site; {{term}} becomes a glossary tip
+ * (lib/glossary.ts).
  */
 const Inline = ({ text }: InlineProps) => {
   const out: ReactNode[] = [];
   let at = 0;
   for (const m of text.matchAll(TOKEN)) {
-    if (m.index > at) out.push(<Fragment key={at}>{text.slice(at, m.index)}</Fragment>);
+    if (m.index > at) out.push(<Code key={at} text={text.slice(at, m.index)} />);
     const [, words, href, term, shown] = m;
     if (href) {
       out.push(
-        <a
-          key={m.index}
-          href={href}
-          target="_blank"
-          rel="noreferrer"
-          className="underline underline-offset-2"
-        >
-          {words}
-        </a>,
+        href.startsWith('http') ? (
+          <a
+            key={m.index}
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="underline underline-offset-2"
+          >
+            {words}
+          </a>
+        ) : (
+          <a key={m.index} href={href} className="underline underline-offset-2">
+            {words}
+          </a>
+        ),
       );
     } else if (isGlossaryKey(term)) {
       out.push(
@@ -43,7 +67,7 @@ const Inline = ({ text }: InlineProps) => {
     }
     at = m.index + m[0].length;
   }
-  if (at < text.length) out.push(<Fragment key={at}>{text.slice(at)}</Fragment>);
+  if (at < text.length) out.push(<Code key={at} text={text.slice(at)} />);
   return <>{out}</>;
 };
 

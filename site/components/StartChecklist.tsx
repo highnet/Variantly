@@ -16,8 +16,9 @@ const ALL_PROMPTS = [
  */
 const StartChecklist = () => (
   <section
+    id="start"
     aria-labelledby="start-title"
-    className="rounded-pass border-rule bg-surface grid w-full max-w-[880px] overflow-hidden border"
+    className="rounded-pass border-rule bg-surface grid w-full max-w-[880px] scroll-mt-28 overflow-hidden border"
   >
     <div className="grid content-start gap-10 p-6 sm:p-10 lg:p-14">
       <div className="grid gap-3">

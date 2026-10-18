@@ -24,19 +24,19 @@ Free and open source (MIT). Each variant is one session on your own AI plan, plu
 Chapters
 0:00 Intro
 0:09 Why
-1:11 What you need
-1:37 Will it work on yours?
-2:27 Setup
-3:12 What to make
-3:36 Your own directions
-4:03 Review and go
-4:34 The run
-5:47 Compare
-7:48 Keep
-8:47 Wrap
+1:15 What you need
+1:41 Will it work on yours?
+2:32 Setup
+3:17 What to make
+3:40 Your own directions
+4:07 Review and go
+4:38 The run
+5:51 Compare
+7:52 Keep
+8:54 Wrap
 
 ## Short clips to cut
 
-1. **Honest time** (about 10 s, from this take): `lapse` from 5:15, the board at real speed under the real clock, then the speed-up and "the whole run took N minutes". Works in 16:9 and 9:16.
+1. **Honest time** (about 10 s, from this take): `lapse` from 5:19, the board at real speed under the real clock, then the speed-up and "the whole run took N minutes". Works in 16:9 and 9:16.
 2. **The `--blind` reveal** (about 15 s, needs extra footage): a mixed run started with `npx variantly --agents claude:5,gemini:5 --blind`, the compare panes without agent names, then Keep and the names revealed. The main take is Claude Code only, so it only says `--blind` over the mix card.
 3. **Agent mix comparison** (about 20 s, needs extra footage): the same brief from Claude Code and Gemini CLI side by side (S), each pane labelled with who made it. Film with `"mix": "claude:5,gemini:5"` in `script.json`.

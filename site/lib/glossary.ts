@@ -9,9 +9,19 @@ export type GlossaryEntry = {
   body: string;
   href?: string;
   hrefLabel?: string;
+  /** A bold first line. */
+  title?: string;
+  /** A command to show, with its copy button, above the body. */
+  command?: string;
 };
 
 export const GLOSSARY = {
+  cmd: {
+    label: 'one command',
+    title: 'The whole setup is one line',
+    command: 'npx variantly',
+    body: 'Run it in your site’s folder.',
+  },
   terminal: {
     label: 'terminal',
     body: 'A window where you type commands instead of clicking. In VS Code it’s the menu Terminal → New Terminal; on a Mac the Terminal app works too.',

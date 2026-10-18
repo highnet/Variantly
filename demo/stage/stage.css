@@ -149,6 +149,8 @@ body.tall { width: 1080px; height: 1920px; }
 .kinetic .big span { display: inline-block; }
 .tall .kinetic .big { font-size: 80px; max-width: 896px; }
 .card .credit { font: 500 26px var(--mono); font-stretch: 87.5%; color: var(--steel); margin-top: 10px; }
+/* A small filed-record stamp on the end card, like the site footer's. */
+.card .stamp { margin-top: 8px; padding: 6px 14px; border-radius: 4px; background: var(--alert); color: var(--alert-ink); font: 700 24px var(--mono); font-stretch: 75%; letter-spacing: 0.08em; text-transform: uppercase; transform: rotate(-3deg); }
 .caret { animation: none; }
 
 /* ------------------------------------------------------------ thumbnail */

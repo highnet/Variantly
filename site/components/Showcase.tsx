@@ -20,7 +20,6 @@ import { RollingNumber } from '@/components/RollingNumber';
 import { RunnerPicker } from '@/components/RunnerPicker';
 import { VariantTitle } from '@/components/VariantTitle';
 import { Button } from '@/components/ui/Button';
-import { Tip, TipCommand } from '@/components/ui/Tip';
 import { Typography } from '@/components/ui/Typography';
 import { markLoaded } from '@/lib/loadProgress';
 import { EASE } from '@/lib/motion';
@@ -277,14 +276,16 @@ const Showcase = () => {
   const [under, setUnder] = useState<Pane | null>(null);
   const [was, setWas] = useState(selected);
   const [wasRun, setWasRun] = useState(runIdx);
+  // Where a newly picked run starts: its first design, or its last when the
+  // phone's back button steps across from the run after it.
+  const [runStart, setRunStart] = useState(1);
   if (wasRun !== runIdx) {
-    // A new run starts at its first design; the old run's pane stays drawn
-    // underneath until the new one arrives.
+    // The old run's pane stays drawn underneath until the new one arrives.
     setWasRun(runIdx);
-    setSelected(1);
-    setWas(1);
+    setSelected(runStart);
+    setWas(runStart);
     setUnder({ run: wasRun, n: was });
-    setMounted(new Set([1]));
+    setMounted(new Set([runStart]));
   } else if (was !== selected) {
     setWas(selected);
     setUnder({ run: runIdx, n: was });
@@ -312,12 +313,14 @@ const Showcase = () => {
     },
     [takeOver, goLive, variants],
   );
-  const chooseRun = (i: number) => {
+  const chooseRun = (i: number, start = 1) => {
     takeOver();
     goLive();
+    setRunStart(start);
     setRunIdx(i);
     const r = DEMO_RUNS[i];
-    setSaid(`${r.label}: ${r.variants.length} redesigns. Showing V01, ${r.variants[0].direction}`);
+    const v = r.variants[start - 1];
+    setSaid(`${r.label}: ${r.variants.length} redesigns. Showing ${vname(start)}, ${v.direction}`);
   };
 
   // Calm mode, now and whenever the visitor changes it, pauses the tour.
@@ -789,6 +792,15 @@ const Showcase = () => {
   const original = run.original;
   const prevN = ((selected + count - 2) % count) + 1;
   const nextN = (selected % count) + 1;
+  // Phones step through every run as one list: past a run's end, on to the
+  // next run's first design (and back to the previous run's last).
+  const total = DEMO_RUNS.reduce((t, r) => t + r.variants.length, 0);
+  const position = DEMO_RUNS.slice(0, runIdx).reduce((t, r) => t + r.variants.length, 0) + selected;
+  const step = (by: 1 | -1) => {
+    if (selected + by >= 1 && selected + by <= count) return choose(selected + by);
+    const i = (runIdx + by + DEMO_RUNS.length) % DEMO_RUNS.length;
+    chooseRun(i, by > 0 ? 1 : DEMO_RUNS[i].variants.length);
+  };
   const cells = useRef<(HTMLButtonElement | null)[]>([]);
   // Arrow keys move through the numbers, focus following the selection.
   const onCellsKey = (e: KeyboardEvent<HTMLDivElement>) => {
@@ -830,34 +842,42 @@ const Showcase = () => {
               id="hero-title"
               className="text-surface text-[clamp(2.25rem,4.2vw,4.25rem)]"
             >
-              Your website needs <FreshLook />
+              One website. Four redesigns. <FreshLook>You pick.</FreshLook>
             </Typography>
             <p className="text-steel-on-slate m-0 max-w-[52ch] text-[17px] leading-relaxed">
+              Your AI coding agent redesigns your{' '}
+              <strong className="text-surface">actual site</strong>{' '}
+              <strong className="text-surface">in parallel</strong>. Compare{' '}
               <strong className="text-surface">
-                <Tip label="One command." title="The whole setup is one line" interactive>
-                  <TipCommand command="npx variantly" className="my-1" />
-                  Run it in your site&apos;s folder.
-                </Tip>
-              </strong>{' '}
-              Your own AI assistant redesigns your site{' '}
-              <strong className="text-surface">several ways</strong>,{' '}
-              <strong className="text-surface">from scratch</strong> using{' '}
-              <a
-                href="https://impeccable.style"
-                className="text-surface font-semibold underline decoration-1 underline-offset-2"
-              >
-                Impeccable
-              </a>
-              : the missing design vocabulary for agents. No preset themes. Try each{' '}
-              <strong className="text-surface">
-                <GlossaryTip term="live" />
+                <GlossaryTip term="live">live versions</GlossaryTip>
               </strong>
-              ,{' '}
-              <strong className="text-surface">
-                <GlossaryTip term="keep" />
-              </strong>
-              .
+              , <GlossaryTip term="keep">keep the best</GlossaryTip>, and{' '}
+              <strong className="text-surface">review the code</strong> before it ships.
             </p>
+            <ul className="text-steel-on-slate m-0 grid list-none gap-1.5 p-0 text-[15px] leading-snug">
+              <li>
+                <span className="text-surface font-semibold">Real code:</span> each design is a git{' '}
+                <GlossaryTip term="branch" /> in its own{' '}
+                <GlossaryTip term="worktree">worktree</GlossaryTip>, made by the agent you already
+                use.
+              </li>
+              <li>
+                <span className="text-surface font-semibold">Your call:</span> nothing touches your
+                files until you press Keep, and then it lands as an unstaged diff.
+              </li>
+              <li>
+                <span className="text-surface font-semibold">Free and MIT-licensed:</span> the AI
+                work runs on your own plan.{' '}
+                <a href="#demo-stage" className="text-surface underline underline-offset-2">
+                  Try the comparison below
+                </a>{' '}
+                or{' '}
+                <a href="/safety" className="text-surface underline underline-offset-2">
+                  see what it does to your repo
+                </a>
+                .
+              </li>
+            </ul>
           </div>
 
           <div data-hero-side className="grid content-start gap-6">
@@ -949,7 +969,8 @@ const Showcase = () => {
                   >
                     <p className="text-steel-on-slate m-0 text-[13px] leading-snug">{r.brief}</p>
                     <p className="text-steel-on-slate m-0 text-[13px] leading-snug">
-                      A made-up shop, redesigned{' '}
+                      <strong className="text-surface">Illustrative example:</strong> a made-up
+                      shop, not customer work, redesigned{' '}
                       <strong className="text-surface">
                         {r.variants.length === 20
                           ? 'twenty'
@@ -1199,7 +1220,7 @@ const Showcase = () => {
             <div
               role="group"
               aria-label="Redesign run"
-              className="bg-ink rounded-control flex gap-0.5 p-0.5 max-sm:basis-full max-sm:justify-center lg:flex-col"
+              className="bg-ink rounded-control flex gap-0.5 p-0.5 max-sm:hidden lg:flex-col"
             >
               {DEMO_RUNS.map((r, i) => (
                 <Button
@@ -1231,6 +1252,15 @@ const Showcase = () => {
             >
               <ChevronLeft className="size-4" aria-hidden="true" />
             </Button>
+            <Button
+              variant="cell"
+              size="cell"
+              aria-label="Previous redesign"
+              className="sm:hidden"
+              onClick={() => step(-1)}
+            >
+              <ChevronLeft className="size-4" aria-hidden="true" />
+            </Button>
             {/* Ten to a row, so twenty fit a phone in two rows and every
                 number stays in view. */}
             <div
@@ -1238,7 +1268,7 @@ const Showcase = () => {
               role="radiogroup"
               aria-label={`${run.label} redesigns, 1 to ${count}`}
               onKeyDown={onCellsKey}
-              className="grid grid-cols-[repeat(10,minmax(0,2.125rem))] gap-0.5 sm:grid-cols-[repeat(10,2.5rem)] sm:gap-1"
+              className="hidden gap-1 sm:grid sm:grid-cols-[repeat(10,2.5rem)]"
             >
               {variants.map((v) => {
                 const active = selected === v.n;
@@ -1276,6 +1306,21 @@ const Showcase = () => {
               className="hidden sm:inline-flex"
               title="Next"
               onClick={() => choose(nextN)}
+            >
+              <ChevronRight className="size-4" aria-hidden="true" />
+            </Button>
+            <span
+              aria-hidden="true"
+              className="text-surface min-w-24 text-center text-[15px] tabular-nums sm:hidden"
+            >
+              {String(position).padStart(2, '0')} / {total}
+            </span>
+            <Button
+              variant="cell"
+              size="cell"
+              aria-label="Next redesign"
+              className="sm:hidden"
+              onClick={() => step(1)}
             >
               <ChevronRight className="size-4" aria-hidden="true" />
             </Button>

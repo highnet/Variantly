@@ -1,6 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 
 import { VARIANTS, type VariantKey } from '@/components/backdrop/variants';
@@ -33,6 +34,7 @@ const BranchLog = ({ build, onClose }: BranchLogProps) => {
   const id = useId();
   const panel = useRef<HTMLDivElement>(null);
   const active = useVariant() ?? 'a';
+  const router = useRouter();
   const [noon] = useState(() => {
     const d = new Date();
     return d.getHours() % 12 === 0 && d.getMinutes() === 0;
@@ -84,11 +86,19 @@ const BranchLog = ({ build, onClose }: BranchLogProps) => {
 
   const go = (k: VariantKey) => {
     if (location.pathname === '/') setVariant(k);
-    else location.href = `/?v=${k}`;
+    else router.push(`/?v=${k}`);
   };
 
-  let left = shown;
   const done = shown >= total;
+  // How much of each row has been typed so far.
+  const typed = rows.map((r, i) => {
+    const before = rows.slice(0, i).reduce((n, x) => n + x.glyph.length + x.label.length, 0);
+    const left = shown - before;
+    return [
+      r.glyph.slice(0, Math.max(0, left)),
+      r.label.slice(0, Math.max(0, left - r.glyph.length)),
+    ];
+  });
   return (
     <div
       ref={panel}
@@ -114,10 +124,7 @@ const BranchLog = ({ build, onClose }: BranchLogProps) => {
       </div>
       <ol className="m-0 list-none overflow-x-auto p-0 whitespace-pre">
         {rows.map((r, i) => {
-          const g = r.glyph.slice(0, Math.max(0, left));
-          left -= r.glyph.length;
-          const l = r.label.slice(0, Math.max(0, left));
-          left -= r.label.length;
+          const [g, l] = typed[i];
           const here = r.key === active;
           return (
             <li
