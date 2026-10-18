@@ -479,3 +479,102 @@ export const TRUST_CAVEATS: string[] = [
   '**Changed dependencies** (package.json, lockfiles…) are applied like any file; run your install command afterwards.',
   'Each design is **one session on your AI plan**. variantly brings no model and sends nothing to its own servers; the agent you choose talks to its provider as usual.',
 ];
+
+// The /how-it-works tour: one real demo-agent run on examples/northgate-cycles,
+// screen by screen. Shots live in public/how/<shot>-<light|dark>[@2x].webp,
+// captured at 1440×900 from the local app in both themes.
+export const TOUR: {
+  shot: string;
+  where: string;
+  title: string;
+  body: string;
+  notes: string[];
+  alt: string;
+}[] = [
+  {
+    shot: 'setup',
+    where: 'Setup · step 1 of 4',
+    title: 'Run one command',
+    body: 'In your site’s folder, run `npx variantly`. A page opens in your browser at **localhost:4477**. It has already found **your site** and **your AI assistant**.',
+    notes: [
+      'Static HTML found: variantly starts the site itself.',
+      'Here the demo agent is picked: no AI, no account, nothing spent.',
+      'Something missing? The fix is written right on the card.',
+    ],
+    alt: 'The variantly wizard, step 1: Static HTML app found, demo agent ready, and a Continue to variants button.',
+  },
+  {
+    shot: 'variants',
+    where: 'Variants · step 2 of 4',
+    title: 'Pick how many',
+    body: 'Choose **2, 4 or 6 designs** and which pages they redesign. Just the home page is fastest; keeping a design later restyles the rest of the site to match.',
+    notes: [
+      'Each design is one session on your own AI plan.',
+      'Extras such as Rewrite the copy or Add motion are optional.',
+    ],
+    alt: 'Wizard step 2: four variants selected, the Home page selected, optional extras unticked.',
+  },
+  {
+    shot: 'brief',
+    where: 'Your site · step 3 of 4',
+    title: 'Say who it’s for',
+    body: 'Three short answers help every design aim at your visitors instead of guessing. All optional.',
+    notes: [
+      'For: commuters and weekend riders in the neighbourhood.',
+      'Must stay: the price table and the booking form.',
+    ],
+    alt: 'Wizard step 3: answers typed into Who is it for, What does it offer and What must stay.',
+  },
+  {
+    shot: 'review',
+    where: 'Review · step 4 of 4',
+    title: 'Check, then start',
+    body: 'Every choice on one screen, each with an Edit link. **Nothing is spent** until you press **Make 4 variants**.',
+    notes: ['App, agent, number of designs, pages, extras and your answers.'],
+    alt: 'Wizard step 4: a summary of every choice and a Make 4 variants button.',
+  },
+  {
+    shot: 'board',
+    where: 'The board · generating',
+    title: 'Watch them being made',
+    body: 'Each design is made in a **separate copy** of your project, on its own git branch. **Your files stay untouched.**',
+    notes: [
+      'Two designs work at a time; the rest wait for a free slot.',
+      'The panel below shows what the assistant is doing, line by line.',
+      'A design that fails says why, and you can retry it.',
+    ],
+    alt: 'The departures board: V01 and V02 building, V03 and V04 waiting for a free slot, with V01’s live log underneath.',
+  },
+  {
+    shot: 'compare',
+    where: 'Compare · design 3',
+    title: 'Flick and compare',
+    body: 'Your real site, running. Press **1 to 4** to flick between designs and drag the divider for **before and after**.',
+    notes: [
+      'Left: Northgate Cycles as it was. Right: design 3.',
+      'Every link and button still works; it is the live site.',
+      'The dock at the bottom tucks away while you scroll.',
+    ],
+    alt: 'Compare view: the original site on the left of the divider, design 3 on the right, the variant dock along the bottom.',
+  },
+  {
+    shot: 'keep',
+    where: 'Compare · keep',
+    title: 'Keep one',
+    body: 'Press **Keep**. Before anything changes, variantly says what will: here, **two files**.',
+    notes: ['The other designs stay as branches, in case you change your mind.'],
+    alt: 'A confirmation bar: Apply V03 to your working tree? 2 files. Cancel or Apply V03.',
+  },
+  {
+    shot: 'kept',
+    where: 'Kept · design 3',
+    title: 'It’s in your folder',
+    body: 'The design is now **uncommitted changes** in your project. Read them, commit them, or throw them away: it’s your call.',
+    notes: [
+      '`git diff` shows exactly what changed.',
+      'A ready-made prompt hands it to your assistant to finish.',
+      '`npx variantly clean` removes the other designs.',
+    ],
+    alt: 'The kept screen: V03 applied as uncommitted changes, a hand-off prompt for your agent, and the next commands.',
+  },
+];

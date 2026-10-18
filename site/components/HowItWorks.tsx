@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { Rich } from '@/components/ui/Rich';
 import { Typography } from '@/components/ui/Typography';
 import { EXTRAS, STEPS } from '@/lib/content';
@@ -11,6 +13,11 @@ const HowItWorks = () => (
     <Typography variant="headline" as="h2" id="how-title">
       How it works
     </Typography>
+    <p className="text-steel m-0 -mt-5 text-[16px]">
+      <Link href="/how-it-works" className="text-ink underline underline-offset-4">
+        See every screen of a real run
+      </Link>
+    </p>
     <ol className="m-0 grid list-none gap-10 p-0 md:grid-cols-3 md:gap-8">
       {STEPS.map((s, i) => (
         <li key={s.label} className="border-ink grid content-start gap-3 border-t-2 pt-5">
