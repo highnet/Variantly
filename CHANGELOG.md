@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/highnet/Variantly/compare/variantly-v0.8.0...variantly-v0.8.1) (2026-10-18)
+
+
+### Bug Fixes
+
+* CLI and app stay in sync; refuse a missing single agent; copy fixes ([#153](https://github.com/highnet/Variantly/issues/153)) ([1bb6205](https://github.com/highnet/Variantly/commit/1bb6205ef3e3ea9fe7f377e323a268b4ba037b08))
+
 ## [0.8.0](https://github.com/highnet/Variantly/compare/variantly-v0.7.0...variantly-v0.8.0) (2026-10-18)
 
 
