@@ -49,8 +49,9 @@ cp .env.example .env                       # once: ELEVEN_API_KEY, ELEVEN_VOICE_
 npx variantly doctor ../examples/tallyboard    # preflight: Claude Code signed in, Impeccable installed
 npm run voice:local                        # rehearsal voice, no keys (Windows SAPI / macOS say / espeak)
 npm run voice                              # narration in your ElevenLabs voice
-npm run record:dry                         # rehearsal: variantly's demo agent, no AI, ~3 min
-npm run record                             # the real take: Claude Code, 4 variants, 2 at a time,
+npm run voice:lint                         # every risky word has a pronunciation rule
+npm run record:dry                         # rehearsal: variantly's demo agent, no AI, ~15 min
+npm run record                             # the real take: Claude Code, 10 variants, 5 at a time,
                                            # filmed in light and dark at once, in lockstep
 npm run edit                               # cuts both themes
 npm run probe                              # look at probe/*.png
@@ -153,8 +154,9 @@ Or step by step:
 | Step | Command | Time | Notes |
 | --- | --- | --- | --- |
 | Voice | `npm run voice` | ~30 s | Only re-reads lines whose text changed. `node voice.mjs hook` forces one. |
-| Rehearse | `npm run record:dry` | ~3 min | variantly's built-in demo agent: no AI, no cost. Checks every click. |
-| Record | `npm run record` | 20–60 min | A real run with Claude Code: **4 variants, real tokens**. |
+| Lint | `npm run voice:lint` | ~1 s | Fails on any narration word (capitals, digits, symbols, file names) without a pronunciation rule. |
+| Rehearse | `npm run record:dry` | ~15 min | variantly's built-in demo agent: no AI, no cost. Checks every click. |
+| Record | `npm run record` | 50–80 min (up to 2 h) | A real run with Claude Code: **10 variants, 5 at a time, 20 sessions** (a build and a review pass each), plus the rollout. |
 | Edit | `npm run edit` | ~5 min | Cuts both themes' recordings, writes captions, cues and configs. |
 | Check | `npm run probe` | ~10 s | Renders 5 frames into `probe/`. Look at them before building. |
 | Build | `npm run build` | ~1 h per theme | 16:9 MP4, silent MP4 and poster, at 60 fps. About half a second per frame. |
@@ -179,10 +181,48 @@ and the Playwright `actions` that happen while it is spoken:
 | `drag` | the compare slider: `{ "drag": "role=slider[…]", "to": [20, 80, 50] }` (percentages) |
 | `waitPanes` | wait until both compare panes have loaded |
 | `waitApi` | `{ "waitApi": "allDone" }` waits on `/api/state` until every variant is built and scored |
+| `key` | `{ "key": "0" }` presses a key on every page; in compare, `0` is V10 |
 
-Scene extras: `title` (the opening card), `presenter` (the lower third),
+Step flags: `optional` (skip if the element never appears), `realOnly` (skip in
+a dry run), `unlessMix` (skip when `mix` is set: the count clicks, which a
+mix's rows replace), `zoom`, `sound`, `moveMs` (cursor travel time),
+`delay` on `fill` (ms per character: 55 reads comfortably, 14 is about 4×),
+`callout` and `point` on `spotlight`.
+
+Scene extras: `title` (the opening card), `lower` (the lower third),
 `terminal` (the typed command card), `timelapse` (sped up to fit its line),
-`cta` (the closing card).
+`kinetic` (full-frame kinetic type), `cta` (the closing card), `rest` (ms of
+silence after the line), `say` (what the
+voice reads instead of `text`, which stays the caption), and the teaching
+cards and diagrams below.
+
+Top level: `agent`, `mix` (e.g. `"claude:5,gemini:5"` films a combined run;
+`null` films one agent), `keep` (the variant kept, 1–10), `directions` (the
+ten typed directions, for reference).
+
+### Teaching cards and diagrams
+
+`stage/cards.mjs` draws every explanatory graphic in one flat language. A scene carries one `card` or one `diagram`:
+
+| Kind | Example |
+| --- | --- |
+| `mix` | `{ "kind": "mix", "rows": [{ "agent": "Claude Code", "model": "opus", "count": 5, "on": "combine" }], "total": "…", "items": [{ "text": "…", "on": "instincts." }] }`: the wizard's agent rows, then reasons |
+| `learn`, `recap` | `{ "kind": "learn", "title": "In this video", "items": [{ "text": "Set up a run", "on": "set" }] }` |
+| `pause` | `{ "kind": "pause", "title": "Pause and think", "question": "…", "seconds": 5, "countOn": "site?" }`: the countdown starts when the voice says that word; give the scene `"rest": 5000` for the silent hold |
+| `facts` | `{ "kind": "facts", "title": "…", "rows": [{ "label": "…", "before": "1.5 MB", "after": "~400 KB", "on": "transfer" }], "source": "…" }` |
+| `trends` | `{ "kind": "trends", "title": "…", "items": [{ "name": "…", "essence": "…", "swatch": ["#f3ecdc"] }] }`: beside the app, not over it |
+| `flow` (as `diagram`) | `{ "kind": "flow", "title": "How it works", "nodes": [{ "label": "Your project", "sub": "untouched", "on": "project" }], "connect": true }`; `"stack": "branches"` adds the V01…V10 cells |
+
+`on` is a word in the scene's line: the item appears when the voice says it
+(the first match after the previous item's word; `edit.mjs` resolves it from
+the word timings). Items without `on` follow the one before by 0.35 s. Cards
+draw under the logo, chapter chip and captions. `from` / `until` (seconds into
+the scene), `fromOn` (open on a word), `untilEnd` (close that many seconds
+before the scene ends) and `source` (a small source line) also work on any
+card. A scene's `rest` (ms) adds silence after its line.
+
+To check a card without a take, serve `stage/` with a stub `/_seekreel/stage.js`
+and a synthetic `timeline.light.json`, and screenshot `light.html?t=…`.
 
 Selectors are Playwright selectors. Prefer `role=` and visible text, which
 survive UI restyles. `zoom: true` makes the stage punch in on that click, and
@@ -222,6 +262,22 @@ follows the cursor across the recording.
 
 ## Changing things
 
+- **Pronunciation:** captions show `text`; the voice reads it through
+  `pronunciations.json`, which swaps listed words for aliases (`npx` →
+  "N P X", `WCAG` → "wuh-kag", `V10` → "V ten", `€3,490` → "three thousand
+  four hundred ninety euros"). Aliases work on every ElevenLabs model, unlike
+  phoneme tags. Word timings come back for the spoken words and are mapped
+  onto the written ones, so captions stay exact. `npm run voice:lint` lists
+  any word that looks risky (capitals inside or throughout, digits, symbols
+  `& / # : ~`, file names, URLs) and has no rule; add one with a short `why`.
+  A scene's `say` overrides its whole line. `npm run voice:dict` writes
+  `pronunciations.pls` (a W3C PLS alias lexicon) and, with keys, uploads it
+  as an ElevenLabs pronunciation dictionary; put the printed
+  `ELEVEN_DICT_ID` / `ELEVEN_DICT_VERSION` in `.env` to send it with every
+  line as well.
+- **Pacing:** a calm read by default: stability 0.62, style 0.05, speed 0.95
+  (`ELEVEN_STABILITY`, `ELEVEN_STYLE`, `ELEVEN_SPEED`), and 700 ms of silence
+  after each line (`PAD_MS` in `lib/common.mjs`).
 - **Narration:** edit `text` in `script.json`, then run `npm run voice`,
   `npm run edit` and `npm run build`. Re-recording is only needed if a scene's
   length changed noticeably. A longer line holds the screen longer, so record
@@ -235,7 +291,7 @@ follows the cursor across the recording.
   change in seconds.
 - **Transitions:** `TRANSITIONS` in `edit.mjs`. Any ffmpeg xfade name works
   (`fade`, `fadeblack`, `wipeleft`, `slideup`, `circleopen`…).
-- **Which variant is kept:** `keep` in `script.json`.
+- **Which variant is kept:** `keep` in `script.json` (1 = Tactile imperfection).
 
 ## Between takes
 

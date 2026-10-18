@@ -1,15 +1,15 @@
 // Shared reveal timing for the 2D and 3D title cards.
 const WORD = 'variantly';
 
-// Timing after the Loki title card: every letter flickers at once, a little over
-// two typefaces a second, then the changes slow and each letter drops into its
-// final face. Letters lock in a loose, uneven order rather than left to right.
-const FLICKER_MS = 440;
-const EASE_OUT = [520, 640, 780, 960, 1180, 1440];
+// Timing after the Loki title card, kept short: each letter tries a few faces,
+// the changes slow, and it drops into its final face. Letters lock in a loose,
+// uneven order rather than left to right.
+const FLICKER_MS = 520;
+const EASE_OUT = [700, 1000];
 // Deterministic per-letter jitter, so a seeked frame is the same every time.
 const jitter = (index: number, salt: number) => ((index * 37 + salt * 11) % 7) / 6;
 const scheduleFor = (index: number) => [
-  ...Array(8 + Math.round(jitter(index, 1) * 3)).fill(FLICKER_MS),
+  ...Array(2 + Math.round(jitter(index, 1) * 2)).fill(FLICKER_MS),
   ...EASE_OUT,
 ];
 const SCHEDULES = [...WORD].map((_, i) => scheduleFor(i));
@@ -72,11 +72,40 @@ export const lookAt = (step: number | null, index: number, n: number) =>
 // shared by the 2D and 3D words. Never above 1: a shifting glyph may shrink
 // inside its slot but never spill.
 export const scaleAt = (step: number, index: number) =>
-  0.72 + (((step * 13 + index * 29) % 9) / 8) * 0.28;
+  0.9 + (((step * 13 + index * 29) % 9) / 8) * 0.1;
 
 // The lock-in pop (vy-lock in globals.css for the 2D word): 1.12x easing back
 // to 1 over 0.35s.
 export const lockPop = (sinceLock: number) => {
   const k = Math.min(1, Math.max(0, sinceLock / 0.35));
   return 1 + 0.12 * (1 - k) * (1 - k);
+};
+
+// Share of each step a letter spends morphing into its next face (the rest
+// holds the face it reached), and the ease of that morph.
+export const MORPH_SHARE = 0.7;
+const easeInOut = (u: number) => (u < 0.5 ? 4 * u * u * u : 1 - (-2 * u + 2) ** 3 / 2);
+
+export type MorphPhase = { step: number; e: number };
+
+// Where a letter's outline is `ms` into the reveal, written to `out` (no
+// allocation per frame): on face `step` (0 before it starts), `e` (eased) of
+// the way to the next step's face, the final face after its last step.
+// Returns false once the letter has locked.
+export const morphAt = (ms: number, index: number, out: MorphPhase) => {
+  let at = ms - startDelay(index);
+  out.step = 0;
+  out.e = 0;
+  if (at < 0) return true;
+  const schedule = SCHEDULES[index];
+  for (let k = 0; k < schedule.length; k++) {
+    if (at < schedule[k]) {
+      const hold = schedule[k] * (1 - MORPH_SHARE);
+      out.step = k;
+      out.e = at < hold ? 0 : easeInOut((at - hold) / (schedule[k] - hold));
+      return true;
+    }
+    at -= schedule[k];
+  }
+  return false;
 };

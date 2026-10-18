@@ -67,6 +67,7 @@ export type Agent = {
   impeccable: boolean;
   signedIn?: boolean;
   install?: string;
+  login?: string | null;
 };
 
 export type Candidate = { rel: string; stackId: string; name: string; command: string; defaultUrl: string; running?: boolean; needsInstall?: boolean; note?: string };

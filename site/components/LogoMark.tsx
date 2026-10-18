@@ -33,7 +33,7 @@ const LogoMark = ({ title, path, className }: LogoMarkProps) => {
       role="img"
       aria-label={title}
       className={cn(
-        'figure grid place-items-center rounded-[4px] border border-current text-[0.55em]',
+        'grid place-items-center rounded-[4px] border border-current font-mono text-[0.55em] font-bold',
         className,
       )}
     >

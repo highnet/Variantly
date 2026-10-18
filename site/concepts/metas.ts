@@ -24,7 +24,8 @@ import { meta as t } from './t/meta';
 /*
  * Server-safe concept list (ids, names, families, swatches): read by the
  * <head> boot script, the store and the switcher. Order is the a→t keyboard
- * and cycle order. Each concept's own files live in concepts/<id>/.
+ * and cycle order (drafts are skipped unless shown). Each concept's own files
+ * live in concepts/<id>/.
  */
 export type ConceptId =
   | 'a'
@@ -59,3 +60,19 @@ export const CONCEPT_BY_ID = Object.fromEntries(CONCEPTS.map((c) => [c.id, c])) 
 
 export const isConceptId = (v: unknown): v is ConceptId =>
   typeof v === 'string' && (CONCEPT_IDS as string[]).includes(v);
+
+// Finished concepts: what everyone sees. Drafts (meta.status 'draft') join
+// them only with ?drafts=1, which the boot script records as html[data-drafts].
+export const LIVE_IDS = CONCEPTS.filter((c) => c.status !== 'draft').map(
+  (c) => c.id,
+) as ConceptId[];
+
+export const isLive = (id: ConceptId) => CONCEPT_BY_ID[id].status !== 'draft';
+
+export const draftsShown = () =>
+  typeof document !== 'undefined' && document.documentElement.hasAttribute('data-drafts');
+
+// The concepts the switcher, `[` / `]` and shuffle step through right now.
+export const shownIds = (): ConceptId[] => (draftsShown() ? CONCEPT_IDS : LIVE_IDS);
+
+export const shownConcepts = (): ConceptMeta[] => shownIds().map((id) => CONCEPT_BY_ID[id]);

@@ -87,18 +87,27 @@ export const hasAnswers = (a) => Boolean(a && (a.users.trim() || a.purpose.trim(
  * @property {string} stackId
  * @property {string} [agent]     claude | codex | copilot | gemini | cursor | demo: how the skill is named
  * @property {string} [previewUrl] the variant's live preview, when the agent has a browser
+ * @property {string} [shots] where browser output (screenshots) goes, outside the worktree
  */
 
 /** @param {string | undefined} agent */
 const skillCall = (agent) => SKILL_CALL[agent ?? ""] ?? "/impeccable";
 
-/** @param {string | undefined} previewUrl */
-const verifyRule = (previewUrl) =>
+/** @param {string | undefined} shots */
+const shotsRule = (shots) =>
+  shots
+    ? ` Save screenshots only in ${shots} (pass a full path there as the file
+   name, or no file name); never write screenshots or other check output into
+   the project.`
+    : "";
+
+/** @param {string | undefined} previewUrl @param {string} [shots] */
+const verifyRule = (previewUrl, shots) =>
   previewUrl
     ? `7. Verify in the browser. You have Playwright browser tools (the
    \`playwright\` MCP server); your variant is live at ${previewUrl}. Open
    it, take screenshots at desktop (1280 wide) and phone (390 wide) widths,
-   and fix what looks wrong. If it doesn't answer, verify by reading code.`
+   and fix what looks wrong. If it doesn't answer, verify by reading code.${shotsRule(shots)}`
     : `7. Verify by reading your code, not by screenshots: there is no browser for
    you here. Run the project's type check or linter if it is quick.`;
 
@@ -173,7 +182,7 @@ ${b.brief ? `What the owner asked for, in their words:\n\n> ${b.brief.replace(/\
    per variant and is already previewing yours; it reloads on its own.
 5. **Do not commit, branch or push.** variantly commits your work for you.
 6. Stay inside this working directory.
-${verifyRule(b.previewUrl)}
+${verifyRule(b.previewUrl, b.shots)}
 
 ## As soon as you have chosen the world
 
@@ -195,6 +204,7 @@ person choosing can tell it apart.
  * @property {string} [agent]
  * @property {string[]} routes
  * @property {string} [previewUrl]  set when the agent has a browser
+ * @property {string} [shots]
  * @property {string} [audit]       axe-core and Lighthouse findings, as Markdown
  */
 
@@ -237,7 +247,7 @@ ${r.audit}
    and data, every form field and handler.
 4. Do not install packages, touch lockfiles, start servers, commit or push.
 5. Stay inside this working directory.
-${verifyRule(r.previewUrl).replace(/^7\./, '6.')}
+${verifyRule(r.previewUrl, r.shots).replace(/^7\./, '6.')}
 7. Update DESIGN.md if a fix changes a token or rule.
 
 ## When you are done
@@ -345,6 +355,7 @@ export const extractSummary = (text) => {
  * @property {string} message     what the owner just asked for
  * @property {{ role: 'user' | 'agent', text: string }[]} history  earlier turns, oldest first
  * @property {string} [previewUrl]
+ * @property {string} [shots]
  */
 
 /**
@@ -359,7 +370,7 @@ export const writeChatBrief = (c) => {
     ? `\n## The conversation so far\n\n${c.history.map((t) => `- **${t.role === 'user' ? 'Owner' : 'You'}:** ${t.text.replace(/\s+/g, ' ').slice(0, 600)}`).join('\n')}\n`
     : '';
   const look = c.previewUrl
-    ? `Check the result at ${c.previewUrl} in the browser before you finish.`
+    ? `Check the result at ${c.previewUrl} in the browser before you finish.${shotsRule(c.shots)}`
     : 'Verify by reading your code; there is no browser here.';
   return `<!-- variantly ${meta} -->
 # A change to variant ${c.variant}

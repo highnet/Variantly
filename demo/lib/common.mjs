@@ -17,7 +17,7 @@ export const FPS = 60;
 export const WIDTH = 1920;
 export const HEIGHT = 1080;
 /** Silence after each line before the next scene starts. */
-export const PAD_MS = 400;
+export const PAD_MS = 700;
 /** Where in its scene a line starts speaking. */
 export const VOICE_LEAD = 0.25;
 
