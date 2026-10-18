@@ -14,7 +14,7 @@
   --hero-line: #c4cfdb;
   --hero-box: #fbfcfe;
   --hero-face: var(--font-glass);
-  --title: #5b8db8;
+  --title: #2a6198;
   --hero-alpha: 30%;
   --board-bg: #0e131b;
   --board-raised: #18202c;
@@ -53,7 +53,7 @@
   --hero-mute: #a8b3c4;
   --hero-line: #2a3140;
   --hero-box: #0c1017;
-  --title: #8fb4e6;
+  --title: #a9c8f0;
   --hero-alpha: 34%;
   --flap-bg: #f2f5f9;
   --flap-ink: #05070b;
@@ -119,15 +119,26 @@
 
 /* Type: tight, optical, quiet. */
 :root[data-variant='i'] .vy-title {
-  text-shadow: 0 2px 0 #4f7ea8;
+  text-shadow: 0 2px 0 #163e66;
 }
 :root[data-variant='i'][data-theme='dark'] .vy-title {
-  text-shadow: 0 2px 0 #3a5f8f;
+  text-shadow: 0 2px 0 #4a77b0;
 }
 :root[data-variant='i'] #hero-title {
-  letter-spacing: -0.035em;
-  line-height: 1.02;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
   font-weight: 600;
+  text-transform: none;
+}
+/* The picked word: the glass blue as a solid ink with a specular top edge
+   (no gradient fill: emphasis comes from colour, not a gradient). */
+:root[data-variant='i'] #hero-title .vy-fresh {
+  color: #2a6198;
+  filter: drop-shadow(0 1px 0 rgb(255 255 255 / 0.9));
+}
+:root[data-variant='i'][data-theme='dark'] #hero-title .vy-fresh {
+  color: #a9c8f0;
+  filter: drop-shadow(0 -1px 0 rgb(255 255 255 / 0.25));
 }
 :root[data-variant='i'] main > div h2 {
   letter-spacing: -0.03em;
