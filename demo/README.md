@@ -56,6 +56,7 @@ npm run record                             # the real take: Claude Code, 10 vari
 npm run edit                               # cuts both themes
 npm run probe                              # look at probe/*.png
 npm run build:all                          # both themes: 16:9, 9:16, silent, poster, GIF
+npm run build:nocaptions                   # silent 16:9 and 9:16 with no captions, for the short cuts
 ```
 
 ## Set up your machine (once)
@@ -146,7 +147,7 @@ mid-render slows it down and can break git worktrees.
 ## Make the film
 
 ```sh
-npm run all                # voice → record → edit → build everything
+npm run all                # voice → record → voice (real run time) → edit → build everything
 ```
 
 Or step by step:
@@ -161,6 +162,7 @@ Or step by step:
 | Check | `npm run probe` | ~10 s | Renders 5 frames into `probe/`. Look at them before building. |
 | Build | `npm run build` | ~1 h per theme | 16:9 MP4, silent MP4 and poster, at 60 fps. About half a second per frame. |
 | Vertical | `npm run build:vertical` | ~1 h per theme | 9:16 for Reels, Shorts and TikTok. |
+| Short-cut picture | `npm run build:nocaptions` | ~2 h per theme | Silent 16:9 and 9:16 without burned-in captions, for the 90 s and 30 s cuts. |
 | Everything | `npm run build:all` | ~4 h | Both themes, both shapes, GIFs. Leave it running overnight. |
 | GIF | `npm run gif` | ~10 s | Six seconds of the before/after slider. Needs the 16:9 film. |
 

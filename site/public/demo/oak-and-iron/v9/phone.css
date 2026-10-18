@@ -1,0 +1,40 @@
+/* Phone edition: Memphis revival. */
+@import url("https://fonts.googleapis.com/css2?family=Unbounded:wght@800&family=Figtree:wght@400;600;700&display=swap");
+:root{color-scheme:light;--paper:#fbf6ee;--ink:#141414;--mute:#3d3a36;--cobalt:#2340ff;--tomato:#ff4d2e;--butter:#ffd84d;--lilac:#cdbbff;--mint:#a6e8c9;--pink:#ffb3cf;--on-cobalt:#fff;--field:#fff}
+html[data-theme="dark"]{color-scheme:dark;--paper:#16141a;--ink:#f7f2ea;--mute:#d2cbc0;--cobalt:#6f82ff;--on-cobalt:#16141a;--field:#211e26}
+body{background:var(--paper);color:var(--ink);font:400 16px/1.5 "Figtree",system-ui,sans-serif;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cpath d='M30 40l14-6 4 12-12 6z' fill='%23ff4d2e'/%3E%3Cpath d='M150 30l10 2-2 12-11-3z' fill='%232340ff'/%3E%3Cpath d='M100 110l16 4-6 10z' fill='%23ffd84d'/%3E%3Cpath d='M40 160l12-2 2 9-12 3z' fill='%23cdbbff'/%3E%3Ccircle cx='170' cy='150' r='3' fill='%23141414'/%3E%3C/svg%3E")}
+a{color:var(--ink)}
+:focus-visible{outline:3px dashed var(--cobalt);outline-offset:3px}
+.logo{font:800 22px/1 "Unbounded",sans-serif;letter-spacing:-.03em}
+.logo span{display:inline-grid;place-items:center;width:1.3em;height:1.3em;border-radius:50%;background:var(--tomato);color:#fff;font-size:.8em}
+.shapes{position:relative;height:120px}
+.shapes i{position:absolute;display:block}
+.shapes i:nth-child(1){left:0;top:0;width:110px;height:110px;border-radius:50%;background:var(--cobalt)}
+.shapes i:nth-child(2){left:90px;top:40px;width:120px;height:60px;border-radius:999px 999px 0 0;background:var(--butter);transform:rotate(16deg)}
+.shapes i:nth-child(3){left:220px;top:6px;width:90px;height:90px;background:var(--tomato);clip-path:polygon(50% 0,100% 100%,0 100%)}
+h1{font:800 36px/1 "Unbounded",sans-serif;letter-spacing:-.04em}
+.intro{color:var(--mute)}
+.btn,button{background:var(--cobalt);color:var(--on-cobalt);border:0;border-radius:999px;padding:12px 22px;font:700 15px "Figtree",sans-serif;text-decoration:none}
+.link{font-weight:700;text-decoration-color:var(--tomato);text-decoration-thickness:3px;text-underline-offset:4px}
+.b-sec{font:800 26px/1 "Unbounded",sans-serif;letter-spacing:-.03em}
+.b-sec::after{content:"";position:absolute;left:20px;width:140px;bottom:4px;height:10px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 10'%3E%3Cpath d='M0 5q5-6 10 0t10 0 10 0 10 0' fill='none' stroke='%23ff4d2e' stroke-width='3'/%3E%3C/svg%3E") repeat-x 0 0/40px 10px}
+.b-feat{color:#141414;border-bottom:3px solid var(--paper)}
+.b-feat:nth-of-type(1){background:var(--lilac)}
+.b-feat:nth-of-type(2){background:var(--mint)}
+.b-feat:nth-of-type(3){background:var(--butter)}
+.b-feat h3{font:800 19px/1.1 "Unbounded",sans-serif;letter-spacing:-.02em}
+.b-item .art{color:#141414;padding:32px 44px}
+.i1 .art{background:var(--butter)}
+.i2 .art{background:var(--pink);border-radius:0 0 90px 0}
+.i3 .art{background:var(--mint);border-radius:0 0 0 90px}
+.b-item h3{font:800 21px/1.15 "Unbounded",sans-serif;letter-spacing:-.02em}
+.desc{color:var(--mute)}
+.price{font:800 17px "Unbounded",sans-serif}
+.b-item button{background:var(--tomato);color:#141414}
+.b-news{background:var(--cobalt);color:var(--on-cobalt)}
+.b-news label{font-weight:700;font-size:14px}
+.b-news input{background:var(--field);color:var(--ink);border:3px solid var(--ink);border-radius:999px;padding:0 16px}
+.b-news button{background:var(--butter);color:#141414}
+.b-foot{font-size:14px}
+.small{font-size:12px;color:var(--mute)}

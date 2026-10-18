@@ -27,17 +27,19 @@ export const FLAGS = [
 
 type QuickDocsProps = {
   className?: string;
+  /** h1 when the docs are the page, h2 inside a longer one. */
+  heading?: 'h1' | 'h2';
 };
 
 /* A compact command reference: every command and flag on one screen. */
-const QuickDocs = ({ className }: QuickDocsProps) => (
+const QuickDocs = ({ className, heading = 'h2' }: QuickDocsProps) => (
   <section
     id="docs"
     aria-labelledby="docs-title"
     className={cn('grid scroll-mt-28 gap-10', className)}
   >
     <div className="grid gap-3">
-      <Typography variant="headline" as="h2" id="docs-title">
+      <Typography variant="headline" as={heading} id="docs-title">
         Quick docs
       </Typography>
       <Typography variant="small" color="steel">

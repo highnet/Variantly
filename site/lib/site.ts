@@ -13,5 +13,7 @@ export const DEMO_VIDEO_ID_DARK = '';
 
 // Booking page (Cal.com, Calendly, Google Calendar appointment schedule…) for
 // "Book a live demo", shown with the demo video. Empty hides the button.
+export const AUTHOR_URL = 'https://www.highnet.at';
+export const CONTACT_EMAIL = 'joaquintelleria@gmail.com';
 export const DEMO_BOOKING_URL =
   process.env.NEXT_PUBLIC_DEMO_BOOKING_URL ?? 'https://calendly.com/joaquintelleria/30min';
