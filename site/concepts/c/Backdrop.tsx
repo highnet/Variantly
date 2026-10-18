@@ -1,4 +1,4 @@
-/* ---- C · Amber Terminal: phosphor glow, scanlines, grid, radar sweep ------ */
+/* ---- C · Amber Terminal: scanlines, grid, radar sweep ------------------- */
 const Terminal = () => (
   <>
     <div className="vy-art-crt absolute inset-0" />

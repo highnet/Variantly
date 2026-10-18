@@ -623,6 +623,10 @@ a:hover > .brand-mark .brand-grip { transform: translate(-0.6px, 2.6px); }
  * hero tokens (light hero in light theme, dark in dark), display face, hero
  * layout and title-card treatment. The 3D scene and morph shapes live in
  * components/backdrop.
+ * No glow anywhere: shadows are crisp offsets (no blur) or neutral elevation,
+ * never a blurred coloured halo on text, numerals, buttons, cards or focus
+ * rings (focus is a solid outline). The one allowed exception is the Lens
+ * (components/Lens*.tsx), a glowing amber doorway by design.
  * ========================================================================= */
 :root[data-variant] {
   background: var(--panel);
@@ -1221,7 +1225,6 @@ main > div p { line-height: 1.65; }
 /* Terminal: phosphor bloom, grid and vignette; scanlines over the top. */
 .vy-art-crt {
   background:
-    radial-gradient(ellipse at 30% 40%, color-mix(in srgb, var(--art-1) 26%, transparent), transparent 60%),
     radial-gradient(ellipse at center, transparent 55%, rgb(0 0 0 / 0.32)),
     linear-gradient(color-mix(in srgb, var(--art-1) 14%, transparent) 1px, transparent 1px) 0 0 / 44px 44px,
     linear-gradient(90deg, color-mix(in srgb, var(--art-1) 14%, transparent) 1px, transparent 1px) 0 0 / 44px 44px;
