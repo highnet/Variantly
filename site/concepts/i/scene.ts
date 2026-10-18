@@ -33,11 +33,11 @@ float field(vec2 p) {
   float vm = max(uRes.x, uRes.y) / 100.0;
   float a = TAU * uT / 24.0;
   float sep = 0.5 - 0.5 * cos(a);
-  vec2 ca = vec2(uRes.x * 0.72 + vm * 1.2 * sin(a), uRes.y * 0.58);
+  vec2 ca = vec2(uRes.x * 0.8 + vm * 1.2 * sin(a), uRes.y * 0.62);
   float d = capsule(p, ca - vec2(vm * 7.0, 0.0), ca + vec2(vm * 7.0, 0.0), vm * 5.2);
   vec2 cb = ca - vec2(vm * (15.0 + 9.0 * sep), vm * (1.5 * sin(a * 2.0)));
   d = smin(d, length(p - cb) - vm * 3.6, vm * 3.0);
-  vec2 cc = vec2(uRes.x * 0.06, uRes.y * 0.42);
+  vec2 cc = vec2(uRes.x * 0.02, uRes.y * 0.52);
   vec2 ax = vec2(sin(0.14 * sin(a)), cos(0.14 * sin(a))) * vm * 5.0;
   float c = capsule(p, cc - ax, cc + ax, vm * 4.4);
   vec2 cd = cc + vec2(cos(-a), sin(-a)) * vm * (10.5 - 2.5 * cos(a * 3.0));
@@ -45,6 +45,7 @@ float field(vec2 p) {
   return min(d, c);
 }
 // The page's colour field (see .vy-li-field): base, hairlines, three soft fields.
+float rimBandTint(vec3 n) { return smoothstep(0.0, 0.6, 1.0 - n.z); }
 vec3 over(vec3 under, vec3 col, float a) { return mix(under, col, clamp(a, 0.0, 1.0)); }
 vec3 ground(vec2 p) {
   float vm = max(uRes.x, uRes.y) / 100.0;
@@ -81,6 +82,8 @@ void main() {
   // blue); the flat top magnifies slightly about the slab.
   vec2 off = -n.xy * vm * 12.0 + (p - uRes * 0.5) * -0.015;
   vec3 col = vec3(ground(p + off * 0.9).r, ground(p + off).g, ground(p + off * 1.12).b);
+  // Tinted body: the glass takes a little of the field's blue, deeper at the rim.
+  col = mix(col, uC1, mix(0.18, 0.28, uDark) + rimBandTint(n) * 0.2);
   col = mix(col, uHi, mix(0.05, 0.03, uDark));
   // Light focused through the bevel: a caustic on the far (bottom right) side,
   // a darker refracted band on the near side.
@@ -93,6 +96,12 @@ void main() {
   col += uHi * rim * (lit * 0.9 + back * 0.45);
   col = mix(col, uShadow, rimBand * lit * mix(0.06, 0.2, uDark));
   // A crisp specular line along the rim, strongest top left.
+  // Caustic: light focused through the far bevel pools inside the bottom-right rim.
+  float caus = smoothstep(0.55, 0.95, back) * smoothstep(0.0, 0.6, 1.0 - n.z) * smoothstep(-bevel * 1.6, -bevel * 0.4, d);
+  col += mix(uC2, uHi, 0.5) * caus * 0.55;
+  // A soft highlight streak across the flat top, upper left.
+  vec2 q = (p - uRes * 0.5) / vm;
+  col = mix(col, uHi, smoothstep(1.2, 0.0, abs(q.x * 0.35 + q.y + 4.0)) * (n.z > 0.98 ? 0.18 : 0.0));
   float edge = smoothstep(2.5, 0.5, -d);
   col = mix(col, uHi, edge * (0.35 + 0.6 * lit + 0.3 * back));
   gl_FragColor = vec4(col, smoothstep(0.0, -1.2, d) * 0.97 + 0.03);

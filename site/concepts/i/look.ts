@@ -49,6 +49,10 @@ void main() {
     ground(s + refract(-v, n, 0.69).xy * 0.86).g,
     ground(s + refract(-v, n, 0.71).xy * 0.92).b);
   vec3 c = mix(r * uTint * 1.1, r, uClear);
+  // A clear specular edge (fresnel) so the letter's outline always reads.
+  float fres = pow(1.0 - ndv, 2.5);
+  c = mix(c, uHi, fres * 0.55);
+  c = mix(c, uTint * 0.55, smoothstep(0.35, 0.0, ndv) * 0.25);
   vec3 L = normalize(vec3(-0.45, 0.6, 0.65));
   float spec = pow(max(dot(reflect(-L, n), v), 0.0), 90.0);
   c += uHi * spec * 1.4;
@@ -62,9 +66,9 @@ const glass = (tint: string, dark: boolean, clear: number) =>
     fragmentShader: GLASS_FRAG,
     uniforms: {
       uTint: { value: new THREE.Color(tint) },
-      uTop: { value: new THREE.Color(dark ? '#3a4a66' : '#ffffff') },
-      uBot: { value: new THREE.Color(dark ? '#0b1220' : '#4f7299') },
-      uField: { value: new THREE.Color(dark ? '#4a78b8' : '#c6e6ee') },
+      uTop: { value: new THREE.Color(dark ? '#b8d0f2' : '#c9dcef') },
+      uBot: { value: new THREE.Color(dark ? '#3c64a0' : '#1d4670') },
+      uField: { value: new THREE.Color(dark ? '#8fd0dc' : '#4f8fb0') },
       uHi: { value: new THREE.Color(dark ? '#e6f0ff' : '#ffffff') },
       uClear: { value: clear },
     },
@@ -73,7 +77,7 @@ const glass = (tint: string, dark: boolean, clear: number) =>
 
 export const look: ConceptLook = {
   pool: (ink, dark, phone) => {
-    const looks = (dark ? [0.15, 0.55, 0] : [0.45, 0.8, 0.25]).map((clear) =>
+    const looks = (dark ? [0.1, 0.3, 0] : [0.05, 0.2, 0]).map((clear) =>
       plain(glass(ink.face, dark, clear), glass(ink.side, dark, clear * 0.5)),
     );
     if (phone) return looks;
@@ -94,13 +98,13 @@ export const look: ConceptLook = {
           clearcoat: 1,
           clearcoatRoughness: 0.03,
           attenuationColor: new THREE.Color(tint),
-          attenuationDistance: 4,
+          attenuationDistance: 0.7,
         }),
       );
     looks.push(
       plain(phys(ink.face, 0.25), phys(ink.side, 0.25), true),
-      plain(phys(dark ? ink.face : '#ffffff', 0.4), phys(ink.side, 0.4), true),
-      plain(phys(ink.face, 0), phys(ink.face, 0), true),
+      plain(phys(ink.face, 0.4), phys(ink.side, 0.4), true),
+      plain(phys(ink.face, 0), phys(ink.side, 0), true),
     );
     return looks;
   },
