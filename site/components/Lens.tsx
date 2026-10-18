@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, X } from 'lucide-react';
 import {
   useCallback,
   useEffect,
@@ -17,11 +17,11 @@ import {
   CONCEPT_LOADERS,
   conceptAt,
   prefetchConcept,
+  shownIds,
   type ConceptId,
 } from '@/concepts';
 import { INTRO_FINAL } from '@/lib/introFonts';
 import {
-  kickGlitch,
   lensEnabled,
   lensLive,
   lensPerf,
@@ -64,10 +64,40 @@ type Mode = 'pointer' | 'touch' | 'fixed';
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const offset = (pts: Pt[], dx: number, dy: number): Pt[] => pts.map(([x, y]) => [x + dx, y + dy]);
 
-// The concept the door shows after `from`, never the page's own.
-const nextLens = (from: ConceptId, by: number, page: ConceptId) => {
-  const id = conceptAt(from, by);
-  return id === page ? conceptAt(id, by) : id;
+// Every concept has one fixed concept behind its door: the next one on this
+// loop, ordered so each step is a strong contrast (material, screen, print,
+// light...). Keeping the door's concept moves the page one step on, so
+// clicking the door again and again tours every look. Concepts not on the
+// loop (drafts opened with ?v=) and loop entries that are hidden fall back
+// to the switcher order.
+const LENS_LOOP: ConceptId[] = [
+  'a',
+  'c',
+  'f',
+  'i',
+  'd',
+  't',
+  'h',
+  'g',
+  'o',
+  's',
+  'j',
+  'p',
+  'r',
+  'n',
+  'b',
+  'k',
+  'q',
+  'e',
+];
+const lensFor = (page: ConceptId): ConceptId => {
+  const shown = shownIds();
+  const loop = LENS_LOOP.filter((c) => shown.includes(c));
+  const at = loop.indexOf(page);
+  const next = at >= 0 ? loop[(at + 1) % loop.length] : null;
+  if (next && next !== page) return next;
+  const id = conceptAt(page, 1);
+  return id === page ? conceptAt(id, 1) : id;
 };
 
 // How the Lens works here: the pointer, touch, or a still door (calm).
@@ -169,7 +199,6 @@ type Els = {
 type Ui = {
   id: () => ConceptId | null;
   page: () => ConceptId | null;
-  pick: (id: ConceptId) => void;
   setFixed: (open: boolean) => void;
   setDragging: (on: boolean) => void;
   say: (text: string) => void;
@@ -188,10 +217,10 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   let rect: Rect = { ...target };
   const tilt = { rx: 0, ry: 0 };
   let last = 0;
-  let shownAt = 0;
   let glitchUntil = 0;
   let glitchAmount = 0;
-  let glitchSeed = 0;
+  // Varies the glitch's slicing from one page load to the next.
+  const glitchSeed = Math.floor(Math.random() * 1000);
   let lastRim = 0;
   let clipNow = '';
   let suppressUntil = 0;
@@ -378,7 +407,6 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     lensLive.shown = on;
     lensLive.mode = mode;
     if (on) {
-      shownAt = performance.now();
       const sheet = lensSheet();
       if (sheet && !els.shadow.adoptedStyleSheets.includes(sheet))
         els.shadow.adoptedStyleSheets = [sheet];
@@ -392,19 +420,6 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     els.frame.toggleAttribute('data-shown', on);
     lensTick();
     wake();
-  };
-
-  const cycle = (by: number) => {
-    const cur = ui.id();
-    const page = ui.page();
-    if (!cur || !page) return;
-    const next = nextLens(cur, by, page);
-    ui.pick(next);
-    lensLive.id = next;
-    void prefetchConcept(nextLens(next, by, page), true);
-    glitchSeed = Math.floor(Math.random() * 1000);
-    kickGlitch('cycle');
-    ui.say(`Previewing ${CONCEPT_BY_ID[next].name}`);
   };
 
   const commit = () => {
@@ -471,28 +486,15 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
       if (!shown || fixedOpen || (e.target as Element).closest('[data-lens-ui], a, button')) return;
       commit();
     };
-    let wheelAt = 0;
-    const onWheel = (e: WheelEvent) => {
-      if (!shown || committing || fixedOpen) return;
-      // A wheel turn right as the door appears is a page scroll, not a pick.
-      if (performance.now() - shownAt < 350 || Math.abs(e.deltaY) < 1) return;
-      e.preventDefault();
-      const now = performance.now();
-      if (now - wheelAt < 180) return;
-      wheelAt = now;
-      cycle(e.deltaY > 0 ? 1 : -1);
-    };
     const onScroll = () => shown && placeRoot();
     card.addEventListener('pointermove', onMove);
     card.addEventListener('pointerleave', onLeave);
     card.addEventListener('click', onClick);
-    card.addEventListener('wheel', onWheel, { passive: false });
     addEventListener('scroll', onScroll, { passive: true });
     cleanups.push(() => {
       card.removeEventListener('pointermove', onMove);
       card.removeEventListener('pointerleave', onLeave);
       card.removeEventListener('click', onClick);
-      card.removeEventListener('wheel', onWheel);
       removeEventListener('scroll', onScroll);
     });
   }
@@ -542,7 +544,8 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   const handleUp = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (drag.id !== e.pointerId) return;
     drag.id = -1;
-    if (!drag.moved) cycle(1);
+    // A tap on the door (no drag) keeps its concept, like a click on desktop.
+    if (!drag.moved) commit();
     dragging = false;
     ui.setDragging(false);
     target = restRect();
@@ -577,16 +580,12 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     } else show(false);
   };
 
-  // `[` / `]` cycle the door's concept while it is up (instead of the
-  // page's); Escape closes the still door.
+  // Escape closes the still door. (`[` / `]` stay the page's own keys: the
+  // door's concept is fixed by the page's, see LENS_LOOP.)
   const onKey = (e: KeyboardEvent) => {
     if (!shown || e.metaKey || e.ctrlKey || e.altKey) return;
     if (mode === 'touch' && !fixedOpen) return;
-    if (e.key === '[' || e.key === ']') {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      cycle(e.key === ']' ? 1 : -1);
-    } else if (e.key === 'Escape' && fixedOpen) closeFixed();
+    if (e.key === 'Escape' && fixedOpen) closeFixed();
   };
   addEventListener('keydown', onKey, { capture: true });
   cleanups.push(() => removeEventListener('keydown', onKey, { capture: true }));
@@ -608,7 +607,6 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   cleanups.push(() => mirror.disconnect());
 
   return {
-    cycle,
     commit,
     openFixed,
     closeFixed,
@@ -634,13 +632,14 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
 /*
  * The Lens: a doorway over the hero that shows the hero in another concept.
  *
+ * - The door always shows the page concept's fixed partner (LENS_LOOP); only
+ *   keeping it changes what the door shows next.
  * - Desktop: the door follows the cursor over the title card with a slight
- *   lag, tilting a few degrees toward its motion. The wheel or `[` / `]`
- *   (while it is up) cycles its concept, named on its top edge; a click keeps
- *   it: the door opens (setVariant with the door as the origin, the same
- *   doorway every concept switch opens).
+ *   lag, tilting a few degrees toward its motion, its concept named on its
+ *   top edge; a click keeps it: the door opens (setVariant with the door as
+ *   the origin, the same doorway every concept switch opens).
  * - Phones: the door rests small in a corner (a peek); a finger drags it out
- *   full size, lifting snaps it back; a tap on it cycles; "Try ..." keeps it.
+ *   full size, lifting snaps it back; a tap on it, or "Try ...", keeps it.
  * - Calm / reduced motion, and the keyboard: a "Peek another look" button
  *   opens a still door in the middle with its controls; keeping is instant
  *   in calm mode.
@@ -655,8 +654,7 @@ export const Lens = () => {
   const page = useConcept();
   const mode = useSyncExternalStore(onPrefs, modeNow, never);
   const glow = useSyncExternalStore(onPrefs, glowNow, noGlow);
-  const [picked, setPicked] = useState<ConceptId | null>(null);
-  const id = page && mode ? (picked && picked !== page ? picked : nextLens(page, 1, page)) : null;
+  const id = page && mode ? lensFor(page) : null;
   const [fixedOpen, setFixedOpen] = useState(false);
   const [dragging, setDraggingState] = useState(false);
   // The phone door has been dragged or tapped at least once.
@@ -741,7 +739,6 @@ export const Lens = () => {
       {
         id: () => idRef.current,
         page: () => pageRef.current,
-        pick: setPicked,
         setFixed: setFixedOpen,
         setDragging,
         say: setSay,
@@ -867,24 +864,8 @@ export const Lens = () => {
           aria-label="Peek another look"
           className="absolute inset-x-0 bottom-3 z-4 flex flex-wrap items-center justify-center gap-2 px-3"
         >
-          <Button
-            variant="lens"
-            size="round"
-            aria-label="Previous look"
-            onClick={() => ctl.current?.cycle(-1)}
-          >
-            <ChevronLeft />
-          </Button>
           <Button id="vy-lens-try" variant="lens" size="pill" onClick={() => ctl.current?.commit()}>
             Try {name}
-          </Button>
-          <Button
-            variant="lens"
-            size="round"
-            aria-label="Next look"
-            onClick={() => ctl.current?.cycle(1)}
-          >
-            <ChevronRight />
           </Button>
           <Button
             variant="lens"

@@ -26,7 +26,6 @@
 :root[data-variant='j'] .vy-j-cap::after { content: ''; position: absolute; left: calc(50% - 2px); top: 9%; width: 4px; height: 28%; border-radius: 2px; background: #fff; }
 :root[data-variant='j'] .vy-j-knob:nth-child(2) .vy-j-cap { --cap: var(--art-2); animation-duration: 12s; }
 :root[data-variant='j'] .vy-j-knob:nth-child(3) .vy-j-cap { --cap: var(--art-3); animation-duration: 8s; }
-:root[data-variant='j'] .vy-j-knob b { font: 600 12px/1 var(--font-grotesk); letter-spacing: 0.16em; color: color-mix(in srgb, var(--art-ink) 72%, #0000); }
 /* Detents: hold, click a notch over, settle back. 0% is the poster. */
 @keyframes vy-j-detent {
   0%, 14%, 100% { transform: rotate(-60deg); }
