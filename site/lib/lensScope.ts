@@ -52,8 +52,11 @@ export const lensSheet = (): CSSStyleSheet | null => {
     const rules = rulesOf(s);
     if (rules) copy(rules, out);
   }
-  // The Lens's own: the 2D letters hide while the 3D lens draws them.
+  // The Lens's own: the 2D letters hide while the 3D lens draws them; and
+  // nothing in it takes part in a concept swap's view transition (names are
+  // document-wide: a second "vy-title" would cancel the transition).
   out.push(
+    '.vy-lens-root,.vy-lens-root *{view-transition-name:none!important}',
     '.vy-lens-root[data-lens-3d] .vy-title .vy-letter > *{color:transparent!important;text-shadow:none!important}',
     '.vy-lens-root[data-lens-3d][data-lens-scene] [data-hero-title]{background-color:transparent!important}',
   );

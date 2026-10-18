@@ -1,4 +1,5 @@
 import { CommandCopy } from '@/components/CommandCopy';
+import { GlossaryTip } from '@/components/GlossaryTip';
 import { PromptCopy } from '@/components/PromptCopy';
 import { Typography } from '@/components/ui/Typography';
 import { PROMPTS } from '@/lib/content';
@@ -15,7 +16,10 @@ export const COMMANDS = [
 ] as const;
 
 export const FLAGS = [
-  ['--agent <id>', 'claude, codex, copilot, gemini, cursor or demo'],
+  [
+    '--agent <id>',
+    'claude, codex, copilot, gemini, cursor, opencode, grok, hermes, pi, antigravity or demo',
+  ],
   ['--agents <mix>', 'split variants across agents: claude:opus:2,gemini:2'],
   ['--blind', 'hide who made each variant until you keep one'],
   ['--count <n>', 'how many variants, 1–10'],
@@ -43,7 +47,8 @@ const QuickDocs = ({ className, heading = 'h2' }: QuickDocsProps) => (
         Quick docs
       </Typography>
       <Typography variant="small" color="steel">
-        Every command runs in your site&apos;s folder. Add a path to run it somewhere else.
+        Every command runs in your site&apos;s folder. Add a path to run it somewhere else, or{' '}
+        <GlossaryTip term="flags" /> to change what it does.
       </Typography>
       <PromptCopy chip prompt={PROMPTS.docs} label="Copy prompt: point your AI at these docs" />
     </div>

@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 
 import { CommandCopy } from '@/components/CommandCopy';
+import { GlossaryTip } from '@/components/GlossaryTip';
 import { LogoMark } from '@/components/LogoMark';
 import { RunnerPicker } from '@/components/RunnerPicker';
 import { Typography } from '@/components/ui/Typography';
@@ -54,8 +55,11 @@ const Stacks = () => (
         </Typography>
         <Typography variant="body" color="steel">
           <strong className="text-ink">No account, nothing to pay us.</strong> Any of these, on your
-          own plan or an <strong className="text-ink">OpenRouter</strong> key (Claude Code, Codex).
-          variantly finds the one you have. Each variant ={' '}
+          own plan or an{' '}
+          <strong className="text-ink">
+            <GlossaryTip term="openrouter" />
+          </strong>{' '}
+          key (Claude Code, Codex). variantly finds the one you have. Each variant ={' '}
           <strong className="text-ink">one session</strong>.
         </Typography>
         <RunnerPicker className="mt-2" />

@@ -1,6 +1,7 @@
 'use client';
 
-import { glitchOn } from '@/lib/lensGlitch';
+import type { ConceptId } from '@/concepts';
+import { glitchIntensity, glitchOn } from '@/lib/lensGlitch';
 import {
   DOOR_RADIUS,
   doorSize,
@@ -87,7 +88,7 @@ const ringOf = (r: Rect, a: number, b: number) =>
   `path(evenodd, '${roundRectPath(growRect(r, b), DOOR_RADIUS + b)}${roundRectPath(growRect(r, a), DOOR_RADIUS + a)}')`;
 
 // Runs the opening once the transition's pseudo-elements exist.
-export const openDoor = (origin: SwapOrigin, duration: number) => {
+export const openDoor = (origin: SwapOrigin, duration: number, concept?: ConceptId) => {
   const vw = innerWidth;
   const vh = innerHeight;
   const size = doorSize(vw);
@@ -114,7 +115,8 @@ export const openDoor = (origin: SwapOrigin, duration: number) => {
   );
   // One sharp glitch frame as it starts: the new page and its frame jump
   // sideways in opposite directions for a frame, then snap back.
-  if (glitchOn()) {
+  const amount = concept ? glitchIntensity(concept) : 0.5;
+  if (glitchOn() && amount > 0) {
     const jump = (dx: number, pseudoElement: string) =>
       html.animate(
         [
@@ -124,7 +126,7 @@ export const openDoor = (origin: SwapOrigin, duration: number) => {
         ],
         { duration: 50, pseudoElement },
       );
-    jump(9, '::view-transition-new(root)');
-    jump(-6, '::view-transition-new(vy-swap-frame-0)');
+    jump(Math.round(4 + 8 * amount), '::view-transition-new(root)');
+    jump(-Math.round(3 + 5 * amount), '::view-transition-new(vy-swap-frame-0)');
   }
 };

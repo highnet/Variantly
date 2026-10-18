@@ -1,12 +1,19 @@
-import { Fragment } from 'react';
+import { Fragment, type ReactNode } from 'react';
+
+import { GlossaryTip } from '@/components/GlossaryTip';
+import { isGlossaryKey } from '@/lib/glossary';
+
+// [Words](https://url) or {{term}} / {{term|words shown}}.
+const TOKEN = /\[([^\]]+)\]\((https?:[^)]+|[#/][\w#/-]*)\)|\{\{([a-z-]+)(?:\|([^}]+))?\}\}/g;
+
+type InlineProps = {
+  text: string;
+};
 
 /*
- * Renders copy with **key words** marked: the marked parts become <strong>
- * in ink, so a skimming eye lands on them first. [Words](https://url)
- * become a link to that third-party site, [Words](#id) or [Words](/path) a link on this site,
- * and `text` inline code.
+ * `text` becomes inline code.
  */
-const Code = ({ text }: { text: string }) => (
+const Code = ({ text }: InlineProps) => (
   <>
     {text.split(/`([^`]+)`/g).map((part, i) =>
       i % 2 ? (
@@ -20,33 +27,59 @@ const Code = ({ text }: { text: string }) => (
   </>
 );
 
-const Inline = ({ text }: { text: string }) => (
-  <>
-    {text.split(/\[([^\]]+)\]\((https?:[^)]+|[#/][\w#/-]*)\)/g).map((part, i, all) =>
-      i % 3 === 1 ? (
-        !all[i + 1].startsWith('http') ? (
-          <a key={i} href={all[i + 1]} className="underline underline-offset-2">
-            {part}
-          </a>
-        ) : (
+/*
+ * [Words](https://url) become a link to that third-party site, [Words](#id)
+ * or [Words](/path) a link on this site; {{term}} becomes a glossary tip
+ * (lib/glossary.ts).
+ */
+const Inline = ({ text }: InlineProps) => {
+  const out: ReactNode[] = [];
+  let at = 0;
+  for (const m of text.matchAll(TOKEN)) {
+    if (m.index > at) out.push(<Code key={at} text={text.slice(at, m.index)} />);
+    const [, words, href, term, shown] = m;
+    if (href) {
+      out.push(
+        href.startsWith('http') ? (
           <a
-            key={i}
-            href={all[i + 1]}
+            key={m.index}
+            href={href}
             target="_blank"
             rel="noreferrer"
             className="underline underline-offset-2"
           >
-            {part}
+            {words}
           </a>
-        )
-      ) : i % 3 === 2 ? null : (
-        <Code key={i} text={part} />
-      ),
-    )}
-  </>
-);
+        ) : (
+          <a key={m.index} href={href} className="underline underline-offset-2">
+            {words}
+          </a>
+        ),
+      );
+    } else if (isGlossaryKey(term)) {
+      out.push(
+        <GlossaryTip key={m.index} term={term}>
+          {shown}
+        </GlossaryTip>,
+      );
+    } else {
+      out.push(<Fragment key={m.index}>{shown ?? term}</Fragment>);
+    }
+    at = m.index + m[0].length;
+  }
+  if (at < text.length) out.push(<Code key={at} text={text.slice(at)} />);
+  return <>{out}</>;
+};
 
-const Rich = ({ text }: { text: string }) => (
+type RichProps = {
+  text: string;
+};
+
+/*
+ * Renders copy with **key words** marked: the marked parts become <strong>
+ * in ink, so a skimming eye lands on them first.
+ */
+const Rich = ({ text }: RichProps) => (
   <>
     {text.split(/\*\*(.+?)\*\*/g).map((part, i) =>
       i % 2 ? (

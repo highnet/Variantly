@@ -1,20 +1,21 @@
 'use client';
 
-import { CONCEPT_BY_ID, type ConceptId } from '@/concepts';
+import type { ConceptId } from '@/concepts';
 import { perfTier } from '@/lib/perfTier';
 import { calmMotion } from '@/lib/prefs';
 import { seekTime } from '@/lib/seek';
+import { glitchStrength, titleGlitchOn } from '@/lib/titleTiming';
 
 /*
- * A crisp, deterministic glitch for the Lens: horizontal band slices offset
- * sideways, an offset colour split (two flat copies in the concept's palette,
- * no blend modes), a one-frame face flicker and scanline dropouts. No glow, no
- * blur. Kept rare and short: it accents a flip, it never loops.
- *
- * This is the Lens's minimal stand-in, shaped like the title's glitch
- * (feat/title-morph-tune): `glitchOn()`, a per-concept `glitchIntensity(id)`
- * and a pure `glitchFrame(seed, amount, height)`. When that lands, these
- * three swap over to it without touching the callers.
+ * The Lens's glitch, on the title's glitch API (lib/titleTiming: the
+ * `?glitch=0` switch and each concept's strength, 0 = never): horizontal band
+ * slices offset sideways, an offset colour split (two flat copies in the
+ * concept's palette, no blend modes), a one-frame face flicker and scanline
+ * dropouts. No glow, no blur. Kept rare and short: it accents a flip (a letter
+ * crossing the door's edge, a new concept in the door, the door opening), it
+ * never loops. The title's own `glitchAt` is tied to its reveal's timeline;
+ * the door's frames come from `glitchFrame` here, seeded so a frame is
+ * reproducible.
  *
  * Off with `?glitch=0`, calm / reduced motion and seek renders.
  */
@@ -32,21 +33,11 @@ export type GlitchFrame = {
 
 export const NO_GLITCH: GlitchFrame = { bands: [], dropouts: [], split: 0, flicker: false };
 
-export const glitchOn = () => {
-  if (typeof location === 'undefined') return false;
-  if (new URLSearchParams(location.search).get('glitch') === '0') return false;
-  return !calmMotion() && seekTime() === null;
-};
+export const glitchOn = () => titleGlitchOn() && !calmMotion() && seekTime() === null;
 
-// Signal and print concepts glitch a little harder than the soft ones.
-const STRONG: Partial<Record<string, number>> = {
-  'Screen & Signal': 1,
-  'Light & Illusion': 0.85,
-  'Print & Type': 0.7,
-  'Hand & Material': 0.55,
-};
+// The concept's own strength (its look's), halved at the low perf tier.
 export const glitchIntensity = (id: ConceptId) =>
-  (STRONG[CONCEPT_BY_ID[id]?.family] ?? 0.6) * (perfTier() === 'low' ? 0.5 : 1);
+  glitchStrength(id) * (perfTier() === 'low' ? 0.5 : 1);
 
 // Small integer hash -> [0, 1).
 const rand = (seed: number, k: number) => {

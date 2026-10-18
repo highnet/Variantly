@@ -32,9 +32,19 @@ const buttonVariants = cva(
           'border border-slate-line bg-transparent text-surface normal-case tracking-normal font-sans hover:bg-ink active:translate-y-px',
         // A numbered cell on the slate dock; the current one lifts, white.
         cell: 'relative bg-slate-raised text-surface opacity-55 tracking-normal tabular-nums [font-stretch:75%] hover:opacity-90 aria-[current=true]:bg-surface aria-[current=true]:text-ink aria-[current=true]:opacity-100 aria-[current=true]:-translate-y-0.5 aria-[current=true]:shadow-cell aria-checked:bg-surface aria-checked:text-ink aria-checked:opacity-100 aria-checked:-translate-y-0.5 aria-checked:shadow-cell',
+        // A cell in the goo picker: the lit pill is a separate layer that
+        // travels between cells (lib/goo.ts), so the cell itself never lifts
+        // or fades (either would trap its number under the pill); the number
+        // sits in its own span above the pill and takes the pill's ink.
+        'cell-goo':
+          'relative bg-slate-raised/55 tracking-normal tabular-nums [font-stretch:75%] hover:bg-slate-raised/90',
         // A word inside a headline that is also a button (the hero's "a fresh look").
         'headline-word':
           'inline normal-case tracking-[inherit] font-[inherit] [font-stretch:inherit] text-[length:inherit] leading-[inherit] text-inherit whitespace-normal',
+        // A word in running text that opens a tip: dotted underline, the text's own type.
+        tip: 'inline [text-transform:inherit]! tracking-[inherit] font-[family-name:inherit] font-[weight:inherit] [font-stretch:inherit] text-[length:inherit] leading-[inherit] text-inherit whitespace-normal text-left underline decoration-dotted decoration-current/55 decoration-[1.5px] underline-offset-[0.22em] cursor-help rounded-[2px] hover:decoration-current aria-expanded:decoration-solid aria-expanded:decoration-current',
+        // Words in running text that act as a button, styled as the text around them.
+        text: 'inline normal-case tracking-[inherit] font-[family-name:inherit] font-[weight:inherit] [font-stretch:inherit] text-[length:inherit] leading-[inherit] text-inherit whitespace-normal text-left hover:underline',
         // A concept chip in the homepage switcher dock.
         concept:
           'normal-case tracking-normal font-sans text-steel hover:text-ink aria-pressed:bg-ink aria-pressed:text-surface',
@@ -69,7 +79,7 @@ const buttonVariants = cva(
         // A cell in a fixed grid of them (twenty redesigns, ten to a row): the
         // grid sets the width, so the current one lifts and grows its figure
         // without pushing its neighbours.
-        'cell-grid': 'h-9 w-full min-w-0 rounded-control px-0 text-[15px] aria-checked:text-2xl',
+        'cell-grid': 'h-9 w-full min-w-0 rounded-control px-0 text-[15px]',
         pill: 'h-8 rounded-full px-4 text-[13px] font-semibold',
         // Desktop picker row and the phone sheet's large strip tile.
         tile: 'h-11 w-full rounded-control px-2 text-[13px] gap-2.5',

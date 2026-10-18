@@ -68,7 +68,9 @@ export const setVariant = (v: ConceptId, opts: SwapOptions = {}) => {
       done();
     } else if (cheapSwap() || !document.startViewTransition) {
       apply(v);
-      const hero = document.querySelector('[data-hero-title]');
+      // The hero copy cross-fades in; the title is left out: its letters
+      // morph into the new concept instead (VariantTitle).
+      const hero = document.querySelector('[data-hero-grid]');
       const a = hero?.animate([{ opacity: 0.35 }, { opacity: 1 }], {
         duration: DUR.fast,
         easing: EASE.outExpo,
@@ -85,7 +87,7 @@ export const setVariant = (v: ConceptId, opts: SwapOptions = {}) => {
         apply(v);
         unmount = mountSwapFrame();
       });
-      void vt.ready.then(() => openDoor(origin, duration)).catch(() => {});
+      void vt.ready.then(() => openDoor(origin, duration, v)).catch(() => {});
       void vt.finished.finally(() => {
         unmount();
         done();

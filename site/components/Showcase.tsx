@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useEffectEvent,
+  useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent,
@@ -13,15 +14,17 @@ import {
 
 import { CommandCopy } from '@/components/CommandCopy';
 import { FreshLook } from '@/components/FreshLook';
+import { GlossaryTip } from '@/components/GlossaryTip';
 import { PageSkeleton } from '@/components/PageSkeleton';
 import { PromptCopy } from '@/components/PromptCopy';
 import { RollingNumber } from '@/components/RollingNumber';
 import { RunnerPicker } from '@/components/RunnerPicker';
+import { SlatFlip, slatCount, type Flip } from '@/components/SlatFlip';
 import { VariantTitle } from '@/components/VariantTitle';
 import { Button } from '@/components/ui/Button';
 import { Typography } from '@/components/ui/Typography';
 import { markLoaded } from '@/lib/loadProgress';
-import { EASE } from '@/lib/motion';
+import { bakeGoo } from '@/lib/goo';
 import { applyPrefsToFrame, calmMotion, PREFS_EVENT, readPrefs, type Prefs } from '@/lib/prefs';
 import { whenIdle } from '@/lib/scrollIdle';
 import { DEMO_RUNS, PROMPTS } from '@/lib/content';
@@ -62,10 +65,6 @@ const SCROLL_QUIET_MS = 500;
 // How long a freshly loaded live page plays its entrance under the poster.
 const FRAME_SETTLE_MS = 1400;
 
-// The swap wipe: a leaning edge (top ahead, like the divider) crossing the
-// stage from right to left, uncovering the new redesign behind it.
-const SWAP_FROM = 'polygon(125% 0, 125% 0, 125% 100%, 115% 100%)';
-const SWAP_TO = 'polygon(-15% 0, 125% 0, 125% 100%, -25% 100%)';
 type Theme = Prefs['theme'];
 // A pane is one design of one run; the original is the same for every run.
 type Pane = { run: number; n: number };
@@ -74,6 +73,10 @@ const paneKey = ({ run, n }: Pane) => (n === 0 ? 'before' : `${DEMO_RUNS[run].id
 // takes its frame with it, so a remount starts over.
 const shownLive = (frames: Map<string, HTMLIFrameElement>, key: string) =>
   frames.get(key)?.style.opacity === '1';
+// The picker's grid area for a number: ten to a row. The spans matter: an
+// absolutely placed grid child with an auto end line runs to the grid's edge.
+const cellArea = (n: number) =>
+  `${Math.floor((n - 1) / 10) + 1} / ${((n - 1) % 10) + 1} / span 1 / span 1`;
 const vname = (n: number) => `V${String(n).padStart(2, '0')}`;
 const LONGEST = Math.max(...DEMO_RUNS.flatMap((r) => r.variants.map((v) => v.direction.length)));
 // Sized so the longest direction's cells fill the row at most.
@@ -161,10 +164,13 @@ const Score = ({ label, value, was, lowerIsBetter = false }: ScoreProps) => {
   return (
     <span className="inline-flex items-baseline gap-1.5 whitespace-nowrap">
       <span className="text-steel-on-slate text-[10px] tracking-[0.08em] uppercase">{label}</span>
-      {/* Only the change against the original: nobody reads the new value. */}
+      {/* Only the change against the original: nobody reads the new value.
+          A fixed width, so a change from "+9" to "+13" (or "same") never
+          resizes the dock, which is centred and would slide sideways. */}
       <span
         className={cn(
-          'text-[15px] font-bold tabular-nums',
+          'inline-block text-left text-[15px] font-bold tabular-nums',
+          lowerIsBetter ? 'min-w-[8ch]' : 'min-w-[4ch]',
           diff === 0 ? 'text-surface' : better ? 'text-ok-on-slate' : 'text-fail-on-slate',
         )}
       >
@@ -278,6 +284,8 @@ const Showcase = () => {
   // Where a newly picked run starts: its first design, or its last when the
   // phone's back button steps across from the run after it.
   const [runStart, setRunStart] = useState(1);
+  // The number drawn lit (the pill's ink): the selection, except mid-hop.
+  const [lit, setLit] = useState<number | null>(selected);
   if (wasRun !== runIdx) {
     // The old run's pane stays drawn underneath until the new one arrives.
     setWasRun(runIdx);
@@ -285,10 +293,14 @@ const Showcase = () => {
     setWas(runStart);
     setUnder({ run: wasRun, n: was });
     setMounted(new Set([runStart]));
+    setLit(runStart);
   } else if (was !== selected) {
     setWas(selected);
     setUnder({ run: runIdx, n: was });
     setMounted((m) => (m.has(selected) ? m : new Set(m).add(selected)));
+    // The old number stays lit until the goo leaves it (the hop hands the
+    // light on); in calm mode the new one lights at once.
+    setLit(calm ? selected : was);
   }
   const selKey = paneKey({ run: runIdx, n: selected });
   const selKeyRef = useRef(selKey);
@@ -602,45 +614,81 @@ const Showcase = () => {
   useEffect(() => {
     const el = stage.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => placeAt(pos.current));
+    // The line's tilt: --lean at the top and bottom over the stage's height.
+    const tilt = () => {
+      const lean = parseFloat(getComputedStyle(el).getPropertyValue('--lean')) || 0;
+      el.style.setProperty('--lean-a', `${Math.atan2(2 * lean, el.clientHeight || 1)}rad`);
+    };
+    tilt();
+    const ro = new ResizeObserver(() => {
+      tilt();
+      placeAt(pos.current);
+    });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
   /*
-   * Changing redesign or run: the new one wipes in over the old behind a
-   * leaning edge, like the concept swap, while the old one stays fully drawn
-   * underneath. (A crossfade let the original show through mid-way and
-   * faded in pages that were still blank.) A pane with nothing to show yet
-   * is held back until its poster or page arrives, for a second at most;
-   * in calm mode it then simply replaces the old one, with no wipe.
+   * Changing redesign or run: the after pane turns over like a split-flap
+   * board (SlatFlip), slat by slat in the direction of travel, from the old
+   * poster to the new one, while the old pane stays fully drawn underneath.
+   * The new pane stays hidden (live page included) until every slat has
+   * landed, then takes their place in one cut, on the same pixels. A pane
+   * with nothing to show yet is held back until its poster or page
+   * arrives, for a second at most; in calm mode it simply replaces the old
+   * one. A pick mid-flip turns the board on, quickly, to the latest pick.
    */
+  const [flip, setFlip] = useState<Flip | null>(null);
+  const flipDone = useRef<(() => void) | null>(null);
+  const onLanded = useCallback((id: number) => {
+    flipDone.current?.();
+    flipDone.current = null;
+    setFlip((f) => (f?.id === id ? null : f));
+  }, []);
   useEffect(() => {
     if (under === null) return;
     const from = under;
     const el = swaps.current.get(selKey);
     if (!el) return;
     const queue = waiting.current;
-    const animate = !calm;
-    // Hidden until it has something to show, so the old pane stays in view.
-    el.style.clipPath = animate ? SWAP_FROM : 'inset(0 0 0 100%)';
-    let wipe: Animation | undefined;
+    // Hidden until the slats land on it, so the old pane stays in view.
+    el.style.clipPath = 'inset(0 0 0 100%)';
     let timer = 0;
+    let started = false;
     let gone = false;
     const done = () => setUnder((u) => (u === from ? null : u));
+    const reveal = () => {
+      el.style.clipPath = '';
+      done();
+    };
     const run = () => {
       queue.delete(selKey);
       clearTimeout(timer);
-      if (wipe || gone) return;
-      el.style.clipPath = '';
-      if (!animate) return done();
-      wipe = el.animate([{ clipPath: SWAP_FROM }, { clipPath: SWAP_TO }], {
-        duration: 680,
-        easing: EASE.wipe,
-      });
-      wipe.onfinish = done;
+      if (started || gone) return;
+      started = true;
+      const box = stage.current;
+      if (calm || !theme || !box) return reveal();
+      // Next and later numbers (and the tour wrapping round) ripple left to
+      // right; earlier ones, right to left.
+      const n = DEMO_RUNS[runIdx].variants.length;
+      const ahead =
+        from.run !== runIdx
+          ? runIdx > from.run
+          : (selected > from.n && !(from.n === 1 && selected === n)) ||
+            (from.n === n && selected === 1);
+      flipDone.current = reveal;
+      setFlip((f) => ({
+        id: (f?.id ?? 0) + 1,
+        from: posterFor(DEMO_RUNS[from.run].base, from.n, phone, theme),
+        to: posterFor(DEMO_RUNS[runIdx].base, selected, phone, theme),
+        dir: ahead ? 1 : -1,
+        fast: f !== null,
+        w: box.clientWidth,
+        h: box.clientHeight,
+        count: slatCount(phone),
+      }));
     };
-    // Wipe in only once there is something to show: the poster or the page.
+    // Turn only once there is something to show: the poster or the page.
     const still = theme && posterFor(DEMO_RUNS[runIdx].base, selected, phone, theme);
     if (shownLive(frames.current, selKey) || (still && posterLoaded.current.has(still))) run();
     else {
@@ -651,7 +699,8 @@ const Showcase = () => {
       gone = true;
       queue.delete(selKey);
       clearTimeout(timer);
-      wipe?.cancel();
+      // A newer pick takes the board over; this pane shows as it was.
+      if (flipDone.current === reveal) flipDone.current = null;
       el.style.clipPath = '';
     };
   }, [under, selKey, calm, theme, runIdx, selected, phone]);
@@ -819,6 +868,77 @@ const Showcase = () => {
     cells.current[to[e.key]]?.focus();
   };
 
+  // The goo hop between numbers: baked once per pick, played by WAAPI on
+  // transforms. Calm mode, a run switch or a first paint just moves the pill.
+  const picker = useRef<HTMLDivElement>(null);
+  const pill = useRef<HTMLSpanElement>(null);
+  const gooTail = useRef<HTMLSpanElement>(null);
+  const gooNeck = useRef<HTMLSpanElement>(null);
+  const gooFrom = useRef({ run: runIdx, n: selected });
+  const gooPlay = useRef<Animation[]>([]);
+  const gooTimer = useRef(0);
+  useLayoutEffect(() => {
+    const prev = gooFrom.current;
+    gooFrom.current = { run: runIdx, n: selected };
+    const grid = picker.current;
+    const head = pill.current;
+    const tail = gooTail.current;
+    const neck = gooNeck.current;
+    const src = cells.current[prev.n];
+    const dst = cells.current[selected];
+    if (!grid || !head || !tail || !neck || !dst) return;
+    // Phones show a counter instead of the grid: nothing to hop between.
+    const shown = grid.getClientRects().length > 0;
+    const hop = shown && prev.run === runIdx && prev.n !== selected && src && !calmMotion();
+    // The light passes from the old number to the new one as the goo does.
+    clearTimeout(gooTimer.current);
+    const light = (at: number, n: number | null, then?: () => void) =>
+      (gooTimer.current = window.setTimeout(() => {
+        setLit(n);
+        then?.();
+      }, at));
+    // A hop that interrupts another starts from wherever the pill is now.
+    const moving = head.getBoundingClientRect();
+    gooPlay.current.forEach((a) => a.cancel());
+    gooPlay.current = [];
+    if (!hop) {
+      light(0, selected);
+      return;
+    }
+    const still = head.getBoundingClientRect();
+    const centre = (r: DOMRect) => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+    const from = centre(src.getBoundingClientRect());
+    const to = centre(dst.getBoundingClientRect());
+    const start = {
+      x: from.x + centre(moving).x - centre(still).x,
+      y: from.y + centre(moving).y - centre(still).y,
+    };
+    const a = cells.current[1]?.getBoundingClientRect();
+    const b = cells.current[2]?.getBoundingClientRect();
+    const pitch = a && b ? b.left - a.left : dst.offsetWidth;
+    const rest = parseFloat(getComputedStyle(head).borderTopLeftRadius) || 6;
+    const plan = bakeGoo(start, from, to, pitch || 40, {
+      rest,
+      round: Math.max(rest, head.offsetHeight / 2),
+    });
+    tail.style.gridArea = cellArea(prev.n);
+    neck.style.gridArea = cellArea(prev.n);
+    const opts = { duration: plan.duration, easing: 'linear' };
+    gooPlay.current = [
+      head.animate(plan.head, opts),
+      tail.animate(plan.tail, opts),
+      neck.animate(plan.neck, opts),
+    ];
+    light(plan.leaveMs, null, () => light(plan.arriveMs - plan.leaveMs, selected));
+  }, [selected, runIdx]);
+  useEffect(() => {
+    const play = gooPlay;
+    return () => {
+      play.current.forEach((a) => a.cancel());
+      clearTimeout(gooTimer.current);
+    };
+  }, []);
+
   return (
     <section
       ref={root}
@@ -847,13 +967,18 @@ const Showcase = () => {
               Your AI coding agent redesigns your{' '}
               <strong className="text-surface">actual site</strong>{' '}
               <strong className="text-surface">in parallel</strong>. Compare{' '}
-              <strong className="text-surface">live versions</strong>, keep the best, and{' '}
+              <strong className="text-surface">
+                <GlossaryTip term="live">live versions</GlossaryTip>
+              </strong>
+              , <GlossaryTip term="keep">keep the best</GlossaryTip>, and{' '}
               <strong className="text-surface">review the code</strong> before it ships.
             </p>
             <ul className="text-steel-on-slate m-0 grid list-none gap-1.5 p-0 text-[15px] leading-snug">
               <li>
-                <span className="text-surface font-semibold">Real code:</span> each design is a git
-                branch in its own worktree, made by the agent you already use.
+                <span className="text-surface font-semibold">Real code:</span> each design is a git{' '}
+                <GlossaryTip term="branch" /> in its own{' '}
+                <GlossaryTip term="worktree">worktree</GlossaryTip>, made by the agent you already
+                use.
               </li>
               <li>
                 <span className="text-surface font-semibold">Your call:</span> nothing touches your
@@ -973,8 +1098,8 @@ const Showcase = () => {
                             : r.variants.length}{' '}
                         ways
                       </strong>{' '}
-                      by Claude Code. <strong className="text-surface">Drag the line</strong> or
-                      pick a number.
+                      by <GlossaryTip term="claude-code" />.{' '}
+                      <strong className="text-surface">Drag the line</strong> or pick a number.
                     </p>
                   </div>
                 ))}
@@ -997,7 +1122,7 @@ const Showcase = () => {
           aria-label={`Before: the original Oak & Iron page. After: ${vname(selected)}, ${current.direction}`}
           onClick={goLive}
           className={cn(
-            'group/stage relative isolate h-[62svh] min-h-[380px] overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]',
+            'group/stage vy-split relative isolate h-[62svh] min-h-[380px] overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]',
           )}
         >
           <PageSkeleton
@@ -1101,6 +1226,7 @@ const Showcase = () => {
               </div>
             );
           })}
+          <SlatFlip flip={flip} phone={phone} onLanded={onLanded} />
           {/* The panes stay scrollable; this band either side of the line is
             the drag surface, so nobody has to hit the grip exactly. */}
           <div
@@ -1171,10 +1297,14 @@ const Showcase = () => {
             <div className="bg-ink/70 group-hover/track:bg-ink group-active/track:bg-ink absolute inset-x-0.5 top-[var(--thumb-top,0px)] h-[var(--thumb-h,40px)] rounded-full shadow-[0_0_0_1px_rgb(255_255_255/.5)] transition-colors" />
           </div>
 
-          {/* The divider leans slightly; the clip, its shadow and the line share one
-            edge in globals.css (.vy-split-*), so they meet at any height. */}
-          <div className="vy-split-shade pointer-events-none absolute inset-0 z-20" />
-          <div className="vy-split-line pointer-events-none absolute inset-0 z-20" />
+          {/* The divider leans slightly: the panes' clip (.vy-split-clip) and
+            this line share one lean, the line tilted by --lean-a so the two
+            meet at any height. Two-tone with a soft shadow (.vy-divider), so
+            it reads over any page. */}
+          <div
+            aria-hidden="true"
+            className="vy-divider pointer-events-none absolute top-1/2 left-0 z-20 h-[120%] translate-x-[var(--split-x,50vw)] -translate-y-1/2 rotate-[var(--lean-a,0rad)]"
+          />
           <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-0 translate-x-[var(--split-x,50vw)]">
             <Button
               ref={grip}
@@ -1247,10 +1377,10 @@ const Showcase = () => {
               <ChevronLeft className="size-4" aria-hidden="true" />
             </Button>
             <Button
-              variant="cell"
-              size="cell"
+              variant="outline-slate"
+              size="icon"
               aria-label="Previous redesign"
-              className="sm:hidden"
+              className="size-11 rounded-full sm:hidden [&_svg]:size-5"
               onClick={() => step(-1)}
             >
               <ChevronLeft className="size-4" aria-hidden="true" />
@@ -1258,12 +1388,40 @@ const Showcase = () => {
             {/* Ten to a row, so twenty fit a phone in two rows and every
                 number stays in view. */}
             <div
+              ref={picker}
               id="demo-picker"
               role="radiogroup"
               aria-label={`${run.label} redesigns, 1 to ${count}`}
               onKeyDown={onCellsKey}
-              className="hidden gap-1 sm:grid sm:grid-cols-[repeat(10,2.5rem)]"
+              className="relative isolate hidden gap-1 sm:grid sm:grid-cols-[repeat(10,2.5rem)]"
             >
+              {/* The lit pill, drawn in the selected cell's grid area under
+                  the numbers; a new pick sends it over as goo (lib/goo.ts)
+                  with the blob it leaves behind and the neck between. */}
+              <span
+                ref={pill}
+                aria-hidden="true"
+                style={{ gridArea: cellArea(selected) }}
+                className="rounded-control bg-surface shadow-cell pointer-events-none absolute inset-0 z-[1] -translate-y-0.5"
+              />
+              <span
+                ref={gooTail}
+                aria-hidden="true"
+                className="rounded-control bg-surface pointer-events-none absolute inset-0 z-[1] opacity-0"
+              />
+              <span
+                ref={gooNeck}
+                aria-hidden="true"
+                className="text-surface pointer-events-none absolute top-0 left-1/2 z-[1] h-full w-[100px] origin-left opacity-0"
+              >
+                {/* An hourglass, so the neck flares into both blobs. */}
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="size-full">
+                  <path
+                    fill="currentColor"
+                    d="M0 0C30 0 35 28 50 28S70 0 100 0V100C70 100 65 72 50 72S30 100 0 100Z"
+                  />
+                </svg>
+              </span>
               {variants.map((v) => {
                 const active = selected === v.n;
                 return (
@@ -1272,7 +1430,7 @@ const Showcase = () => {
                     ref={(el) => {
                       cells.current[v.n] = el;
                     }}
-                    variant="cell"
+                    variant="cell-goo"
                     size="cell-grid"
                     role="radio"
                     aria-checked={active}
@@ -1280,13 +1438,23 @@ const Showcase = () => {
                     title={`${v.direction} (${v.n})`}
                     tabIndex={active ? 0 : -1}
                     onClick={() => choose(v.n)}
+                    className="group/cell"
                   >
-                    {String(v.n).padStart(2, '0')}
+                    {/* Above the pill; lit as the goo arrives, not before. */}
+                    <span
+                      className={cn(
+                        'text-surface/55 group-hover/cell:text-surface/90 relative z-[2] inline-block transition-[color,scale,translate] duration-[90ms,460ms,460ms] ease-[linear,var(--ease-spring-pop),var(--ease-spring-pop)]',
+                        lit === v.n &&
+                          'text-ink group-hover/cell:text-ink -translate-y-0.5 scale-160',
+                      )}
+                    >
+                      {String(v.n).padStart(2, '0')}
+                    </span>
                     {active && auto && !calm && (
                       <span
                         key={selected}
                         aria-hidden="true"
-                        className="bg-ink/50 absolute inset-x-1.5 bottom-1 h-0.5 origin-left animate-[cycle_12s_linear_forwards] motion-reduce:hidden"
+                        className="bg-ink/50 absolute inset-x-1.5 bottom-1.5 z-[2] h-0.5 origin-left animate-[cycle_12s_linear_forwards] motion-reduce:hidden"
                       />
                     )}
                   </Button>
@@ -1310,10 +1478,10 @@ const Showcase = () => {
               {String(position).padStart(2, '0')} / {total}
             </span>
             <Button
-              variant="cell"
-              size="cell"
+              variant="outline-slate"
+              size="icon"
               aria-label="Next redesign"
-              className="sm:hidden"
+              className="size-11 rounded-full sm:hidden [&_svg]:size-5"
               onClick={() => step(1)}
             >
               <ChevronRight className="size-4" aria-hidden="true" />
@@ -1340,7 +1508,16 @@ const Showcase = () => {
                 ) : (
                   <Play className="size-3.5" aria-hidden="true" />
                 )}
-                {auto ? 'Pause tour' : 'Play tour'}
+                {/* Both labels share one cell, so the button (and the centred
+                    dock) keeps its width when Pause turns into Play. */}
+                <span className="grid">
+                  <span className={cn('col-start-1 row-start-1', !auto && 'invisible')}>
+                    Pause tour
+                  </span>
+                  <span className={cn('col-start-1 row-start-1', auto && 'invisible')}>
+                    Play tour
+                  </span>
+                </span>
               </Button>
               <Button
                 variant="toggle-slate"

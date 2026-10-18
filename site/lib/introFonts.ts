@@ -1,14 +1,30 @@
 import {
   Abril_Fatface,
+  Anybody,
+  Archivo,
+  Cormorant,
+  Fraunces,
   Archivo_Black,
+  Caveat_Brush,
+  Bricolage_Grotesque,
   Fredoka,
+  Grandstander,
   Jost,
+  Limelight,
+  Doto,
+  IBM_Plex_Mono,
+  Inter_Tight,
+  Italiana,
+  Major_Mono_Display,
   Monoton,
   Orbitron,
   Press_Start_2P,
   Righteous,
   Rubik_Mono_One,
+  Silkscreen,
+  Space_Grotesk,
   Special_Elite,
+  Syne,
 } from 'next/font/google';
 import localFont from 'next/font/local';
 
@@ -90,6 +106,19 @@ const silkscreen = localFont({ src: '../app/fonts/wild/silkscreen.woff2', preloa
 const rye = localFont({ src: '../app/fonts/wild/rye.woff2', preload: true, display: 'block' });
 const fascinate = localFont({ src: '../app/fonts/wild/fascinate.woff2', preload: false });
 const wetPaint = localFont({ src: '../app/fonts/wild/wet-paint.woff2', preload: false });
+// The wider wardrobe: a stencil, two wide grotesks, a didone, a slab, a soft
+// rounded face, a soft serif, a brush and a military stencil. Only shown
+// mid-reveal (and only by the font-swapping reveal; the morph draws their
+// outlines), so never preloaded.
+const stencil = localFont({ src: '../app/fonts/wild/stencil.woff2', preload: false });
+const krona = localFont({ src: '../app/fonts/wild/krona.woff2', preload: false });
+const unbounded = localFont({ src: '../app/fonts/wild/unbounded.woff2', preload: false });
+const bodoni = localFont({ src: '../app/fonts/wild/bodoni.woff2', preload: false });
+const alfaSlab = localFont({ src: '../app/fonts/wild/alfa-slab.woff2', preload: false });
+const baloo = localFont({ src: '../app/fonts/wild/baloo.woff2', preload: false });
+const frauncesWild = localFont({ src: '../app/fonts/wild/fraunces.woff2', preload: false });
+const knewave = localFont({ src: '../app/fonts/wild/knewave.woff2', preload: false });
+const blackOps = localFont({ src: '../app/fonts/wild/black-ops.woff2', preload: false });
 // Hero display faces, one per variant concept.
 const fredoka = Fredoka({
   weight: '700',
@@ -104,8 +133,105 @@ const archivo = Archivo_Black({
   preload: false,
   variable: '--font-brutal',
 });
+// Concepts h, j, o: Dither Machine, Instrument OS, Swiss Punk.
+const silk = Silkscreen({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-silk',
+});
+const doto = Doto({ subsets: ['latin'], preload: false, variable: '--font-doto' });
+const archivoVar = Archivo({
+  subsets: ['latin'],
+  axes: ['wdth'],
+  preload: false,
+  variable: '--font-archivo',
+});
+const grotesk = Space_Grotesk({ subsets: ['latin'], preload: false, variable: '--font-grotesk' });
+const plex = IBM_Plex_Mono({
+  weight: ['400', '600'],
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-plex',
+});
+const hjo = [silk, doto, archivoVar, grotesk, plex];
 
-export const HERO_FONT_VARS = [abril, elite, orbitron, fredoka, jost, archivo, rubik]
+// Concepts q, r, s, t: Sticker Bomb, Kinetic Type (width and weight axes),
+// Lived-in Den (soft, wonky), Stone & Linen.
+const bricolage = Bricolage_Grotesque({
+  subsets: ['latin'],
+  axes: ['wdth', 'opsz'],
+  preload: false,
+  variable: '--font-bricolage',
+});
+const anybody = Anybody({
+  subsets: ['latin'],
+  axes: ['wdth'],
+  preload: false,
+  variable: '--font-anybody',
+});
+const fraunces = Fraunces({
+  subsets: ['latin'],
+  axes: ['SOFT', 'WONK', 'opsz'],
+  preload: false,
+  variable: '--font-fraunces',
+});
+const cormorant = Cormorant({ subsets: ['latin'], preload: false, variable: '--font-cormorant' });
+const qrst = [bricolage, anybody, fraunces, cormorant];
+
+// Concepts k, p, n: brushed hand, stitched outline, 1930s film titles.
+const brush = Caveat_Brush({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-brush',
+});
+const stitch = Grandstander({ subsets: ['latin'], preload: false, variable: '--font-stitch' });
+const reel = Limelight({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-reel',
+});
+// i Liquid Glass, l Inflated Chrome (+ its captions), m Uncanny Mirror.
+const interTight = Inter_Tight({
+  weight: '600',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-glass',
+});
+const syne = Syne({ weight: '800', subsets: ['latin'], preload: false, variable: '--font-chrome' });
+const majorMono = Major_Mono_Display({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-caption',
+});
+const italiana = Italiana({
+  weight: '400',
+  subsets: ['latin'],
+  preload: false,
+  variable: '--font-mirror',
+});
+
+export const HERO_FONT_VARS = [
+  abril,
+  elite,
+  orbitron,
+  fredoka,
+  jost,
+  archivo,
+  rubik,
+  brush,
+  stitch,
+  reel,
+  interTight,
+  syne,
+  majorMono,
+  italiana,
+  ...hjo,
+  ...qrst,
+]
   .map((f) => f.variable)
   .join(' ');
 
@@ -131,6 +257,15 @@ export const INTRO_FONTS = [
   rye,
   fascinate,
   wetPaint,
+  stencil,
+  krona,
+  unbounded,
+  bodoni,
+  alfaSlab,
+  baloo,
+  frauncesWild,
+  knewave,
+  blackOps,
 ].map((f) => f.className);
 
 // Final lockup per letter of "variantly": deliberately mismatched, wild faces

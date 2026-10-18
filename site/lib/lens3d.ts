@@ -335,7 +335,7 @@ export const attachLens = (host: LensHost): LensPass => {
       l.inner.material = look.body;
       l.innerExtra.visible = !!look.extra;
       if (look.extra) l.innerExtra.material = look.extra;
-      l.innerExtra.position.set(...look.offset);
+      l.innerExtra.position.set(...(look.offset ?? [0, 0, 0]));
       eachMat(l.inner.material, (m) => setStencil(m, THREE.EqualStencilFunc));
       if (look.extra) setStencil(look.extra, THREE.EqualStencilFunc);
     });

@@ -60,6 +60,10 @@ import { run } from "./proc.mjs";
  * @property {string} bin
  * @property {string} install     how to get it
  * @property {SkillHomes} skills
+ * @property {false} [mcp]        false: the CLI takes MCP servers only from the
+ *                                user's own config, so runs get no browser
+ * @property {false} [worktreeSkills]  false: headless runs don't read the project's
+ *                                skills (untrusted), so Impeccable must be user-wide
  * @property {(o: InvocationInput) => AgentRun} invocation
  */
 
@@ -73,6 +77,20 @@ const mcpJson = (mcp, extra = {}) =>
 
 /** @param {NodeJS.ProcessEnv} env @param {string} key @param {string} fallback */
 const dirFrom = (env, key, fallback) => (env[key] ? path.resolve(String(env[key])) : fallback);
+
+/** OpenCode's user config folder, the way Impeccable resolves it. @param {string} home @param {NodeJS.ProcessEnv} env */
+const opencodeConfigDir = (home, env) =>
+  env.OPENCODE_CONFIG_DIR
+    ? path.resolve(String(env.OPENCODE_CONFIG_DIR))
+    : path.join(env.XDG_CONFIG_HOME ? path.resolve(String(env.XDG_CONFIG_HOME)) : path.join(home, ".config"), "opencode");
+
+/** Hermes Agent's home: $HERMES_HOME, else ~/.hermes (%LOCALAPPDATA%\\hermes on Windows). @param {string} home @param {NodeJS.ProcessEnv} env */
+const hermesHome = (home, env) =>
+  env.HERMES_HOME
+    ? path.resolve(String(env.HERMES_HOME))
+    : process.platform === "win32" && env.LOCALAPPDATA
+      ? path.join(String(env.LOCALAPPDATA), "hermes")
+      : path.join(home, ".hermes");
 
 /** Shell commands Gemini CLI may run unasked in safe mode (its policy engine's TOML). */
 const GEMINI_POLICY = `[[rule]]
@@ -301,6 +319,206 @@ export const AGENTS = [
       };
     },
   },
+  {
+    // `opencode run --format json`, checked against opencode-ai 1.19.3 (and
+    // run end to end with a free OpenCode Zen model). Permissions and MCP
+    // servers come from config; OPENCODE_CONFIG_CONTENT carries both for this
+    // run only. Headless, an "ask" can't be answered, so safe mode answers
+    // every one up front: edits yes, the Impeccable and read-only git/ls
+    // commands yes, other shell commands and paths outside the worktree no
+    // (except the brief's folder and the skill folders).
+    id: "opencode",
+    name: "OpenCode",
+    bin: "opencode",
+    install: "npm install -g opencode-ai",
+    skills: {
+      global: (home, env) => [path.join(opencodeConfigDir(home, env), "skills"), path.join(home, ".agents", "skills"), path.join(home, ".claude", "skills")],
+      project: [".opencode/skills", ".agents/skills", ".claude/skills"],
+    },
+    invocation: ({ briefPath, model, permissions, mcp, home = os.homedir(), env = process.env }) => {
+      const outside = [path.dirname(briefPath), ...existingGlobalSkillDirs("opencode", home, env)].map((d) => `${d.replace(/\\/g, "/")}/**`);
+      const config = {
+        permission: {
+          question: "deny",
+          doom_loop: "deny",
+          ...(permissions === "full"
+            ? {}
+            : {
+                bash: { "*": "deny", "*impeccable*": "allow", "git status*": "allow", "git diff*": "allow", "ls*": "allow" },
+                external_directory: { "*": "deny", ...Object.fromEntries(outside.map((d) => [d, "allow"])) },
+              }),
+        },
+        ...(mcp && Object.keys(mcp).length
+          ? { mcp: Object.fromEntries(Object.entries(mcp).map(([k, v]) => [k, { type: "local", command: [v.command, ...v.args], enabled: true }])) }
+          : {}),
+      };
+      return {
+        file: "opencode",
+        args: ["run", "--format", "json", ...(permissions === "full" ? ["--auto"] : []), ...(model ? ["-m", model] : []), pointer(briefPath)],
+        env: { OPENCODE_CONFIG_CONTENT: JSON.stringify(config) },
+        output: "opencode-json",
+      };
+    },
+  },
+  {
+    // `grok -p`, checked against Grok Build 1.0.62 (flags, output and skill
+    // loading run here without an account). streaming-messages-json is
+    // Claude Code's stream-json shape. Headless, `dontAsk` silently denies
+    // whatever isn't allowed, so safe mode lists what is: reads, edits, search
+    // and the shell commands Impeccable needs. Project skills load only in a
+    // trusted folder, hence --trust (the flag Impeccable's install notes give).
+    // Grok takes MCP servers only from its config files, so no browser.
+    id: "grok",
+    name: "Grok Build",
+    bin: "grok",
+    install:
+      process.platform === "win32"
+        ? `powershell -NoProfile -Command "irm https://x.ai/cli/install.ps1 | iex"`
+        : "curl -fsSL https://x.ai/cli/install.sh | bash",
+    mcp: false,
+    skills: {
+      global: (home, env) => [
+        path.join(dirFrom(env, "GROK_HOME", path.join(home, ".grok")), "skills"),
+        path.join(home, ".agents", "skills"),
+        path.join(home, ".claude", "skills"),
+      ],
+      project: [".grok/skills", ".agents/skills", ".claude/skills"],
+    },
+    invocation: ({ briefPath, model, permissions }) => ({
+      file: "grok",
+      args: [
+        "-p",
+        pointer(briefPath),
+        "--output-format",
+        "streaming-messages-json",
+        "--no-auto-update",
+        "--trust",
+        ...(permissions === "full"
+          ? ["--always-approve"]
+          : [
+              "--permission-mode",
+              "dontAsk",
+              ...["Read", "Edit", "Grep", "Bash(*impeccable*)", "Bash(git status*)", "Bash(git diff*)", "Bash(ls*)"].flatMap((r) => ["--allow", r]),
+            ]),
+        ...(model ? ["-m", model] : []),
+      ],
+      output: "grok-stream",
+    }),
+  },
+  {
+    // `hermes chat --oneshot -q`, checked against the hermes-agent source
+    // (hermes_cli/_parser.py, stream_json.py). One-shot runs deny dangerous
+    // shell commands on their own (approvals.single_query_mode); safe mode
+    // also narrows the tools to files, terminal, skills and todo. Project
+    // skills load only in a repository the user trusted with `hermes skills
+    // trust`, so Impeccable has to be installed user-wide. MCP servers come
+    // only from config.yaml, so no browser.
+    id: "hermes",
+    name: "Hermes Agent",
+    bin: "hermes",
+    worktreeSkills: false,
+    install:
+      process.platform === "win32"
+        ? `powershell -NoProfile -Command "iex (irm https://hermes-agent.nousresearch.com/install.ps1)"`
+        : "curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash",
+    mcp: false,
+    skills: {
+      global: (home, env) => [...new Set([path.join(hermesHome(home, env), "skills"), path.join(home, ".hermes", "skills")])],
+      project: [".hermes/skills", ".agents/skills"],
+    },
+    invocation: ({ briefPath, model, permissions }) => ({
+      file: "hermes",
+      args: [
+        "chat",
+        "--oneshot",
+        "-q",
+        pointer(briefPath),
+        "--format",
+        "stream-json",
+        // Keeps these runs out of the person's own session lists.
+        "--source",
+        "tool",
+        ...(permissions === "full" ? ["--yolo"] : ["-t", "file,terminal,skills,todo"]),
+        ...(model ? ["-m", model] : []),
+      ],
+      output: "hermes-stream",
+    }),
+  },
+  {
+    // `pi -p --mode json`, checked against @earendil-works/pi-coding-agent
+    // 1.3.0 (flags, skill loading and the error path run here). Pi asks for no
+    // approvals at all, so safe mode can only take tools away: no shell
+    // (Impeccable's command-line checks don't run), and project files stay
+    // untrusted except the worktree's skill folders, passed with --skill.
+    // MCP servers come only from Pi's mcp.json files, so no browser.
+    id: "pi",
+    name: "Pi",
+    bin: "pi",
+    install: "npm install -g --ignore-scripts @earendil-works/pi-coding-agent",
+    mcp: false,
+    skills: {
+      global: (home, env) => [path.join(dirFrom(env, "PI_CODING_AGENT_DIR", path.join(home, ".pi", "agent")), "skills"), path.join(home, ".agents", "skills")],
+      project: [".pi/skills", ".agents/skills"],
+    },
+    invocation: ({ cwd, briefPath, model, permissions }) => ({
+      file: "pi",
+      args: [
+        "-p",
+        "--mode",
+        "json",
+        "--no-session",
+        ...(permissions === "full"
+          ? ["--approve"]
+          : [
+              "--no-approve",
+              "--tools",
+              "read,edit,write,grep,find,ls",
+              ...[".pi/skills", ".agents/skills"].map((d) => path.join(cwd, d)).filter((d) => existsSync(d)).flatMap((d) => ["--skill", d]),
+            ]),
+        ...(model ? ["--model", model] : []),
+        pointer(briefPath),
+      ],
+      output: "pi-json",
+    }),
+  },
+  {
+    // `agy -p`, checked against Antigravity CLI 1.4.1 (flags and the error
+    // result run here without an account). Its default permissions already
+    // fit safe mode: reads and writes in the workspace are allowed, and shell
+    // commands not allowed in the user's settings are soft-denied headless
+    // (so Impeccable's command-line checks only run if the person allowed
+    // them). Flags go before -p: the prompt is the last argument. MCP servers
+    // come only from its config, so no browser.
+    id: "antigravity",
+    name: "Antigravity CLI",
+    bin: "agy",
+    install:
+      process.platform === "win32"
+        ? `powershell -NoProfile -Command "irm https://antigravity.google/cli/install.ps1 | iex"`
+        : "curl -fsSL https://antigravity.google/cli/install.sh | bash",
+    mcp: false,
+    skills: {
+      // The CLI's own global folder. Impeccable's global install goes to
+      // ~/.gemini/config/skills (the Antigravity app's), which variantly
+      // copies into the worktree's .agents/skills for each run.
+      global: (home) => [path.join(home, ".gemini", "antigravity-cli", "skills")],
+      project: [".agents/skills", ".agent/skills"],
+    },
+    invocation: ({ briefPath, model, permissions }) => ({
+      file: "agy",
+      args: [
+        "--output-format",
+        "stream-json",
+        "--add-dir",
+        path.dirname(briefPath),
+        ...(permissions === "full" ? ["--dangerously-skip-permissions"] : []),
+        ...(model ? ["--model", model] : []),
+        "-p",
+        pointer(briefPath),
+      ],
+      output: "antigravity-stream",
+    }),
+  },
 ];
 
 /**
@@ -379,10 +597,10 @@ export function binCandidates(bin, env = process.env) {
   const win = process.platform === "win32";
   const exts = win ? (env.PATHEXT ?? ".EXE;.CMD;.BAT;.COM").toLowerCase().split(";").filter(Boolean) : [""];
   const npmBin = env.APPDATA && win ? [path.join(env.APPDATA, "npm")] : [];
-  // Cursor's installer puts cursor-agent in ~/.local/bin, which a fresh
-  // shell may not have on PATH yet.
+  // Installers that put the agent in their own folder, which a fresh shell
+  // may not have on PATH yet: Cursor (~/.local/bin), Grok Build (~/.grok/bin).
   const home = env.HOME ?? env.USERPROFILE;
-  const localBin = home ? [path.join(home, ".local", "bin")] : [];
+  const localBin = home ? [path.join(home, ".local", "bin"), path.join(home, ".grok", "bin")] : [];
   const dirs = [...(env.PATH ?? env.Path ?? "").split(path.delimiter).filter(Boolean), ...npmBin, ...localBin];
   /** @type {string[]} */
   const found = [];
@@ -469,7 +687,18 @@ export function codexProvider(codexHome) {
 }
 
 /** The command that signs a person in, run in its own window. */
-const LOGIN = /** @type {Record<string, string>} */ ({ copilot: "copilot login", codex: "codex login", claude: "claude", gemini: "gemini", cursor: "cursor-agent login" });
+const LOGIN = /** @type {Record<string, string>} */ ({
+  copilot: "copilot login",
+  codex: "codex login",
+  claude: "claude",
+  gemini: "gemini",
+  cursor: "cursor-agent login",
+  opencode: "opencode auth login",
+  grok: "grok login",
+  hermes: "hermes setup",
+  pi: "pi",
+  antigravity: "agy",
+});
 
 /**
  * Free sign-in check (no prompt, no credits). Copilot uses the GitHub CLI's
@@ -480,7 +709,12 @@ const LOGIN = /** @type {Record<string, string>} */ ({ copilot: "copilot login",
  * ANTHROPIC_API_KEY, or a gateway such as OpenRouter (ANTHROPIC_BASE_URL with
  * ANTHROPIC_AUTH_TOKEN); it asks on first run otherwise. Gemini CLI takes an
  * API key, Vertex AI, or its Google sign-in (~/.gemini/oauth_creds.json).
- * Cursor CLI takes CURSOR_API_KEY or its own auth.json. null = unknown.
+ * Cursor CLI takes CURSOR_API_KEY or its own auth.json. OpenCode keeps
+ * provider keys in its auth.json. Grok Build takes XAI_API_KEY or the login
+ * it caches in ~/.grok/auth.json. Hermes Agent keeps keys in its home's .env
+ * and auth.json. Pi saves /login in ~/.pi/agent/auth.json or reads provider
+ * keys from the environment. Antigravity takes ADC, a Gemini API key with
+ * modelProvider set, or a keyring sign-in (unknown). null = unknown.
  * @param {string} id
  * @returns {Promise<boolean | null>}
  */
@@ -517,6 +751,33 @@ const isSignedIn = async (id) => {
           : path.join(process.env.XDG_CONFIG_HOME || path.join(home, ".config"), "cursor", "auth.json");
     return fs.existsSync(file);
   }
+  if (id === "grok") {
+    if (process.env.XAI_API_KEY) return true;
+    return fs.existsSync(path.join(dirFrom(process.env, "GROK_HOME", path.join(home, ".grok")), "auth.json")) || null;
+  }
+  if (id === "hermes") {
+    const dir = hermesHome(home, process.env);
+    return fs.existsSync(path.join(dir, "auth.json")) || fs.existsSync(path.join(dir, ".env")) || null;
+  }
+  if (id === "pi") {
+    if (process.env.ANTHROPIC_API_KEY || process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY || process.env.OPENROUTER_API_KEY) return true;
+    return fs.existsSync(path.join(dirFrom(process.env, "PI_CODING_AGENT_DIR", path.join(home, ".pi", "agent")), "auth.json")) || null;
+  }
+  if (id === "antigravity") {
+    // A Google sign-in lives in the OS keyring, which can't be read from here.
+    if (process.env.AGY_ADC_AUTH === "true") return true;
+    try {
+      const settings = fs.readFileSync(path.join(home, ".gemini", "antigravity-cli", "settings.json"), "utf8");
+      if (/"modelProvider"\s*:\s*"gemini"/.test(settings)) return Boolean(process.env.GEMINI_API_KEY);
+    } catch {}
+    return null;
+  }
+  if (id === "opencode") {
+    // Its free OpenCode Zen models need no sign-in, so a missing auth.json
+    // doesn't mean it can't run.
+    const data = process.env.XDG_DATA_HOME || path.join(home, ".local", "share");
+    return fs.existsSync(path.join(data, "opencode", "auth.json")) || null;
+  }
   if (id === "claude") {
     if (process.env.ANTHROPIC_API_KEY) return true;
     if (process.env.ANTHROPIC_BASE_URL && process.env.ANTHROPIC_AUTH_TOKEN) return true;
@@ -526,6 +787,21 @@ const isSignedIn = async (id) => {
   return null;
 };
 
+/**
+ * User-wide copies of Impeccable on this machine, any agent's. variantly
+ * copies one into each worktree where that run's agent reads project skills.
+ * @param {string} [home] @param {NodeJS.ProcessEnv} [env]
+ */
+export function impeccableSources(home = os.homedir(), env = process.env) {
+  const dirs = [
+    ...[".claude/skills", ".agents/skills", ".github/skills", ".copilot/skills", ".codex/skills", ".gemini/skills", ".cursor/skills", ".gemini/config/skills"].map((d) =>
+      path.join(home, d),
+    ),
+    ...AGENTS.flatMap((a) => a.skills.global(home, env)),
+  ];
+  return [...new Set(dirs)].map((d) => path.join(d, "impeccable")).filter((d) => existsSync(path.join(d, "SKILL.md")));
+}
+
 /** @param {string} projectRoot */
 export async function detectAgents(projectRoot) {
   return Promise.all(
@@ -534,10 +810,9 @@ export async function detectAgents(projectRoot) {
       // variantly copies the skill into each worktree from any of these, so
       // a copy in any of them counts.
       const impeccable =
-        hasSkill(agent, "impeccable", { projectRoot }) ||
-        [".claude/skills", ".agents/skills", ".github/skills", ".copilot/skills", ".codex/skills", ".gemini/skills", ".cursor/skills"].some((d) =>
-          fs.existsSync(path.join(os.homedir(), d, "impeccable", "SKILL.md")),
-        );
+        agent.worktreeSkills === false
+          ? hasSkill(agent, "impeccable")
+          : hasSkill(agent, "impeccable", { projectRoot }) || impeccableSources().length > 0;
       const variantlySkill = hasSkill(agent, "variantly", { projectRoot });
       const signedIn = binPath ? await isSignedIn(agent.id) : false;
       return { id: agent.id, name: agent.name, installed: Boolean(binPath), path: binPath, note, version, impeccable, variantlySkill, signedIn, install: agent.install, login: LOGIN[agent.id] ?? null };
