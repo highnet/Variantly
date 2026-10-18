@@ -148,7 +148,8 @@ npx variantly install-skill --scope=project              # into this repo, for e
 
 1. **Setup.** Confirms the detected app and agent (installed, signed in,
    Impeccable present); switch either if needed.
-2. **Variants.** How many (**2, 4 or 6**), which pages, optional extras.
+2. **Variants.** How many (**1 to 10**: 2, 4 or 6 in one click, any other
+   count under More settings), which pages, optional extras.
 3. **Your site.** Who it's for, what it offers, what must stay, plus any
    notes. Skipped if you have a `PRODUCT.md`.
 4. **Review.** A summary with Edit links and the session cost; **Make variants**

@@ -16,7 +16,7 @@ import { Icon, Mark } from './Icon';
 import { ProgressCard } from './Progress';
 import { PageSkeleton } from './Skeleton';
 import { api } from '@/lib/api';
-import { fetchLog } from '@/lib/live';
+import { fetchLog, syncRun } from '@/lib/live';
 import { LIVE, STATUS, directionLabel, isPickable, madeBy, pad, plural, scoreText, vname, vsBase, axeVsBase } from '@/lib/format';
 import { getState, seen, serverOf, setState, toast, useStore, type UiState } from '@/lib/store';
 import type { Audit, ServerState, Variant } from '@/lib/types';
@@ -245,7 +245,9 @@ const Dock = () => {
   const keep = async (n: number) => {
     setState({ applying: n });
     try {
-      await api('POST', `finalize/${n}`, { sitewide });
+      // Kept or cleaned from the terminal meanwhile: say so and catch up, don't apply.
+      if (await syncRun()) return;
+      await api('POST', `finalize/${n}`, { sitewide: sitewide && !demoKeep });
       setState({ confirming: false });
     } catch (err) {
       toast((err as Error).message, true);
@@ -256,6 +258,8 @@ const Dock = () => {
   };
 
   const chosen = vs.find((x) => x.n === sel);
+  // The demo agent restyles the global stylesheet, so there is no rollout to run.
+  const demoKeep = (chosen?.agent ?? snap?.config?.agent) === 'demo';
   if (confirming && chosen) {
     return (
       <nav className="dock" aria-label="Variants">
@@ -272,15 +276,21 @@ const Dock = () => {
         >
           <span>
             Apply <strong>{vname(chosen.n)}</strong> ({directionLabel(chosen.direction, chosen.picked)}) to your working tree? <span className="muted">{plural(chosen.files.length, 'file')}. The others stay as branches.</span>
-            <label className="muted" style={{ display: 'block', marginTop: 6 }}>
-              <input type="checkbox" checked={sitewide} disabled={Boolean(applying)} onChange={(e) => setState({ sitewide: e.target.checked })} /> Restyle the rest of the site to match (one more agent run)
-            </label>
+            {demoKeep ? (
+              <span className="muted" style={{ display: 'block', marginTop: 6 }}>
+                The demo restyles the whole stylesheet, so the rest of the site already matches. No extra run.
+              </span>
+            ) : (
+              <label className="muted" style={{ display: 'block', marginTop: 6 }}>
+                <input type="checkbox" checked={sitewide} disabled={Boolean(applying)} onChange={(e) => setState({ sitewide: e.target.checked })} /> Restyle the rest of the site to match (one more agent run)
+              </label>
+            )}
           </span>
           <button className="btn outline small" type="button" disabled={Boolean(applying)} onClick={() => setState({ confirming: false })}>
             Cancel
           </button>
           <button ref={apply} className="btn primary" type="button" disabled={Boolean(applying)} onClick={() => keep(chosen.n)}>
-            {applying ? (sitewide ? 'Rolling out…' : 'Applying…') : `Apply ${vname(chosen.n)}`}
+            {applying ? (sitewide && !demoKeep ? 'Rolling out…' : 'Applying…') : `Apply ${vname(chosen.n)}`}
           </button>
         </div>
       </nav>
