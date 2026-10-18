@@ -1,0 +1,72 @@
+/* Oak & Iron: engineering blueprint. Cyanotype sheet, white linework, plotter type. */
+@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500&display=swap");
+:root{color-scheme:dark;--cyan:#0f3d75;--cyan-deep:#0a2c57;--line:#eaf2ff;--soft:#b9cfee;--grid:rgba(234,242,255,.08);--grid-major:rgba(234,242,255,.16);--field:#0b3262;--hi:#ffe8a3}
+*{box-sizing:border-box}
+::selection{background:var(--hi);color:var(--cyan-deep)}
+body{margin:0;color:var(--line);font:400 17px/1.6 "IBM Plex Sans",system-ui,sans-serif;background-color:var(--cyan-deep);
+  background-image:linear-gradient(var(--grid-major) 1px,transparent 1px),linear-gradient(90deg,var(--grid-major) 1px,transparent 1px),linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:120px 120px,120px 120px,24px 24px,24px 24px}
+.sheet{max-width:1120px;margin:24px auto;padding:0 32px 8px;background:var(--cyan);border:1px solid var(--line);border-radius:4px}
+a{color:var(--line)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px dashed var(--hi);outline-offset:4px}
+.navbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;padding:20px 0;border-bottom:1px solid var(--line)}
+.logo{font:600 26px/1 "Barlow Condensed",sans-serif;letter-spacing:.12em;text-transform:uppercase;text-decoration:none}
+.navbar ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 28px}
+.navbar ul a{text-decoration:none;color:var(--soft);font:500 13px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.08em}
+.navbar ul a:hover,.navbar ul a[aria-current]{color:var(--line);text-decoration:underline;text-decoration-style:dashed;text-underline-offset:6px}
+.cover{display:grid;grid-template-columns:1fr 1.1fr;gap:32px 48px;padding:72px 0 40px;align-items:center}
+h1{margin:0 0 20px;font:600 clamp(44px,6.4vw,84px)/.98 "Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+.intro{margin:0;color:var(--soft);max-width:44ch}
+.cover-links{margin:28px 0 0;display:flex;gap:28px;align-items:center;flex-wrap:wrap}
+.btn,button{display:inline-block;background:var(--line);color:var(--cyan-deep);border:1px solid var(--line);border-radius:0;padding:12px 22px;font:500 14px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.06em;text-decoration:none;cursor:pointer;transition:background .2s,color .2s}
+.btn:hover,button:hover{background:transparent;color:var(--line)}
+.link{font:500 14px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.06em;text-underline-offset:6px}
+.cover-draw{margin:0;color:var(--line)}
+.cover-draw svg{width:100%;height:auto;display:block}
+svg text{fill:currentColor;stroke:none;font:500 12px "IBM Plex Mono",monospace}
+svg .thin{stroke-width:.8;opacity:.75}
+figcaption,.art,.spec,.tag,.titleblock{font-family:"IBM Plex Mono",monospace}
+figcaption{font-size:12px;color:var(--soft);border-top:1px solid var(--soft);padding-top:8px;margin-top:8px;letter-spacing:.04em}
+.titleblock{grid-column:1/-1;width:100%;border-collapse:collapse;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.titleblock th,.titleblock td{border:1px solid var(--line);padding:8px 12px;text-align:left}
+.titleblock th{color:var(--soft);font-weight:400;width:1%;white-space:nowrap}
+section{padding:56px 0;border-top:1px solid var(--line)}
+.section-h{margin:0 0 32px;font:600 34px/1 "Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:16px}
+.section-h::after{content:"";flex:1;border-top:1px dashed var(--soft)}
+.feature-list{margin:0;display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.feature-list div{padding:4px 24px 8px;border-left:1px solid var(--soft)}
+.feature-list div:first-child{border-left:0;padding-left:0}
+dt{font:600 24px/1.1 "Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.tag{display:inline-grid;place-items:center;width:30px;height:30px;border:1px solid var(--line);border-radius:50%;font-size:11px;font-weight:500;letter-spacing:0}
+dd{margin:0;color:var(--soft)}
+.plates{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.plate{border:1px solid var(--line);display:flex;flex-direction:column}
+.plate-wide{grid-column:1/-1;display:grid;grid-template-columns:1.4fr 1fr}
+.plate-img{padding:28px;border-bottom:1px solid var(--line);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:12px 12px}
+.plate-wide .plate-img{border-bottom:0;border-right:1px solid var(--line)}
+.plate-img svg{width:100%;height:auto;max-height:220px;display:block}
+.plate-text{padding:20px 24px;display:flex;flex-direction:column;gap:6px;flex:1}
+.plate-text p{margin:0}
+.art{font-size:12px;color:var(--soft);letter-spacing:.08em;text-transform:uppercase}
+h3{margin:0;font:600 30px/1.05 "Barlow Condensed",sans-serif;text-transform:uppercase;letter-spacing:.03em}
+.spec{font-size:13px;color:var(--soft)}
+.buy{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:auto!important;padding-top:14px;border-top:1px dashed var(--soft)}
+.price{font:500 20px "IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+.newsletter p{color:var(--soft);margin:0 0 16px}
+label{display:block;font:500 12px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.row{display:flex;gap:12px;max-width:560px}
+input{flex:1;min-width:0;background:var(--field);color:var(--line);border:1px solid var(--line);padding:12px 14px;font:400 15px "IBM Plex Mono",monospace;border-radius:0;caret-color:var(--hi)}
+input::placeholder{color:#9db6da}
+footer{border-top:2px solid var(--line);padding:20px 0;font:400 13px "IBM Plex Mono",monospace;color:var(--soft)}
+footer p{margin:4px 0}
+.small{font-size:12px}
+@media (max-width:760px){
+  .sheet{margin:12px;padding:0 16px 8px;}
+  .cover{grid-template-columns:1fr;padding-top:40px}
+  .feature-list{grid-template-columns:1fr}
+  .feature-list div{border-left:0;border-top:1px solid var(--soft);padding:16px 0}
+  .plates,.plate-wide{grid-template-columns:1fr}
+  .plate-wide .plate-img{border-right:0;border-bottom:1px solid var(--line)}
+  .row{flex-direction:column}
+  .titleblock th,.titleblock td{padding:6px 8px}
+}

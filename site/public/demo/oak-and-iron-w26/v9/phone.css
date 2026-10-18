@@ -1,0 +1,36 @@
+/* Phone edition: sensory 3D materials. */
+@import url("https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Instrument+Sans:wght@400;500;600&display=swap");
+:root{color-scheme:light;--bg:#efeae4;--bg2:#dfe9ee;--ink:#25272b;--mute:#565a61;--ox:#842a30;--ox-hi:#c4545a;--ox-lo:#4f1519;--teal:#3e6f73;--card:rgba(255,255,255,.55);--edge:rgba(255,255,255,.9);--on-ox:#fff7f2;--field:rgba(255,255,255,.8)}
+html[data-theme="dark"]{color-scheme:dark;--bg:#17181b;--bg2:#1b2328;--ink:#eceae7;--mute:#b3b6bc;--ox:#d9767b;--ox-hi:#f0a2a3;--ox-lo:#6e2228;--teal:#8bbfc2;--card:rgba(255,255,255,.06);--edge:rgba(255,255,255,.14);--on-ox:#1a0d0e;--field:rgba(255,255,255,.08)}
+body{color:var(--ink);font:400 16px/1.55 "Instrument Sans",system-ui,sans-serif;background:radial-gradient(500px 500px at 100% 0,var(--bg2),transparent 70%),var(--bg)}
+a{color:var(--ox)}
+h1,h2,h3{font-family:Unbounded,sans-serif;font-weight:500;letter-spacing:-.02em}
+.b-head{gap:4px}
+.topbar{font-size:12px;color:var(--mute);font-weight:500}
+.logo{font:700 20px Unbounded,sans-serif;color:var(--ink)}
+.stage{position:relative;height:130px;flex:none}
+.blob{position:absolute;left:0;top:0;width:120px;height:120px;border-radius:58% 42% 50% 50%/48% 56% 44% 52%;background:radial-gradient(circle at 30% 26%,#fff 0 6%,transparent 14%),conic-gradient(from 200deg at 55% 55%,#59646f,#eef2f5,#8996a2,#fff,#46505a,#c7d3dc,#59646f);box-shadow:inset -10px -14px 20px rgba(20,25,30,.45),inset 8px 8px 16px rgba(255,255,255,.7),0 16px 24px -12px rgba(0,0,0,.4)}
+.cushion{position:absolute;left:96px;top:46px;width:120px;height:80px;border-radius:42%/50%;background:radial-gradient(90% 90% at 35% 25%,#ec9a8d,#a6363c 45%,#5a171b);box-shadow:inset 0 6px 10px rgba(255,255,255,.35),inset 0 -12px 20px rgba(0,0,0,.35),0 16px 24px -12px rgba(0,0,0,.4)}
+.bead{position:absolute;left:226px;top:12px;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fbd1b3,#b5582f 55%,#5e2711)}
+h1{font-size:34px;line-height:1.06}
+.intro{color:var(--mute)}
+.btn,button{border:0;border-radius:999px;padding:14px 24px;font:600 15px "Instrument Sans",sans-serif;color:var(--on-ox);text-decoration:none;background:radial-gradient(120% 140% at 30% 15%,var(--ox-hi),var(--ox) 50%,var(--ox-lo));box-shadow:inset 0 2px 2px rgba(255,255,255,.45),inset 0 -6px 12px rgba(0,0,0,.25),0 12px 20px -10px rgba(132,42,48,.6)}
+.link{font-weight:600}
+.b-sec{font-size:24px;line-height:1.1}
+.b-feat h3{font-size:18px}
+.b-feat p{color:var(--mute)}
+.b-feat,.b-item{isolation:isolate;padding:0 34px}
+.b-feat::before,.b-item::before{content:"";position:absolute;inset:6px 12px;z-index:-1;background:var(--card);border:1px solid var(--edge);border-radius:28px}
+.b-item::before{inset:8px 12px}
+.b-item .art{margin:20px -22px 12px;border-radius:24px;padding:28px 40px;box-shadow:inset 0 2px 4px rgba(255,255,255,.6),inset 0 -14px 30px rgba(0,0,0,.12)}
+.i1 .art{background:linear-gradient(160deg,#f6dcd6,#e7b9b2);color:#8f2a2f}.i2 .art{background:linear-gradient(160deg,#f6e2d2,#e6c2a6);color:#b5582f}.i3 .art{background:linear-gradient(160deg,#e9f2f6,#bcd2dc);color:#7d8c99}
+html[data-theme="dark"] .i1 .art{background:#3a2224}html[data-theme="dark"] .i2 .art{background:#3a2a20}html[data-theme="dark"] .i3 .art{background:#25333a}
+.art svg{overflow:visible;filter:drop-shadow(2px 8px 6px rgba(40,20,20,.3))}
+.no{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+.b-item h3{font-size:20px}
+.desc{color:var(--mute)}
+.price{font:500 18px Unbounded,sans-serif}
+.b-news label{font-weight:600;font-size:14px}
+.b-news input{background:var(--field);color:var(--ink);border:1px solid var(--edge);border-radius:999px;padding:0 20px;box-shadow:inset 0 4px 10px rgba(0,0,0,.12)}
+.b-foot{color:var(--mute);font-size:14px}
+.small{font-size:12px}
