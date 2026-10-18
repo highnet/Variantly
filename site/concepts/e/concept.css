@@ -29,7 +29,8 @@
 :root[data-variant='e'] .rounded-md,
 :root[data-variant='e'] .rounded-lg,
 :root[data-variant='e'] .rounded-pass { border-radius: 0; }
-:root[data-variant='e'] main > div h2 { text-transform: uppercase; letter-spacing: 0.03em; }
+/* Hanging indent: a wrapped head's second line starts under the text, not under the square. */
+:root[data-variant='e'] main > div h2 { text-transform: uppercase; letter-spacing: 0.03em; padding-left: 1.05em; text-indent: -1.05em; }
 :root[data-variant='e'] main > div h2::before {
   content: '';
   display: inline-block;

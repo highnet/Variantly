@@ -21,19 +21,26 @@ import {
 } from 'next/font/google';
 import localFont from 'next/font/local';
 
-// None of these is needed for first paint (the title stays hidden until its
-// reveal starts), so none is preloaded.
+// The title's first paint is its final lockup (the still poster the reveal
+// starts from), so those nine faces are preloaded and block rather than swap:
+// a fallback word that then jumps into nine faces would be a flash of its own.
+// The rest of the wardrobe only shows once the reveal runs: not preloaded.
 // The intro's wardrobe: runes-ish, blackletter, scripts, typewriter, retro block.
-const fraktur = UnifrakturMaguntia({ weight: '400', subsets: ['latin'], preload: false });
+const fraktur = UnifrakturMaguntia({
+  weight: '400',
+  subsets: ['latin'],
+  preload: true,
+  display: 'block',
+});
 const abril = Abril_Fatface({
   weight: '400',
   subsets: ['latin'],
   preload: false,
   variable: '--font-poster',
 });
-const cinzel = Cinzel({ weight: '900', subsets: ['latin'], preload: false });
-const vibes = Great_Vibes({ weight: '400', subsets: ['latin'], preload: false });
-const pacifico = Pacifico({ weight: '400', subsets: ['latin'], preload: false });
+const cinzel = Cinzel({ weight: '900', subsets: ['latin'], preload: true, display: 'block' });
+const vibes = Great_Vibes({ weight: '400', subsets: ['latin'], preload: true, display: 'block' });
+const pacifico = Pacifico({ weight: '400', subsets: ['latin'], preload: true, display: 'block' });
 const elite = Special_Elite({
   weight: '400',
   subsets: ['latin'],
@@ -47,7 +54,7 @@ const orbitron = Orbitron({
   variable: '--font-arcade',
 });
 const monoton = Monoton({ weight: '400', subsets: ['latin'], preload: false });
-const bungee = Bungee({ weight: '400', subsets: ['latin'], preload: false });
+const bungee = Bungee({ weight: '400', subsets: ['latin'], preload: true, display: 'block' });
 const rubik = Rubik_Mono_One({
   weight: '400',
   subsets: ['latin'],
@@ -59,12 +66,20 @@ const righteous = Righteous({ weight: '400', subsets: ['latin'], preload: false 
 // Wild display faces (SIL OFL 1.1), self-hosted and subset to the letters of
 // "variantly" by scripts/build-3d-fonts.mjs (1-4 KB each), from the same files
 // as their 3D outlines. Display-only: nothing else on the page uses them.
-const bagel = localFont({ src: '../app/fonts/wild/bagel.woff2', preload: false });
-const shrikhand = localFont({ src: '../app/fonts/wild/shrikhand.woff2', preload: false });
-const tiltWarp = localFont({ src: '../app/fonts/wild/tilt-warp.woff2', preload: false });
+const bagel = localFont({ src: '../app/fonts/wild/bagel.woff2', preload: true, display: 'block' });
+const shrikhand = localFont({
+  src: '../app/fonts/wild/shrikhand.woff2',
+  preload: true,
+  display: 'block',
+});
+const tiltWarp = localFont({
+  src: '../app/fonts/wild/tilt-warp.woff2',
+  preload: true,
+  display: 'block',
+});
 const climate = localFont({ src: '../app/fonts/wild/climate-crisis.woff2', preload: false });
 const silkscreen = localFont({ src: '../app/fonts/wild/silkscreen.woff2', preload: false });
-const rye = localFont({ src: '../app/fonts/wild/rye.woff2', preload: false });
+const rye = localFont({ src: '../app/fonts/wild/rye.woff2', preload: true, display: 'block' });
 const fascinate = localFont({ src: '../app/fonts/wild/fascinate.woff2', preload: false });
 const wetPaint = localFont({ src: '../app/fonts/wild/wet-paint.woff2', preload: false });
 // Hero display faces, one per variant concept.

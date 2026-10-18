@@ -41,7 +41,7 @@ Two v1 concepts were kept in reworked form: **h Pixel Metropolis → Dither Mach
 - **3D title (letterLook):** dithered voxel: unlit MeshBasic with a 2-tone ordered-dither shader on lit faces, nearest-filtered
 - **three.js scene:** low-poly landscape rendered through a dither ShaderMaterial (threshold per fragment); orthographic camera orbiting one full turn per 24s
 - **Motion:** stepped and quantised; frames hold, then snap
-- **Risk:** Reads as a retro-game filter or Mac Classic nostalgia; 1-bit text below 12px gets illegible; must stay distinct from c TVA Terminal (no green phosphor, no CRT).
+- **Risk:** Reads as a retro-game filter or Mac Classic nostalgia; 1-bit text below 12px gets illegible; must stay distinct from c Amber Terminal (no green phosphor, no CRT).
 - **Sources:** Lucas Pope, Return of the Obra Dinn (2018); Low-Tech Magazine solar website; Panic, Playdate console UI; Surma, 'Ditherpunk' (2021)
 - **Raise (challenger-silkscreen-loft):** Variation is real: every variant swatch is the same image re-dithered with a different threshold, never decorative noise.
 

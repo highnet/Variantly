@@ -63,9 +63,10 @@
 }
 :root[data-variant='f'] main > div .grid > .bg-surface:nth-child(odd) { transform: rotate(-0.5deg); }
 :root[data-variant='f'] main > div .grid > .bg-surface:nth-child(even) { transform: rotate(0.5deg); }
+/* Tape goes on cards, not on copy buttons or command blocks, where it covers the label. */
 :root[data-variant='f'] [data-hero-side]::before,
 :root[data-variant='f'] main > div > section > .bg-surface::before,
-:root[data-variant='f'] main > div .grid > .bg-surface::before {
+:root[data-variant='f'] main > div .grid > .bg-surface:not(button, [data-slot='command-copy'])::before {
   content: '';
   position: absolute;
   top: -9px;
