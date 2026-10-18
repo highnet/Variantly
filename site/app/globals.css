@@ -1090,11 +1090,9 @@ a:hover > .brand-mark .brand-grip {
 
 /* ---- Before/after divider with a slight lean ----------------------------- */
 /* --lean is how far the line sits right of the split at the top (and left at
-   the bottom). One polygon edge drives the after pane, the shadow and the
-   line, so they always coincide; the grip sits on the midpoint. */
-.vy-split-clip,
-.vy-split-shade,
-.vy-split-line {
+   the bottom). The stage carries it; the after pane's clip and the divider
+   both read it, so they always coincide; the grip sits on the midpoint. */
+.vy-split {
   --lean: 28px;
 }
 .vy-split-clip {
@@ -1105,29 +1103,31 @@ a:hover > .brand-mark .brand-grip {
     calc(var(--split) - var(--lean)) 100%
   );
 }
-.vy-split-shade {
-  /* A soft band of shade the line casts on the after side. */
-  background: rgb(0 0 0 / 0.1);
-  clip-path: polygon(
-    calc(var(--split) + var(--lean)) 0,
-    calc(var(--split) + var(--lean) + 18px) 0,
-    calc(var(--split) - var(--lean) + 18px) 100%,
-    calc(var(--split) - var(--lean)) 100%
-  );
+/*
+ * The divider: a light core in a dark outline, with a soft shadow either
+ * side, so it reads on a white page, a black one and a busy photo alike.
+ * It is a thin element moved and tilted by transform (the tilt, --lean-a,
+ * is set from the stage height so it meets the clip's edge exactly), so a
+ * drag never repaints the stage; the shadow sits on the line alone.
+ */
+.vy-divider {
+  width: 2px;
+  margin-left: -1px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.62),
+    0 0 6px 1px rgb(0 0 0 / 0.38),
+    0 0 14px 2px rgb(0 0 0 / 0.16);
 }
-.vy-split-line {
-  background: var(--ink);
-  clip-path: polygon(
-    calc(var(--split) + var(--lean) - 1px) 0,
-    calc(var(--split) + var(--lean) + 1px) 0,
-    calc(var(--split) - var(--lean) + 1px) 100%,
-    calc(var(--split) - var(--lean) - 1px) 100%
-  );
+@media (pointer: coarse) {
+  /* Thicker under a thumb. */
+  .vy-divider {
+    width: 3px;
+    margin-left: -1.5px;
+  }
 }
 @media (max-width: 639px) {
-  .vy-split-clip,
-  .vy-split-shade,
-  .vy-split-line {
+  .vy-split {
     --lean: 14px;
   }
 }
