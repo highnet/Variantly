@@ -187,6 +187,13 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   let dragging = false;
   const cleanups: (() => void)[] = [];
 
+  // Re-line the word up when either word's box changes (fonts and the lens
+  // concept's sheet land after the first placement).
+  let watched: Element | null = null;
+  const words = new ResizeObserver(() => shown && placeRoot());
+  cleanups.push(() => words.disconnect());
+  void document.fonts?.ready.then(() => shown && placeRoot());
+
   const placeRoot = () => {
     const r = els.root();
     if (!r) return;
@@ -206,7 +213,30 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     sec.style.width = `${card.offsetWidth}px`;
     sec.style.height = `${card.offsetHeight}px`;
     const hc = sec.querySelector('[data-hero-title]') as HTMLElement | null;
-    if (hc) hc.style.height = `${card.offsetHeight}px`;
+    if (hc) {
+      hc.style.height = `${card.offsetHeight}px`;
+      // A concept's own min-height would outgrow the page's card.
+      hc.style.minHeight = '0';
+    }
+    // Line the lens word up with the page's: concepts pad and centre the word
+    // differently, so left to its own CSS it sits off the page word's line.
+    const lw = sec.querySelector('.vy-title') as HTMLElement | null;
+    const pw = card.querySelector('.vy-title');
+    if (!lw || !pw) return;
+    if (watched !== lw) {
+      words.disconnect();
+      words.observe(pw);
+      words.observe(lw);
+      watched = lw;
+    }
+    lw.style.removeProperty('translate');
+    const a = pw.getBoundingClientRect();
+    const l = lw.getBoundingClientRect();
+    const dx = a.left + a.width / 2 - (l.left + l.width / 2);
+    const dy = a.top + a.height / 2 - (l.top + l.height / 2);
+    // Important: the low tier's `translate: none !important` (meant for the
+    // backdrop's drift) reaches the lens word through the rescoped sheet.
+    lw.style.setProperty('translate', `${dx.toFixed(1)}px ${dy.toFixed(1)}px`, 'important');
   };
 
   // A door for this screen, never taller than the card it shows (phones
