@@ -8,12 +8,12 @@ import type { VariantKey } from '@/components/backdrop/variants';
 import { glTier, markFallback } from '@/lib/glTier';
 import {
   blendMorph,
-  faceSequence,
   loadMorph,
   morphPose,
   morphTrack,
   planMorph,
   planStep,
+  runSequence,
   type MorphData,
   type MorphPose,
   type MorphTrack,
@@ -30,7 +30,14 @@ import {
 import { morphMesh } from '@/lib/morphMesh';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
-import { lookAt, morphAt, REVEAL_MS, stepAt, stepCount, type MorphPhase } from '@/lib/titleTiming';
+import {
+  lookAt,
+  morphAt,
+  spring,
+  stepAt,
+  type MorphPhase,
+  type Timeline,
+} from '@/lib/titleTiming';
 
 const WORD = 'variantly';
 // The 3D wardrobe is the 2D title's: the same faces in the same order. Each
@@ -51,6 +58,9 @@ const DEPTH = 0.3;
 const BEVEL = 0.05;
 // The shadow-catching backdrop sits this far behind the letters' front faces.
 const BACKDROP_Z = -0.6;
+// The handover between the 2D and 3D words.
+const HANDOVER_MS = 760;
+const smooth01 = (u: number) => u * u * (3 - 2 * u);
 
 type Letter = {
   ch: string;
@@ -88,6 +98,8 @@ type Letters3DProps = {
   run: number;
   // The low power tier, read once when that reveal started.
   low: boolean;
+  // That run's timeline (the reveal, or a concept change's quick morph).
+  tl: Timeline;
   // performance.now() when the current reveal started, shared with the 2D title.
   clock: RefObject<number>;
   // The 2D word: the 3D word is laid out over it, letter for letter.
@@ -111,15 +123,17 @@ const matrixOf = (el: Element) => {
  * concept's shadow on a backdrop just behind them. The loop renders only while
  * letters move and the card is visible; a settled word draws no frames.
  */
-export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3DProps) => {
+export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Letters3DProps) => {
   const host = useRef<HTMLDivElement>(null);
   const replay = useRef(() => {});
 
   const lowRef = useRef(low);
+  const tlRef = useRef(tl);
   useEffect(() => {
     lowRef.current = low;
+    tlRef.current = tl;
     replay.current();
-  }, [run, low]);
+  }, [run, low, tl]);
 
   useEffect(() => {
     const el = host.current;
@@ -199,6 +213,14 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     el.appendChild(renderer.domElement);
+    // A lost context cannot draw its way back to flat: the 2D word takes over
+    // at once.
+    const lost = (e: Event) => {
+      e.preventDefault();
+      onFail();
+    };
+    renderer.domElement.addEventListener('webglcontextlost', lost);
+    cleanups.push(() => renderer.domElement.removeEventListener('webglcontextlost', lost));
     const scene = new THREE.Scene();
     // The studio environment only lights three's PBR looks (candy); it is
     // built the first time a pool needs it.
@@ -544,14 +566,40 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
         }
         wear(l, i, lookAt(null, i, n));
       };
+      // The handover between the 2D and 3D words (0 = flat and matte over the
+      // 2D word, 1 = fully extruded, lit and shadowed): its extrusion depth
+      // on a spring, the flat copy fading, the cast shadow fading in. Seeked
+      // frames take it from ?th (default 1), so it can be checked frame by frame.
+      let handT0 = 0;
+      let handDir: 1 | -1 = 1;
+      let handDone: (() => void) | null = null;
+      const seekHand = Number(new URLSearchParams(location.search).get('th') ?? 1);
+      let depth = 1;
+      let flatness = 0;
+      let handing = false;
+      const hand = (stamp: number) => {
+        let u = seek !== null ? seekHand : still ? 1 : (stamp - handT0) / HANDOVER_MS;
+        u = Math.min(1, Math.max(0, u));
+        handing = seek === null && u < 1;
+        const v = handDir > 0 ? u : 1 - u;
+        depth = handDir > 0 ? spring(u) : 1 - smooth01(u);
+        flatness = 1 - smooth01(Math.min(1, v / 0.55));
+        backdropMat.opacity = shade.opacity * smooth01(Math.max(0, (v - 0.25) / 0.75));
+        if (!handing && handDone) {
+          const done = handDone;
+          handDone = null;
+          done();
+        }
+      };
       const pose = (t: number) => {
         stepped = false;
         letters.forEach((l, i) => {
           const ms = t * 1000;
           // Before its start delay a letter rests on its final face, like the
           // still 2D word it takes over from.
-          const waiting = stepAt(ms, i) === -1;
-          const live = !waiting && morphAt(ms, i, phase);
+          const tl = tlRef.current;
+          const waiting = stepAt(ms, i, tl) === -1;
+          const live = !waiting && morphAt(ms, i, phase, tl);
           const s = slots[i];
           let k = 1;
           let y = s.base;
@@ -560,7 +608,7 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
           else {
             // Shifting: the outline flows from this step's face to the next,
             // posed exactly as the 2D letter (lib/glyphMorph).
-            const seq = faceSequence(data, l.ch, i, FINAL[i], stepCount(i), lowRef.current);
+            const seq = runSequence(data, l.ch, i, FINAL[i], tl, lowRef.current);
             planStep(data, l.track, phase, seq, lowRef.current);
             // Phones redraw the shadow map only now and then: at each step,
             // and midway through its morph.
@@ -576,10 +624,14 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
             k = mpose.k;
             y = mpose.y;
           }
-          l.mesh.scale.setScalar(k);
+          // Flat (depth ~0) at the handover from the 2D word, extruding as
+          // it lands; a zero scale would leave no normals to light.
+          l.mesh.scale.set(k, k, k * Math.max(1e-3, depth));
           l.mesh.position.y = -y / unit;
+          l.flat.material.opacity = flatness;
+          l.flat.visible = flatness > 0.002;
         });
-        return letters.every((l) => l.locked) && t * 1000 > REVEAL_MS;
+        return letters.every((l) => l.locked) && t * 1000 > tlRef.current.end;
       };
       const now = () => seek ?? (still ? 30 : (performance.now() - clock.current) / 1000);
 
@@ -594,7 +646,8 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
         }
         last = stamp;
         const t = now();
-        const settled = pose(t);
+        hand(performance.now());
+        const settled = pose(t) && !handing;
         const going = seek === null && !still && !settled && visible();
         if (going && lite) {
           ratio(Math.min(fullRatio, 2));
@@ -609,8 +662,23 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
         if (going) raf = requestAnimationFrame(frame);
       };
       wake = () => {
-        if (!raf && seek === null && !still) raf = requestAnimationFrame(frame);
+        if (!raf && seek === null && (!still || handing)) raf = requestAnimationFrame(frame);
       };
+      // Back to the 2D word (the low power tier turned on mid-visit): the
+      // letters flatten onto their 2D twins, then the 2D word takes over.
+      const retire = () => {
+        if (handDone || disposed) return;
+        handDir = -1;
+        handT0 = performance.now();
+        handDone = onFail;
+        if (still || seek !== null) onFail();
+        else wake();
+      };
+      const perf = new MutationObserver(() => {
+        if (html.dataset.perf === 'low') retire();
+      });
+      perf.observe(html, { attributes: true, attributeFilter: ['data-perf'] });
+      cleanups.push(() => perf.disconnect());
       replay.current = () => wake();
 
       const takeOver = () => {
@@ -620,6 +688,10 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
         if (seek === null && !still) {
           clock.current = performance.now();
         }
+        // Flat and matte over the 2D word, pixel for pixel: shown at once
+        // (no crossfade), and the 2D glyphs hide in the same frame.
+        handT0 = performance.now();
+        handDir = 1;
         frame();
         el.style.opacity = '1';
         onReady();
@@ -645,7 +717,7 @@ export const Letters3D = ({ run, low, clock, title, onReady, onFail }: Letters3D
     <div
       ref={host}
       aria-hidden="true"
-      className="vy-letters3d absolute inset-0 z-2 opacity-0 [transition:opacity_0.6s_ease-out,transform_0.7s_ease-out]"
+      className="vy-letters3d absolute inset-0 z-2 opacity-0 [transition:transform_0.7s_ease-out]"
     />
   );
 };

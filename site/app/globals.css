@@ -1073,6 +1073,19 @@ a:hover > .brand-mark .brand-grip {
 ::view-transition-new(root) {
   animation: vy-swap-wipe 760ms var(--ease-wipe) both;
 }
+/* The title is left out of the wipe: it is its own layer, shown live and
+   in place throughout, so its letters' morph into the new concept carries the
+   change (VariantTitle's swap timeline). */
+[data-hero-title] {
+  view-transition-name: vy-title;
+}
+::view-transition-group(vy-title),
+::view-transition-new(vy-title) {
+  animation: none;
+}
+::view-transition-old(vy-title) {
+  display: none;
+}
 /* The trailing shadow of the edge, drawn on the old page as it is covered. */
 ::view-transition-image-pair(root) {
   isolation: auto;
@@ -1513,13 +1526,13 @@ header.vy-header-glass {
 .vy-letters3d {
   pointer-events: none;
 }
-/* The 3D word has taken over. It sits exactly over the 2D word with the same
-   faces, sizes and colours, so the two crossfade: the 2D glyphs (and their
-   text-shadows, which the 3D word renders as extrusion or offset shadow)
-   fade out while the concept's decorations (Cut & Paste's paper tiles, the
-   Brutal highlighter) stay under the 3D letters. The HTML word stays for screen
-   readers; its parallax and title animations stop so it holds still under the
-   canvas. */
+/* The 3D word has taken over. It starts flat and matte exactly over the 2D
+   word (same outlines, sizes and colours), so the 2D glyphs hide in that same
+   frame (no crossfade dip) while their text-shadows fade as the 3D letters
+   extrude into their own sides and shadow. The concept's decorations (Cut &
+   Paste's paper tiles, the Brutal highlighter) stay under the 3D letters. The
+   HTML word stays for screen readers; its parallax and title animations stop
+   so it holds still under the canvas. */
 .vy-title-solid {
   animation: none !important;
   translate: none !important;
@@ -1527,9 +1540,7 @@ header.vy-header-glass {
 .vy-title-solid .vy-letter > * {
   color: transparent !important;
   text-shadow: none !important;
-  transition:
-    color 0.6s ease-in,
-    text-shadow 0.6s ease-in;
+  transition: text-shadow 0.5s ease-out;
 }
 
 .vy-swatch-g {

@@ -5,11 +5,11 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { canWebGL } from '@/lib/glTier';
 import {
   blendMorph,
-  faceSequence,
   loadMorph,
   morphPose,
   morphTrack,
   planStep,
+  runSequence,
   type MorphData,
   type MorphPose,
 } from '@/lib/glyphMorph';
@@ -21,10 +21,12 @@ import {
   faceAt,
   morphAt,
   msToNextStep,
+  REVEAL,
   startDelay,
   stepAt,
-  stepCount,
+  SWAP,
   type MorphPhase,
+  type Timeline,
 } from '@/lib/titleTiming';
 import { useVariant } from '@/lib/variant';
 import { cn } from '@/lib/utils';
@@ -92,11 +94,13 @@ type LetterProps = {
   // the low power tier, both fixed for the run.
   morph: MorphData | null;
   low: boolean;
+  // The run's timeline: the reveal, or the quick morph of a concept change.
+  tl: Timeline;
   variant: string | null;
 };
 
 /* One letter that shape-shifts through the font wardrobe, then locks in. */
-const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProps) => {
+const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: LetterProps) => {
   // 'idle' = resting on the final face, a number = flickering, null = just locked.
   const [live, setLive] = useState<number | null | 'idle'>('idle');
   // performance.now() when this letter's reveal started.
@@ -114,19 +118,19 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
     t0.current = start;
     let timer = 0;
     const tick = () => {
-      const step = stepAt(performance.now() - start, index);
+      const step = stepAt(performance.now() - start, index, tl);
       setLive(step === null ? null : Math.max(step, 0));
       // Wake exactly when the face next changes, not on a fixed poll.
       if (step !== null)
-        timer = window.setTimeout(tick, msToNextStep(performance.now() - start, index) + 4);
+        timer = window.setTimeout(tick, msToNextStep(performance.now() - start, index, tl) + 4);
     };
-    timer = window.setTimeout(tick, startDelay(index));
+    timer = window.setTimeout(tick, startDelay(index, tl));
     return () => clearTimeout(timer);
-  }, [index, run, solid, go]);
+  }, [index, run, solid, go, tl]);
 
   // seekreel frames derive the step from ?t instead of the clock.
   const seek = useSeekTime();
-  const raw = seek === null ? live : stepAt(seek * 1000, index);
+  const raw = seek === null ? live : stepAt(seek * 1000, index, tl);
   // Before its start delay (-1) a letter rests on its final face.
   const step = solid || raw === null || raw === 'idle' || raw < 0 ? null : raw;
 
@@ -168,7 +172,7 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
     if (!morph || !shifting || !el || !box || !ctx) return;
     const track = morphTrack(morph, char);
     const phase: MorphPhase = { step: 0, e: 0, c: 0 };
-    const seq = faceSequence(morph, char, index, FINAL[index], stepCount(index), low);
+    const seq = runSequence(morph, char, index, FINAL[index], tl, low);
     const pose: MorphPose = { k: 1, y: 0 };
     const shadows = shadowLayers(box);
     const dpr = Math.min(devicePixelRatio || 1, 3);
@@ -204,7 +208,7 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
       const seekAt = seekTime();
       const ms = seekAt === null ? now - t0.current : seekAt * 1000;
       // Past the lock (React swaps in the final letter next): hold the end.
-      if (!morphAt(ms, index, phase)) {
+      if (!morphAt(ms, index, phase, tl)) {
         phase.step = Math.max(lastStep, 0);
         phase.e = 1;
         phase.c = 1;
@@ -263,7 +267,7 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
       removeEventListener('resize', resize);
     };
     // A new run or concept restyles the letter: measure and draw afresh.
-  }, [morph, shifting, char, index, low, run, variant]);
+  }, [morph, shifting, char, index, low, tl, run, variant]);
 
   return (
     <span ref={slot} className="vy-letter relative inline-block leading-none">
@@ -290,8 +294,8 @@ const Letter = ({ char, index, run, solid, go, morph, low, variant }: LetterProp
 
 /*
  * Mixed-type title card: "variantly" spelled in nine mismatched typefaces,
- * each letter flickering through variants before it settles. It plays on
- * load and again whenever the concept switches (clicking does not replay).
+ * each letter morphing through other faces before it settles. It plays on
+ * load; a concept change morphs each letter out and back in the new colours.
  */
 export const VariantTitle = () => {
   const [run, setRun] = useState(0);
@@ -314,7 +318,12 @@ export const VariantTitle = () => {
   // MORPH_WAIT ms), or plays the font-swapping reveal throughout: it never
   // changes mode mid-run. The low power tier is read once, here. Reduced
   // motion shows the final lockup and never fetches the outlines.
-  const [stage, setStage] = useState<{ run: number; morph: MorphData | null; low: boolean }>();
+  const [stage, setStage] = useState<{
+    run: number;
+    morph: MorphData | null;
+    low: boolean;
+    tl: Timeline;
+  }>();
   useEffect(() => {
     if (calmMotion()) return;
     let live = true;
@@ -325,7 +334,11 @@ export const VariantTitle = () => {
       if (!live) return;
       clock.current = performance.now();
       const low = !seek && document.documentElement.dataset.perf === 'low';
-      setStage({ run, morph, low });
+      // The first run is the reveal; each later one, a concept change.
+      // (Seeked frames can show a concept change with ?titlerun=swap.)
+      const swap =
+        run > 0 || (seek && new URLSearchParams(location.search).get('titlerun') === 'swap');
+      setStage({ run, morph, low, tl: swap ? SWAP : REVEAL });
     });
     return () => {
       live = false;
@@ -351,7 +364,8 @@ export const VariantTitle = () => {
     return () => clearTimeout(id);
   }, [variant]);
   useEffect(
-    // A new concept gets its own title reveal.
+    // A new concept: each letter morphs out and back onto its final face in
+    // the new concept's colours (the swap timeline).
     () =>
       useSiteStore.subscribe((s, prev) => {
         if (prev.hydrated && s.variant !== prev.variant) setRun((r) => r + 1);
@@ -384,6 +398,7 @@ export const VariantTitle = () => {
             go={go}
             morph={go ? stage.morph : null}
             low={go && stage.low}
+            tl={go ? stage.tl : REVEAL}
             variant={variant}
           />
         ))}
@@ -392,6 +407,7 @@ export const VariantTitle = () => {
         <Letters3D
           run={stage?.run ?? -1}
           low={!!stage?.low}
+          tl={stage?.tl ?? REVEAL}
           clock={clock}
           title={word}
           onReady={onReady}

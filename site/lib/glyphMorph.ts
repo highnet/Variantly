@@ -10,7 +10,7 @@
 // holes, by size), lines each pair up by shape and splits it into a frame
 // (centre, size) and a normalised shape, so every frame is a plain lerp into
 // preallocated arrays that never folds a contour through itself.
-import { SPRING_PEAK, type MorphPhase } from '@/lib/titleTiming';
+import { SPRING_PEAK, stepCount, type MorphPhase, type Timeline } from '@/lib/titleTiming';
 
 // How far past the next face a morph may swing (the spring's overshoot).
 export const OVERSHOOT_MAX = SPRING_PEAK;
@@ -606,3 +606,17 @@ export const morphPose = (
   out.y = ya + (yb - ya) * e;
   return out;
 };
+
+// A letter's faces for a run of the title: the reveal's tour, or the quick
+// out-and-back of a concept change.
+export const runSequence = (
+  data: MorphData,
+  ch: string,
+  index: number,
+  finalFace: number,
+  tl: Timeline,
+  low = false,
+) =>
+  tl.kind === 'swap'
+    ? swapSequence(data, ch, index, finalFace, finalFace, stepCount(index, tl))
+    : faceSequence(data, ch, index, finalFace, stepCount(index, tl), low);
