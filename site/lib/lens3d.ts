@@ -458,6 +458,7 @@ export const attachLens = (host: LensHost): LensPass => {
     return (ox * oy) / Math.max(1, box[2] * box[3]);
   };
 
+  let wasActive = false;
   const active = () =>
     !disposed &&
     lensLive.shown &&
@@ -485,6 +486,7 @@ export const attachLens = (host: LensHost): LensPass => {
   const render = () => {
     if (lensLive.id && lensLive.id !== id && data) build(lensLive.id);
     if (!active()) {
+      wasActive = false;
       lensLive.gl = false;
       lensLive.scene = false;
       group.visible = false;
@@ -500,6 +502,9 @@ export const attachLens = (host: LensHost): LensPass => {
     updateMask(W, H);
     const glitch = lensLive.glitch;
     // Per letter: how far into the door, and the shared outline at that blend.
+    // The shadow map is redrawn only when a letter's outline changed (the
+    // page's letters and their shadows hold still under a moving door).
+    let moved = !wasActive;
     letters.forEach((l, i) => {
       const hl = host.letters[i];
       const ps = pageSlots[i];
@@ -508,6 +513,7 @@ export const attachLens = (host: LensHost): LensPass => {
       const e = Math.round(raw * 48) / 48;
       if (l.e >= 0 && l.e < 0.5 !== e < 0.5 && glitchOn()) kickGlitch('rim');
       if (e !== l.e) {
+        moved = true;
         blendMorph(l.track, e);
         l.morph.update();
         l.e = e;
@@ -598,7 +604,8 @@ export const attachLens = (host: LensHost): LensPass => {
       if (tintRGBA[3] > 0) renderer.render(tintScene, camera);
       renderer.clearDepth();
     }
-    renderer.shadowMap.needsUpdate = shadowDue;
+    renderer.shadowMap.needsUpdate = shadowDue && moved;
+    wasActive = true;
     renderer.render(host.scene, camera);
     renderer.shadowMap.needsUpdate = false;
     // The colour split: two flat copies of the lens letters, offset sideways,

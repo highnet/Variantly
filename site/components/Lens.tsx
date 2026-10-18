@@ -20,7 +20,15 @@ import {
   type ConceptId,
 } from '@/concepts';
 import { INTRO_FINAL } from '@/lib/introFonts';
-import { kickGlitch, lensEnabled, lensLive, lensTick, pendingKick, takeKick } from '@/lib/lens';
+import {
+  kickGlitch,
+  lensEnabled,
+  lensLive,
+  lensPerf,
+  lensTick,
+  pendingKick,
+  takeKick,
+} from '@/lib/lens';
 import {
   DOOR_RADIUS,
   PEEK,
@@ -209,6 +217,14 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     if (hc) hc.style.height = `${card.offsetHeight}px`;
   };
 
+  // A door for this screen, never taller than the card it shows (phones
+  // have a short title card): 1:2, a little inset.
+  const fitDoor = () => {
+    const d = doorSize(innerWidth);
+    const h = Math.min(d.h, Math.max(PEEK.h, card.offsetHeight - 20));
+    return { w: Math.round(h / 2), h };
+  };
+
   const restRect = (): Rect => ({
     x: card.offsetWidth - PEEK.w - 14,
     y: card.offsetHeight - PEEK.h - 14,
@@ -226,6 +242,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   };
 
   const draw = (now: number) => {
+    const t0 = lensPerf ? performance.now() : 0;
     const dt = Math.min(64, last ? now - last : 16);
     last = now;
     const k = mode === 'fixed' || fixedOpen ? 1 : 1 - Math.exp(-dt / LAG);
@@ -305,6 +322,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     // while it draws the letters, over it otherwise.
     syncLayers();
     lensTick();
+    lensPerf?.push(performance.now() - t0);
     const settled =
       Math.abs(target.x - rect.x) < 0.2 &&
       Math.abs(target.y - rect.y) < 0.2 &&
@@ -405,7 +423,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   if (mode === 'pointer') {
     const at = (e: PointerEvent): Rect => {
       const b = card.getBoundingClientRect();
-      const { w, h } = doorSize(innerWidth);
+      const { w, h } = fitDoor();
       return { x: e.clientX - b.left - w / 2, y: e.clientY - b.top - h / 2, w, h };
     };
     const onMove = (e: PointerEvent) => {
@@ -490,7 +508,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
       ui.setDragging(true);
     }
     const b = card.getBoundingClientRect();
-    const { w, h } = doorSize(innerWidth);
+    const { w, h } = fitDoor();
     // Above the finger, so the finger does not hide what it shows.
     target = { x: e.clientX - b.left - w / 2, y: e.clientY - b.top - h * 0.75, w, h };
     wake();
@@ -509,7 +527,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   const openFixed = () => {
     const lid = ui.id();
     if (!lid) return;
-    const { w, h } = doorSize(innerWidth);
+    const { w, h } = fitDoor();
     target = {
       x: (card.offsetWidth - w) / 2,
       y: Math.max(8, (card.offsetHeight - h) / 2 - 24),
@@ -610,7 +628,13 @@ export const Lens = () => {
   const [picked, setPicked] = useState<ConceptId | null>(null);
   const id = page && mode ? (picked && picked !== page ? picked : nextLens(page, 1, page)) : null;
   const [fixedOpen, setFixedOpen] = useState(false);
-  const [dragging, setDragging] = useState(false);
+  const [dragging, setDraggingState] = useState(false);
+  // The phone door has been dragged or tapped at least once.
+  const [used, setUsed] = useState(false);
+  const setDragging = useCallback((on: boolean) => {
+    setDraggingState(on);
+    setUsed(true);
+  }, []);
   const [say, setSay] = useState('');
   const [shadow, setShadow] = useState<ShadowRoot | null>(null);
   const [card, setCard] = useState<HTMLElement | null>(null);
@@ -695,7 +719,7 @@ export const Lens = () => {
       c.dispose();
       ctl.current = null;
     };
-  }, [mode, card, shadow]);
+  }, [mode, card, shadow, setDragging]);
 
   useEffect(() => {
     if (fixedOpen) document.getElementById('vy-lens-try')?.focus();
@@ -762,19 +786,30 @@ export const Lens = () => {
       )}
       {!fixedOpen && (
         <div data-lens-ui className="absolute bottom-3 left-3 z-4 flex items-center gap-2">
+          {/* The still door: always on in calm mode, the keyboard's way in
+              elsewhere (shown on focus). */}
           <Button
             variant="lens"
             size="pill"
             onClick={() => ctl.current?.openFixed()}
-            className={cn(mode === 'pointer' && 'sr-only focus:not-sr-only')}
+            className={cn(mode !== 'fixed' && 'sr-only focus:not-sr-only')}
           >
             Peek another look
           </Button>
-          {mode === 'touch' && id && (
-            <Button variant="lens" size="pill" onClick={() => ctl.current?.commit()}>
-              Try {name}
-            </Button>
-          )}
+        </div>
+      )}
+      {mode === 'touch' && !fixedOpen && !dragging && id && (
+        // Phones: keep the peeked concept, from a chip beside the resting
+        // door, shown once the door has been used (focusable before that).
+        <div data-lens-ui className="vy-lens-try absolute right-17 bottom-3.5 z-4">
+          <Button
+            variant="lens"
+            size="small"
+            onClick={() => ctl.current?.commit()}
+            className={cn(!used && 'sr-only focus:not-sr-only')}
+          >
+            Try {name}
+          </Button>
         </div>
       )}
       {fixedOpen && id && (

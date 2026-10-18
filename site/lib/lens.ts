@@ -101,3 +101,10 @@ export const lensEnabled = () => {
   if (seekTime() !== null) return false;
   return new URLSearchParams(location.search).get('lens') !== '0';
 };
+
+// `?lensperf=1`: the main-thread time of each door frame (the 2D layers and
+// the 3D pass), for the perf check in the PR. Off otherwise.
+export const lensPerf: number[] | null =
+  typeof location !== 'undefined' && new URLSearchParams(location.search).has('lensperf')
+    ? ((window as unknown as { __lensPerf: number[] }).__lensPerf = [])
+    : null;

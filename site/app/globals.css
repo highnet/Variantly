@@ -1111,8 +1111,12 @@ a:hover > .brand-mark .brand-grip {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  clip-path: inset(50%);
 }
+/* Lives only in the new state of a swap, as rings clipped by lib/lensSwap;
+   until its keyframes start it shows nothing. */
+::view-transition-new(vy-swap-frame-0),
+::view-transition-new(vy-swap-frame-1),
+::view-transition-new(vy-swap-frame-2) { clip-path: inset(50%); }
 .vy-swap-frame[data-ring='0'] { view-transition-name: vy-swap-frame-0; background: var(--lens-frame); }
 /* The doorway's light, only while it opens: two faint stepped bands. */
 .vy-swap-frame[data-ring='1'] { view-transition-name: vy-swap-frame-1; background: color-mix(in srgb, var(--lens-light) 34%, transparent); }
