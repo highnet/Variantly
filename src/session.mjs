@@ -380,6 +380,8 @@ export class Session extends EventEmitter {
       if (run.child) await killTree(run.child);
     }
     v.status = 'cancelled';
+    // Stop its clock: the board and status show how long it ran, not how long ago it started.
+    if (v.startedAt && !v.finishedAt) v.finishedAt = Date.now();
     await this.pool.stop(`v${n}`);
     await this.save();
   }
