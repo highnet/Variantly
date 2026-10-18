@@ -38,7 +38,7 @@ const buttonVariants = cva(
         // or fades (either would trap its number under the pill); the number
         // sits in its own span above the pill and takes the pill's ink.
         'cell-goo':
-          'relative bg-slate-raised/55 tracking-normal tabular-nums [font-stretch:75%] hover:bg-slate-raised/90',
+          'relative bg-slate-raised/25 tracking-normal tabular-nums [font-stretch:75%] hover:bg-slate-raised/40',
         // A word inside a headline that is also a button (the hero's "a fresh look").
         'headline-word':
           'inline normal-case tracking-[inherit] font-[inherit] [font-stretch:inherit] text-[length:inherit] leading-[inherit] text-inherit whitespace-normal',
