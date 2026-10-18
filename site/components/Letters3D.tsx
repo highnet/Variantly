@@ -5,6 +5,7 @@ import * as THREE from 'three';
 
 import type { VariantKey } from '@/components/backdrop/variants';
 import { glTier, markFallback } from '@/lib/glTier';
+import { compilesInParallel, firstDraw } from '@/lib/glWarm';
 import { attachLens, type LensPass } from '@/lib/lens3d';
 import {
   blendMorph,
@@ -22,7 +23,10 @@ import { INTRO_FINAL, INTRO_FONTS } from '@/lib/introFonts';
 import {
   disposePool,
   letterShadow,
+  loadLook,
   lookPool,
+  lookReady,
+  onLookLoad,
   poolSize,
   type LetterInk,
   type LetterLook,
@@ -33,6 +37,7 @@ import { aimAt, turnLight, type LightAim } from '@/lib/titleLight';
 import { colourAt, letterPalette, toRgb, type Lab, type LetterPalette } from '@/lib/titleColor';
 import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
+import { onSwapWarm } from '@/lib/swapWarm';
 import {
   lookAt,
   morphAt,
@@ -71,6 +76,8 @@ const BEVEL = 0.05;
 const BACKDROP_Z = -0.6;
 // The handover between the 2D and 3D words.
 const HANDOVER_MS = 760;
+// Dressed pools kept for a quick return to a concept or theme.
+const POOL_CACHE = 4;
 const smooth01 = (u: number) => u * u * (3 - 2 * u);
 
 type Letter = {
@@ -207,6 +214,9 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
       onFail();
       return;
     }
+    // Reading a program's logs waits for it to link, which undoes parallel
+    // shader compilation: checked in development only.
+    renderer.debug.checkShaderErrors = process.env.NODE_ENV !== 'production';
     // At the screen's full density: the word stays sharp while it moves.
     // Phones and the low power tier (html[data-perf='low']) animate at 2x at
     // most, 30fps, with the shadow map redrawn only when a letter steps,
@@ -249,14 +259,18 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
     // The photo studio every BSDF letter reflects (lib/studioEnv), built the
     // first time a pool needs it.
     let envMap: THREE.Texture | null = null;
+    const studio = () => {
+      if (!envMap) {
+        const pmrem = new THREE.PMREMGenerator(renderer);
+        const room = studioScene();
+        envMap = pmrem.fromScene(room.scene, 0.02).texture;
+        room.dispose();
+        pmrem.dispose();
+      }
+      return envMap;
+    };
     const lightStudio = () => {
-      if (envMap) return;
-      const pmrem = new THREE.PMREMGenerator(renderer);
-      const studio = studioScene();
-      envMap = pmrem.fromScene(studio.scene, 0.02).texture;
-      studio.dispose();
-      pmrem.dispose();
-      scene.environment = envMap;
+      scene.environment = studio();
       scene.environmentIntensity = 0.8;
     };
     const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 400);
@@ -593,6 +607,62 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         if (look.extra) l.extra.material = look.extra;
         l.extra.position.set(...(look.offset ?? [0, 0, 0]));
       };
+      // Dressed pools by concept, theme and ink, most recent last: a concept
+      // or theme worn before is worn again as it was, nothing rebuilt or
+      // recompiled. The oldest go past POOL_CACHE (never the worn one).
+      const cache = new Map<string, LetterLook[][]>();
+      const cached = (key: string, make: () => LetterLook[][]) => {
+        const got = cache.get(key) ?? make();
+        cache.delete(key);
+        cache.set(key, got);
+        for (const [k, old] of cache) {
+          if (cache.size <= POOL_CACHE) break;
+          if (old === pools) continue;
+          cache.delete(k);
+          old.forEach(disposePool);
+        }
+        return got;
+      };
+      // Every look's shaders, compiled without drawing (in parallel, off the
+      // main thread, where the GPU allows): each look on a stand-in mesh of
+      // its letter, lit by the title's scene, so nothing on screen changes.
+      // Where the GPU cannot compile in parallel, the stand-ins are also
+      // drawn once (lib/glWarm), and the word repainted over that pixel.
+      const parallel = compilesInParallel(renderer);
+      const compiled = new WeakSet<LetterLook[][]>();
+      const compilePools = (set: LetterLook[][]) => {
+        // A cached set worn again is compiled already.
+        if (compiled.has(set)) return Promise.resolve();
+        compiled.add(set);
+        const probe = new THREE.Group();
+        set.forEach((pool, i) =>
+          pool.forEach((look) => {
+            const m = new THREE.Mesh(letters[i].morph.geo, look.body);
+            m.castShadow = true;
+            m.frustumCulled = false;
+            probe.add(m);
+            if (!look.extra) return;
+            const x = new THREE.Mesh(letters[i].morph.geo, look.extra);
+            x.frustumCulled = false;
+            probe.add(x);
+          }),
+        );
+        const lit = set.some((p) => p.some((l) => l.env));
+        const env = scene.environment;
+        if (lit) scene.environment = studio();
+        const done = renderer.compileAsync(probe, camera, scene);
+        scene.environment = env;
+        return done.then(() => {
+          if (parallel || disposed) return;
+          const was = scene.environment;
+          if (lit) scene.environment = studio();
+          scene.add(probe);
+          firstDraw(renderer, scene, camera);
+          scene.remove(probe);
+          scene.environment = was;
+          paint();
+        });
+      };
       // The 2D letter's colour for the face; a concept's stacked text-shadow
       // (a straight drop, like Soft Clay's extrusion) for the sides.
       const inkOf = (s: Element): LetterInk => {
@@ -608,14 +678,14 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         const dark = html.dataset.theme === 'dark';
         // A concept change morphs each letter from the colour it wore.
         letters.forEach((l, i) => (swapFrom[i] = l.ink ? [...l.ink] : null));
-        pools.forEach(disposePool);
         const slotsEls = [...word.children];
-        pools = letters.map((l, i) => {
-          const ink = inkOf(slotsEls[i]);
-          l.flat.material.color.set(ink.face);
-          pals[i] = tint ? letterPalette(slotsEls[i], ink.face, ink.side) : null;
+        const inks = letters.map((_, i) => inkOf(slotsEls[i]));
+        const key = [variant, dark, lookReady(variant), ...inks.map((k) => k.face + k.side)].join();
+        pools = cached(key, () => letters.map((_, i) => lookPool(variant, inks[i], dark, phone)));
+        letters.forEach((l, i) => {
+          l.flat.material.color.set(inks[i].face);
+          pals[i] = tint ? letterPalette(slotsEls[i], inks[i].face, inks[i].side) : null;
           l.ink = null;
-          return lookPool(variant, ink, dark, phone);
         });
         if (pools.some((p) => p.some((l) => l.env))) lightStudio();
         shade = letterShadow(variant, dark);
@@ -623,27 +693,53 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         backdropMat.opacity = shade.opacity;
         sun.shadow.radius = shade.radius;
         relayout();
-        // Warm every look's shader now, so swapping looks mid-flicker never
-        // compiles: wear each look across the letters and compile.
-        for (let k = 0; k < n; k++) {
-          letters.forEach((l, i) => {
-            l.look = -1;
-            wear(l, i, k);
-          });
-          renderer.compile(scene, camera);
-        }
         letters.forEach((l, i) => {
           l.look = -1;
           wear(l, i, lookAt(l.locked ? null : 0, i, n));
         });
         paint();
+        // Warm every look's shader before a morph flickers through them (a
+        // swap's warm-up, below, has usually compiled them already).
+        return compilePools(pools);
       };
-      dress();
-      const mo = new MutationObserver(dress);
+      // The html attributes change inside a concept swap's view transition
+      // update: dress on the next frame instead (before that frame is drawn,
+      // so the title, shown live through the swap, still lands dressed).
+      // Seekreel frames dress at once.
+      let dressing = 0;
+      const redress = () => {
+        if (seek !== null) return void dress();
+        if (!dressing)
+          dressing = requestAnimationFrame(() => {
+            dressing = 0;
+            void dress();
+          });
+      };
+      const warmed = dress();
+      const mo = new MutationObserver(redress);
       mo.observe(html, { attributes: true, attributeFilter: ['data-variant', 'data-theme'] });
+      // The look a fallback stood in for has arrived.
+      const offLook = onLookLoad((id) => id === html.dataset.variant && redress());
+      // A concept swap about to happen (lib/swapWarm): build and compile its
+      // looks now, while the old page still shows. Its materials stay cached
+      // (in this page's ink, which only colours them), so the programs the
+      // real dress needs are compiled and kept.
+      const offWarm = onSwapWarm(async (v) => {
+        await loadLook(v).catch(() => null);
+        const dark = html.dataset.theme === 'dark';
+        if (disposed || [...cache.keys()].some((k) => k.startsWith(`${v},${dark},true,`))) return;
+        const els = [...word.children];
+        const set = cached(`${v},${dark},warm`, () =>
+          letters.map((_, i) => lookPool(v, inkOf(els[i]), dark, phone)),
+        );
+        return compilePools(set);
+      });
       cleanups.push(
         () => mo.disconnect(),
-        () => pools.forEach(disposePool),
+        offLook,
+        offWarm,
+        () => cancelAnimationFrame(dressing),
+        () => cache.forEach((set) => set.forEach(disposePool)),
         () =>
           letters.forEach((l) => {
             l.morph.geo.dispose();
@@ -974,7 +1070,8 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         onReady();
         if (seek !== null) releaseFrame('title');
       };
-      takeOver();
+      // Once every look's shaders are in, so the reveal never stalls on one.
+      void warmed.then(takeOver);
     });
 
     return () => {

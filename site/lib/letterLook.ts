@@ -10,13 +10,26 @@ export type { LetterInk, LetterLook, LetterShadow } from '@/lib/lookKit';
  * registry (concepts/<id>/look.ts). Only the active concept's look module is
  * loaded; this API stays synchronous for Letters3D: until a look has arrived
  * the letters wear a plain fallback, and when it lands the title is re-dressed
- * (its observer watches html[data-variant], which is re-applied).
+ * (onLookLoad tells it, directly: no html attribute is re-written mid-swap).
  */
 
 const loaded: Partial<Record<string, ConceptLook>> = {};
 const pending: Partial<Record<string, Promise<ConceptLook>>> = {};
 // Concepts whose fallback the title is wearing right now.
 const stale = new Set<string>();
+const arrivals = new Set<(id: string) => void>();
+
+// Called with a concept's id when its look arrives after the title had to
+// wear the fallback for it. Returns the unsubscribe.
+export const onLookLoad = (cb: (id: string) => void) => {
+  arrivals.add(cb);
+  return () => {
+    arrivals.delete(cb);
+  };
+};
+
+// Whether a concept's look has loaded (lookPool then serves the real one).
+export const lookReady = (id: string) => !!loaded[id];
 
 export const loadLook = (id: string): Promise<ConceptLook> => {
   const have = loaded[id];
@@ -24,10 +37,8 @@ export const loadLook = (id: string): Promise<ConceptLook> => {
   if (!isConceptId(id)) return Promise.reject(new Error(`unknown concept ${id}`));
   pending[id] ??= CONCEPT_LOADERS[id].look().then(({ look }) => {
     loaded[id] = look;
-    // Re-dress the title if this concept is showing (an attribute write
-    // notifies observers even when the value is unchanged).
-    const html = document.documentElement;
-    if (stale.delete(id) && html.dataset.variant === id) html.dataset.variant = id;
+    // Re-dress the title if it is wearing this concept's fallback.
+    if (stale.delete(id)) arrivals.forEach((cb) => cb(id));
     return look;
   });
   return pending[id];
