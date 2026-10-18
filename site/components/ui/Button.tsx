@@ -8,7 +8,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: 'vy-grain bg-alert text-on-alert hover:bg-alert-hover active:translate-y-px',
+        primary: 'vy-grain-light bg-alert text-on-alert hover:bg-alert-hover active:translate-y-px',
         ink: 'bg-ink text-surface hover:bg-slate-raised active:translate-y-px',
         outline: 'border border-ink bg-transparent text-ink hover:bg-surface active:translate-y-px',
         'outline-slate':

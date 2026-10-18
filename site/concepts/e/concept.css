@@ -158,5 +158,6 @@
 /* Grain on surfaces (see Grainy gradients in app/globals.css). */
 :root[data-variant='e'] {
   --grain-tile: none;
+  --grain-tile-light: none;
   --art-grain: 0;
 }

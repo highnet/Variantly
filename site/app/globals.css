@@ -748,6 +748,8 @@ a:hover > .brand-mark .brand-grip {
  * Tokens (set per concept in concepts/<id>/concept.css):
  *   --grain-tile  the active tile: var(--grain-soft | --grain-mid |
  *                 --grain-strong), or none to turn surface grain off
+ *   --grain-tile-light  the tile for the hero, primary buttons and footer
+ *                 (soft by default; none with --grain-tile: none)
  *   --grain-o     0–1, for layers that hold the tile as their own element
  *                 and fade it with opacity (1 = as baked; 0 = off)
  *   --grain-size  tile size (96px: one noise pixel per CSS pixel)
@@ -760,6 +762,10 @@ a:hover > .brand-mark .brand-grip {
   --grain-mid: url('./_grain/grain-mid.png');
   --grain-strong: url('./_grain/grain-strong.png');
   --grain-tile: var(--grain-mid);
+  /* Translucent or text-dense surfaces (the hero, primary buttons, the
+     footer) take a lighter tile and no wash, which keeps their text at AA.
+     The demo dock is all small controls and stays flat. */
+  --grain-tile-light: var(--grain-soft);
   --grain-o: 1;
   --grain-size: 96px;
   --grain-wash: linear-gradient(165deg, rgb(255 255 255 / 0.1), transparent 50%, rgb(0 0 0 / 0.04));
@@ -772,12 +778,18 @@ a:hover > .brand-mark .brand-grip {
     rgb(0 0 0 / 0.14)
   );
 }
-/* Surfaces: the utility, plus the top-level cards and boards in the page
-   body and the hero's side card (its concept backgrounds are shorthand, so
-   these selectors outrank them). Nested cards, buttons and links are left
-   alone: they sit on a grained surface already or are small controls. */
+/* Surfaces: .vy-grain (tile + wash) and the top-level cards and boards in
+   the page body; .vy-grain-light (lighter tile, no wash) and the hero's side
+   card, whose concept backgrounds are shorthand, so these selectors outrank
+   them. Nested cards, buttons and links are left alone: they sit on a
+   grained surface already or are small controls. */
+.vy-grain-light,
+:root[data-variant] main [data-hero-side] {
+  background-image: var(--grain-tile-light);
+  background-size: var(--grain-size) var(--grain-size);
+  background-repeat: repeat;
+}
 .vy-grain,
-:root[data-variant] main [data-hero-side],
 :root[data-variant]
   main
   :is(.bg-surface, .on-slate):not(
@@ -802,17 +814,17 @@ a:hover > .brand-mark .brand-grip {
    Amber Terminal frame the grid as a card and Brutal Zine draws its border,
    so it is a plain background there. */
 :root[data-variant]:not([data-variant='a']) [data-hero-title] {
-  background-image: var(--grain-tile);
+  background-image: var(--grain-tile-light);
   background-size: var(--grain-size) var(--grain-size);
 }
 :root[data-variant]:is([data-variant='a'], [data-variant='c'], [data-variant='d'])
   [data-hero-grid] {
-  background-image: var(--grain-tile);
+  background-image: var(--grain-tile-light);
   background-size: var(--grain-size) var(--grain-size);
 }
 :root[data-variant]:not([data-variant='a'], [data-variant='c'], [data-variant='d'])
   [data-hero-grid] {
-  border-image: var(--grain-tile) 0 fill / 0 / 0 100vmax repeat;
+  border-image: var(--grain-tile-light) 0 fill / 0 / 0 100vmax repeat;
 }
 
 /* =========================================================================
