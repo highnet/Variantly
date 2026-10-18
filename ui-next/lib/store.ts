@@ -19,7 +19,11 @@ export type UiState = {
   logTotal: Record<string, number>;
   unseen: number[];
   sel: 'original' | number | null;
-  mode: 'slider' | 'single' | 'side';
+  mode: 'slider' | 'single' | 'side' | 'lens';
+  /** Lens mode: whether the door is open (closed, it rests as a tab at the edge). */
+  lensOpen: boolean;
+  /** The design a keep confirmation is for, when it is not the selection (the Lens's door). */
+  confirmN: number | null;
   device: 'desktop' | 'mobile';
   split: number;
   path: string;
@@ -49,6 +53,8 @@ let state: UiState = {
   unseen: [],
   sel: null,
   mode: 'slider',
+  lensOpen: true,
+  confirmN: null,
   device: 'desktop',
   split: 50,
   path: '/',

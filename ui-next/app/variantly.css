@@ -5082,3 +5082,209 @@ body {
 .compare[data-device='mobile'] .stage[data-mode='side'] .pane.after {
   left: calc(50% + 6px);
 }
+
+/* Lens ------------------------------------------------------------------
+   The original fills the stage; the design shows only through a door the
+   size of a boarding pass. Same idea as the website's Lens, in this app's
+   own world: an ink frame with one alert-yellow edge (the change), a mono
+   label chip, a pull-tab at the stage edge. Lens.tsx writes --lx/--ly/--lw/--lh. */
+.stage[data-mode='lens'] .pane.after {
+  clip-path: inset(var(--ly, 0px) calc(100% - var(--lx, 0px) - var(--lw, 0px)) calc(100% - var(--ly, 0px) - var(--lh, 0px)) var(--lx, 0px) round var(--r));
+}
+
+.stage[data-mode='lens']:not([data-lens-open]) .pane.after {
+  clip-path: inset(0 0 0 100%);
+}
+
+.lens-pad {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  cursor: pointer;
+  touch-action: none;
+  outline: none;
+}
+
+.lens-pad[data-through] {
+  pointer-events: none;
+  cursor: auto;
+}
+
+.lens-ring {
+  position: absolute;
+  left: var(--lx, 0);
+  top: var(--ly, 0);
+  width: var(--lw, 0);
+  height: var(--lh, 0);
+  z-index: 3;
+  pointer-events: none;
+  border-radius: var(--r);
+  /* Ink frame, a white hairline so it reads on dark sites, a yellow inner edge. */
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.85),
+    0 0 0 3px var(--ink),
+    inset 0 0 0 2px var(--alert),
+    0 18px 40px -16px rgb(13 13 16 / 0.55);
+  transition:
+    opacity 160ms var(--ease),
+    transform 220ms var(--ease);
+}
+
+.lens-ring:not([data-open]) {
+  opacity: 0;
+  transform: scale(0.94);
+  visibility: hidden;
+}
+
+.lens-ring[data-through] {
+  opacity: 0.45;
+}
+
+.lens-ring[data-dragging] {
+  transform: scale(1.02);
+}
+
+.lens-pad:focus-visible ~ .lens-ring {
+  box-shadow:
+    0 0 0 1px rgb(255 255 255 / 0.85),
+    0 0 0 3px var(--ink),
+    0 0 0 6px var(--alert),
+    inset 0 0 0 2px var(--alert);
+}
+
+.lens-label {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 16px);
+  min-height: 28px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: var(--ink);
+  color: var(--surface);
+  font: 600 10px/1 var(--mono);
+  font-stretch: 87.5%;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.lens-label strong {
+  color: var(--alert);
+  font-weight: 700;
+}
+
+.lens-label:disabled {
+  cursor: default;
+}
+
+.lens-ring[data-through] .lens-label {
+  pointer-events: none;
+}
+
+/* The tab: rests at the stage's right edge while the door is closed. */
+.lens-tab {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  z-index: 3;
+  transform: translateY(-50%);
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 36px;
+  padding: 12px 0 14px;
+  border: 0;
+  border-radius: var(--r) 0 0 var(--r);
+  background: var(--ink);
+  color: var(--alert);
+  box-shadow:
+    inset 3px 0 0 var(--alert),
+    0 10px 28px -10px rgb(13 13 16 / 0.6);
+  cursor: pointer;
+  touch-action: none;
+  transition:
+    transform 220ms var(--ease),
+    opacity 160ms var(--ease);
+}
+
+.lens-tab svg {
+  width: 12px;
+  height: 24px;
+}
+
+.lens-tab span {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font: 700 10px/1 var(--mono);
+  font-stretch: 87.5%;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--surface);
+}
+
+.lens-tab:hover {
+  transform: translate(-3px, -50%);
+}
+
+.lens-tab:focus-visible {
+  outline: 2px solid var(--alert);
+  outline-offset: 2px;
+}
+
+.lens-tab[data-open]:not([data-dragging]) {
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(100%, -50%);
+}
+
+.lens-tab[data-open][data-dragging] {
+  opacity: 0;
+}
+
+.lens-hint {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.lens-hint .tag {
+  background: var(--ink);
+  color: var(--surface);
+  box-shadow: 0 4px 14px -6px rgb(13 13 16 / 0.6);
+  padding: 6px 8px;
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+  transition: opacity 240ms var(--ease);
+}
+
+.compare.tucked .lens-hint .tag {
+  opacity: 0;
+}
+
+.compare[data-device='mobile'] .stage[data-mode='lens'] .lens-hint {
+  top: 32px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lens-ring,
+  .lens-tab {
+    transition: none;
+  }
+  .lens-ring[data-dragging] {
+    transform: none;
+  }
+}

@@ -54,7 +54,11 @@
   reportNav();
 
   // The same keys the comparison view handles (Compare.tsx handleKey).
-  const KEYS = /^([0-9]|o|s|m|i|\[|\]|Escape|ArrowLeft|ArrowRight)$/;
+  const KEYS = /^([0-9]|o|s|l|m|i|\[|\]|Escape|ArrowLeft|ArrowRight)$/;
+  // Shift held inside a preview lets the Lens pass pointers through.
+  const mod = (e) => e.key === 'Shift' && post({ type: 'mod', shift: e.type === 'keydown' });
+  addEventListener('keydown', mod);
+  addEventListener('keyup', mod);
   addEventListener('keydown', (e) => {
     const t = e.target;
     const typing = t instanceof HTMLElement && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.closest('[contenteditable]:not([contenteditable="false"])'));
@@ -72,6 +76,11 @@
       const el = scroller();
       const max = el.scrollHeight - window.innerHeight;
       el.scrollTop = msg.mode === 'pixels' ? msg.y : Math.round((msg.ratio ?? 0) * Math.max(0, max));
+    }
+    if (msg.type === 'scrollBy') {
+      // The Lens covers both panes and scrolls this one for you; the scroll
+      // reports back as usual, so the other pane follows.
+      scroller().scrollTop += msg.dy ?? 0;
     }
     if (msg.type === 'scrollbar') {
       // Side by side scrolls both panes together; only one needs a bar.
