@@ -14,7 +14,7 @@ export const glTier = (renderScale = 1): GlTier => {
   return {
     coarse,
     antialias: !coarse && dpr <= 1.5,
-    pixelRatio: Math.min(dpr, coarse ? 1.1 : 1.5) * renderScale,
+    pixelRatio: Math.min(dpr, coarse ? 2 : 1.5) * renderScale,
   };
 };
 

@@ -183,8 +183,9 @@ const run = (
 ): (() => void) | undefined => {
   const tier = glTier(0.55);
   const phone = tier.coarse || innerWidth < 640;
-  // Phones paint one still frame (below), so it can afford the screen's own
-  // resolution; the cheap half-resolution path is only for moving scenes.
+  // Drawn at the screen's own resolution so the grain stays fine and the
+  // shapes crisp: up to 2x for the one still frame phones paint (below), 1.5x
+  // for a moving scene.
   let renderer: THREE.WebGLRenderer;
   try {
     renderer = new THREE.WebGLRenderer({
@@ -203,7 +204,7 @@ const run = (
   }
   const still = seek !== null || phone || calmMotion() || perfTier() === 'low';
   const ratio = () =>
-    still && seek === null ? Math.min(devicePixelRatio || 1, 2) : glTier(0.55).pixelRatio;
+    seek !== null ? glTier(0.55).pixelRatio : Math.min(devicePixelRatio || 1, still ? 2 : 1.5);
   renderer.setPixelRatio(ratio());
   const canvas = renderer.domElement;
   // Stacked, so an outgoing scene can stay under the incoming one.
