@@ -1317,17 +1317,30 @@ a:hover > .brand-mark .brand-grip {
    until its keyframes start it shows nothing. */
 ::view-transition-new(vy-swap-frame-0),
 ::view-transition-new(vy-swap-frame-1),
-::view-transition-new(vy-swap-frame-2) { clip-path: inset(50%); }
-.vy-swap-frame[data-ring='0'] { view-transition-name: vy-swap-frame-0; background: var(--lens-frame); }
+::view-transition-new(vy-swap-frame-2) {
+  clip-path: inset(50%);
+}
+.vy-swap-frame[data-ring='0'] {
+  view-transition-name: vy-swap-frame-0;
+  background: var(--lens-frame);
+}
 /* The doorway's light, only while it opens: two faint stepped bands. */
-.vy-swap-frame[data-ring='1'] { view-transition-name: vy-swap-frame-1; background: color-mix(in srgb, var(--lens-light) 34%, transparent); }
-.vy-swap-frame[data-ring='2'] { view-transition-name: vy-swap-frame-2; background: color-mix(in srgb, var(--lens-light) 13%, transparent); }
+.vy-swap-frame[data-ring='1'] {
+  view-transition-name: vy-swap-frame-1;
+  background: color-mix(in srgb, var(--lens-light) 34%, transparent);
+}
+.vy-swap-frame[data-ring='2'] {
+  view-transition-name: vy-swap-frame-2;
+  background: color-mix(in srgb, var(--lens-light) 13%, transparent);
+}
 ::view-transition-group(vy-swap-frame-0),
 ::view-transition-group(vy-swap-frame-1),
 ::view-transition-group(vy-swap-frame-2),
 ::view-transition-new(vy-swap-frame-0),
 ::view-transition-new(vy-swap-frame-1),
-::view-transition-new(vy-swap-frame-2) { animation: none; }
+::view-transition-new(vy-swap-frame-2) {
+  animation: none;
+}
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-new(root) {
     animation: none;
@@ -2317,18 +2330,38 @@ main > div p {
    with transforms; the light is plain gradients (no filter). Calm and the low
    perf tier get the solid frame only (no data-glow). */
 .vy-lens:not([data-shown]),
-.vy-lens-frame:not([data-shown]) { visibility: hidden; }
-.vy-lens[data-over] { z-index: 3; }
+.vy-lens-frame:not([data-shown]) {
+  visibility: hidden;
+}
+.vy-lens[data-over] {
+  z-index: 3;
+}
 .vy-lens-port,
 .vy-lens-frame,
-.vy-lens-glow { will-change: transform; }
-.vy-lens-front { stroke: var(--lens-frame); stroke-width: 2.5px; stroke-linejoin: round; }
+.vy-lens-glow {
+  will-change: transform;
+}
+.vy-lens-front {
+  stroke: var(--lens-frame);
+  stroke-width: 2.5px;
+  stroke-linejoin: round;
+}
 .vy-lens-frame:not([data-glow]) .vy-lens-lum,
-.vy-lens:not([data-glow]) .vy-lens-glow { display: none; }
+.vy-lens:not([data-glow]) .vy-lens-glow {
+  display: none;
+}
 .vy-lens-glow {
   background:
-    radial-gradient(closest-side, color-mix(in srgb, var(--lens-light) 30%, transparent), transparent),
-    radial-gradient(50% 9% at 50% calc(100% - 22px), color-mix(in srgb, var(--lens-light) 42%, transparent), transparent);
+    radial-gradient(
+      closest-side,
+      color-mix(in srgb, var(--lens-light) 30%, transparent),
+      transparent
+    ),
+    radial-gradient(
+      50% 9% at 50% calc(100% - 22px),
+      color-mix(in srgb, var(--lens-light) 42%, transparent),
+      transparent
+    );
   /* The halo sits a little wider than the slab; the spill on its "floor". */
   margin: -20px 0 0 -20px;
   padding: 20px;
@@ -2359,8 +2392,28 @@ main > div p {
   letter-spacing: 0.04em;
   text-transform: none;
 }
-.vy-lens-frame[data-peek] .vy-lens-label { display: none; }
-.vy-lens-handle { will-change: transform; }
+.vy-lens-frame[data-peek] .vy-lens-label {
+  display: none;
+}
+.vy-lens-handle {
+  will-change: transform;
+}
+/* The resting door's pull tab: a chevron in the frame colour that nudges
+   inward once a few seconds after load, then stays still. */
+.vy-lens-grip {
+  color: var(--lens-frame);
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.25));
+  animation: lens-nudge 900ms cubic-bezier(0.16, 1, 0.3, 1) 2.4s 2 both;
+}
+@keyframes lens-nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  40% {
+    transform: translateX(-5px);
+  }
+}
 
 /* Tips ---------------------------------------------------------------------
  * The bubble grows from the side facing its trigger. Calm or reduced motion
