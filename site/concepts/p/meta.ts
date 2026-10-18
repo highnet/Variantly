@@ -7,6 +7,4 @@ export const meta: ConceptMeta = {
   swatch: { light: ['#c2263a', '#1b8a7f', '#e08a3c'], dark: ['#ef476f', '#2ec4b6', '#ffb563'] },
   font: 'var(--font-stitch)',
   grain: 0.06,
-  // Hidden from the switcher until it is built; preview with ?drafts=1.
-  status: 'draft',
 };
