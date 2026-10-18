@@ -164,13 +164,20 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
         // Lift off, hover, settle: a soft bump once per loop.
         const u = (((t / 24 + m.phase) % 1) + 1) % 1;
         const lift = 0.5 - 0.5 * Math.cos(u * Math.PI * 2);
-        const s = narrow ? 0.62 : isBird ? 2.1 : 1.6;
+        const s = narrow ? 0.5 : isBird ? 1.8 : 1.6;
         // The left bird would sit on every page's top-left heading, so it stays home.
-        m.g.visible = isBird ? m.side === 1 : !narrow;
+        m.g.visible = !isBird || m.side === 1;
         m.g.scale.set(-m.side * s, s, s);
+        // Wide: the bird perches in the top-right corner, beside the title.
+        // Phones: bird and deer share the band between the title card and
+        // the headline. Never behind either.
         m.g.position.set(
-          m.side * (halfW - (narrow ? 0.38 : isBird ? 1.45 : 0.75)),
-          narrow ? halfH - 0.95 : isBird ? halfH - 1.3 : -halfH + 0.5,
+          narrow
+            ? isBird
+              ? halfW - 0.45
+              : m.side * (halfW - 0.45) - (m.side === 1 ? 1.3 : 0)
+            : m.side * (halfW - (isBird ? 0.95 : 0.75)),
+          narrow ? halfH * 0.43 : isBird ? halfH - 0.75 : -halfH + 0.5,
           -0.5,
         );
         m.body.position.set(0.03 * lift, 0.05 * lift, 0.28 * lift);

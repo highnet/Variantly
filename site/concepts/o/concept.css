@@ -16,7 +16,7 @@
   background: linear-gradient(90deg, var(--l) 1px, #0000 1px) 0 0 / calc(100% / 12) 100%, linear-gradient(var(--l) 1px, #0000 1px) 0 0 / 100% 12.5%;
 }
 :root[data-variant='o'] .vy-o-num {
-  top: -0.16em; right: -0.1em; font: 900 62vh/0.8 var(--font-archivo); font-stretch: 62%; letter-spacing: -0.05em; color: var(--art-2);
+  top: -0.16em; right: -0.1em; font: 900 44vh/0.8 var(--font-archivo); font-stretch: 62%; letter-spacing: -0.05em; color: var(--art-2);
   will-change: transform; animation: vy-o-cut 24s step-end infinite;
 }
 :root[data-variant='o'] .vy-o-bar {
@@ -24,8 +24,9 @@
 }
 :root[data-variant='o'] .vy-o-bar-a { top: 14vh; width: 25vw; height: 18px; }
 :root[data-variant='o'] .vy-o-bar-b { top: 88vh; left: 8.333vw; width: 41.667vw; height: 6px; animation-name: vy-o-slide-b; animation-duration: 12s; }
-:root[data-variant='o'] .vy-o-bar-c { top: 0; left: 75vw; width: 12px; height: 44vh; animation-name: vy-o-slide-c; animation-duration: 8s; }
-/* Holds, then a hard slide by whole columns; the numeral cuts without easing. 0% is the poster. */
+:root[data-variant='o'] .vy-o-bar-c { top: 0; left: 75vw; width: 12px; height: 18vh; animation-name: vy-o-slide-c; animation-duration: 8s; }
+/* Holds, then a hard slide by whole columns; the numeral cuts without easing,
+   down the right edge only, so it never crosses the title. 0% is the poster. */
 @keyframes vy-o-slide-a {
   0%, 22%, 100% { transform: translateX(0); }
   25%, 47% { transform: translateX(41.667vw); }
@@ -42,15 +43,18 @@
 }
 @keyframes vy-o-cut {
   0%, 100% { transform: translate(0, 0); }
-  33.3% { transform: translate(-8.333vw, 0); }
-  66.6% { transform: translate(-16.667vw, 12.5vh); }
+  33.3% { transform: translate(0, 25vh); }
+  66.6% { transform: translate(0, 50vh); }
 }
 :root[data-scrolled][data-variant='o'] :is(.vy-o-num, .vy-o-bar) { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce), (pointer: coarse) {
   :root[data-variant='o'] :is(.vy-o-num, .vy-o-bar) { animation: none; }
 }
 @media (max-width: 639px) {
-  :root[data-variant='o'] .vy-o-num { font-size: 52vh; top: 6vh; }
+  /* Clear of the title: the numeral sits small at the right of the band
+     under the title card, the bar runs above the title. */
+  :root[data-variant='o'] .vy-o-num { font-size: 16vh; top: 20.5vh; right: 0.1em; }
+  :root[data-variant='o'] .vy-o-bar-a { top: 8.5vh; }
   :root[data-variant='o'] :is(.vy-o-bar-b, .vy-o-bar-c) { display: none; }
 }
 

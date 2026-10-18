@@ -94,8 +94,10 @@ const Ink = () => (
     {/* the sheet: warm cotton with soft mottling */}
     <div className="k-paper absolute inset-0" />
 
-    {/* dry-brush ink, top left; a paper wipe re-draws it at an uneven hand pace */}
-    <div className="absolute top-[-6vmax] left-[-7vmax] w-[46vmax] overflow-hidden max-sm:w-[40vmax]">
+    {/* dry-brush ink, top left (phones: in the band between the title card
+        and the headline, never behind either); a paper wipe re-draws it at
+        an uneven hand pace */}
+    <div className="absolute top-[-6vmax] left-[-7vmax] w-[46vmax] overflow-hidden max-sm:top-[22vh] max-sm:left-[-4vmax] max-sm:w-[18vmax]">
       <svg viewBox="-60 0 480 300" className="block w-full">
         <Stroke marks={STROKE_A} cls="opacity-90" />
       </svg>

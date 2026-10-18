@@ -39,7 +39,13 @@ const Candy = () => (
       </defs>
     </svg>
     {/* a gummy star */}
-    <Piece className="top-[10%] left-[-6%] size-[40vmax]" float={0}>
+    {/* Desktop: the star and ring frame the title from the sides, the bubbles
+        sit low right. Phones: a small row in the band between the title card
+        and the headline. Never behind either. */}
+    <Piece
+      className="top-[12%] left-[-32%] size-[40vmax] max-sm:top-[23%] max-sm:left-[2%] max-sm:size-[10vmax]"
+      float={0}
+    >
       <path
         d="M50,6 C55,6 58,30 64,34 C70,38 94,32 96,38 C98,44 76,56 74,62 C72,68 86,90 80,94 C74,98 56,80 50,80 C44,80 26,98 20,94 C14,90 28,68 26,62 C24,56 2,44 4,38 C6,32 30,38 36,34 C42,30 45,6 50,6Z"
         fill="url(#candy-0)"
@@ -48,7 +54,10 @@ const Candy = () => (
       <circle cx="62" cy="58" r="2.5" fill="#fff" fillOpacity="0.8" />
     </Piece>
     {/* a jelly ring */}
-    <Piece className="top-[-2%] right-[-8%] size-[32vmax]" float={1}>
+    <Piece
+      className="top-[-2%] right-[-20%] size-[32vmax] max-sm:top-[23%] max-sm:right-[2%] max-sm:size-[9vmax]"
+      float={1}
+    >
       <path
         d="M50,8 A42,42 0 1 1 49.9,8Z M50,32 A18,18 0 1 0 50.1,32Z"
         fill="url(#candy-1)"
@@ -58,7 +67,10 @@ const Candy = () => (
       <Gloss x={60} y={42} rx={5} ry={2} r={-40} />
     </Piece>
     {/* bubbles */}
-    <Piece className="top-[54%] left-[48%] size-[24vmax] max-sm:hidden" float={2}>
+    <Piece
+      className="top-[50%] left-[42%] size-[18vmax] max-sm:top-[24%] max-sm:left-[42%] max-sm:size-[8vmax]"
+      float={2}
+    >
       <circle cx="40" cy="44" r="30" fill="url(#candy-2)" />
       <Gloss x={30} y={32} rx={9} ry={4} />
       <circle cx="82" cy="20" r="12" fill="url(#candy-0)" />

@@ -74,9 +74,10 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
         knob.rotation.y = -(Math.floor(k) + snap) * (TAU / 8) * (i === 1 ? -1 : 1);
       });
       const narrow = camera instanceof THREE.PerspectiveCamera && camera.aspect < 1;
-      // Desktop: up in the empty top-right corner, clear of the title.
-      unit.position.set(narrow ? 0.9 : 5.6, narrow ? 2.1 : 3.3, narrow ? -4 : -1);
-      unit.scale.setScalar(0.42);
+      // Desktop: up in the empty top-right corner, clear of the title. Phones:
+      // smaller, in the band between the title card and the headline.
+      unit.position.set(narrow ? 0.9 : 5.6, narrow ? 2.2 : 3.3, narrow ? -4 : -1);
+      unit.scale.setScalar(narrow ? 0.24 : 0.42);
       unit.rotation.set(0.62, -0.55 + 0.18 * Math.sin((TAU * t) / 24), 0.08);
     },
   };

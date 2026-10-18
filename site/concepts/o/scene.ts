@@ -89,8 +89,10 @@ const build = (scene: THREE.Scene, colors: string[]): Built => {
       // see the row from further back, up behind the title, all in grey.
       // Wide: the row is pushed right, past the title's column, and kept grey;
       // the oxblood stays in the flat bars.
-      camera.position.set(narrow ? 2 : -9, narrow ? 1 : 1.6, narrow ? 34 : 18);
-      camera.lookAt(narrow ? 2 : -10.5, narrow ? -4 : 4.4, 0);
+      // Both stay clear of the title: wide screens push the row further right
+      // and down; phones see it small in the band under the title card.
+      camera.position.set(narrow ? 2 : -9, narrow ? 1 : 1.6, narrow ? 110 : 18);
+      camera.lookAt(narrow ? 2 : -13, narrow ? -12.5 : 5.4, 0);
     },
   };
 };

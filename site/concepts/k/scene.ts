@@ -139,9 +139,11 @@ void main(){ float r = length((vU - 0.5) * vec2(2.0, 2.0));
       const aspect = (camera as THREE.PerspectiveCamera).aspect || 1.6;
       const halfW = halfH * aspect;
       const narrow = aspect < 1;
-      // The sheet hangs in the top corner, clear of the title.
-      sheet.scale.setScalar(narrow ? 0.5 : 0.78);
-      sheet.position.set(halfW - (narrow ? 0.45 : 1.15), halfH - (narrow ? 0.55 : 0.95), -1);
+      // The sheet hangs in the top corner, clear of the title (desktop), or
+      // small at the right of the band between the title card and the
+      // headline (phones).
+      sheet.scale.setScalar(narrow ? 0.3 : 0.7);
+      sheet.position.set(halfW - (narrow ? 0.55 : 0.7), narrow ? halfH * 0.44 : halfH - 0.8, -1);
       sheet.rotation.set(-0.38 + 0.04 * Math.sin(t * W), -0.5 + 0.05 * Math.sin(t * W * 2), 0.14);
 
       let i = 0;

@@ -29,9 +29,21 @@ const Clay = () => (
       </defs>
     </svg>
     {[
-      { pos: 'left-[-8%] top-[10%] size-[42vmax]', r: -8 },
-      { pos: 'right-[-12%] top-[-4%] size-[36vmax]', r: 14 },
-      { pos: 'left-[42%] top-[52%] size-[26vmax] max-sm:hidden', r: 4 },
+      // Desktop: two pebbles framing the title from the sides, a third low on
+      // the right beside the headline. Phones: a small row of three in the
+      // band between the title card and the headline. Never behind either.
+      {
+        pos: 'left-[-30%] top-[14%] size-[36vmax] max-sm:left-[3%] max-sm:top-[23%] max-sm:size-[10vmax]',
+        r: -8,
+      },
+      {
+        pos: 'right-[-24%] top-[-4%] size-[36vmax] max-sm:right-[3%] max-sm:top-[23.5%] max-sm:size-[9vmax]',
+        r: 14,
+      },
+      {
+        pos: 'right-[-8%] top-[62%] size-[22vmax] max-sm:right-[42%] max-sm:top-[25%] max-sm:size-[6vmax]',
+        r: 4,
+      },
     ].map(({ pos, r }, i) => (
       <Piece key={i} className={pos} float={i}>
         <ellipse cx="54" cy="94" rx="40" ry="8" fill="url(#clay-ao)" />
