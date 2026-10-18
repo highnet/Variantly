@@ -39,10 +39,10 @@ void main() {
     c = uA * (0.42 + 0.7 * d) + uA * pow(max(dot(n, h), 0.0), 28.0) * 1.1 + vec3(1.0, 0.86, 0.6) * fres * 0.35;
   } else {
     vec2 p = vObj.xy * uScale + uSeed;
-    float g = p.y * 7.0 + noise(p * vec2(0.8, 3.0)) * 2.4 + sin(p.x * 0.9) * 0.7;
+    float g = p.y * 11.0 + noise(p * vec2(0.8, 3.0)) * 2.4 + sin(p.x * 0.9) * 0.7;
     float band = smoothstep(0.15, 0.85, abs(fract(g) - 0.5) * 2.0);
     float pores = step(0.93, hash(floor(vec2(p.x * 40.0, p.y * 140.0))));
-    vec3 wood = uA * mix(0.68, 1.14, band) * (1.0 - pores * 0.25);
+    vec3 wood = uA * mix(0.8, 1.08, band) * (1.0 - pores * 0.25);
     c = wood * (0.4 + 0.75 * d) + vec3(1.0, 0.88, 0.7) * pow(max(dot(n, h), 0.0), 90.0) * uGloss;
   }
   c += (hash(gl_FragCoord.xy + uSeed) - 0.5) * 0.03;
