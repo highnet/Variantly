@@ -1,3 +1,4 @@
+import { LiquidNumeral } from '@/components/LiquidNumeral';
 import { Rich } from '@/components/ui/Rich';
 import { Typography } from '@/components/ui/Typography';
 import { TOUR } from '@/lib/content';
@@ -48,59 +49,57 @@ const Shot = ({ shot, alt, eager }: ShotProps) => (
  */
 const Tour = () => (
   <ol className="m-0 grid list-none gap-24 p-0 lg:gap-32">
-    {TOUR.map((s, i) => (
-      <li
-        key={s.shot}
-        className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,4fr)_minmax(0,9fr)] lg:gap-12"
-      >
-        <div className="grid content-start gap-4 lg:sticky lg:top-24 lg:self-start">
-          <div className="border-ink flex items-baseline justify-between gap-4 border-t-2 pt-4">
-            <span
-              className="figure text-ink text-[clamp(3rem,5vw,4.5rem)] leading-[0.8] tabular-nums"
-              aria-hidden="true"
-            >
-              {String(i + 1).padStart(2, '0')}
-            </span>
-            <Typography variant="label" color="steel" className="text-right">
-              {s.where}
+    {TOUR.map((s, i) => {
+      const n = String(i + 1).padStart(2, '0');
+      return (
+        <li
+          key={s.shot}
+          className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,4fr)_minmax(0,9fr)] lg:gap-12"
+        >
+          <div className="grid content-start gap-4 lg:sticky lg:top-24 lg:self-start">
+            <div className="border-ink flex items-baseline justify-between gap-4 border-t-2 pt-4">
+              <LiquidNumeral n={n} className="text-[clamp(3rem,5vw,4.5rem)]" />
+              <Typography variant="label" color="steel" className="text-right">
+                {s.where}
+              </Typography>
+            </div>
+            <Typography variant="headline" as="h2">
+              <span className="sr-only">Step {i + 1}: </span>
+              {s.title}
             </Typography>
+            <p className="text-ink m-0 max-w-[44ch] text-[17px] leading-relaxed text-pretty">
+              <Rich text={s.body} />
+            </p>
+            <ul className="border-rule m-0 grid list-none gap-2 border-t p-0 pt-4">
+              {s.notes.map((n) => (
+                <li
+                  key={n}
+                  className="text-steel grid grid-cols-[0.75rem_minmax(0,1fr)] gap-2 text-[15px] leading-snug"
+                >
+                  <span className="bg-steel mt-[0.6em] h-px w-full" aria-hidden="true" />
+                  <span>
+                    <Rich text={n} />
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
-          <Typography variant="headline" as="h2">
-            <span className="sr-only">Step {i + 1}: </span>
-            {s.title}
-          </Typography>
-          <p className="text-ink m-0 max-w-[44ch] text-[17px] leading-relaxed text-pretty">
-            <Rich text={s.body} />
-          </p>
-          <ul className="border-rule m-0 grid list-none gap-2 border-t p-0 pt-4">
-            {s.notes.map((n) => (
-              <li
-                key={n}
-                className="text-steel grid grid-cols-[0.75rem_minmax(0,1fr)] gap-2 text-[15px] leading-snug"
-              >
-                <span className="bg-steel mt-[0.6em] h-px w-full" aria-hidden="true" />
-                <span>
-                  <Rich text={n} />
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <figure className="m-0 grid gap-3">
-          <div className="rounded-pass bg-surface shadow-lift mx-auto w-full max-w-[390px] overflow-hidden lg:max-w-none">
-            <Shot shot={s.shot} alt={s.alt} eager={i === 0} />
-          </div>
-          <figcaption className="mx-auto flex w-full max-w-[390px] flex-wrap items-baseline justify-between gap-x-4 gap-y-1 lg:max-w-none">
-            <Typography variant="data" color="steel">
-              localhost:4477
-            </Typography>
-            <Typography variant="label" color="steel">
-              Demo agent · Northgate Cycles
-            </Typography>
-          </figcaption>
-        </figure>
-      </li>
-    ))}
+          <figure className="m-0 grid gap-3">
+            <div className="rounded-pass bg-surface shadow-lift mx-auto w-full max-w-[390px] overflow-hidden lg:max-w-none">
+              <Shot shot={s.shot} alt={s.alt} eager={i === 0} />
+            </div>
+            <figcaption className="mx-auto flex w-full max-w-[390px] flex-wrap items-baseline justify-between gap-x-4 gap-y-1 lg:max-w-none">
+              <Typography variant="data" color="steel">
+                localhost:4477
+              </Typography>
+              <Typography variant="label" color="steel">
+                Demo agent · Northgate Cycles
+              </Typography>
+            </figcaption>
+          </figure>
+        </li>
+      );
+    })}
   </ol>
 );
 

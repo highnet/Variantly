@@ -1,4 +1,5 @@
 import { CommandCopy } from '@/components/CommandCopy';
+import { LiquidNumeral } from '@/components/LiquidNumeral';
 import { NodeHint, RunnerPicker } from '@/components/RunnerPicker';
 import { PromptCopy } from '@/components/PromptCopy';
 import { Rich } from '@/components/ui/Rich';
@@ -33,8 +34,8 @@ const StartChecklist = () => (
       <ol className="m-0 grid list-none gap-9 p-0">
         {CHECKLIST.map((c, i) => (
           <li key={c.id} className="grid grid-cols-[2.5rem_minmax(0,1fr)] gap-x-4">
-            <span className="figure text-steel pt-0.5 text-2xl leading-none" aria-hidden="true">
-              {i + 1}
+            <span className="self-start">
+              <LiquidNumeral n={String(i + 1)} className="text-[2rem]" />
             </span>
             <div className="grid max-w-[52ch] justify-items-start gap-3">
               <div className="grid gap-1.5">
