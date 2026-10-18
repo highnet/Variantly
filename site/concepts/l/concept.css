@@ -121,14 +121,6 @@
     transform: rotate(90deg) scale(1);
   }
 }
-:root[data-variant='l'] .vy-ll-cap {
-  font:
-    400 10px/1.5 var(--font-caption),
-    monospace;
-  letter-spacing: 0.06em;
-  color: var(--art-cap);
-  white-space: pre;
-}
 :root[data-variant='l'][data-scrolled] .vy-ll-grid,
 :root[data-variant='l'][data-scrolled] .vy-ll-spin {
   animation-play-state: paused;

@@ -40,7 +40,7 @@ type Orbiter = {
 const build = (scene: THREE.Scene, colors: string[]): Built => {
   const camera = persp(10);
   const dark = colors[0] === 'dark';
-  const mat = chrome({ dark, grid: 1.1 });
+  const mat = chrome({ dark, grid: 0.12 });
   const star4 = starGeo(4);
   const ring = new THREE.TorusGeometry(0.62, 0.34, 32, 72);
   const orbiters: Orbiter[] = [
