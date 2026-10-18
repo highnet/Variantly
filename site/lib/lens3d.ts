@@ -16,6 +16,8 @@ import {
   type LetterLook,
 } from '@/lib/letterLook';
 import { morphMesh } from '@/lib/morphMesh';
+import { compilesInParallel, firstDraw } from '@/lib/glWarm';
+import { whenIdle } from '@/lib/idle';
 import { lookAt } from '@/lib/titleTiming';
 
 /*
@@ -272,6 +274,12 @@ export const attachLens = (host: LensHost): LensPass => {
   copy.frustumCulled = false;
   const copyScene = new THREE.Scene();
   copyScene.add(copy);
+  // The door's own passes, compiled once in idle time (in parallel where the
+  // GPU allows) rather than on the first frame the door opens.
+  const cancelWarm = whenIdle(
+    () => [maskScene, tintScene, copyScene].forEach((s) => void renderer.compileAsync(s, camera)),
+    2000,
+  );
 
   // ---- The lens concept's letters, shadow, scene. ----
   const group = new THREE.Group();
@@ -331,9 +339,10 @@ export const attachLens = (host: LensHost): LensPass => {
   const replicaIs = (want: string | null) =>
     !!lensLive.word &&
     lensLive.word.closest('.vy-lens-root')?.getAttribute('data-variant') === want;
-  const dress = () => {
+  // Resolves once the looks' shaders have compiled.
+  const dress = (): Promise<unknown> => {
     const word = lensLive.word;
-    if (!word || !id || !letters.length || !replicaIs(id)) return;
+    if (!word || !id || !letters.length || !replicaIs(id)) return Promise.resolve();
     dressedFor = word;
     pools.forEach(disposePool);
     const els = [...word.children];
@@ -357,11 +366,29 @@ export const attachLens = (host: LensHost): LensPass => {
     const card = word.closest('[data-hero-title]');
     tintRGBA = card ? rgbaOf(getComputedStyle(card).backgroundColor) : [0, 0, 0, 0];
     tintMat.uniforms.uC.value.set(...tintRGBA);
-    // Compile now, not mid-move.
-    const was = group.visible;
-    group.visible = true;
-    renderer.compile(host.scene, camera);
-    group.visible = was;
+    // Compile now (off the main thread where the GPU allows), not mid-move;
+    // where it cannot, draw once too (lib/glWarm) and repaint.
+    return renderer.compileAsync(group, camera, host.scene).then(
+      () =>
+        new Promise<void>((done) => {
+          if (disposed || compilesInParallel(renderer)) return done();
+          // In idle time: never in a frame the title or a swap is moving in.
+          whenIdle(() => {
+            if (!disposed) {
+              const hidden: THREE.Object3D[] = [];
+              group.traverse((o) => {
+                if (o.visible) return;
+                hidden.push(o);
+                o.visible = true;
+              });
+              firstDraw(renderer, host.scene, camera);
+              hidden.forEach((o) => (o.visible = false));
+              host.paint();
+            }
+            done();
+          }, 1500);
+        }),
+    );
   };
 
   const build = (next: ConceptId) => {
@@ -419,7 +446,10 @@ export const attachLens = (host: LensHost): LensPass => {
       .then(() => {
         if (disposed || id !== next) return;
         laid = '';
-        dress();
+        return dress();
+      })
+      .then(() => {
+        if (disposed || id !== next) return;
         ready = true;
         if (lensLive.shown) host.paint();
       });
@@ -427,12 +457,46 @@ export const attachLens = (host: LensHost): LensPass => {
     void CONCEPT_LOADERS[next]
       .scene()
       .then(({ scene: def }) => {
-        if (disposed || id !== next) return;
-        const sc = new THREE.Scene();
-        const colors = def.colors[dark() ? 'dark' : 'light'];
-        const built = def.build(sc, colors);
-        lensScene = { scene: sc, built, colors, pixelArt: !!def.pixelArt };
-        sceneT0 = performance.now();
+        // Built, compiled and (lib/glWarm) first drawn in idle time, before
+        // it is first shown through the door: never in a frame that moves.
+        const stale = () => disposed || id !== next;
+        const drop = (sc: THREE.Scene) =>
+          sc.traverse((o) => {
+            const m = o as THREE.Mesh;
+            m.geometry?.dispose();
+            if (m.material) eachMat(m.material, (mat) => mat.dispose());
+          });
+        const inTarget = (f: () => void) => {
+          // For the pass it is drawn in: into the render target, untoned.
+          const into = renderer.getRenderTarget();
+          renderer.setRenderTarget(rt);
+          f();
+          renderer.setRenderTarget(into);
+        };
+        whenIdle(() => {
+          if (stale()) return;
+          const sc = new THREE.Scene();
+          const colors = def.colors[dark() ? 'dark' : 'light'];
+          const built = def.build(sc, colors);
+          let compiled: Promise<unknown> = Promise.resolve();
+          inTarget(() => (compiled = renderer.compileAsync(sc, built.camera)));
+          void compiled
+            .then(
+              () =>
+                new Promise<void>((done) => {
+                  if (stale() || compilesInParallel(renderer)) return done();
+                  whenIdle(() => {
+                    if (!stale()) inTarget(() => firstDraw(renderer, sc, built.camera));
+                    done();
+                  }, 1500);
+                }),
+            )
+            .then(() => {
+              if (stale()) return drop(sc);
+              lensScene = { scene: sc, built, colors, pixelArt: !!def.pixelArt };
+              sceneT0 = performance.now();
+            });
+        }, 1500);
       })
       .catch(() => {});
   };
@@ -708,6 +772,7 @@ export const attachLens = (host: LensHost): LensPass => {
     render,
     dispose: () => {
       disposed = true;
+      cancelWarm();
       offTick();
       mo.disconnect();
       document.removeEventListener('vy:gl-busy', onBusy);

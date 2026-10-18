@@ -16,6 +16,7 @@ import { perfTier } from '@/lib/perfTier';
 import { calmMotion } from '@/lib/prefs';
 import { seekTime } from '@/lib/seek';
 import { turnSlats } from '@/lib/slatSwap';
+import { warmSwap } from '@/lib/swapWarm';
 import { useSiteStore } from '@/lib/store';
 
 export const VARIANT_KEYS = CONCEPT_IDS;
@@ -102,9 +103,11 @@ export const setVariant = (v: ConceptId, opts: SwapOptions = {}) => {
     }
   };
   // Wait (briefly) for the concept's backdrop, look and (when it will run)
-  // scene, so it lands whole instead of the old scene blanking first.
+  // scene, so it lands whole instead of the old scene blanking first; then
+  // for its scene and title look to be built and compiled (lib/swapWarm), so
+  // that work stays out of the transition.
   const loaded = Promise.race([
-    prefetchConcept(v, !calmMotion()),
+    prefetchConcept(v, !calmMotion()).then(() => (id === swapId ? warmSwap(v) : undefined)),
     new Promise((r) => setTimeout(r, 400)),
   ]);
   if (!calmMotion() && seekTime() === null && (cheapSwap() || !document.startViewTransition)) {

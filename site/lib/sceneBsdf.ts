@@ -10,8 +10,30 @@ import { studioScene } from '@/lib/studioEnv';
  * soft boxes catch on them; the scene then reflects the same photo studio as
  * the 3D title (lib/studioEnv). Hand-written shaders (most scenes' stylised
  * art) are left exactly as authored. Returns a disposer, or null when the
- * scene has nothing lit to upgrade (no environment is built then).
+ * scene has nothing lit to upgrade (no environment is built then). The
+ * studio's prefiltered map is built once per renderer (studioFor) and shared
+ * by every scene drawn with it; releaseStudio frees it with the renderer.
  */
+const studios = new WeakMap<THREE.WebGLRenderer, THREE.Texture>();
+
+export const studioFor = (renderer: THREE.WebGLRenderer) => {
+  let env = studios.get(renderer);
+  if (!env) {
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    const studio = studioScene();
+    env = pmrem.fromScene(studio.scene, 0.02).texture;
+    studio.dispose();
+    pmrem.dispose();
+    studios.set(renderer, env);
+  }
+  return env;
+};
+
+export const releaseStudio = (renderer: THREE.WebGLRenderer) => {
+  studios.get(renderer)?.dispose();
+  studios.delete(renderer);
+};
+
 const physical = (m: THREE.MeshStandardMaterial | THREE.MeshLambertMaterial) => {
   const std = m instanceof THREE.MeshStandardMaterial ? m : null;
   const p = new THREE.MeshPhysicalMaterial({
@@ -63,15 +85,7 @@ export const sceneBsdf = (renderer: THREE.WebGLRenderer, scene: THREE.Scene) => 
   });
   if (!done.size) return null;
   swapped.forEach((m) => m.dispose());
-  const pmrem = new THREE.PMREMGenerator(renderer);
-  const studio = studioScene();
-  const env = pmrem.fromScene(studio.scene, 0.02).texture;
-  studio.dispose();
-  pmrem.dispose();
-  scene.environment = env;
+  scene.environment = studioFor(renderer);
   scene.environmentIntensity = 0.6;
-  return () => {
-    env.dispose();
-    done.forEach((p) => p.dispose());
-  };
+  return () => done.forEach((p) => p.dispose());
 };
