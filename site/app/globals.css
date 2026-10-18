@@ -1313,6 +1313,11 @@ a:hover > .brand-mark .brand-grip {
   inset: 0;
   pointer-events: none;
 }
+/* Never paint the raw layer outside a transition: it is a full-screen amber
+   fill that only makes sense through its clipped snapshot. */
+:root:not(:active-view-transition) .vy-swap-frame {
+  display: none;
+}
 /* Lives only in the new state of a swap, as rings clipped by lib/lensSwap;
    until its keyframes start it shows nothing. */
 ::view-transition-new(vy-swap-frame-0),

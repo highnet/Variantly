@@ -303,7 +303,7 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
     const g = glitching
       ? glitchFrame(Math.floor(now / 40) + glitchSeed, glitchAmount, rect.h)
       : NO_GLITCH;
-    // Phones: 2D only.
+    // Phones: no RGB split or flicker in the glitch.
     lensLive.glitch = mode === 'touch' ? { ...g, split: 0, flicker: false } : g;
     const { w, h } = rect;
     const local = tiltOutline(doorOutline(w, h, DOOR_RADIUS, g.bands), w, h, tilt);
