@@ -305,14 +305,14 @@ export const DEMO_RUNS: DemoRun[] = [
 export const STEPS: { label: string; title: string; body: string; artifact: string }[] = [
   {
     label: 'Paste',
-    title: 'Paste one command',
-    body: 'Run it in your **site’s folder**. A short wizard asks: **how many designs**, **which pages**, any **extras**.',
+    title: 'Paste {{cmd}}',
+    body: 'Run it in a {{terminal}} in your **site’s folder**. A short wizard asks: **how many designs**, **which pages**, any **extras**.',
     artifact: 'npx variantly',
   },
   {
     label: 'Wait',
     title: 'Your AI designs',
-    body: '**Your own assistant** redesigns the site several ways, each in a **separate copy**. Your files stay **untouched**.',
+    body: '**Your own assistant** redesigns the site several ways, each in a **separate copy** on its own branch of your site’s timeline. Your files stay **untouched**.',
     artifact: 'Start with 4',
   },
   {
@@ -357,7 +357,7 @@ export const PROMPTS = {
 export const CHECKLIST: { id: string; need: string; how: string; prompt: string }[] = [
   {
     id: 'agent',
-    need: 'An AI coding agent on your computer',
+    need: 'An {{agent}} on your computer',
     how: '**[Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview)**, **[Codex](https://github.com/openai/codex)**, **[Copilot CLI](https://github.com/github/copilot-cli)**, **[Gemini CLI](https://github.com/google-gemini/gemini-cli)** or **[Cursor CLI](https://cursor.com/cli)**, signed in or on [OpenRouter](https://openrouter.ai). variantly **finds the one you have**, or installs one and opens its sign-in. [Lovable](https://lovable.dev)/v0 only? Those run in the browser; install Claude Code.',
     prompt:
       'Help me install Claude Code on this computer and sign in. Tell me each command to run and check it works with `claude --version`.',
@@ -372,14 +372,14 @@ export const CHECKLIST: { id: string; need: string; how: string; prompt: string 
   {
     id: 'git',
     need: 'The code saved with git',
-    how: 'A [git](https://git-scm.com/downloads) repository. **No commit yet? Variantly makes the first one for you.**',
+    how: 'A {{git}} repository. **No {{commit}} yet? Variantly makes the first one for you.**',
     prompt:
       'Make sure this folder is a git repository and commit everything in it with the message "before variantly". Initialise git first if needed.',
   },
   {
     id: 'run',
     need: 'The site runs on your computer',
-    how: 'Starts locally and opens in a browser. Plus **[Node.js](https://nodejs.org/en/download) 20.11+**, whatever your site is built with: variantly itself runs on it (that’s what **npx** runs), and most AI agents install with it.',
+    how: 'Starts locally and opens in a browser. Plus **{{node}} 20.11+**, whatever your site is built with: variantly itself runs on it (that’s what **{{npx}}** runs), and most AI agents install with it.',
     prompt:
       'Get this website running locally and tell me the address to open. Also check Node.js is 20.11 or newer (`node --version`) and install it if not: variantly runs on Node even if the site doesn’t.',
   },
