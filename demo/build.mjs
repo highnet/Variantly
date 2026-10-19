@@ -9,14 +9,20 @@
 //
 // Without --theme, every theme that has been edited is built.
 //
+// A narrated film (wide, vertical, all) is built only when every line was
+// read by ElevenLabs: a line in the system's rehearsal voice stops the build
+// (lib/narration.mjs). ALLOW_LOCAL_VOICE=1 builds anyway, and the film is
+// stamped as a rehearsal so the site's upload-demo-video refuses it.
+//
 // --no-captions (wide and vertical only): a silent picture with no burned-in
 // captions, for the short cuts that carry their own lines and captions
 // (SCRIPT-90s.md). Writes out/variantly-demo-<theme>-nocaptions*.mp4 next to
 // the normal films, which keep their captions.
 import { spawn } from 'node:child_process';
-import { copyFileSync, existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { at, ffmpeg, ffmpegPath, log, readJson, run, seekreelDir, writeJson } from './lib/common.mjs';
+import { at, ffmpeg, ffmpegPath, log, readJson, run, script, seekreelDir, writeJson } from './lib/common.mjs';
+import { unfitLines, unfitMessage } from './lib/narration.mjs';
 
 const args = process.argv.slice(2);
 const themeAt = args.indexOf('--theme');
@@ -29,6 +35,36 @@ const themes = (asked ?? ['light', 'dark']).filter((theme) => existsSync(at(`tim
 if (!themes.length) {
   console.error('Nothing edited yet: run `npm run record` and `npm run edit` first.');
   process.exit(1);
+}
+
+// No robotic rehearsal voice in a narrated film. The silent cuts (probe,
+// gif, thumbnail, --no-captions) carry no voice, so they skip this.
+const NARRATED = !NO_CAPTIONS && ['wide', 'vertical', 'all'].includes(mode);
+const unfit = unfitLines(script().scenes, {
+  manifest: readJson(at('audio', 'manifest.json'), {}),
+  voices: readJson(at('audio', 'voices.json'), {}),
+  hasAudio: (id) => existsSync(at('audio', `${id}.wav`)),
+});
+const problem = unfitMessage(unfit);
+const REHEARSAL = Boolean(problem);
+if (NARRATED && problem) {
+  console.error(problem);
+  if (!process.env.ALLOW_LOCAL_VOICE) process.exit(1);
+  log('build', 'ALLOW_LOCAL_VOICE is set: building a rehearsal. Do not publish this film.');
+}
+
+/**
+ * Records which voice the 16:9 film carries, next to it: upload-demo-video
+ * reads this and refuses a rehearsal, or a film with no stamp at all.
+ */
+function stamp(theme) {
+  const film = at('out', `variantly-demo-${theme}.mp4`);
+  writeJson(at('out', `variantly-demo-${theme}.voice.json`), {
+    rehearsal: REHEARSAL,
+    robot: unfit.robot,
+    missing: unfit.missing,
+    bytes: statSync(film).size,
+  });
 }
 
 const SEEKREEL = seekreelDir();
@@ -134,8 +170,11 @@ for (const theme of themes) {
   if (mode === 'wide' || mode === 'all') {
     await seekreel('audio', '--config', wide);
     await loudnorm(at('build', theme, 'soundtrack.wav'));
+    // A failed render must not leave the last film's stamp vouching for it.
+    rmSync(at('out', `variantly-demo-${theme}.voice.json`), { force: true });
     await seekreel('render', '--config', wide);
     await seekreel('encode', '--config', wide);
+    stamp(theme);
   }
   if (mode === 'vertical' || mode === 'all') {
     await seekreel('render', '--config', tall);

@@ -100,8 +100,17 @@ the take does not install it, your copy is put back when the take ends.
 **Rehearse without keys.** `npm run voice:local` (or `voice` with no keys in
 `.env`) uses the system's own speech: Windows' built-in voices, macOS `say`,
 or `espeak-ng` on Linux. It writes the same files as ElevenLabs, with approximate word
-timings, so `record:dry`, `edit` and `build` all work. Run `npm run voice`
+timings, so `record:dry`, `edit` and `probe` all work. Run `npm run voice`
 with your keys before the real take; it re-voices every line.
+
+**No robot voice in a real film.** `audio/voices.json` records which voice
+read each line. `build` (wide, vertical, all) stops if any line was read by
+the rehearsal voice or has no audio, and names the lines: fill in `.env`, run
+`npm run voice` (it re-voices only those), `npm run edit`, build again. No
+re-recording. `ALLOW_LOCAL_VOICE=1` builds anyway, for rehearsals only: the
+film is stamped as one (`out/variantly-demo-<theme>.voice.json`) and the
+site's `npm run upload-demo-video` refuses it, as it refuses any film without
+a stamp.
 
 **ffmpeg needs no install.** Both the demo and SeekReel use the `ffmpeg-static`
 build from npm. To use your own, set `FFMPEG` (and `FFPROBE`) in `.env`.
@@ -308,6 +317,8 @@ Delete the folder, or run `npx variantly clean .work/tallyboard` first.
   zooms land on the right control, nothing is cut off.
 - Watch `out/variantly-demo.mp4` end to end. Look for no gap in the voice
   longer than a second, no clipped words, no error toasts or stuck spinners.
+- Every line is in your ElevenLabs voice: `build` and `upload-demo-video`
+  enforce this, so never publish an `ALLOW_LOCAL_VOICE` film.
 - `video/raw-timeline.json` lists `warnings` (an action that ran past its
   line) and `pageErrors`. Both should be empty.
 - Everything on screen is the fictional Tallyboard site and variantly itself:
