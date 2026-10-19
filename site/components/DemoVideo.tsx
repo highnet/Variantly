@@ -1,32 +1,56 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 
 import { CommandCopy } from '@/components/CommandCopy';
 import { LiquidNumeral } from '@/components/LiquidNumeral';
 import { Typography } from '@/components/ui/Typography';
-import { Button, buttonVariants } from '@/components/ui/Button';
+import { buttonVariants } from '@/components/ui/Button';
 import { Rich } from '@/components/ui/Rich';
 import { DEMO_STEPS } from '@/lib/content';
-import { DEMO_BOOKING_URL, DEMO_VIDEO_ID_DARK, DEMO_VIDEO_ID_LIGHT } from '@/lib/site';
+import { DEMO_BOOKING_URL, DEMO_VIDEO_DARK, DEMO_VIDEO_LIGHT } from '@/lib/site';
 
-const HAS_VIDEO = Boolean(DEMO_VIDEO_ID_LIGHT || DEMO_VIDEO_ID_DARK);
+const HAS_VIDEO = Boolean(DEMO_VIDEO_LIGHT || DEMO_VIDEO_DARK);
 
-// The cut matching the theme the page is showing when play is pressed.
-const videoForTheme = () =>
-  document.documentElement.dataset.theme === 'dark'
-    ? DEMO_VIDEO_ID_DARK || DEMO_VIDEO_ID_LIGHT
-    : DEMO_VIDEO_ID_LIGHT || DEMO_VIDEO_ID_DARK;
+// The site theme (html[data-theme], set before paint by the boot script).
+const subscribeTheme = (onChange: () => void) => {
+  const mo = new MutationObserver(onChange);
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  return () => mo.disconnect();
+};
+const readTheme = () => (document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light');
+const serverTheme = () => 'light' as const;
 
 /*
  * The narrated live demo, straight after the showcase: people who just saw
  * the result watch it happen before reading the steps. A 16:9 frame holds
  * the space either way, so the page doesn't shift when the video lands.
- * Nothing loads from YouTube until the visitor clicks play (GDPR / TKG),
- * and the light or dark cut is chosen to match the site's theme then.
+ * The films are served from Vercel Blob, so nothing loads from a third
+ * party; with preload="none" only the poster loads until play is pressed.
+ * The light or dark cut follows the site theme, and switching theme
+ * mid-play carries on from the same moment. Captions are burned in.
  */
 const DemoVideo = () => {
-  const [videoId, setVideoId] = useState('');
+  const theme = useSyncExternalStore(subscribeTheme, readTheme, serverTheme);
+  const cut =
+    theme === 'dark'
+      ? (DEMO_VIDEO_DARK ?? DEMO_VIDEO_LIGHT)
+      : (DEMO_VIDEO_LIGHT ?? DEMO_VIDEO_DARK);
+  const mp4 = cut?.mp4;
+  const video = useRef<HTMLVideoElement>(null);
+
+  // src is set here rather than as a prop so a theme switch can keep the
+  // place: a new src resets the element, so note the time and state first.
+  useEffect(() => {
+    const el = video.current;
+    if (!el || !mp4 || el.src === mp4) return;
+    const at = el.currentTime;
+    const playing = !el.paused && !el.ended;
+    el.src = mp4;
+    if (at > 0) el.currentTime = at;
+    if (playing) void el.play().catch(() => {});
+  }, [mp4]);
+
   return (
     <section id="try" aria-labelledby="demo-title" className="grid scroll-mt-28 gap-9">
       <div className="grid max-w-[68ch] gap-3">
@@ -57,29 +81,16 @@ const DemoVideo = () => {
       )}
       {HAS_VIDEO && (
         <div className="border-ink bg-slate relative aspect-video w-full max-w-[1100px] overflow-hidden rounded-md border-2">
-          {videoId ? (
-            <iframe
-              className="absolute inset-0 size-full"
-              src={`https://www.youtube-nocookie.com/embed/${videoId}?rel=0&autoplay=1`}
-              title="variantly live demo"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-            />
-          ) : (
-            <div className="absolute inset-0 grid place-items-center content-center gap-4 p-6 text-center">
-              <Button variant="primary" size="big" onClick={() => setVideoId(videoForTheme())}>
-                <svg viewBox="0 0 24 24" className="fill-current" aria-hidden="true">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-                Play the demo
-              </Button>
-              <p className="text-steel-on-slate m-0 max-w-[52ch] text-sm">
-                Plays from YouTube (youtube-nocookie.com). Pressing play loads it and sends your IP
-                address to Google. See the <a href="/privacy">privacy policy</a>.
-              </p>
-            </div>
-          )}
+          {/* Captions are burned into the film, so there is no caption track. */}
+          <video
+            ref={video}
+            className="absolute inset-0 size-full"
+            poster={cut?.poster ?? undefined}
+            preload="none"
+            controls
+            playsInline
+            aria-label="variantly live demo, narrated, with burned-in captions"
+          />
         </div>
       )}
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
