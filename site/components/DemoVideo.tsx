@@ -27,7 +27,7 @@ type Length = 'short' | 'full';
 // film as uploaded). Update with a re-cut.
 const LENGTHS: readonly (readonly [Length, string, string])[] = [
   ['short', 'Quick look', '1:28'],
-  ['full', 'Whole run', '9:34'],
+  ['full', 'Whole run', '9:11'],
 ];
 
 // The site theme (html[data-theme], set before paint by the boot script).
