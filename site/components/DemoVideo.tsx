@@ -23,9 +23,11 @@ const HAS_SHORT = Boolean(DEMO_VIDEO_SHORT_LIGHT || DEMO_VIDEO_SHORT_DARK);
 
 type Length = 'short' | 'full';
 
-const LENGTHS: readonly (readonly [Length, string])[] = [
-  ['short', '90 seconds'],
-  ['full', 'The whole run · 10 min'],
+// Each film's running time, as the player shows it (the 90 s cut and the full
+// film as uploaded). Update with a re-cut.
+const LENGTHS: readonly (readonly [Length, string, string])[] = [
+  ['short', 'Quick look', '1:28'],
+  ['full', 'Whole run', '9:37'],
 ];
 
 // The site theme (html[data-theme], set before paint by the boot script).
@@ -90,22 +92,26 @@ const DemoVideo = () => {
           </p>
         </div>
         {HAS_SHORT && HAS_FULL && (
-          <div
-            role="group"
-            aria-label="Video length"
-            className="border-rule rounded-chip flex gap-1 border p-1"
-          >
-            {LENGTHS.map(([value, label]) => (
-              <Button
-                key={value}
-                variant="concept"
-                size="small"
-                aria-pressed={length === value}
-                onClick={() => setLength(value)}
-              >
-                {label}
-              </Button>
-            ))}
+          <div role="group" aria-labelledby="demo-length" className="grid w-full gap-2 sm:w-auto">
+            <Typography variant="label" id="demo-length" className="text-steel">
+              Length
+            </Typography>
+            <div className="border-ink rounded-control grid grid-cols-2 overflow-hidden border">
+              {LENGTHS.map(([value, label, time]) => (
+                <Button
+                  key={value}
+                  variant="segment-ink"
+                  size="segment-ink"
+                  aria-pressed={length === value}
+                  onClick={() => setLength(value)}
+                >
+                  {label}
+                  <span className="text-steel group-aria-pressed:text-surface/70 tabular-nums">
+                    {time}
+                  </span>
+                </Button>
+              ))}
+            </div>
           </div>
         )}
       </div>
