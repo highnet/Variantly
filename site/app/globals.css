@@ -76,9 +76,17 @@
   zoom: 1.125;
 }
 
+/* Every face but the title card's (a picture of a word, drawn in nine faces
+   and matched by the 3D title and the Lens), decorative type and code. */
 :root[data-readable='true'] body,
-:root[data-readable='true'] body * {
-  font-family: 'Atkinson Hyperlegible', Verdana, Tahoma, sans-serif !important;
+:root[data-readable='true']
+  body
+  *:not(
+    :is([data-hero-title], [aria-hidden='true'], code, pre, kbd, samp),
+    :is([data-hero-title], [aria-hidden='true'], code, pre, kbd, samp) *
+  ) {
+  font-family:
+    var(--font-readable), 'Atkinson Hyperlegible', Verdana, Tahoma, sans-serif !important;
   letter-spacing: 0.02em !important;
   word-spacing: 0.08em !important;
 }
@@ -87,6 +95,19 @@
 :root[data-readable='true'] body li,
 :root[data-readable='true'] body dd {
   line-height: 1.75 !important;
+}
+
+/* Long words (URLs, commands, file paths) wrap instead of pushing their
+   column past a phone's edge, most of all with larger text or the readable
+   font, which widen every word. Links and inline code inside running text
+   may break anywhere; other text only where a word would overflow. */
+@layer base {
+  :where(p, li, dd, dt, blockquote, figcaption, td, th, h1, h2, h3, h4, label, legend) {
+    overflow-wrap: break-word;
+  }
+  :where(p, li, dd, blockquote, td) :where(a, code, kbd, samp) {
+    overflow-wrap: anywhere;
+  }
 }
 
 :root[data-calm='true'] * {

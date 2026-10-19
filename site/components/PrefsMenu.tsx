@@ -124,6 +124,9 @@ const PrefsMenu = () => {
                   size="segment"
                   aria-pressed={prefs.motion === v}
                   onClick={() => set({ motion: v })}
+                  // A label wraps rather than spill when the readable font or
+                  // larger text widens it.
+                  className="min-w-0 leading-tight whitespace-normal"
                 >
                   {label}
                 </Button>
