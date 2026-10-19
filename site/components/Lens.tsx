@@ -200,12 +200,22 @@ const lensController = (mode: Mode, els: Els, ui: Ui) => {
   let dragging = false;
   const cleanups: (() => void)[] = [];
 
-  // Re-line the word up when either word's box changes (fonts and the lens
-  // concept's sheet land after the first placement).
+  // Re-line the word up when either word's box changes or a font lands
+  // (fonts and the lens concept's sheet arrive after the first placement,
+  // and keep arriving while the page loads), and have the 3D pass measure
+  // the words again.
   let watched: Element | null = null;
-  const words = new ResizeObserver(() => shown && placeRoot());
+  const realign = () => {
+    if (!shown) return;
+    placeRoot();
+    lensLive.rev++;
+    lensTick();
+  };
+  const words = new ResizeObserver(realign);
   cleanups.push(() => words.disconnect());
-  void document.fonts?.ready.then(() => shown && placeRoot());
+  void document.fonts?.ready.then(realign);
+  document.fonts?.addEventListener('loadingdone', realign);
+  cleanups.push(() => document.fonts?.removeEventListener('loadingdone', realign));
 
   const placeRoot = () => {
     const r = els.root();

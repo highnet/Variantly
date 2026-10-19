@@ -34,8 +34,8 @@ const Page = () => (
     </p>
     <ul className="m-0 grid list-disc gap-1 pl-5">
       <li>
-        The demo video is hosted on YouTube, whose player is outside our control. We provide
-        captions for the narration.
+        The demo video&rsquo;s captions are burned into the picture, so their size and colours
+        cannot be changed. There is no separate transcript yet.
       </li>
       <li>Some decorative animations in the product preview may not be fully described.</li>
     </ul>

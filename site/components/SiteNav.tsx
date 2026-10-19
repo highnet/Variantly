@@ -78,7 +78,7 @@ const SiteNav = ({ brand, aside }: SiteNavProps) => {
 
   return (
     <header className="border-rule bg-panel/95 sticky top-0 z-40 border-b backdrop-blur-sm">
-      <div className="flex h-14 items-center justify-between gap-4 px-4 sm:px-6">
+      <div className="@container flex h-14 items-center justify-between gap-4 px-4 sm:px-6">
         {brand}
         <nav aria-label="Main" className="hidden md:block">
           <ul className="m-0 flex list-none items-center gap-6 p-0 lg:gap-8">

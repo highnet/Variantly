@@ -1,0 +1,20 @@
+{
+  "light": {
+    "mp4": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-light-nQq5tHcu6mxPHA29GZpta15qtacCBo.mp4",
+    "poster": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-light-poster-yZK611VaHpDBAImHgePDd8yATccy1D.png"
+  },
+  "dark": {
+    "mp4": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-dark-OHZUbHdQBMaAuWqmvwC1IisOabGJZV.mp4",
+    "poster": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-dark-poster-y8Yatwt19675RslG9mjKmQ3LWnIl6r.png"
+  },
+  "short": {
+    "light": {
+      "mp4": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-light-90s-lSomwVBPCK4Ki9baLPSfF1nqizMJtF.mp4",
+      "poster": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-light-90s-poster-8mSCxXBBTEEXP13MB5qnMQkSQHnbfH.png"
+    },
+    "dark": {
+      "mp4": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-dark-90s-hNSFkaLOxfidkAkca1AEzmTokdtzwm.mp4",
+      "poster": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-dark-90s-poster-mqNshVyS7luEJJxKLp0LoGAoAsqAsZ.png"
+    }
+  }
+}

@@ -46,19 +46,9 @@ const Page = () => (
       site&rsquo;s data in your browser.
     </p>
     <p>
-      Fonts are served from this website itself. No content is loaded from third parties unless you
-      choose to, as described below.
-    </p>
-    <h2>Demo video (YouTube)</h2>
-    <p>
-      The demo video is provided by Google Ireland Limited, Gordon House, Barrow Street, Dublin 4,
-      Ireland, in privacy-enhanced mode (youtube-nocookie.com). Nothing is loaded from YouTube until
-      you press play. When you do, your IP address and technical data about your browser are sent to
-      Google, which may also store information on your device and transfer data to Google LLC in the
-      USA (certified under the EU-US Data Privacy Framework). The legal basis is your consent, given
-      by pressing play (Art. 6 (1) (a) GDPR, § 165 (3) TKG 2021). You can withdraw it for the future
-      by reloading the page and not pressing play again. See{' '}
-      <a href="https://policies.google.com/privacy">Google&rsquo;s privacy policy</a>.
+      Fonts and the demo video are served from this website itself, the video from Vercel&rsquo;s
+      file storage (Vercel Blob) under the same terms as the hosting above. No content is loaded
+      from third parties unless you choose to, as described below.
     </p>
     <h2>Booking a demo (Calendly)</h2>
     <p>

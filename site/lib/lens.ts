@@ -45,6 +45,9 @@ export type LensLive = {
   word: HTMLElement | null;
   // The card's top-left on screen (viewport px), kept by the UI.
   card: { left: number; top: number };
+  // Bumped each time the UI re-aligns the lens word (fonts landing, a word
+  // resizing): the 3D pass measures both words again.
+  rev: number;
 };
 
 export const lensLive: LensLive = {
@@ -61,6 +64,7 @@ export const lensLive: LensLive = {
   scene: false,
   word: null,
   card: { left: 0, top: 0 },
+  rev: 0,
 };
 
 const listeners = new Set<() => void>();

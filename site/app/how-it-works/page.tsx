@@ -54,7 +54,11 @@ const HowItWorksPage = () => (
           </Link>{' '}
           lists all four things it needs.
         </p>
-        <CommandCopy command="npx variantly" accent className="w-fit max-w-full min-w-72" />
+        <CommandCopy
+          command="npx variantly"
+          accent
+          className="w-fit max-w-full min-w-[min(18rem,100%)]"
+        />
       </section>
     </main>
   </SiteShell>

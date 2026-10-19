@@ -19,6 +19,7 @@
 import { createHash } from 'node:crypto';
 import { existsSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { at, duration, ffmpeg, log, readJson, run, script, writeJson } from './lib/common.mjs';
+import { localHash } from './lib/narration.mjs';
 import { risky, toPls, toSpoken, toWritten } from './lib/pronounce.mjs';
 
 const args = process.argv.slice(2);
@@ -131,6 +132,9 @@ const scenes = script().scenes;
 mkdirSync(at('audio'), { recursive: true });
 const manifest = readJson(at('audio', 'manifest.json'), {});
 const durations = readJson(at('audio', 'durations.json'), {});
+// Which voice read each line: build.mjs refuses a final film with any
+// 'local' line in it.
+const voices = readJson(at('audio', 'voices.json'), {});
 
 /** Character alignment → words with start/end seconds. */
 function words(alignment) {
@@ -156,7 +160,9 @@ function words(alignment) {
 for (const [i, scene] of scenes.entries()) {
   if (only.size && !only.has(scene.id)) continue;
   const line = toSpoken(scene.text, scene.say);
-  const hash = createHash('sha1').update(JSON.stringify(LOCAL ? [line.spoken, scene.text, 'local'] : [line.spoken, scene.text, voice, model, settings, dictionary])).digest('hex');
+  const hash = LOCAL
+    ? localHash(line.spoken, scene.text)
+    : createHash('sha1').update(JSON.stringify([line.spoken, scene.text, voice, model, settings, dictionary])).digest('hex');
   const mp3 = at('audio', `${scene.id}.mp3`);
   if (!only.size && manifest[scene.id] === hash && existsSync(mp3)) {
     log('voice', `${scene.id}: unchanged`);
@@ -185,6 +191,7 @@ for (const [i, scene] of scenes.entries()) {
     durations[scene.id] = Number((await duration(mp3)).toFixed(3));
     writeJson(at('audio', `${scene.id}.words.json`), toWritten(spreadWords(line.spoken, durations[scene.id]), line));
     manifest[scene.id] = hash;
+    voices[scene.id] = 'local';
     log('voice', `${scene.id}: ${durations[scene.id]}s (local)`);
     continue;
   }
@@ -216,10 +223,15 @@ for (const [i, scene] of scenes.entries()) {
 
   durations[scene.id] = Number((await duration(mp3)).toFixed(3));
   manifest[scene.id] = hash;
+  voices[scene.id] = 'elevenlabs';
   log('voice', `${scene.id}: ${durations[scene.id]}s`);
 }
 
 writeJson(at('audio', 'durations.json'), durations);
 writeJson(at('audio', 'manifest.json'), manifest);
+writeJson(at('audio', 'voices.json'), voices);
 const total = scenes.reduce((sum, s) => sum + (durations[s.id] ?? 0), 0);
 log('voice', `total narration ${total.toFixed(1)}s`);
+const robot = scenes.filter((s) => voices[s.id] === 'local').map((s) => s.id);
+if (robot.length && !LOCAL) log('voice', `still in the rehearsal voice: ${robot.join(', ')}. Run \`npm run voice\` with keys to re-voice them.`);
+else if (LOCAL) log('voice', 'Rehearsal voice: fine for record:dry and probes. build refuses to make a final film with it.');

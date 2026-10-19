@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-import { DemoVideo } from '@/components/DemoVideo';
+import { DemoSteps } from '@/components/DemoVideo';
 import { PageIntro } from '@/components/PageIntro';
 import { SiteShell } from '@/components/SiteShell';
 import { Stacks } from '@/components/Stacks';
@@ -22,7 +22,7 @@ const StartPage = () => (
         no account.
       </PageIntro>
       <StartChecklist />
-      <DemoVideo />
+      <DemoSteps />
       <Stacks />
       <WithLive />
     </main>

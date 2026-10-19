@@ -128,7 +128,9 @@ const PromptCopy = ({
         </Button>
         <blockquote
           className={cn(
-            'm-0 max-w-[62ch] border-l pl-3.5 text-[14px] leading-relaxed',
+            // The prompt carries a URL: it breaks anywhere rather than run past a
+            // narrow screen.
+            'm-0 max-w-[62ch] border-l pl-3.5 text-[14px] leading-relaxed wrap-anywhere',
             slate ? 'border-slate-line text-steel-on-slate' : 'border-rule text-steel',
           )}
         >

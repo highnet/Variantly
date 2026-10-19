@@ -100,7 +100,11 @@ export const Backdrop = () => {
       holdFrame('title');
     }
     // Past the hero the scene steps back so body copy stays readable.
-    const onScroll = () => html.toggleAttribute('data-scrolled', scrollY > 520);
+    // data-off-top: any scroll at all, for art that only works at the top.
+    const onScroll = () => {
+      html.toggleAttribute('data-scrolled', scrollY > 520);
+      html.toggleAttribute('data-off-top', scrollY > 24);
+    };
     onScroll();
     addEventListener('scroll', onScroll, { passive: true });
     return () => removeEventListener('scroll', onScroll);

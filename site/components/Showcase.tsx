@@ -912,20 +912,28 @@ const Showcase = () => {
     const title = document.getElementById('hero-title');
     const line = title?.querySelector<HTMLElement>('[data-title-line]');
     if (!title || !line) return;
+    // Both measured in layout px (offsetWidth, clientWidth), so the larger
+    // text aid's page zoom scales them alike.
+    let width = -1;
     const fit = () => {
+      width = title.clientWidth;
       title.style.fontSize = '';
-      const room = title.clientWidth;
-      const need = line.getBoundingClientRect().width;
-      if (need > room) {
+      const need = line.offsetWidth;
+      if (need > width) {
         const px = parseFloat(getComputedStyle(title).fontSize);
-        title.style.fontSize = `${Math.floor((px * room) / need)}px`;
+        title.style.fontSize = `${Math.floor((px * width) / need)}px`;
       }
     };
     fit();
-    const ro = new ResizeObserver(fit);
+    // Only a new width refits: shrinking the title changes its height, and
+    // refitting on that would undo the shrink, and so on, every frame.
+    const ro = new ResizeObserver(() => title.clientWidth !== width && fit());
     ro.observe(title.parentElement ?? title);
     const mo = new MutationObserver(fit);
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-variant'] });
+    mo.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-variant', 'data-readable', 'data-large'],
+    });
     document.fonts.addEventListener('loadingdone', fit);
     return () => {
       ro.disconnect();

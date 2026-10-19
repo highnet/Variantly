@@ -85,6 +85,12 @@
     border-radius: 24px;
     margin-inline: 12px;
   }
+  /* Phones: the pebble row rests in a fixed band of the viewport, between
+     the title card and the headline only while the page is at the top. Once
+     it scrolls, body copy runs through that band, so the pebbles leave. */
+  :root[data-variant='a'][data-off-top] :is(.vy-scene, .vy-blobs) {
+    opacity: 0;
+  }
 }
 :root[data-variant='a'] {
   --flap-bg: #ff7a59;

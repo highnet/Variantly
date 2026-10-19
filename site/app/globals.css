@@ -76,9 +76,17 @@
   zoom: 1.125;
 }
 
+/* Every face but the title card's (a picture of a word, drawn in nine faces
+   and matched by the 3D title and the Lens), decorative type and code. */
 :root[data-readable='true'] body,
-:root[data-readable='true'] body * {
-  font-family: 'Atkinson Hyperlegible', Verdana, Tahoma, sans-serif !important;
+:root[data-readable='true']
+  body
+  *:not(
+    :is([data-hero-title], [aria-hidden='true'], code, pre, kbd, samp),
+    :is([data-hero-title], [aria-hidden='true'], code, pre, kbd, samp) *
+  ) {
+  font-family:
+    var(--font-readable), 'Atkinson Hyperlegible', Verdana, Tahoma, sans-serif !important;
   letter-spacing: 0.02em !important;
   word-spacing: 0.08em !important;
 }
@@ -87,6 +95,19 @@
 :root[data-readable='true'] body li,
 :root[data-readable='true'] body dd {
   line-height: 1.75 !important;
+}
+
+/* Long words (URLs, commands, file paths) wrap instead of pushing their
+   column past a phone's edge, most of all with larger text or the readable
+   font, which widen every word. Links and inline code inside running text
+   may break anywhere; other text only where a word would overflow. */
+@layer base {
+  :where(p, li, dd, dt, blockquote, figcaption, td, th, h1, h2, h3, h4, label, legend) {
+    overflow-wrap: break-word;
+  }
+  :where(p, li, dd, blockquote, td) :where(a, code, kbd, samp) {
+    overflow-wrap: anywhere;
+  }
 }
 
 :root[data-calm='true'] * {
@@ -1751,13 +1772,23 @@ header.vy-header-glass {
   padding-bottom: clamp(5rem, 8vw, 8rem);
 }
 :root[data-variant] [data-hero-title] {
-  padding-block: clamp(4rem, 9vw, 8rem);
+  --title-pad: clamp(4rem, 9vw, 8rem);
+  --title-pad-end: var(--title-pad);
+  padding-block: var(--title-pad) var(--title-pad-end);
   /* One size for every concept's hero (the Lens door lines the word up
      across concepts): the word's line plus the padding, borders inside. */
   box-sizing: border-box;
-  height: calc(clamp(2.5rem, 16vw, 11rem) * 1.4 + 2 * clamp(4rem, 9vw, 8rem));
+  height: calc(clamp(2.5rem, 16vw, 11rem) * 1.4 + var(--title-pad) + var(--title-pad-end));
   min-height: 0;
   margin: 0;
+}
+/* Below 64rem the word runs nearly edge to edge, so the resting Lens tab
+   (96px tall, 14px in from the bottom-right corner) sat on its last letter.
+   A taller strip under the word holds the tab and its "Try ..." chip. */
+@media (width < 64rem) {
+  :root[data-variant] [data-hero-title] {
+    --title-pad-end: max(var(--title-pad), 7.25rem);
+  }
 }
 :root[data-variant] [data-hero-grid] {
   padding-block: clamp(3rem, 7vw, 6.5rem);

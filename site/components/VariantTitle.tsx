@@ -1,12 +1,15 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 
 import { Lens } from '@/components/Lens';
 import { canWebGL } from '@/lib/glTier';
 import {
   blendMorph,
+  holdCarry,
   loadMorph,
+  mixCarry,
+  morphCarry,
   morphPose,
   morphTrack,
   planStep,
@@ -28,6 +31,7 @@ import {
 } from '@/lib/titleColor';
 import { useSiteStore } from '@/lib/store';
 import {
+  carryWeight,
   faceAt,
   morphAt,
   msToNextStep,
@@ -130,17 +134,25 @@ type LetterProps = {
   low: boolean;
   // The run's timeline: the reveal, or the quick morph of a concept change.
   tl: Timeline;
+  // performance.now() when the run started, shared with the 3D word.
+  clock: RefObject<number>;
   variant: string | null;
 };
 
 /* One letter that shape-shifts through the font wardrobe, then locks in. */
-const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: LetterProps) => {
+const Letter = ({ char, index, run, solid, go, morph, low, tl, clock, variant }: LetterProps) => {
   // 'idle' = resting on the final face, a number = flickering, null = just locked.
   const [live, setLive] = useState<number | null | 'idle'>('idle');
-  // performance.now() when this letter's reveal started.
-  const t0 = useRef(0);
   // The colour this letter last rested in (a concept change morphs from it).
   const rested = useRef<Lab | null>(null);
+  // The shape and colour it was caught in when a new run cut in mid-morph
+  // (switching concepts quickly), eased out over that run's start, as the 3D
+  // word does (lib/glyphMorph mixCarry).
+  const carry = useRef<{
+    c: ReturnType<typeof morphCarry> | null;
+    run: number;
+    face: Lab | null;
+  }>({ c: null, run: -1, face: null });
 
   useEffect(() => {
     if (seekTime() !== null || calmMotion()) return;
@@ -150,8 +162,9 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
     if (solid || canWebGL()) return;
     // Without WebGL the HTML word plays the reveal, once its outlines are in.
     if (!go) return;
-    const start = performance.now();
-    t0.current = start;
+    // The run's clock (set as the run starts), so the outline (drawn from the
+    // same clock) and the face changes stay in step.
+    const start = clock.current;
     let timer = 0;
     const tick = () => {
       const step = stepAt(performance.now() - start, index, tl);
@@ -160,9 +173,12 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
       if (step !== null)
         timer = window.setTimeout(tick, msToNextStep(performance.now() - start, index, tl) + 4);
     };
-    timer = window.setTimeout(tick, startDelay(index, tl));
+    timer = window.setTimeout(
+      tick,
+      Math.max(0, startDelay(index, tl) - (performance.now() - start)),
+    );
     return () => clearTimeout(timer);
-  }, [index, run, solid, go, tl]);
+  }, [index, run, solid, go, tl, clock]);
 
   // seekreel frames derive the step from ?t instead of the clock.
   const seek = useSeekTime();
@@ -260,11 +276,19 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
     let lastE = -1;
     let lastFrom = -1;
     let lastTo = -1;
+    // A shape held from the run before, eased out from here (a new run only:
+    // a resize or restyle mid-run redraws from the same clock).
+    let moving = false;
+    let shown: Lab | null = null;
+    const hold = carry.current;
+    const held = hold.c && hold.c.on && hold.run !== run ? hold.c : null;
+    if (hold.c && !held) hold.c.on = false;
     const paint = (now: number, force = false) => {
       const seekAt = seekTime();
-      const ms = seekAt === null ? now - t0.current : seekAt * 1000;
+      const ms = seekAt === null ? now - clock.current : seekAt * 1000;
       // Past the lock (React swaps in the final letter next): hold the end.
-      if (!morphAt(ms, index, phase, tl)) {
+      moving = morphAt(ms, index, phase, tl);
+      if (!moving) {
         phase.step = Math.max(lastStep, 0);
         phase.e = 1;
         phase.c = 1;
@@ -272,8 +296,10 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
       planStep(morph, track, phase, seq, low);
       // The glitch accent (lib/titleTiming): its beat, or -1 when quiet.
       const g = glitchy && glitchAt(ms, index, glitch, tl) ? glitch.seed : -1;
+      const carrying = !!held?.on;
       if (
         !force &&
+        !carrying &&
         phase.step === lastStep &&
         phase.e === lastE &&
         track.from === lastFrom &&
@@ -288,6 +314,11 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
       lastTo = track.to;
       blendMorph(track, phase.e);
       morphPose(morph, track, phase.e, FINAL[index], w, h, fontPx, finalBase, pose);
+      const wc = carrying ? carryWeight(ms, index, tl) : 1;
+      if (held && carrying) {
+        mixCarry(held, track, wc, pose);
+        moving = true;
+      }
       const k = fontPx * pose.k;
       const ox = pad + w / 2;
       const oy = pad + h / 2 + pose.y;
@@ -320,6 +351,9 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
           face,
           side,
         );
+        const was = carry.current.face;
+        if (carrying && was) for (let c = 0; c < 3; c++) face[c] += (was[c] - face[c]) * (1 - wc);
+        shown = face;
         ctx.fillStyle = cssOf(face);
       } else ctx.fillStyle = color;
       for (const l of shadows) {
@@ -379,9 +413,16 @@ const Letter = ({ char, index, run, solid, go, morph, low, tl, variant }: Letter
       stop();
       removeEventListener('resize', resize);
       if (pal) rested.current = pal.face;
+      // Still moving: keep the shape as drawn, for a run that cuts in.
+      const c = (hold.c ??= morphCarry(track));
+      if (moving && seekTime() === null) {
+        holdCarry(c, track, pose.k, pose.y);
+        hold.run = run;
+        hold.face = shown ? [shown[0], shown[1], shown[2]] : null;
+      } else c.on = false;
     };
     // A new run or concept restyles the letter: measure and draw afresh.
-  }, [morph, shifting, char, index, low, tl, run, variant]);
+  }, [morph, shifting, char, index, low, tl, run, variant, clock]);
 
   return (
     <span ref={slot} className="vy-letter relative inline-block leading-none">
@@ -462,7 +503,6 @@ export const VariantTitle = () => {
       live = false;
     };
   }, [run]);
-  const go = stage?.run === run;
   useEffect(() => {
     if (!variant) return;
     if (!canWebGL()) {
@@ -511,12 +551,13 @@ export const VariantTitle = () => {
             key={i}
             char={c}
             index={i}
-            run={run}
+            run={stage?.run ?? -1}
             solid={solid}
-            go={go}
-            morph={go ? stage.morph : null}
-            low={go && stage.low}
-            tl={go ? stage.tl : REVEAL}
+            go={!!stage}
+            morph={stage?.morph ?? null}
+            low={!!stage?.low}
+            tl={stage?.tl ?? REVEAL}
+            clock={clock}
             variant={variant}
           />
         ))}
