@@ -53,6 +53,14 @@ export const SWAP: Timeline = timeline(
   [...WORD].map(() => [MORPH_MS, 120 + MORPH_MS, 120 + MORPH_MS]),
 );
 export const REVEAL_MS = REVEAL.end;
+// A run that starts while letters are still mid-morph (switching concepts
+// quickly): each letter eases from the shape it was caught in to the new
+// run's over its start delay plus CARRY_MS, so it never snaps back to rest.
+export const CARRY_MS = 320;
+export const carryWeight = (ms: number, index: number, tl = REVEAL) => {
+  const u = Math.min(1, Math.max(0, ms / (tl.delays[index] + CARRY_MS)));
+  return u * u * (3 - 2 * u);
+};
 // How many morphs a letter makes before it locks in.
 export const stepCount = (index: number, tl = REVEAL) => tl.schedules[index].length;
 export const startDelay = (index: number, tl = REVEAL) => tl.delays[index];
