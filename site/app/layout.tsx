@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { Atkinson_Hyperlegible } from 'next/font/google';
 import localFont from 'next/font/local';
 import type { ReactNode } from 'react';
 
@@ -19,6 +20,18 @@ const martian = localFont({
   weight: '100 800',
   display: 'swap',
   declarations: [{ prop: 'font-stretch', value: '75% 112.5%' }],
+});
+
+// The "Readable font" reading aid's face. Not preloaded: it downloads only
+// once the aid is on. Without it the aid fell back to Verdana, far wider than
+// the faces the layout was set in.
+const readable = Atkinson_Hyperlegible({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  style: ['normal', 'italic'],
+  variable: '--font-readable',
+  display: 'swap',
+  preload: false,
 });
 
 const title = 'variantly — AI website redesigns, side by side. Keep one.';
@@ -130,7 +143,11 @@ type RootLayoutProps = {
 };
 
 const RootLayout = ({ children }: RootLayoutProps) => (
-  <html lang="en" className={cn(martian.variable, HERO_FONT_VARS)} suppressHydrationWarning>
+  <html
+    lang="en"
+    className={cn(martian.variable, readable.variable, HERO_FONT_VARS)}
+    suppressHydrationWarning
+  >
     <head>
       {/* Theme and reading aids before first paint, so nothing flashes. */}
       <script dangerouslySetInnerHTML={{ __html: PREFS_BOOT }} />

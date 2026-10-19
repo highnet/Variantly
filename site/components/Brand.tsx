@@ -23,7 +23,12 @@ const Brand = () => {
       }}
     >
       <BrandMark className="size-7" />
-      <span className="figure text-base">variantly</span>
+      {/* A logotype (the link is labelled): it keeps its face under the
+          readable font aid, and steps aside when the header is too narrow
+          for it and the controls (a small phone with larger text). */}
+      <span aria-hidden="true" className="figure text-base @max-[19.5rem]:hidden">
+        variantly
+      </span>
     </Link>
   );
 };

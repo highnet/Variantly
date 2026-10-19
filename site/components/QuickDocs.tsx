@@ -58,7 +58,11 @@ const QuickDocs = ({ className, heading = 'h2' }: QuickDocsProps) => (
           <div key={cmd} className="grid gap-2.5">
             {/* The command is the term; its description reads first. */}
             <dt className="order-2">
-              <CommandCopy command={cmd} size="sm" className="w-fit max-w-full min-w-64" />
+              <CommandCopy
+                command={cmd}
+                size="sm"
+                className="w-fit max-w-full min-w-[min(16rem,100%)]"
+              />
             </dt>
             <dd className="text-steel order-1 m-0 text-[15px] leading-snug">{what}</dd>
           </div>

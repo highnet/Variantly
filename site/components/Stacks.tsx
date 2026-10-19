@@ -71,7 +71,11 @@ const Stacks = () => (
               <LogoMark title={a.title} path={a.path} className="text-ink size-5 shrink-0" />
               <span className="text-[14px] font-semibold">{a.name}</span>
             </div>
-            <CommandCopy command={a.install} size="sm" className="w-fit max-w-full min-w-64" />
+            <CommandCopy
+              command={a.install}
+              size="sm"
+              className="w-fit max-w-full min-w-[min(16rem,100%)]"
+            />
           </li>
         ))}
       </ul>
