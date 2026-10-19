@@ -2346,6 +2346,27 @@ main > div p {
 .vy-lens-glow {
   animation: lens-breathe 3.1s ease-in-out infinite;
 }
+/* The card clips the glow, and the resting door sits in its corner: fade the
+   light out over the card's last pixels so it never ends on a hard edge. */
+.vy-lens-glow-fade {
+  --fade: 56px;
+  mask-image:
+    linear-gradient(
+      to right,
+      transparent,
+      #000 var(--fade),
+      #000 calc(100% - var(--fade)),
+      transparent
+    ),
+    linear-gradient(
+      to bottom,
+      transparent,
+      #000 var(--fade),
+      #000 calc(100% - var(--fade)),
+      transparent
+    );
+  mask-composite: intersect;
+}
 .vy-lens-glow::before,
 .vy-lens-glow::after {
   content: '';

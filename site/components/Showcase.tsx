@@ -1205,9 +1205,11 @@ const Showcase = () => {
           aria-label={`Before: the original Oak & Iron page. After: ${vname(selected)}, ${current.direction}`}
           onClick={goLive}
           className={cn(
-            'group/stage vy-split relative isolate h-[62svh] min-h-[380px] overflow-hidden select-none lg:h-[78svh] lg:min-h-[560px]',
+            'group/stage vy-split relative isolate h-[62svh] min-h-[380px] overflow-hidden select-none lg:h-[78svh] lg:max-h-[48.75vw] lg:min-h-[min(560px,48.75vw)]',
           )}
         >
+          {/* Never taller than the posters (1440×702 = 48.75vw): a taller stage
+              left white under the poster until the live page loaded. */}
           <PageSkeleton
             className={cn(
               'z-10',

@@ -78,6 +78,20 @@ export const Backdrop = () => {
     if (calmMotion() && seekTime() === null) markLoaded('scene');
     startPerfTier();
   }, []);
+  // Every route mounts fresh art, so its CSS loops would restart at zero on
+  // each navigation. Put them on the wall clock instead: every page (and a
+  // reload) shows the same moment of each loop, so the art carries on.
+  useEffect(() => {
+    if (seekTime() !== null) return;
+    const now = Date.now();
+    for (const a of document.getAnimations()) {
+      const t = (a.effect as KeyframeEffect | null)?.target;
+      if (!(a instanceof CSSAnimation) || !t?.closest('.vy-backdrop')) continue;
+      const d = a.effect?.getComputedTiming().duration;
+      if (typeof d === 'number' && d > 0 && a.effect?.getComputedTiming().iterations === Infinity)
+        a.currentTime = now % d;
+    }
+  }, [key, art]);
   useEffect(() => {
     const html = document.documentElement;
     if (seekTime() !== null) {

@@ -244,7 +244,7 @@
           }
         ]
       },
-      "text": "Will it work on yours? Here's variantly doctor on a Next.js app, a Django site, and plain HTML. It finds the stack, and the command that serves it, every time. And you can always type your own.",
+      "text": "Will it work on yours? It works with any stack. Here's variantly doctor on a Next.js app, a Django site, and plain HTML. It finds the stack, and the command that serves it, every time. Anything else, you just type your own.",
       "actions": [
         {
           "wait": 300

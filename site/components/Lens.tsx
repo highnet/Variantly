@@ -868,7 +868,9 @@ export const Lens = () => {
         className="vy-lens pointer-events-none absolute inset-0 z-1 overflow-hidden [transition:transform_0.7s_ease-out]"
       >
         {/* The slab's light: a halo and a warm spill on the ground below it. */}
-        <div ref={glowEl} className="vy-lens-glow absolute top-0 left-0" />
+        <div className="vy-lens-glow-fade absolute inset-0">
+          <div ref={glowEl} className="vy-lens-glow absolute top-0 left-0" />
+        </div>
         <div ref={port} className="vy-lens-port absolute top-0 left-0 overflow-hidden">
           <div ref={inner} className="absolute top-0 left-0">
             <div ref={hostRef} />

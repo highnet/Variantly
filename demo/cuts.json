@@ -11,7 +11,7 @@
         },
         {
           "id": "command",
-          "text": "I'm Joaquin. I built Variantly so you don't have to choose one direction and hope. Run npx variantly. Next.js, Django, plain HTML: it finds them.",
+          "text": "I'm Joaquin. I built Variantly so you don't have to choose one direction and hope. Run npx variantly. It works with any stack: Next.js, Django, plain HTML, it finds them, and for anything else you type the command.",
           "shots": [{ "scene": "need", "from": 0.5 }, { "scene": "stacks", "from": 0.5 }]
         },
         {
