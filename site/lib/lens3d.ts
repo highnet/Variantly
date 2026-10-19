@@ -782,6 +782,9 @@ export const attachLens = (host: LensHost): LensPass => {
     render,
     dispose: () => {
       disposed = true;
+      // The 3D title is gone (the low tier, a lost context): the door's 2D
+      // letters and art show again, over nothing.
+      setLensGl(false, false);
       cancelWarm();
       offTick();
       mo.disconnect();
