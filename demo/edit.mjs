@@ -53,6 +53,60 @@ const STRETCH_MIN = 0.8;
 // A timelapse with `realHead` (ms) first plays that long at real speed, under
 // a real clock, and only then speeds up: the viewer sees the honest time
 // before the fast part. The fast part is a second clip labelled "<id>+".
+// Key presses that must land on the word naming them: the walk-through
+// presses a variant's number every ~2.5 s, but the voice spends longer on
+// each. Each [key, word, seconds after the word's start] is matched in order
+// within the scene.
+const SYNC = {
+  walk: [['2', 'Two:'], ['3', 'Three:'], ['4', 'Four:'], ['5', 'Five:'], ['6', 'Six:'], ['7', 'Seven:'], ['8', 'Eight:'], ['9', 'Nine:'], ['0', 'Ten:'], ['s', 'S'], ['m', 'M'], ['m', 'layout.', 0.6]],
+};
+
+/**
+ * A synced scene: one segment per anchored key press. Each segment holds its
+ * last frame (or plays faster) so that the next press lands on its word; the
+ * part after the last anchor is trimmed like any overrun. Null if the take's
+ * keys or the voice's words don't match the list.
+ */
+function syncedClips(scene, clip, from, length) {
+  const words = readJson(at('audio', `${scene.id}.words.json`), []);
+  const presses = (raw.keys ?? []).filter((k) => k.t >= scene.start && k.t < scene.end);
+  const marks = [];
+  let k = 0;
+  let w = 0;
+  for (const [key, word, after = 0] of SYNC[scene.id]) {
+    while (k < presses.length && presses[k].key !== key) k++;
+    while (w < words.length && words[w].word !== word) w++;
+    if (k >= presses.length || w >= words.length) return null;
+    marks.push({ raw: presses[k].t - scene.start, film: VOICE_LEAD + words[w].start + after });
+    k++;
+    w++;
+  }
+  const spokenEnd = VOICE_LEAD + (words.at(-1)?.end ?? 0) + PAD_MS / 1000;
+  const last = marks.at(-1);
+  const tailRaw = length - last.raw;
+  // After the last anchor: until the voice ends, then TIGHTEN_KEEP; longer
+  // footage plays faster to fit (at most TIGHTEN_LONG_MAX×), shorter holds.
+  const need = spokenEnd - last.film + TIGHTEN_KEEP;
+  const tailFilm = tailRaw <= need ? need : Math.max(need, tailRaw / TIGHTEN_LONG_MAX);
+  const points = [{ raw: 0, film: 0 }, ...marks, { raw: length, film: last.film + tailFilm }];
+  const out = [];
+  for (let i = 0; i < points.length - 1; i++) {
+    const rawLen = points[i + 1].raw - points[i].raw;
+    const filmLen = points[i + 1].film - points[i].film;
+    const seg = { label: i ? `${scene.id}+${i}` : scene.id, src: clip.src, from: round3(from + points[i].raw), to: round3(from + points[i + 1].raw) };
+    if (i === 0 && clip.transition) seg.transition = clip.transition;
+    if (rawLen < 1 / FPS) {
+      // A press right at the scene start: hold the frame just before it.
+      out.push({ ...seg, from: round3(seg.from - 1 / FPS), to: seg.from, hold: round3(Math.max(0, filmLen - 1 / FPS)) });
+    } else if (rawLen <= filmLen) {
+      out.push({ ...seg, ...(filmLen - rawLen > 0.02 ? { hold: round3(filmLen - rawLen) } : {}) });
+    } else {
+      out.push({ ...seg, speed: Number((rawLen / filmLen).toFixed(4)) });
+    }
+  }
+  return out;
+}
+
 const clips = raw.scenes.flatMap((scene) => {
   const length = scene.end - scene.start;
   const from = round3(Math.max(0, scene.start - OFFSET));
@@ -65,6 +119,11 @@ const clips = raw.scenes.flatMap((scene) => {
     to: round3(from + round3(length)),
     ...(TRANSITIONS[scene.id] ? { transition: TRANSITIONS[scene.id] } : {}),
   };
+  if (SYNC[scene.id]) {
+    const parts = syncedClips(scene, clip, from, length);
+    if (parts) return parts;
+    log('edit', `warning: ${scene.id}: the take's keys don't match its line; not synced`);
+  }
   if (!scene.timelapse) {
     // Dead air: when a scene's actions ran past its line, play the overrun
     // faster (up to TIGHTEN_MAX×) so the scene ends just after the voice.
@@ -135,6 +194,10 @@ const wide = {
 };
 writeJson(at(`seekreel.${THEME}.json`), wide);
 log('edit', `cutting ${clips.length} clips with SeekReel`);
+for (const id of Object.keys(SYNC)) {
+  const parts = clips.filter((c) => c.label === id || c.label.startsWith(`${id}+`));
+  if (parts.length > 1) log('edit', `synced ${id}: ${parts.map((c) => `${((c.to - c.from) / (c.speed ?? 1) + (c.hold ?? 0)).toFixed(1)}s${c.hold ? ` (hold ${c.hold})` : ''}${(c.speed ?? 1) !== 1 ? ` ×${c.speed}` : ''}`).join(', ')}`);
+}
 for (const c of clips) {
   if (!c.label.endsWith('+') || byId[c.label.slice(0, -1)]?.timelapse) continue;
   const over = c.to - c.from;
@@ -148,9 +211,13 @@ const placed = Object.fromEntries(footage.clips.map((c) => [c.label, c]));
 function toFilm(t) {
   const scene = raw.scenes.find((s) => t >= s.start && t <= s.end);
   if (!scene) return null;
-  const fast = placed[`${scene.id}+`];
-  const clip = fast && t - OFFSET >= fast.from ? fast : placed[scene.id];
-  return clip.start + (t - OFFSET - clip.from) / clip.speed;
+  // A scene may be several clips ("<id>", then "<id>+" or "<id>+1", "+2"…):
+  // the last one starting at or before t. In a held frame, time stands still.
+  const src = t - OFFSET;
+  const parts = footage.clips.filter((c) => c.label === scene.id || c.label.startsWith(`${scene.id}+`));
+  let clip = parts[0];
+  for (const c of parts) if (src >= c.from) clip = c;
+  return clip.start + Math.min(src - clip.from, clip.to - clip.from) / clip.speed;
 }
 
 // ------------------------------------------------------------ captions
@@ -223,7 +290,7 @@ function cuesFrom(words) {
 const sceneClips = [];
 // So is a timelapse's real-speed head with its fast part ("<id>+").
 for (const clip of footage.clips) {
-  const label = clip.label.startsWith('cold') ? cold.id : clip.label.replace(/\+$/, '');
+  const label = clip.label.startsWith('cold') ? cold.id : clip.label.replace(/\+\d*$/, '');
   const prev = sceneClips.at(-1);
   if (prev && prev.label === label) {
     prev.end = clip.end;
