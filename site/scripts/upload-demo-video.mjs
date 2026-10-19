@@ -12,6 +12,9 @@
  * the Blob store in the Vercel dashboard (Storage → the store → .env.local),
  * or from `vercel env pull` once the store is connected to the project.
  *
+ * Films with any line in the robotic rehearsal voice are refused (see the
+ * voice stamp check below).
+ *
  * Every upload gets a fresh URL (random suffix), so a re-cut film is never
  * hidden behind a cached old one. Old files stay in the store until deleted
  * in the dashboard. Commit lib/demo-video.json and deploy to publish.
@@ -52,6 +55,39 @@ const upload = async (file, name, contentType) => {
   });
   return blob.url;
 };
+
+/*
+ * demo/build.mjs stamps each 16:9 film with the voice it carries
+ * (variantly-demo-<theme>.voice.json). A film read in part by the system's
+ * robotic rehearsal voice, or one with no stamp (built before the check,
+ * or a stamp for an older film), is never uploaded. Checked for every theme
+ * before anything is uploaded, so the site never gets half a fix.
+ */
+const unfit = [];
+for (const theme of themes) {
+  const film = path.join(outDir, `variantly-demo-${theme}.mp4`);
+  if (!existsSync(film)) continue;
+  const stampFile = path.join(outDir, `variantly-demo-${theme}.voice.json`);
+  const stamp = existsSync(stampFile) ? JSON.parse(readFileSync(stampFile, 'utf8')) : null;
+  if (!stamp) unfit.push(`${theme}: no voice stamp. Rebuild it in demo/ (npm run build).`);
+  else if (stamp.bytes !== statSync(film).size)
+    unfit.push(
+      `${theme}: the voice stamp is for another build of this film. Rebuild it in demo/ (npm run build).`,
+    );
+  else if (stamp.rehearsal) {
+    const lines = [
+      stamp.robot?.length && `rehearsal voice in ${stamp.robot.join(', ')}`,
+      stamp.missing?.length && `no audio for ${stamp.missing.join(', ')}`,
+    ].filter(Boolean);
+    unfit.push(
+      `${theme}: a rehearsal (${lines.join('; ')}). In demo/: npm run voice with ElevenLabs keys, npm run edit, npm run build.`,
+    );
+  }
+}
+if (unfit.length) {
+  console.error(`Not uploading:\n  ${unfit.join('\n  ')}`);
+  process.exit(1);
+}
 
 const current = JSON.parse(readFileSync(manifest, 'utf8'));
 let uploaded = 0;
