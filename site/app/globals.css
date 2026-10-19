@@ -1772,13 +1772,23 @@ header.vy-header-glass {
   padding-bottom: clamp(5rem, 8vw, 8rem);
 }
 :root[data-variant] [data-hero-title] {
-  padding-block: clamp(4rem, 9vw, 8rem);
+  --title-pad: clamp(4rem, 9vw, 8rem);
+  --title-pad-end: var(--title-pad);
+  padding-block: var(--title-pad) var(--title-pad-end);
   /* One size for every concept's hero (the Lens door lines the word up
      across concepts): the word's line plus the padding, borders inside. */
   box-sizing: border-box;
-  height: calc(clamp(2.5rem, 16vw, 11rem) * 1.4 + 2 * clamp(4rem, 9vw, 8rem));
+  height: calc(clamp(2.5rem, 16vw, 11rem) * 1.4 + var(--title-pad) + var(--title-pad-end));
   min-height: 0;
   margin: 0;
+}
+/* Below 64rem the word runs nearly edge to edge, so the resting Lens tab
+   (96px tall, 14px in from the bottom-right corner) sat on its last letter.
+   A taller strip under the word holds the tab and its "Try ..." chip. */
+@media (width < 64rem) {
+  :root[data-variant] [data-hero-title] {
+    --title-pad-end: max(var(--title-pad), 7.25rem);
+  }
 }
 :root[data-variant] [data-hero-grid] {
   padding-block: clamp(3rem, 7vw, 6.5rem);
