@@ -186,8 +186,17 @@ export const attachLens = (host: LensHost): LensPass => {
   let disposed = false;
   let busy = false;
   let data: MorphData | null = null;
+  // Repaint for something that arrived while the page loads (the morph data,
+  // the lens look, the lens scene): a door held still would otherwise wait
+  // for the next pointer move to show it.
+  const repaint = () => {
+    if (!disposed && !busy && lensLive.shown) host.paint();
+  };
   void loadMorph()
-    .then((d) => (data = d))
+    .then((d) => {
+      data = d;
+      repaint();
+    })
     .catch(() => {});
 
   // ---- The stencil: the door's outline, triangulated (card px -> NDC). ----
@@ -451,7 +460,7 @@ export const attachLens = (host: LensHost): LensPass => {
       .then(() => {
         if (disposed || id !== next) return;
         ready = true;
-        if (lensLive.shown) host.paint();
+        repaint();
       });
     // The scene, desktop only: when it arrives it shows under the letters.
     void CONCEPT_LOADERS[next]
@@ -495,6 +504,7 @@ export const attachLens = (host: LensHost): LensPass => {
               if (stale()) return drop(sc);
               lensScene = { scene: sc, built, colors, pixelArt: !!def.pixelArt };
               sceneT0 = performance.now();
+              repaint();
             });
         }, 1500);
       })
@@ -506,7 +516,7 @@ export const attachLens = (host: LensHost): LensPass => {
     const word = lensLive.word;
     const W = host.el.clientWidth;
     const H = host.el.clientHeight;
-    const key = `${W}x${H}:${id}:${html.dataset.theme}:${!!word}`;
+    const key = `${W}x${H}:${id}:${html.dataset.theme}:${!!word}:${lensLive.rev}`;
     if (key === laid || !word) return;
     laid = key;
     const unit = host.unit();
@@ -772,6 +782,9 @@ export const attachLens = (host: LensHost): LensPass => {
     render,
     dispose: () => {
       disposed = true;
+      // The 3D title is gone (the low tier, a lost context): the door's 2D
+      // letters and art show again, over nothing.
+      setLensGl(false, false);
       cancelWarm();
       offTick();
       mo.disconnect();
