@@ -203,7 +203,11 @@ async function build(cut, theme) {
   writeFileSync(path.join(dir, 'captions.ass'), ass(caps));
   const inputs = segments.flatMap((s) => ['-ss', String(s.from), '-t', String(s.dur), '-i', film]);
   const chain = segments.map((_, k) => `[${k}:v]settb=AVTB,setpts=PTS-STARTPTS,fps=${FPS},format=yuv420p[v${k}]`).join(';');
-  const join = `${segments.map((_, k) => `[v${k}]`).join('')}concat=n=${segments.length}:v=1:a=0[cut];[cut]subtitles=captions.ass[out]`;
+  // The full film's chapter label (stage .step, bottom right) names the full
+  // film's chapters, so it is filled in from its surroundings (delogo keeps the
+  // frame's soft shadow, which a flat box would not); captions go on top.
+  const cover = `delogo=x=1240:y=944:w=${WIDTH - 192 - 1240 + 8}:h=50`;
+  const join = `${segments.map((_, k) => `[v${k}]`).join('')}concat=n=${segments.length}:v=1:a=0[cut];[cut]${cover},subtitles=captions.ass[out]`;
   const name = `variantly-demo-${theme}-${cut.id}`;
   const mp4 = at('out', `${name}.mp4`);
   await ffmpeg(
