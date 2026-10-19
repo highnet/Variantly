@@ -5,10 +5,13 @@
  *
  *   BLOB_READ_WRITE_TOKEN=... npm run upload-demo-video
  *   BLOB_READ_WRITE_TOKEN=... npm run upload-demo-video -- --theme dark
+ *   BLOB_READ_WRITE_TOKEN=... npm run upload-demo-video -- --cut 90s
  *
  * Takes ../demo/out/variantly-demo-<theme>.mp4 (16:9, captions burned in)
  * and its poster (-poster.png, else -thumbnail.png) for each theme that has
- * a film; set DEMO_OUT to read them from somewhere else. The token comes from
+ * a film. With --cut 90s it takes the 90-second cut instead
+ * (variantly-demo-<theme>-90s.mp4 and -90s-poster.png) and records it under
+ * `short`, which the homepage plays first, next to the full run. Set DEMO_OUT to read them from somewhere else. The token comes from
  * the Blob store in the Vercel dashboard (Storage → the store → .env.local),
  * or from `vercel env pull` once the store is connected to the project.
  *
@@ -34,6 +37,10 @@ if (!process.env.BLOB_READ_WRITE_TOKEN) {
 const args = process.argv.slice(2);
 const themeAt = args.indexOf('--theme');
 const themes = themeAt > -1 ? [args[themeAt + 1]] : ['light', 'dark'];
+const cutAt = args.indexOf('--cut');
+const cut = cutAt > -1 ? args[cutAt + 1] : null;
+if (cut !== null && cut !== '90s') throw new Error(`--cut must be 90s, got ${cut}`);
+const suffix = cut ? `-${cut}` : '';
 for (const theme of themes) {
   if (theme !== 'light' && theme !== 'dark')
     throw new Error(`--theme must be light or dark, got ${theme}`);
@@ -56,19 +63,22 @@ const upload = async (file, name, contentType) => {
 const current = JSON.parse(readFileSync(manifest, 'utf8'));
 let uploaded = 0;
 for (const theme of themes) {
-  const film = path.join(outDir, `variantly-demo-${theme}.mp4`);
+  const name = `variantly-demo-${theme}${suffix}`;
+  const film = path.join(outDir, `${name}.mp4`);
   if (!existsSync(film)) {
     console.log(`${theme}: no ${path.relative(process.cwd(), film)}, skipped`);
     continue;
   }
   console.log(`${theme}:`);
-  const poster = [`variantly-demo-${theme}-poster.png`, `variantly-demo-${theme}-thumbnail.png`]
+  const poster = [`${name}-poster.png`, `${name}-thumbnail.png`]
     .map((f) => path.join(outDir, f))
     .find(existsSync);
-  current[theme] = {
-    mp4: await upload(film, `variantly-demo-${theme}.mp4`, 'video/mp4'),
-    poster: poster ? await upload(poster, `variantly-demo-${theme}-poster.png`, 'image/png') : null,
+  const entry = {
+    mp4: await upload(film, `${name}.mp4`, 'video/mp4'),
+    poster: poster ? await upload(poster, `${name}-poster.png`, 'image/png') : null,
   };
+  if (cut) current.short = { light: null, dark: null, ...current.short, [theme]: entry };
+  else current[theme] = entry;
   uploaded++;
 }
 
