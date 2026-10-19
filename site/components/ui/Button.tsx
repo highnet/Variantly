@@ -23,6 +23,11 @@ const buttonVariants = cva(
         // board accent, its label black or white by that accent's luminance (globals.css).
         segment:
           'normal-case tracking-normal font-sans text-steel-on-slate hover:text-surface aria-pressed:bg-ok-on-slate aria-pressed:text-ink vy-on-ok-pressed',
+        // One option of an ink-bordered segmented strip on light: flat, the
+        // pressed one fills ink. Options after the first carry the strip's rule.
+        // The focus ring sits inside (the strip clips), surface-coloured on ink.
+        'segment-ink':
+          'group text-ink hover:bg-ink/8 aria-pressed:bg-ink aria-pressed:text-surface [&+&]:border-l [&+&]:border-ink focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-ink aria-pressed:focus-visible:outline-surface',
         // A small on/off switch in the slate dock.
         'toggle-slate':
           'text-steel-on-slate hover:text-surface aria-pressed:bg-surface aria-pressed:text-ink',
@@ -73,6 +78,8 @@ const buttonVariants = cva(
         none: '',
         segment: 'rounded-[8px] px-2 py-2.5 text-[13px] font-semibold',
         toggle: 'rounded px-1.5 py-1 text-[11px] gap-1.5 [&_svg]:size-3.5',
+        // Flush inside its strip, so square; the strip carries the radius.
+        'segment-ink': 'h-9 px-3.5 text-[11px] gap-2.5',
         // Wraps on narrow screens instead of running off the edge.
         prompt:
           'min-h-8 rounded-control px-2.5 py-1.5 text-left text-[13px] leading-tight font-semibold whitespace-normal',
