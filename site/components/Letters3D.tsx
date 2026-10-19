@@ -9,12 +9,16 @@ import { compilesInParallel, firstDraw } from '@/lib/glWarm';
 import { attachLens, type LensPass } from '@/lib/lens3d';
 import {
   blendMorph,
+  holdCarry,
   loadMorph,
+  mixCarry,
+  morphCarry,
   morphPose,
   morphTrack,
   planMorph,
   planStep,
   runSequence,
+  type MorphCarry,
   type MorphData,
   type MorphPose,
   type MorphTrack,
@@ -39,6 +43,7 @@ import { calmMotion } from '@/lib/prefs';
 import { releaseFrame, seekTime } from '@/lib/seek';
 import { onSwapWarm } from '@/lib/swapWarm';
 import {
+  carryWeight,
   lookAt,
   morphAt,
   spring,
@@ -93,14 +98,20 @@ type Letter = {
   // The letter's outline track and its morphing mesh.
   track: MorphTrack;
   morph: ReturnType<typeof morphMesh>;
+  // The shape (and colours) it was caught in when a new run cut in mid-morph,
+  // eased out over that run's start (lib/glyphMorph mixCarry).
+  carry: MorphCarry;
+  carryFace: Lab;
+  carrySide: Lab;
   // Last morph frame written (step and spring progress; step -1 resting on
   // the final face), so holds cost nothing.
   step: number;
   e: number;
   look: number;
   locked: boolean;
-  // The face colour it last wore (OKLab), when palette colours are on.
+  // The face and side colours it last wore (OKLab), when palette colours are on.
   ink: Lab | null;
+  inkSide: Lab | null;
   // Its glitch accent this frame (on: drawn sliced and split).
   glitch: Glitch;
   glitching: boolean;
@@ -441,11 +452,15 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           extra,
           track,
           morph,
+          carry: morphCarry(track),
+          carryFace: [0, 0, 0],
+          carrySide: [0, 0, 0],
           step: -1,
           e: 0,
           look: -1,
           locked: true,
           ink: null,
+          inkSide: null,
           glitch: glitchBuffer(),
           glitching: false,
         };
@@ -594,6 +609,7 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         setColour(sm, sd);
         setColour(l.flat.material, f);
         l.ink = [f[0], f[1], f[2]];
+        l.inkSide = [sd[0], sd[1], sd[2]];
       };
       const wear = (l: Letter, i: number, at: number) => {
         // A concept may offer fewer looks than the pool size (Kinetic Type's
@@ -752,16 +768,37 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
       // Whether any letter changed step (or locked) in the last pose.
       let stepped = false;
       // A letter at rest on its final face (before its turn, and locked).
+      // Returns whether it rewrote the outline (the caller updates the mesh).
       const rest = (l: Letter, i: number) => {
-        if (l.step !== -1) {
+        let wrote = false;
+        if (l.step !== -1 || l.carry.on) {
           planMorph(data, l.track, FINAL[i], FINAL[i]);
           blendMorph(l.track, 0);
-          l.morph.update();
+          wrote = true;
+          if (l.step !== -1) stepped = true;
           l.step = -1;
           l.e = 0;
-          stepped = true;
         }
         wear(l, i, lookAt(null, i, n));
+        return wrote;
+      };
+      // A new run (a concept change) cutting in while letters still morph:
+      // each moving letter keeps the shape, size and colour it is showing and
+      // eases from there into the new run, rather than snapping back to rest.
+      let carryRun = -1;
+      const catchLetters = () => {
+        letters.forEach((l) => {
+          if (l.step === -1 && !l.carry.on) return;
+          holdCarry(l.carry, l.track, l.mesh.scale.x, -l.mesh.position.y * unit);
+          const ink = l.ink;
+          const inkSide = l.inkSide;
+          if (ink && inkSide)
+            for (let c = 0; c < 3; c++) {
+              l.carryFace[c] = ink[c];
+              l.carrySide[c] = inkSide[c];
+            }
+          else l.carryFace[0] = NaN;
+        });
       };
       // The handover between the 2D and 3D words (0 = flat and matte over the
       // 2D word, 1 = fully extruded, lit and shadowed): its extrusion depth
@@ -795,6 +832,10 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
         stepped = false;
         strength =
           titleGlitchOn() && !lowRef.current && !still ? glitchStrength(html.dataset.variant) : 0;
+        if (runStart !== carryRun) {
+          if (carryRun !== -1 && seek === null) catchLetters();
+          carryRun = runStart;
+        }
         letters.forEach((l, i) => {
           const ms = t * 1000;
           // Before its start delay a letter rests on its final face, like the
@@ -803,12 +844,21 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
           const waiting = stepAt(ms, i, tl) === -1;
           const live = !waiting && morphAt(ms, i, phase, tl);
           const s = slots[i];
-          let k = 1;
-          let y = s.base;
+          const carrying = l.carry.on;
+          let wrote = false;
+          let painted = false;
+          mpose.k = 1;
+          mpose.y = s.base;
           l.locked = !live;
           if (!live) {
-            rest(l, i);
-            if (tint && pals[i]) paint3(l, pals[i].face, pals[i].side);
+            wrote = rest(l, i);
+            if (tint && pals[i]) {
+              for (let c = 0; c < 3; c++) {
+                face[c] = pals[i].face[c];
+                side[c] = pals[i].side[c];
+              }
+              painted = true;
+            }
           } else {
             // Shifting: the outline flows from this step's face to the next,
             // posed exactly as the 2D letter (lib/glyphMorph).
@@ -817,9 +867,9 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
             // Phones redraw the shadow map only now and then: at each step,
             // and midway through its morph.
             if (phase.step !== l.step || (l.e < 0.5 && phase.e >= 0.5)) stepped = true;
-            if (phase.step !== l.step || phase.e !== l.e) {
+            if (phase.step !== l.step || phase.e !== l.e || carrying) {
               blendMorph(l.track, phase.e);
-              l.morph.update();
+              wrote = true;
               l.step = phase.step;
               l.e = phase.e;
             }
@@ -839,12 +889,25 @@ export const Letters3D = ({ run, low, tl, clock, title, onReady, onFail }: Lette
                 face,
                 side,
               );
-              paint3(l, face, side);
+              painted = true;
             }
             morphPose(data, l.track, phase.e, FINAL[i], s.w, s.h, fontPx, s.base, mpose);
-            k = mpose.k;
-            y = mpose.y;
           }
+          if (carrying) {
+            const w = carryWeight(ms, i, tl);
+            mixCarry(l.carry, l.track, w, mpose);
+            if (painted && !Number.isNaN(l.carryFace[0]))
+              for (let c = 0; c < 3; c++) {
+                face[c] += (l.carryFace[c] - face[c]) * (1 - w);
+                side[c] += (l.carrySide[c] - side[c]) * (1 - w);
+              }
+            // Phones redraw the shadow map as the carry lets go.
+            if (!l.carry.on) stepped = true;
+          }
+          if (wrote) l.morph.update();
+          if (painted) paint3(l, face, side);
+          const k = mpose.k;
+          const y = mpose.y;
           // Flat (depth ~0) at the handover from the 2D word, extruding as
           // it lands; a zero scale would leave no normals to light.
           l.mesh.scale.set(k, k, k * Math.max(1e-3, depth));

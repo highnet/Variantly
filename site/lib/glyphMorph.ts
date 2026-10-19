@@ -643,3 +643,57 @@ export const runSequence = (
   tl.kind === 'swap'
     ? swapSequence(data, ch, index, finalFace, finalFace, stepCount(index, tl))
     : faceSequence(data, ch, index, finalFace, stepCount(index, tl), low);
+
+// A letter caught mid-morph when a new run starts (a concept change before
+// the last one finished): its outline, bevel room, size and baseline as they
+// stood, eased out over the new run's first moments (`carryWeight` in
+// lib/titleTiming) instead of the letter snapping back to its final face.
+export type MorphCarry = {
+  on: boolean;
+  out: Float32Array;
+  room: Float32Array;
+  live: Uint8Array;
+  k: number;
+  y: number;
+};
+
+export const morphCarry = (t: MorphTrack): MorphCarry => ({
+  on: false,
+  out: new Float32Array(t.out.length),
+  room: new Float32Array(t.room.length),
+  live: new Uint8Array(t.slots),
+  k: 1,
+  y: 0,
+});
+
+// Hold the outline the track last wrote, posed at k and y.
+export const holdCarry = (c: MorphCarry, t: MorphTrack, k: number, y: number) => {
+  c.out.set(t.out);
+  c.room.set(t.room);
+  c.live.set(t.live);
+  c.k = k;
+  c.y = y;
+  c.on = true;
+};
+
+// Ease the freshly blended outline (t.out) and pose from the held one: w = 0
+// shows the held shape, 1 the new run's alone (and lets the carry go). Only
+// the contours both shapes draw are eased; any other snaps, as a direct
+// morph would.
+export const mixCarry = (c: MorphCarry, t: MorphTrack, w: number, pose: MorphPose) => {
+  if (!c.on) return;
+  if (w >= 1) {
+    c.on = false;
+    return;
+  }
+  const v = 1 - w;
+  const n = t.n;
+  for (let s = 0; s < t.slots; s++) {
+    if (!t.live[s] || !c.live[s]) continue;
+    for (let i = s * n * 2, end = i + n * 2; i < end; i++) t.out[i] += (c.out[i] - t.out[i]) * v;
+    // The thinner of the two rooms, so the eased outline's bevel never folds.
+    for (let i = s * n, end = i + n; i < end; i++) t.room[i] = Math.min(t.room[i], c.room[i]);
+  }
+  pose.k += (c.k - pose.k) * v;
+  pose.y += (c.y - pose.y) * v;
+};
