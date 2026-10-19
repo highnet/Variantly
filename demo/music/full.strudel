@@ -1,0 +1,29 @@
+// The full film's music: a soft, padded bossa nova (build.mjs renders it with
+// music.mjs and ducks it under the voice). Strudel, as in the REPL at
+// strudel.cc: paste it there to hear it. 120 bpm, one cycle is a bar.
+setcpm(120 / 4)
+
+// ii–V–I–VI in C: Dm9, G13, Cmaj9, A7♭9.
+const chords = "<[d3,f3,a3,c4,e4] [g2,f3,b3,e4] [c3,e3,g3,b3,d4] [a2,g3,c#4,f4]>"
+
+// The pad: wide, slow and low, the bed everything sits on.
+const pad = note(chords).s("sawtooth").lpf(sine.range(450, 800).slow(32)).attack(1.2).release(2.5).gain(0.09).room(0.8).size(0.95)
+// Rhodes-like comping on the bossa guitar rhythm.
+const comp = note(chords).struct("x ~ ~ x ~ ~ x ~ ~ ~ x ~ ~ x ~ ~").s("triangle")
+  .decay(0.5).sustain(0.15).release(0.4).lpf(1700).gain(0.1).room(0.4).pan(0.4)
+// Root and fifth, with the bossa anticipation.
+const bass = note("<[d2 ~ ~ ~ a1 ~ ~ d2] [g1 ~ ~ ~ d2 ~ ~ g1] [c2 ~ ~ ~ g1 ~ ~ c2] [a1 ~ ~ ~ e2 ~ ~ a1]>")
+  .s("sine").lpf(320).decay(0.6).sustain(0.35).release(0.2).gain(0.38)
+// Brushes: a soft shaker, the clave on the rim, a quiet surdo-like kick.
+const shaker = s("white*16").decay(0.025).sustain(0).hpf(8000).gain("0.028 0.012 0.02 0.012").pan(0.65)
+const rim = s("white").struct("x ~ ~ x ~ ~ x ~ ~ ~ x ~ ~ x ~ ~").decay(0.012).sustain(0).hpf(1600).lpf(3200).gain(0.07).pan(0.35)
+const kick = note("d1 ~ ~ d1 d1 ~ ~ d1").s("sine").decay(0.22).sustain(0).lpf(120).gain(0.22)
+// Now and then a soft melody note over the top.
+const lead = n("<[~ 4 ~ ~] [~ ~ 3 ~] [2 ~ ~ ~] [~ 1 ~ 0]>").scale("C5:major").s("sine")
+  .attack(0.05).decay(0.8).sustain(0.2).release(0.8).gain(0.06).room(0.6).degradeBy(0.35)
+
+arrange(
+  [4, pad],
+  [4, stack(pad, comp, bass)],
+  [600, stack(pad, comp, bass, shaker, rim, kick, lead)],
+)

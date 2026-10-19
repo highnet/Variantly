@@ -1,0 +1,252 @@
+[
+  {
+    "word": "It",
+    "start": 0,
+    "end": 0.174
+  },
+  {
+    "word": "lands",
+    "start": 0.267,
+    "end": 0.604
+  },
+  {
+    "word": "in",
+    "start": 0.673,
+    "end": 0.755
+  },
+  {
+    "word": "your",
+    "start": 0.813,
+    "end": 0.952
+  },
+  {
+    "word": "working",
+    "start": 1.01,
+    "end": 1.416
+  },
+  {
+    "word": "tree,",
+    "start": 1.474,
+    "end": 1.788
+  },
+  {
+    "word": "merged",
+    "start": 1.869,
+    "end": 2.183
+  },
+  {
+    "word": "with",
+    "start": 2.241,
+    "end": 2.426
+  },
+  {
+    "word": "anything",
+    "start": 2.485,
+    "end": 2.937
+  },
+  {
+    "word": "you've",
+    "start": 3.007,
+    "end": 3.239
+  },
+  {
+    "word": "changed",
+    "start": 3.286,
+    "end": 3.622
+  },
+  {
+    "word": "since.",
+    "start": 3.657,
+    "end": 4.145
+  },
+  {
+    "word": "The",
+    "start": 4.551,
+    "end": 4.679
+  },
+  {
+    "word": "last",
+    "start": 4.76,
+    "end": 5.05
+  },
+  {
+    "word": "commit",
+    "start": 5.132,
+    "end": 5.584
+  },
+  {
+    "word": "is",
+    "start": 5.654,
+    "end": 5.77
+  },
+  {
+    "word": "still",
+    "start": 5.805,
+    "end": 6.095
+  },
+  {
+    "word": "yours:",
+    "start": 6.177,
+    "end": 6.641
+  },
+  {
+    "word": "nothing",
+    "start": 6.769,
+    "end": 7.129
+  },
+  {
+    "word": "is",
+    "start": 7.198,
+    "end": 7.291
+  },
+  {
+    "word": "committed.",
+    "start": 7.372,
+    "end": 7.976
+  },
+  {
+    "word": "So",
+    "start": 8.382,
+    "end": 8.557
+  },
+  {
+    "word": "you",
+    "start": 8.638,
+    "end": 8.707
+  },
+  {
+    "word": "review",
+    "start": 8.789,
+    "end": 9.149
+  },
+  {
+    "word": "it",
+    "start": 9.218,
+    "end": 9.3
+  },
+  {
+    "word": "like",
+    "start": 9.358,
+    "end": 9.578
+  },
+  {
+    "word": "any",
+    "start": 9.636,
+    "end": 9.88
+  },
+  {
+    "word": "other",
+    "start": 9.961,
+    "end": 10.228
+  },
+  {
+    "word": "change,",
+    "start": 10.298,
+    "end": 10.809
+  },
+  {
+    "word": "and",
+    "start": 10.855,
+    "end": 11.029
+  },
+  {
+    "word": "undo",
+    "start": 11.122,
+    "end": 11.413
+  },
+  {
+    "word": "it",
+    "start": 11.494,
+    "end": 11.575
+  },
+  {
+    "word": "the",
+    "start": 11.622,
+    "end": 11.703
+  },
+  {
+    "word": "same",
+    "start": 11.761,
+    "end": 12.051
+  },
+  {
+    "word": "way.",
+    "start": 12.098,
+    "end": 12.492
+  },
+  {
+    "word": "You",
+    "start": 12.783,
+    "end": 12.91
+  },
+  {
+    "word": "keep",
+    "start": 12.992,
+    "end": 13.212
+  },
+  {
+    "word": "one",
+    "start": 13.305,
+    "end": 13.514
+  },
+  {
+    "word": "timeline;",
+    "start": 13.56,
+    "end": 14.292
+  },
+  {
+    "word": "the",
+    "start": 14.42,
+    "end": 14.547
+  },
+  {
+    "word": "others",
+    "start": 14.617,
+    "end": 14.93
+  },
+  {
+    "word": "stay",
+    "start": 14.965,
+    "end": 15.267
+  },
+  {
+    "word": "as",
+    "start": 15.337,
+    "end": 15.453
+  },
+  {
+    "word": "branches",
+    "start": 15.546,
+    "end": 16.045
+  },
+  {
+    "word": "until",
+    "start": 16.126,
+    "end": 16.451
+  },
+  {
+    "word": "you",
+    "start": 16.509,
+    "end": 16.591
+  },
+  {
+    "word": "run",
+    "start": 16.718,
+    "end": 16.997
+  },
+  {
+    "word": "npx",
+    "start": 17.09,
+    "end": 17.879
+  },
+  {
+    "word": "variantly",
+    "start": 18.042,
+    "end": 18.82
+  },
+  {
+    "word": "clean.",
+    "start": 18.878,
+    "end": 19.691
+  }
+]

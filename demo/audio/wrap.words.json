@@ -1,0 +1,282 @@
+[
+  {
+    "word": "I",
+    "start": 0,
+    "end": 0.104
+  },
+  {
+    "word": "designed",
+    "start": 0.232,
+    "end": 0.755
+  },
+  {
+    "word": "and",
+    "start": 0.824,
+    "end": 0.929
+  },
+  {
+    "word": "directed",
+    "start": 0.987,
+    "end": 1.533
+  },
+  {
+    "word": "Variantly",
+    "start": 1.591,
+    "end": 2.415
+  },
+  {
+    "word": "with",
+    "start": 2.635,
+    "end": 2.856
+  },
+  {
+    "word": "Claude",
+    "start": 2.902,
+    "end": 3.228
+  },
+  {
+    "word": "Code",
+    "start": 3.274,
+    "end": 3.646
+  },
+  {
+    "word": "and",
+    "start": 3.692,
+    "end": 3.843
+  },
+  {
+    "word": "Impeccable:",
+    "start": 3.901,
+    "end": 4.76
+  },
+  {
+    "word": "I",
+    "start": 4.888,
+    "end": 4.957
+  },
+  {
+    "word": "set",
+    "start": 5.12,
+    "end": 5.352
+  },
+  {
+    "word": "the",
+    "start": 5.399,
+    "end": 5.468
+  },
+  {
+    "word": "direction,",
+    "start": 5.526,
+    "end": 6.304
+  },
+  {
+    "word": "made",
+    "start": 6.49,
+    "end": 6.745
+  },
+  {
+    "word": "the",
+    "start": 6.78,
+    "end": 6.85
+  },
+  {
+    "word": "calls,",
+    "start": 6.92,
+    "end": 7.396
+  },
+  {
+    "word": "and",
+    "start": 7.419,
+    "end": 7.57
+  },
+  {
+    "word": "tested",
+    "start": 7.616,
+    "end": 8.081
+  },
+  {
+    "word": "it",
+    "start": 8.139,
+    "end": 8.208
+  },
+  {
+    "word": "on",
+    "start": 8.278,
+    "end": 8.394
+  },
+  {
+    "word": "a",
+    "start": 8.452,
+    "end": 8.475
+  },
+  {
+    "word": "real",
+    "start": 8.557,
+    "end": 8.777
+  },
+  {
+    "word": "iPhone.",
+    "start": 8.858,
+    "end": 9.532
+  },
+  {
+    "word": "It's",
+    "start": 9.59,
+    "end": 9.81
+  },
+  {
+    "word": "free",
+    "start": 9.88,
+    "end": 10.205
+  },
+  {
+    "word": "and",
+    "start": 10.263,
+    "end": 10.391
+  },
+  {
+    "word": "open",
+    "start": 10.472,
+    "end": 10.786
+  },
+  {
+    "word": "source,",
+    "start": 10.855,
+    "end": 11.273
+  },
+  {
+    "word": "and",
+    "start": 11.297,
+    "end": 11.413
+  },
+  {
+    "word": "it",
+    "start": 11.482,
+    "end": 11.552
+  },
+  {
+    "word": "runs",
+    "start": 11.622,
+    "end": 11.912
+  },
+  {
+    "word": "on",
+    "start": 11.993,
+    "end": 12.121
+  },
+  {
+    "word": "your",
+    "start": 12.179,
+    "end": 12.307
+  },
+  {
+    "word": "machine.",
+    "start": 12.376,
+    "end": 12.922
+  },
+  {
+    "word": "No",
+    "start": 13.143,
+    "end": 13.363
+  },
+  {
+    "word": "account,",
+    "start": 13.433,
+    "end": 13.921
+  },
+  {
+    "word": "no",
+    "start": 13.99,
+    "end": 14.153
+  },
+  {
+    "word": "server",
+    "start": 14.234,
+    "end": 14.606
+  },
+  {
+    "word": "of",
+    "start": 14.687,
+    "end": 14.78
+  },
+  {
+    "word": "ours.",
+    "start": 14.907,
+    "end": 15.349
+  },
+  {
+    "word": "To",
+    "start": 15.511,
+    "end": 15.65
+  },
+  {
+    "word": "try",
+    "start": 15.72,
+    "end": 16.034
+  },
+  {
+    "word": "it,",
+    "start": 16.092,
+    "end": 16.219
+  },
+  {
+    "word": "run",
+    "start": 16.277,
+    "end": 16.556
+  },
+  {
+    "word": "npx",
+    "start": 16.637,
+    "end": 17.485
+  },
+  {
+    "word": "variantly",
+    "start": 17.578,
+    "end": 18.472
+  },
+  {
+    "word": "in",
+    "start": 18.727,
+    "end": 18.878
+  },
+  {
+    "word": "your",
+    "start": 18.936,
+    "end": 19.087
+  },
+  {
+    "word": "project.",
+    "start": 19.145,
+    "end": 19.772
+  },
+  {
+    "word": "Docs",
+    "start": 19.993,
+    "end": 20.411
+  },
+  {
+    "word": "at",
+    "start": 20.48,
+    "end": 20.62
+  },
+  {
+    "word": "variantly.style.",
+    "start": 20.701,
+    "end": 22.315
+  },
+  {
+    "word": "Thanks",
+    "start": 22.373,
+    "end": 22.686
+  },
+  {
+    "word": "for",
+    "start": 22.744,
+    "end": 22.883
+  },
+  {
+    "word": "watching.",
+    "start": 22.953,
+    "end": 23.731
+  }
+]

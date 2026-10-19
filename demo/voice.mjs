@@ -169,6 +169,19 @@ for (const [i, scene] of scenes.entries()) {
     continue;
   }
 
+  // A scene with no line (kinetic type, a silent timelapse) gets a short
+  // silence: eleven_v3 and later reject empty text.
+  if (!line.spoken.trim()) {
+    const silence = ['-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=mono', '-t', '0.35'];
+    await ffmpeg([...silence, at('audio', `${scene.id}.wav`)]);
+    await ffmpeg([...silence, '-b:a', '128k', mp3]);
+    durations[scene.id] = Number((await duration(mp3)).toFixed(3));
+    writeJson(at('audio', `${scene.id}.words.json`), []);
+    manifest[scene.id] = hash;
+    log('voice', `${scene.id}: ${durations[scene.id]}s (silent)`);
+    continue;
+  }
+
   if (LOCAL) {
     const raw = at('audio', `${scene.id}.local.wav`);
     await speakLocally(line.spoken, raw);

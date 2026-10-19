@@ -1,0 +1,11 @@
+{
+  "name": "variantly-demo-dark-thumbnail",
+  "stage": "stage/thumb-dark.html",
+  "duration": 1,
+  "fps": 1,
+  "width": 1280,
+  "height": 720,
+  "out": "build/dark/frames-thumb",
+  "probe": "build/dark/thumb",
+  "deliver": "out"
+}

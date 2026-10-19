@@ -1,0 +1,237 @@
+[
+  {
+    "word": "If",
+    "start": 0,
+    "end": 0.221
+  },
+  {
+    "word": "a",
+    "start": 0.29,
+    "end": 0.325
+  },
+  {
+    "word": "variant",
+    "start": 0.406,
+    "end": 0.859
+  },
+  {
+    "word": "fails,",
+    "start": 0.929,
+    "end": 1.509
+  },
+  {
+    "word": "the",
+    "start": 1.602,
+    "end": 1.741
+  },
+  {
+    "word": "board",
+    "start": 1.811,
+    "end": 2.09
+  },
+  {
+    "word": "says",
+    "start": 2.148,
+    "end": 2.392
+  },
+  {
+    "word": "why,",
+    "start": 2.461,
+    "end": 3.007
+  },
+  {
+    "word": "in",
+    "start": 3.135,
+    "end": 3.286
+  },
+  {
+    "word": "the",
+    "start": 3.344,
+    "end": 3.437
+  },
+  {
+    "word": "agent's",
+    "start": 3.506,
+    "end": 3.947
+  },
+  {
+    "word": "own",
+    "start": 4.005,
+    "end": 4.191
+  },
+  {
+    "word": "words,",
+    "start": 4.261,
+    "end": 4.772
+  },
+  {
+    "word": "and",
+    "start": 4.818,
+    "end": 5.027
+  },
+  {
+    "word": "you",
+    "start": 5.085,
+    "end": 5.166
+  },
+  {
+    "word": "retry",
+    "start": 5.248,
+    "end": 5.793
+  },
+  {
+    "word": "just",
+    "start": 5.956,
+    "end": 6.223
+  },
+  {
+    "word": "that",
+    "start": 6.258,
+    "end": 6.455
+  },
+  {
+    "word": "one.",
+    "start": 6.583,
+    "end": 7.001
+  },
+  {
+    "word": "And",
+    "start": 7.407,
+    "end": 7.581
+  },
+  {
+    "word": "if",
+    "start": 7.651,
+    "end": 7.744
+  },
+  {
+    "word": "one",
+    "start": 7.825,
+    "end": 8.022
+  },
+  {
+    "word": "comes",
+    "start": 8.069,
+    "end": 8.313
+  },
+  {
+    "word": "out",
+    "start": 8.371,
+    "end": 8.545
+  },
+  {
+    "word": "broken,",
+    "start": 8.615,
+    "end": 9.358
+  },
+  {
+    "word": "like",
+    "start": 9.578,
+    "end": 9.822
+  },
+  {
+    "word": "a",
+    "start": 9.857,
+    "end": 9.892
+  },
+  {
+    "word": "layout",
+    "start": 9.961,
+    "end": 10.542
+  },
+  {
+    "word": "that",
+    "start": 10.588,
+    "end": 10.762
+  },
+  {
+    "word": "falls",
+    "start": 10.844,
+    "end": 11.204
+  },
+  {
+    "word": "apart",
+    "start": 11.262,
+    "end": 11.68
+  },
+  {
+    "word": "on",
+    "start": 11.749,
+    "end": 11.877
+  },
+  {
+    "word": "a",
+    "start": 11.935,
+    "end": 11.97
+  },
+  {
+    "word": "phone,",
+    "start": 12.04,
+    "end": 12.655
+  },
+  {
+    "word": "tell",
+    "start": 12.945,
+    "end": 13.201
+  },
+  {
+    "word": "the",
+    "start": 13.259,
+    "end": 13.351
+  },
+  {
+    "word": "agent",
+    "start": 13.421,
+    "end": 13.839
+  },
+  {
+    "word": "to",
+    "start": 13.886,
+    "end": 13.967
+  },
+  {
+    "word": "fix",
+    "start": 14.095,
+    "end": 14.373
+  },
+  {
+    "word": "it,",
+    "start": 14.501,
+    "end": 14.686
+  },
+  {
+    "word": "retry",
+    "start": 14.814,
+    "end": 15.302
+  },
+  {
+    "word": "it,",
+    "start": 15.36,
+    "end": 15.511
+  },
+  {
+    "word": "or",
+    "start": 15.557,
+    "end": 15.685
+  },
+  {
+    "word": "just",
+    "start": 15.754,
+    "end": 15.963
+  },
+  {
+    "word": "don't",
+    "start": 16.01,
+    "end": 16.23
+  },
+  {
+    "word": "keep",
+    "start": 16.3,
+    "end": 16.556
+  },
+  {
+    "word": "it.",
+    "start": 16.637,
+    "end": 17.043
+  }
+]

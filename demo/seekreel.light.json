@@ -1,0 +1,316 @@
+{
+  "name": "variantly-demo-light",
+  "stage": "stage/light.html",
+  "duration": "footage",
+  "width": 1920,
+  "height": 1080,
+  "out": "build/light/frames-16x9",
+  "footage": {
+    "out": "build/light/footage",
+    "fit": "cover",
+    "quality": 3,
+    "clips": [
+      {
+        "label": "cold0",
+        "src": "video/light/raw.mp4",
+        "from": 3239.451,
+        "to": 3240.051
+      },
+      {
+        "label": "cold1",
+        "src": "video/light/raw.mp4",
+        "from": 3251.066,
+        "to": 3251.666
+      },
+      {
+        "label": "cold2",
+        "src": "video/light/raw.mp4",
+        "from": 3253.525,
+        "to": 3254.125
+      },
+      {
+        "label": "cold3",
+        "src": "video/light/raw.mp4",
+        "from": 3255.992,
+        "to": 3256.592
+      },
+      {
+        "label": "cold4",
+        "src": "video/light/raw.mp4",
+        "from": 3258.556,
+        "to": 3259.156
+      },
+      {
+        "label": "cold5",
+        "src": "video/light/raw.mp4",
+        "from": 3261.059,
+        "to": 3261.659
+      },
+      {
+        "label": "cold6",
+        "src": "video/light/raw.mp4",
+        "from": 3263.663,
+        "to": 3264.263
+      },
+      {
+        "label": "cold7",
+        "src": "video/light/raw.mp4",
+        "from": 3266.12,
+        "to": 3266.72
+      },
+      {
+        "label": "cold8",
+        "src": "video/light/raw.mp4",
+        "from": 3268.588,
+        "to": 3269.188
+      },
+      {
+        "label": "cold9",
+        "src": "video/light/raw.mp4",
+        "from": 3271.043,
+        "to": 3271.643
+      },
+      {
+        "label": "cold10",
+        "src": "video/light/raw.mp4",
+        "from": 3271.643,
+        "to": 3274.643
+      },
+      {
+        "label": "hi",
+        "src": "video/light/raw.mp4",
+        "from": 0.085,
+        "to": 26.099,
+        "transition": {
+          "type": "fade",
+          "duration": 0.5
+        }
+      },
+      {
+        "label": "learn",
+        "src": "video/light/raw.mp4",
+        "from": 26.099,
+        "to": 35.665
+      },
+      {
+        "label": "model",
+        "src": "video/light/raw.mp4",
+        "from": 35.665,
+        "to": 53.766
+      },
+      {
+        "label": "need",
+        "src": "video/light/raw.mp4",
+        "from": 53.766,
+        "to": 78.147
+      },
+      {
+        "label": "stacks",
+        "src": "video/light/raw.mp4",
+        "from": 78.147,
+        "to": 92.968
+      },
+      {
+        "label": "doctor",
+        "src": "video/light/raw.mp4",
+        "from": 92.968,
+        "to": 106.769
+      },
+      {
+        "label": "beginner",
+        "src": "video/light/raw.mp4",
+        "from": 106.769,
+        "to": 123.844
+      },
+      {
+        "label": "setup",
+        "src": "video/light/raw.mp4",
+        "from": 123.844,
+        "to": 146.599
+      },
+      {
+        "label": "combine",
+        "src": "video/light/raw.mp4",
+        "from": 146.599,
+        "to": 166.133
+      },
+      {
+        "label": "make",
+        "src": "video/light/raw.mp4",
+        "from": 166.133,
+        "to": 187.176
+      },
+      {
+        "label": "directions",
+        "src": "video/light/raw.mp4",
+        "from": 187.176,
+        "to": 232.123
+      },
+      {
+        "label": "brief",
+        "src": "video/light/raw.mp4",
+        "from": 232.123,
+        "to": 260.736
+      },
+      {
+        "label": "worktrees",
+        "src": "video/light/raw.mp4",
+        "from": 260.736,
+        "to": 279.672
+      },
+      {
+        "label": "agent",
+        "src": "video/light/raw.mp4",
+        "from": 279.672,
+        "to": 300.158
+      },
+      {
+        "label": "lapse",
+        "src": "video/light/raw.mp4",
+        "from": 300.158,
+        "to": 303.658,
+        "transition": {
+          "type": "fade",
+          "duration": 0.4
+        }
+      },
+      {
+        "label": "lapse+",
+        "src": "video/light/raw.mp4",
+        "from": 303.658,
+        "to": 3219.988,
+        "speed": 530.2418
+      },
+      {
+        "label": "retry",
+        "src": "video/light/raw.mp4",
+        "from": 3219.988,
+        "to": 3237.776
+      },
+      {
+        "label": "compare",
+        "src": "video/light/raw.mp4",
+        "from": 3237.776,
+        "to": 3249.666,
+        "transition": {
+          "type": "fadeblack",
+          "duration": 0.5
+        }
+      },
+      {
+        "label": "walk",
+        "src": "video/light/raw.mp4",
+        "from": 3249.666,
+        "to": 3299.045
+      },
+      {
+        "label": "lens",
+        "src": "video/light/raw.mp4",
+        "from": 3299.045,
+        "to": 3309.807
+      },
+      {
+        "label": "pausetry",
+        "src": "video/light/raw.mp4",
+        "from": 3309.807,
+        "to": 3321.202
+      },
+      {
+        "label": "decide",
+        "src": "video/light/raw.mp4",
+        "from": 3321.202,
+        "to": 3335.227
+      },
+      {
+        "label": "scores",
+        "src": "video/light/raw.mp4",
+        "from": 3335.227,
+        "to": 3351.527
+      },
+      {
+        "label": "again",
+        "src": "video/light/raw.mp4",
+        "from": 3351.527,
+        "to": 3363.828
+      },
+      {
+        "label": "keep",
+        "src": "video/light/raw.mp4",
+        "from": 3363.828,
+        "to": 3377.098
+      },
+      {
+        "label": "rollout",
+        "src": "video/light/raw.mp4",
+        "from": 3377.098,
+        "to": 3378.598
+      },
+      {
+        "label": "rollout+",
+        "src": "video/light/raw.mp4",
+        "from": 3378.598,
+        "to": 3514.015,
+        "speed": 32.2421
+      },
+      {
+        "label": "sitewide",
+        "src": "video/light/raw.mp4",
+        "from": 3514.015,
+        "to": 3534.44
+      },
+      {
+        "label": "handoff",
+        "src": "video/light/raw.mp4",
+        "from": 3534.44,
+        "to": 3549.96
+      },
+      {
+        "label": "call",
+        "src": "video/light/raw.mp4",
+        "from": 3549.96,
+        "to": 3553.067
+      },
+      {
+        "label": "website",
+        "src": "video/light/raw.mp4",
+        "from": 3553.067,
+        "to": 3581.666
+      },
+      {
+        "label": "recap",
+        "src": "video/light/raw.mp4",
+        "from": 3581.666,
+        "to": 3598.065
+      },
+      {
+        "label": "wrap",
+        "src": "video/light/raw.mp4",
+        "from": 3598.065,
+        "to": 3622.558
+      }
+    ]
+  },
+  "fps": 60,
+  "background": "#0d0d10",
+  "audio": {
+    "engine": "cues",
+    "cues": "build/light/cues.json",
+    "wav": "build/light/soundtrack.wav"
+  },
+  "probe": "probe",
+  "deliver": "out",
+  "encode": {
+    "crf": 18,
+    "keyint": 60
+  },
+  "variants": [
+    {
+      "name": ""
+    },
+    {
+      "name": "silent",
+      "audio": false
+    }
+  ],
+  "poster": 337.45
+}

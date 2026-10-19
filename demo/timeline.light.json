@@ -1,0 +1,6600 @@
+{
+  "variantly": {
+    "version": "0.8.1",
+    "commit": "0050362",
+    "branch": "claude/variantly-demo-video-record-6a5ba7",
+    "stale": false
+  },
+  "fps": 60,
+  "width": 1920,
+  "height": 1080,
+  "duration": 588.0166666666667,
+  "scenes": [
+    {
+      "id": "cold",
+      "start": 0,
+      "end": 8.5,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 0.25,
+      "voice": 9,
+      "step": "Variantly",
+      "chapter": null,
+      "lower": null,
+      "kinetic": {
+        "text": "Ten redesigns: tactile, surreal, cinematic, collage… Keep one.",
+        "sub": "npx variantly",
+        "from": 5.2
+      },
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": true,
+      "captions": []
+    },
+    {
+      "id": "hi",
+      "start": 9,
+      "end": 34.5167,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 9.25,
+      "voice": 25.313,
+      "step": "Why",
+      "chapter": {
+        "n": 1,
+        "title": "Why"
+      },
+      "lower": {
+        "name": "Joaquin",
+        "role": "Variantly"
+      },
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 9.25,
+          "end": 10.875,
+          "text": "This is Variantly."
+        },
+        {
+          "start": 10.875,
+          "end": 13.267,
+          "text": "In the next ten minutes, I'll show you one"
+        },
+        {
+          "start": 13.267,
+          "end": 15.891,
+          "text": "whole run, including what it costs and how"
+        },
+        {
+          "start": 15.891,
+          "end": 16.68,
+          "text": "to undo it."
+        },
+        {
+          "start": 16.68,
+          "end": 20.047,
+          "text": "I'm Joaquin, and I built Variantly because"
+        },
+        {
+          "start": 20.047,
+          "end": 22.752000000000002,
+          "text": "redesigning a site usually means betting"
+        },
+        {
+          "start": 22.752000000000002,
+          "end": 24.204,
+          "text": "on one direction."
+        },
+        {
+          "start": 24.204,
+          "end": 26.143,
+          "text": "If it's wrong, you start over."
+        },
+        {
+          "start": 26.143,
+          "end": 29.242,
+          "text": "Here, your agent builds several complete"
+        },
+        {
+          "start": 29.242,
+          "end": 31.982,
+          "text": "redesigns at once, each one running as"
+        },
+        {
+          "start": 31.982,
+          "end": 34.025999999999996,
+          "text": "your real site, and you keep the one you"
+        },
+        {
+          "start": 34.025999999999996,
+          "end": 34.7667,
+          "text": "like."
+        }
+      ]
+    },
+    {
+      "id": "learn",
+      "start": 34.5167,
+      "end": 44.0833,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 34.7667,
+      "voice": 8.856,
+      "step": "Why",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": {
+        "kind": "learn",
+        "title": "In this video",
+        "items": [
+          {
+            "text": "Set up a run",
+            "on": "setting",
+            "at": 36.253
+          },
+          {
+            "text": "Give each variant its own direction",
+            "on": "direction,",
+            "at": 39.353
+          },
+          {
+            "text": "Compare them on your real site",
+            "on": "comparing",
+            "at": 40.282
+          },
+          {
+            "text": "Keep one, for the whole site",
+            "on": "keeping",
+            "at": 42.569
+          }
+        ]
+      },
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 34.7667,
+          "end": 37.5647,
+          "text": "Here's what we'll cover: setting up a run,"
+        },
+        {
+          "start": 37.5647,
+          "end": 40.2817,
+          "text": "giving each variant its own direction,"
+        },
+        {
+          "start": 40.2817,
+          "end": 42.5687,
+          "text": "comparing them on your real site, and"
+        },
+        {
+          "start": 42.5687,
+          "end": 43.8407,
+          "text": "keeping one."
+        }
+      ]
+    },
+    {
+      "id": "model",
+      "start": 44.0833,
+      "end": 62.1833,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 44.3333,
+      "voice": 17.398,
+      "step": "Why",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": {
+        "kind": "flow",
+        "title": "How it works",
+        "nodes": [
+          {
+            "label": "Your repo",
+            "sub": "untouched",
+            "on": "project",
+            "at": 46.179
+          },
+          {
+            "label": "Copies",
+            "sub": "git worktrees",
+            "on": "copy,",
+            "at": 49.604
+          },
+          {
+            "label": "Previews",
+            "sub": "own dev server",
+            "on": "preview.",
+            "at": 55.409
+          },
+          {
+            "label": "Compare",
+            "sub": "side by side",
+            "on": "compare",
+            "at": 56.303
+          },
+          {
+            "label": "Keep",
+            "sub": "into your tree",
+            "on": "keep,",
+            "at": 58.056
+          },
+          {
+            "label": "Rollout",
+            "sub": "every page",
+            "on": "rolls",
+            "at": 59.867
+          }
+        ]
+      },
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 44.3333,
+          "end": 45.9473,
+          "text": "First, the mental model."
+        },
+        {
+          "start": 45.9473,
+          "end": 47.9673,
+          "text": "Your project stays where it is."
+        },
+        {
+          "start": 47.9673,
+          "end": 50.8233,
+          "text": "Each variant is its own copy: a git"
+        },
+        {
+          "start": 50.8233,
+          "end": 53.3663,
+          "text": "worktree on its own branch, a little"
+        },
+        {
+          "start": 53.3663,
+          "end": 56.106300000000005,
+          "text": "timeline of your site, with a preview."
+        },
+        {
+          "start": 56.106300000000005,
+          "end": 58.8223,
+          "text": "You compare them side by side, keep one,"
+        },
+        {
+          "start": 58.8223,
+          "end": 61.1903,
+          "text": "and a last pass rolls it out to the whole"
+        },
+        {
+          "start": 61.1903,
+          "end": 61.9513,
+          "text": "site."
+        }
+      ]
+    },
+    {
+      "id": "need",
+      "start": 62.1833,
+      "end": 86.5667,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 62.4333,
+      "voice": 23.667,
+      "step": "What you need",
+      "chapter": {
+        "n": 2,
+        "title": "What you need"
+      },
+      "lower": {
+        "name": "Designs by Impeccable",
+        "role": "impeccable.style",
+        "from": 15
+      },
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": {
+        "lines": [
+          "$ node -v",
+          "v22.18.0",
+          "# Claude Code · Codex · Copilot · Gemini · Cursor",
+          "# or any model via OpenRouter",
+          "$ npx variantly"
+        ]
+      },
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 62.4333,
+          "end": 65.1033,
+          "text": "You need two things: Node, and a coding"
+        },
+        {
+          "start": 65.1033,
+          "end": 66.85130000000001,
+          "text": "agent you already use."
+        },
+        {
+          "start": 67.1353,
+          "end": 71.7793,
+          "text": "In your project folder, run npx variantly,"
+        },
+        {
+          "start": 71.7793,
+          "end": 74.57730000000001,
+          "text": "and a wizard opens in your browser."
+        },
+        {
+          "start": 74.57730000000001,
+          "end": 77.6893,
+          "text": "The design work is done by Impeccable, an"
+        },
+        {
+          "start": 77.6893,
+          "end": 79.8713,
+          "text": "open-source design skill."
+        },
+        {
+          "start": 79.8713,
+          "end": 82.6693,
+          "text": "One catch: it has to be the command-line"
+        },
+        {
+          "start": 82.6693,
+          "end": 85.2823,
+          "text": "agent, not a browser builder like Lovable"
+        },
+        {
+          "start": 85.2823,
+          "end": 86.32130000000001,
+          "text": "or Bolt."
+        }
+      ]
+    },
+    {
+      "id": "stacks",
+      "start": 86.5667,
+      "end": 101.3833,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 86.8167,
+      "voice": 14.106,
+      "step": "Will it work on yours?",
+      "chapter": {
+        "n": 3,
+        "title": "Will it work on yours?"
+      },
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": {
+        "capture": "stacks",
+        "per": 0.5,
+        "from": 0.3,
+        "sequence": [
+          {
+            "title": "~/my-next-app",
+            "prompt": "~/my-next-app $",
+            "lines": [
+              "$ npx variantly doctor",
+              "  Next.js  .  →  npx --no-install next dev --port 3000"
+            ]
+          },
+          {
+            "title": "~/my-django-site",
+            "prompt": "~/my-django-site $",
+            "lines": [
+              "$ npx variantly doctor",
+              "  Django  .  →  python manage.py runserver 127.0.0.1:8000"
+            ]
+          },
+          {
+            "title": "~/tallyboard",
+            "prompt": "~/tallyboard $",
+            "lines": [
+              "$ npx variantly doctor",
+              "  Static HTML  .  →  node \"variantly/src/static-server.mjs\" 8080"
+            ]
+          }
+        ]
+      },
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 86.8167,
+          "end": 88.3377,
+          "text": "Will it work on yours?"
+        },
+        {
+          "start": 88.3377,
+          "end": 91.66969999999999,
+          "text": "Here's variantly doctor on a Next.js app,"
+        },
+        {
+          "start": 91.66969999999999,
+          "end": 95.0017,
+          "text": "a Django site, and plain HTML."
+        },
+        {
+          "start": 95.0017,
+          "end": 97.5207,
+          "text": "It finds the stack, and the command that"
+        },
+        {
+          "start": 97.5207,
+          "end": 98.85669999999999,
+          "text": "serves it, every time."
+        },
+        {
+          "start": 98.85669999999999,
+          "end": 101.1377,
+          "text": "And you can always type your own."
+        }
+      ]
+    },
+    {
+      "id": "doctor",
+      "start": 101.3833,
+      "end": 115.1833,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 101.6333,
+      "voice": 13.087,
+      "step": "Will it work on yours?",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": {
+        "capture": "fail",
+        "per": 0.6,
+        "untilEnd": true,
+        "title": "~/my-site",
+        "prompt": "~/my-site $",
+        "lines": [
+          "$ npx variantly doctor",
+          "✓ node 24.18.0",
+          "✓ git version 2.49.0.windows.1",
+          "✗ repository ~/my-site (no commits yet)"
+        ]
+      },
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 101.6333,
+          "end": 104.17630000000001,
+          "text": "Here's a rough edge, on purpose."
+        },
+        {
+          "start": 104.17630000000001,
+          "end": 107.0323,
+          "text": "This folder has no commit yet, so doctor"
+        },
+        {
+          "start": 107.0323,
+          "end": 108.8083,
+          "text": "marks it with a cross."
+        },
+        {
+          "start": 108.8083,
+          "end": 111.2933,
+          "text": "Variantly can make that first commit for"
+        },
+        {
+          "start": 111.2933,
+          "end": 114.9333,
+          "text": "you, or you fix it and run doctor again."
+        }
+      ]
+    },
+    {
+      "id": "beginner",
+      "start": 115.1833,
+      "end": 132.25,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 115.4333,
+      "voice": 12.852,
+      "step": "Will it work on yours?",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 115.4333,
+          "end": 116.68730000000001,
+          "text": "Not a developer?"
+        },
+        {
+          "start": 116.68730000000001,
+          "end": 119.4503,
+          "text": "If you can paste a command, you're set."
+        },
+        {
+          "start": 119.4503,
+          "end": 121.6683,
+          "text": "On variantly.style, there's a"
+        },
+        {
+          "start": 121.6683,
+          "end": 122.9213,
+          "text": "walk-me-through prompt."
+        },
+        {
+          "start": 122.9213,
+          "end": 125.6033,
+          "text": "Paste it into any AI chat, and it takes"
+        },
+        {
+          "start": 125.6033,
+          "end": 128.5003,
+          "text": "you through it one small step at a time."
+        }
+      ]
+    },
+    {
+      "id": "setup",
+      "start": 132.25,
+      "end": 155,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 132.5,
+      "voice": 22.047,
+      "step": "Setup",
+      "chapter": {
+        "n": 4,
+        "title": "Setup"
+      },
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 132.5,
+          "end": 134.532,
+          "text": "Setup finds your app and checks your"
+        },
+        {
+          "start": 134.532,
+          "end": 135.217,
+          "text": "agent."
+        },
+        {
+          "start": 135.217,
+          "end": 137.98,
+          "text": "Each card says if it's ready, and if not,"
+        },
+        {
+          "start": 137.98,
+          "end": 140.041,
+          "text": "the fix is right on the card."
+        },
+        {
+          "start": 140.197,
+          "end": 141.904,
+          "text": "I'm using Claude Code."
+        },
+        {
+          "start": 141.904,
+          "end": 144.923,
+          "text": "You could pick Codex, Copilot, Gemini,"
+        },
+        {
+          "start": 144.923,
+          "end": 149.149,
+          "text": "Cursor, OpenCode, Grok Build, Antigravity,"
+        },
+        {
+          "start": 149.149,
+          "end": 152.702,
+          "text": "Pi, Hermes Agent, or any OpenRouter model,"
+        },
+        {
+          "start": 152.702,
+          "end": 154.763,
+          "text": "and mix them in one run."
+        }
+      ]
+    },
+    {
+      "id": "combine",
+      "start": 155,
+      "end": 174.5333,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 155.25,
+      "voice": 18.834,
+      "step": "Setup",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": {
+        "kind": "mix",
+        "title": "Combining agents in one run",
+        "rows": [
+          {
+            "agent": "Claude Code",
+            "model": "opus",
+            "count": 5,
+            "on": "combine",
+            "at": 155.6
+          },
+          {
+            "agent": "Gemini CLI",
+            "model": "the agent's default",
+            "count": 5,
+            "at": 155.95
+          }
+        ],
+        "total": "10 variants in all, the most there can be. OpenRouter models run through Claude Code or Codex.",
+        "items": [
+          {
+            "text": "Different design instincts",
+            "on": "instincts.",
+            "at": 158.57
+          },
+          {
+            "text": "Compare which model designs best",
+            "on": "designs",
+            "at": 163.435
+          },
+          {
+            "text": "Spread the work across your accounts",
+            "on": "accounts",
+            "at": 167.313
+          },
+          {
+            "text": "--blind: who made it stays hidden until you keep one",
+            "on": "--blind,",
+            "at": 169.728
+          }
+        ]
+      },
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 155.25,
+          "end": 156.423,
+          "text": "Why mix them?"
+        },
+        {
+          "start": 156.423,
+          "end": 159.766,
+          "text": "Each model has its own design instincts."
+        },
+        {
+          "start": 159.766,
+          "end": 162.68,
+          "text": "So you get more varied directions, you see"
+        },
+        {
+          "start": 162.68,
+          "end": 165.653,
+          "text": "which model designs best for your site,"
+        },
+        {
+          "start": 165.653,
+          "end": 167.858,
+          "text": "and you spread the work across accounts"
+        },
+        {
+          "start": 167.858,
+          "end": 169.391,
+          "text": "you already pay for."
+        },
+        {
+          "start": 169.391,
+          "end": 172.119,
+          "text": "Add --blind, and you won't see who made"
+        },
+        {
+          "start": 172.119,
+          "end": 174.308,
+          "text": "each one until you've kept it."
+        }
+      ]
+    },
+    {
+      "id": "make",
+      "start": 174.5333,
+      "end": 195.5833,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 174.7833,
+      "voice": 18.887,
+      "step": "What to make",
+      "chapter": {
+        "n": 5,
+        "title": "What to make"
+      },
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 174.7833,
+          "end": 176.1763,
+          "text": "Next, what to make."
+        },
+        {
+          "start": 176.1763,
+          "end": 179.3233,
+          "text": "The quick picks are two, four or six."
+        },
+        {
+          "start": 179.3233,
+          "end": 181.92329999999998,
+          "text": "I'll pick six, then step it up to ten"
+        },
+        {
+          "start": 181.92329999999998,
+          "end": 185.1743,
+          "text": "under More settings, with five agents at a"
+        },
+        {
+          "start": 185.1743,
+          "end": 187.3683,
+          "text": "time, so it runs in two waves."
+        },
+        {
+          "start": 187.3683,
+          "end": 189.6443,
+          "text": "The rarer settings stay back there."
+        },
+        {
+          "start": 189.6443,
+          "end": 192.1173,
+          "text": "That's progressive disclosure: the common"
+        },
+        {
+          "start": 192.1173,
+          "end": 193.8883,
+          "text": "path stays short."
+        }
+      ]
+    },
+    {
+      "id": "directions",
+      "start": 195.5833,
+      "end": 240.5333,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 195.8333,
+      "voice": 27.063,
+      "step": "Your own directions",
+      "chapter": {
+        "n": 6,
+        "title": "Your own directions"
+      },
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": {
+        "kind": "trends",
+        "title": "Trends I'm watching this winter",
+        "from": 0.2,
+        "items": [
+          {
+            "name": "Tactile imperfection",
+            "essence": "raw paper, brushstrokes, stitching",
+            "swatch": [
+              "#f3ecdc",
+              "#b5532c",
+              "#1f1d1a",
+              "#c99a3a"
+            ],
+            "on": "winter,",
+            "at": 213.758
+          },
+          {
+            "name": "Surreal distortion",
+            "essence": "impossible proportions, dreamlike light",
+            "swatch": [
+              "#bfe3f2",
+              "#c9ccd3",
+              "#7b5ea7"
+            ],
+            "at": 214.108
+          },
+          {
+            "name": "Cinematic drama",
+            "essence": "film-noir shadow, theatrical light",
+            "swatch": [
+              "#0e0c0c",
+              "#5b1a1e",
+              "#e8dcc8"
+            ],
+            "at": 214.458
+          },
+          {
+            "name": "Maximalist collage",
+            "essence": "cut-outs, stickers, clashing patterns",
+            "swatch": [
+              "#ff4f7b",
+              "#ffd23f",
+              "#2a6df4",
+              "#111111"
+            ],
+            "at": 214.808
+          },
+          {
+            "name": "Retro-tech nostalgia",
+            "essence": "early desktop OS, pixel icons",
+            "swatch": [
+              "#c0c0c0",
+              "#008080",
+              "#000080"
+            ],
+            "at": 215.158
+          },
+          {
+            "name": "Expressive typography",
+            "essence": "inflated, warped, handwritten type",
+            "swatch": [
+              "#111111",
+              "#f5f1e8",
+              "#ff5a1f"
+            ],
+            "at": 215.508
+          },
+          {
+            "name": "Warm eclecticism",
+            "essence": "mixed eras, warm wood",
+            "swatch": [
+              "#8a5a3b",
+              "#d9a441",
+              "#4f6b4a",
+              "#efe3cf"
+            ],
+            "at": 215.858
+          },
+          {
+            "name": "Neo-folk craft",
+            "essence": "one credited folk tradition",
+            "swatch": [
+              "#b8202f",
+              "#1e3f8a",
+              "#f2e6c9"
+            ],
+            "at": 216.208
+          },
+          {
+            "name": "Sensory 3D materials",
+            "essence": "soft inflated chrome and glass",
+            "swatch": [
+              "#e6e8ee",
+              "#a9b4ff",
+              "#ffc6e5"
+            ],
+            "at": 216.558
+          },
+          {
+            "name": "Quiet organic minimalism",
+            "essence": "natural materials, negative space",
+            "swatch": [
+              "#e9e2d4",
+              "#a68a64",
+              "#5d6b4f"
+            ],
+            "at": 216.908
+          }
+        ],
+        "fromOn": "winter,",
+        "untilEnd": 2.5,
+        "source": "Curated from the 2026 trend reports by Adobe and Canva, and AW26–27 interiors and surface-design reporting.",
+        "fromAt": 213.758
+      },
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 195.8333,
+          "end": 197.3313,
+          "text": "Now, your own directions."
+        },
+        {
+          "start": 197.3313,
+          "end": 199.8043,
+          "text": "Every slot starts blank, and blank means"
+        },
+        {
+          "start": 199.8043,
+          "end": 201.0463,
+          "text": "Impeccable picks."
+        },
+        {
+          "start": 201.0463,
+          "end": 203.6473,
+          "text": "To pin one, type it in your own words."
+        },
+        {
+          "start": 203.6473,
+          "end": 206.06130000000002,
+          "text": "Tactile imperfection: raw paper,"
+        },
+        {
+          "start": 206.06130000000002,
+          "end": 207.5353,
+          "text": "brushstrokes, stitching."
+        },
+        {
+          "start": 207.5353,
+          "end": 209.6023,
+          "text": "Surreal distortion: impossible"
+        },
+        {
+          "start": 209.6023,
+          "end": 211.68630000000002,
+          "text": "proportions, dreamlike light."
+        },
+        {
+          "start": 211.8433,
+          "end": 213.75830000000002,
+          "text": "These are the trends I'm watching this"
+        },
+        {
+          "start": 213.75830000000002,
+          "end": 216.82330000000002,
+          "text": "winter: human-made texture meeting digital"
+        },
+        {
+          "start": 216.82330000000002,
+          "end": 218.1013,
+          "text": "surrealism."
+        },
+        {
+          "start": 218.1013,
+          "end": 220.6903,
+          "text": "One per variant, and any slot you leave"
+        },
+        {
+          "start": 220.6903,
+          "end": 223.1113,
+          "text": "blank, Impeccable picks."
+        }
+      ]
+    },
+    {
+      "id": "brief",
+      "start": 240.5333,
+      "end": 269.15,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 240.7833,
+      "voice": 27.899,
+      "step": "Review and go",
+      "chapter": {
+        "n": 7,
+        "title": "Review and go"
+      },
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 240.7833,
+          "end": 243.6393,
+          "text": "A few words about your site, and what must"
+        },
+        {
+          "start": 243.6393,
+          "end": 247.3543,
+          "text": "stay: here, the prices, the sign-up button"
+        },
+        {
+          "start": 247.3543,
+          "end": 248.9563,
+          "text": "and the FAQ."
+        },
+        {
+          "start": 248.9563,
+          "end": 250.2223,
+          "text": "Then the review."
+        },
+        {
+          "start": 250.2223,
+          "end": 252.4863,
+          "text": "I designed this screen to show exactly"
+        },
+        {
+          "start": 252.4863,
+          "end": 254.7903,
+          "text": "what will run, and what it costs."
+        },
+        {
+          "start": 254.94729999999998,
+          "end": 258.33729999999997,
+          "text": "Variantly is free and open source; each"
+        },
+        {
+          "start": 258.33729999999997,
+          "end": 261.4953,
+          "text": "variant is one session on your own plan,"
+        },
+        {
+          "start": 261.4953,
+          "end": 263.5733,
+          "text": "plus one for its review."
+        },
+        {
+          "start": 263.5733,
+          "end": 266.0923,
+          "text": "Ten variants, twenty sessions."
+        },
+        {
+          "start": 266.0923,
+          "end": 267.2883,
+          "text": "Trying it out?"
+        },
+        {
+          "start": 267.2883,
+          "end": 268.8963,
+          "text": "Start with four."
+        }
+      ]
+    },
+    {
+      "id": "worktrees",
+      "start": 269.15,
+      "end": 288.0833,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 269.4,
+      "voice": 18.233,
+      "step": "The run",
+      "chapter": {
+        "n": 8,
+        "title": "The run"
+      },
+      "lower": null,
+      "kinetic": null,
+      "diagram": {
+        "kind": "flow",
+        "title": "Ten isolated copies",
+        "nodes": [
+          {
+            "label": "Your repo",
+            "sub": "main branch untouched",
+            "on": "worktree,",
+            "at": 274.636
+          },
+          {
+            "label": "Worktrees",
+            "sub": "outside your project",
+            "stack": "branches",
+            "on": "ten",
+            "at": 282.774
+          },
+          {
+            "label": "Previews",
+            "sub": "one dev server each",
+            "on": "servers,",
+            "at": 284.91
+          },
+          {
+            "label": "Five at a time",
+            "sub": "two waves",
+            "on": "five",
+            "at": 285.561
+          }
+        ]
+      },
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 269.4,
+          "end": 271.28099999999995,
+          "text": "Can this break your site?"
+        },
+        {
+          "start": 271.28099999999995,
+          "end": 271.84999999999997,
+          "text": "No."
+        },
+        {
+          "start": 271.84999999999997,
+          "end": 274.63599999999997,
+          "text": "Each variant runs in an isolated git"
+        },
+        {
+          "start": 274.63599999999997,
+          "end": 276.94599999999997,
+          "text": "worktree, outside your project, so your"
+        },
+        {
+          "start": 276.94599999999997,
+          "end": 278.938,
+          "text": "main branch is never touched."
+        },
+        {
+          "start": 279.152,
+          "end": 281.683,
+          "text": "And agents change presentation, never"
+        },
+        {
+          "start": 281.683,
+          "end": 282.618,
+          "text": "behaviour."
+        },
+        {
+          "start": 282.774,
+          "end": 286.00199999999995,
+          "text": "Ten worktrees, ten dev servers, five"
+        },
+        {
+          "start": 286.00199999999995,
+          "end": 287.854,
+          "text": "agents at a time."
+        }
+      ]
+    },
+    {
+      "id": "agent",
+      "start": 288.0833,
+      "end": 308.1667,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 288.3333,
+      "voice": 19.775,
+      "step": "The run",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 288.3333,
+          "end": 291.1193,
+          "text": "The board shows each variant's direction,"
+        },
+        {
+          "start": 291.1193,
+          "end": 293.3833,
+          "text": "progress and time, live."
+        },
+        {
+          "start": 293.3833,
+          "end": 294.8113,
+          "text": "Let's follow one."
+        },
+        {
+          "start": 294.8113,
+          "end": 297.2383,
+          "text": "It reads your site, builds its direction,"
+        },
+        {
+          "start": 297.2383,
+          "end": 299.87330000000003,
+          "text": "then opens it in a real browser, at"
+        },
+        {
+          "start": 299.87330000000003,
+          "end": 302.7063,
+          "text": "desktop and phone width, and fixes what it"
+        },
+        {
+          "start": 302.7063,
+          "end": 303.5073,
+          "text": "sees."
+        },
+        {
+          "start": 303.5073,
+          "end": 306.2713,
+          "text": "A second pass critiques and audits it,"
+        },
+        {
+          "start": 306.2713,
+          "end": 308.32030000000003,
+          "text": "keeping the direction."
+        }
+      ]
+    },
+    {
+      "id": "lapse",
+      "start": 308.56669999999997,
+      "end": 317.1667,
+      "speed": 530.24,
+      "fastAt": 311.6667,
+      "clock": {
+        "from": 51.417,
+        "total": 2971.247
+      },
+      "voiceAt": 308.81669999999997,
+      "voice": 8.176,
+      "step": "The run",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 308.81669999999997,
+          "end": 311.6957,
+          "text": "Real time, for the record: the whole run"
+        },
+        {
+          "start": 311.6957,
+          "end": 315.0277,
+          "text": "took about 60 minutes, start to finish, so"
+        },
+        {
+          "start": 315.0277,
+          "end": 317.1937,
+          "text": "here's the rest, sped up."
+        }
+      ]
+    },
+    {
+      "id": "retry",
+      "start": 317.1667,
+      "end": 334.45,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 317.4167,
+      "voice": 17.084,
+      "step": "The run",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 317.4167,
+          "end": 320.7607,
+          "text": "If a variant fails, the board says why, in"
+        },
+        {
+          "start": 320.7607,
+          "end": 323.6747,
+          "text": "the agent's own words, and you retry just"
+        },
+        {
+          "start": 323.6747,
+          "end": 324.66769999999997,
+          "text": "that one."
+        },
+        {
+          "start": 324.8237,
+          "end": 328.0047,
+          "text": "And if one comes out broken, like a layout"
+        },
+        {
+          "start": 328.0047,
+          "end": 330.8377,
+          "text": "that falls apart on a phone, tell the"
+        },
+        {
+          "start": 330.8377,
+          "end": 333.7167,
+          "text": "agent to fix it, retry it, or just don't"
+        },
+        {
+          "start": 333.7167,
+          "end": 334.7097,
+          "text": "keep it."
+        }
+      ]
+    },
+    {
+      "id": "compare",
+      "start": 334.95,
+      "end": 346.3333,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 335.2,
+      "voice": 11.18,
+      "step": "Compare",
+      "chapter": {
+        "n": 9,
+        "title": "Compare"
+      },
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 335.2,
+          "end": 336.257,
+          "text": "Then, compare."
+        },
+        {
+          "start": 336.257,
+          "end": 338.161,
+          "text": "This is your real site running, not"
+        },
+        {
+          "start": 338.161,
+          "end": 340.192,
+          "text": "screenshots, so you're judging the real"
+        },
+        {
+          "start": 340.192,
+          "end": 342.584,
+          "text": "thing: real type, real layout, real"
+        },
+        {
+          "start": 342.584,
+          "end": 343.582,
+          "text": "interactions."
+        },
+        {
+          "start": 343.582,
+          "end": 346.5833,
+          "text": "Drag the divider for a before and after."
+        }
+      ]
+    },
+    {
+      "id": "walk",
+      "start": 346.3333,
+      "end": 395.7167,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 346.5833,
+      "voice": 48.666,
+      "step": "Compare",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 346.5833,
+          "end": 350.0543,
+          "text": "One: tactile imperfection, paper grain and"
+        },
+        {
+          "start": 350.0543,
+          "end": 351.3553,
+          "text": "stitched rules."
+        },
+        {
+          "start": 351.3553,
+          "end": 354.7333,
+          "text": "Two: surreal distortion, cold light and"
+        },
+        {
+          "start": 354.7333,
+          "end": 356.2663,
+          "text": "impossible scale."
+        },
+        {
+          "start": 356.2663,
+          "end": 359.2613,
+          "text": "Three: cinematic drama, deep shadow and"
+        },
+        {
+          "start": 359.2613,
+          "end": 360.2543,
+          "text": "oxblood."
+        },
+        {
+          "start": 360.3993,
+          "end": 363.6613,
+          "text": "Four: maximalist collage, cut-outs that"
+        },
+        {
+          "start": 363.6613,
+          "end": 364.5203,
+          "text": "still read."
+        },
+        {
+          "start": 364.5203,
+          "end": 367.4113,
+          "text": "Five: retro-tech, an early desktop with"
+        },
+        {
+          "start": 367.4113,
+          "end": 368.61830000000003,
+          "text": "modern type."
+        },
+        {
+          "start": 368.61830000000003,
+          "end": 371.4863,
+          "text": "Six: expressive typography, where the type"
+        },
+        {
+          "start": 371.4863,
+          "end": 372.7233,
+          "text": "is the event."
+        },
+        {
+          "start": 372.9373,
+          "end": 375.8633,
+          "text": "Seven: warm eclecticism, wood and mixed"
+        },
+        {
+          "start": 375.8633,
+          "end": 376.7283,
+          "text": "eras."
+        },
+        {
+          "start": 376.9433,
+          "end": 379.3923,
+          "text": "Eight: neo-folk craft, one named"
+        },
+        {
+          "start": 379.3923,
+          "end": 380.4323,
+          "text": "tradition."
+        },
+        {
+          "start": 380.6463,
+          "end": 383.18330000000003,
+          "text": "Nine: soft chrome and glass."
+        },
+        {
+          "start": 383.3393,
+          "end": 386.8463,
+          "text": "Ten: quiet organic minimalism, space and"
+        },
+        {
+          "start": 386.8463,
+          "end": 388.0253,
+          "text": "earth tones."
+        },
+        {
+          "start": 388.2393,
+          "end": 390.90930000000003,
+          "text": "S puts them side by side, both panes"
+        },
+        {
+          "start": 390.90930000000003,
+          "end": 393.1913,
+          "text": "labelled, on one scrollbar."
+        },
+        {
+          "start": 393.3473,
+          "end": 395.4553,
+          "text": "M is the phone layout."
+        }
+      ]
+    },
+    {
+      "id": "lens",
+      "start": 395.7167,
+      "end": 406.4833,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 395.9667,
+      "voice": 9.796,
+      "step": "Compare",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 395.9667,
+          "end": 397.9407,
+          "text": "Or press L for the lens."
+        },
+        {
+          "start": 397.9407,
+          "end": 400.3207,
+          "text": "One design fills the screen, and the next"
+        },
+        {
+          "start": 400.3207,
+          "end": 402.7237,
+          "text": "one shows through a door that follows your"
+        },
+        {
+          "start": 402.7237,
+          "end": 403.4547,
+          "text": "mouse."
+        },
+        {
+          "start": 403.4547,
+          "end": 405.9687,
+          "text": "Click, and you keep the one in the door."
+        }
+      ]
+    },
+    {
+      "id": "pausetry",
+      "start": 406.4833,
+      "end": 417.8833,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 406.7333,
+      "voice": 5.695,
+      "step": "Compare",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": {
+        "kind": "pause",
+        "title": "Pause and think",
+        "question": "Which of these ten would you keep for your own site?",
+        "seconds": 5,
+        "countOn": "site?",
+        "countAt": 412.399
+      },
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 406.7333,
+          "end": 409.29929999999996,
+          "text": "Pause the video for a moment, and think:"
+        },
+        {
+          "start": 409.29929999999996,
+          "end": 411.5053,
+          "text": "which of these ten would you keep for your"
+        },
+        {
+          "start": 411.5053,
+          "end": 412.6493,
+          "text": "own site?"
+        }
+      ]
+    },
+    {
+      "id": "decide",
+      "start": 417.8833,
+      "end": 431.9,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 418.1333,
+      "voice": 13.322,
+      "step": "Compare",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": {
+        "kind": "learn",
+        "title": "How I decide",
+        "items": [
+          {
+            "text": "Does it still read clearly?",
+            "on": "clearly?",
+            "at": 421.291
+          },
+          {
+            "text": "Does it fit the people who use it?",
+            "on": "people",
+            "at": 423.543
+          },
+          {
+            "text": "Would it hold up on every page?",
+            "on": "page?",
+            "at": 427.607
+          },
+          {
+            "text": "Today: tactile imperfection",
+            "on": "tactile",
+            "at": 429.569
+          }
+        ]
+      },
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 418.1333,
+          "end": 419.7473,
+          "text": "Here's how I decide."
+        },
+        {
+          "start": 419.7473,
+          "end": 422.18530000000004,
+          "text": "First, does it still read clearly?"
+        },
+        {
+          "start": 422.18530000000004,
+          "end": 424.6003,
+          "text": "Second, does it fit the people who use the"
+        },
+        {
+          "start": 424.6003,
+          "end": 425.02930000000003,
+          "text": "site?"
+        },
+        {
+          "start": 425.02930000000003,
+          "end": 427.6073,
+          "text": "And third, would it hold up on every other"
+        },
+        {
+          "start": 427.6073,
+          "end": 428.2343,
+          "text": "page?"
+        },
+        {
+          "start": 428.2343,
+          "end": 431.6653,
+          "text": "Today, I'm keeping tactile imperfection."
+        }
+      ]
+    },
+    {
+      "id": "scores",
+      "start": 431.9,
+      "end": 448.2,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 432.15,
+      "voice": 15.595,
+      "step": "Compare",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 432.15,
+          "end": 434.669,
+          "text": "Every variant is scored against your"
+        },
+        {
+          "start": 434.669,
+          "end": 437.049,
+          "text": "original, right on your machine, with"
+        },
+        {
+          "start": 437.049,
+          "end": 438.582,
+          "text": "axe-core and Lighthouse."
+        },
+        {
+          "start": 438.582,
+          "end": 440.741,
+          "text": "You only see the change: how many"
+        },
+        {
+          "start": 440.741,
+          "end": 443.36499999999995,
+          "text": "accessibility points it gained, and how"
+        },
+        {
+          "start": 443.36499999999995,
+          "end": 445.48999999999995,
+          "text": "many axe issues it fixed."
+        },
+        {
+          "start": 445.48999999999995,
+          "end": 447.957,
+          "text": "So it's evidence, not just a look."
+        }
+      ]
+    },
+    {
+      "id": "again",
+      "start": 448.2,
+      "end": 460.5,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 448.45,
+      "voice": 11.598,
+      "step": "Compare",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": {
+        "untilEnd": true,
+        "per": 1.2,
+        "lines": [
+          "$ npx variantly clean",
+          "Removed variantly worktrees, branches and state for this project."
+        ]
+      },
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 448.45,
+          "end": 450.203,
+          "text": "And if you hate all ten?"
+        },
+        {
+          "start": 450.203,
+          "end": 452.281,
+          "text": "Run it again with a sharper brief."
+        },
+        {
+          "start": 452.281,
+          "end": 454.94,
+          "text": "Nothing is kept unless you press Keep, and"
+        },
+        {
+          "start": 454.94,
+          "end": 458.887,
+          "text": "npx variantly clean removes every worktree"
+        },
+        {
+          "start": 458.887,
+          "end": 460.264,
+          "text": "and branch it made."
+        }
+      ]
+    },
+    {
+      "id": "keep",
+      "start": 460.5,
+      "end": 473.7667,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 460.75,
+      "voice": 12.565,
+      "step": "Keep",
+      "chapter": {
+        "n": 10,
+        "title": "Keep"
+      },
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 460.75,
+          "end": 462.155,
+          "text": "Keep the one you like."
+        },
+        {
+          "start": 462.155,
+          "end": 465.092,
+          "text": "Notice this checkbox: one last agent pass"
+        },
+        {
+          "start": 465.092,
+          "end": 467.379,
+          "text": "carries the look to every other page."
+        },
+        {
+          "start": 467.379,
+          "end": 469.307,
+          "text": "That's why we only previewed the home"
+        },
+        {
+          "start": 469.307,
+          "end": 469.957,
+          "text": "page."
+        },
+        {
+          "start": 469.957,
+          "end": 472.139,
+          "text": "You judge one page, and the rest of the"
+        },
+        {
+          "start": 472.139,
+          "end": 473.539,
+          "text": "site follows."
+        }
+      ]
+    },
+    {
+      "id": "rollout",
+      "start": 473.7667,
+      "end": 479.4667,
+      "speed": 32.24,
+      "fastAt": 475.2667,
+      "clock": null,
+      "voiceAt": 474.0167,
+      "voice": 5,
+      "step": "Keep",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": []
+    },
+    {
+      "id": "sitewide",
+      "start": 479.4667,
+      "end": 499.9,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 479.7167,
+      "voice": 19.722,
+      "step": "Keep",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": {
+        "diffstat": true,
+        "branches": true,
+        "after": [
+          "$ npx variantly clean"
+        ]
+      },
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 479.7167,
+          "end": 482.2017,
+          "text": "It lands in your working tree, merged with"
+        },
+        {
+          "start": 482.2017,
+          "end": 484.1117,
+          "text": "anything you've changed since."
+        },
+        {
+          "start": 484.2677,
+          "end": 487.0887,
+          "text": "The last commit is still yours: nothing is"
+        },
+        {
+          "start": 487.0887,
+          "end": 487.9427,
+          "text": "committed."
+        },
+        {
+          "start": 488.0987,
+          "end": 490.5717,
+          "text": "So you review it like any other change,"
+        },
+        {
+          "start": 490.5717,
+          "end": 492.4997,
+          "text": "and undo it the same way."
+        },
+        {
+          "start": 492.4997,
+          "end": 495.2627,
+          "text": "You keep one timeline; the others stay as"
+        },
+        {
+          "start": 495.2627,
+          "end": 498.5947,
+          "text": "branches until you run npx variantly"
+        },
+        {
+          "start": 498.5947,
+          "end": 499.6577,
+          "text": "clean."
+        }
+      ]
+    },
+    {
+      "id": "handoff",
+      "start": 499.9,
+      "end": 515.4167,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 500.15,
+      "voice": 8.072,
+      "step": "Keep",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 500.15,
+          "end": 502.37899999999996,
+          "text": "Then hand off to your own agent."
+        },
+        {
+          "start": 502.37899999999996,
+          "end": 504.77099999999996,
+          "text": "Open your site, and this prompt gives it"
+        },
+        {
+          "start": 504.77099999999996,
+          "end": 507.116,
+          "text": "the local address, the design notes, and"
+        },
+        {
+          "start": 507.116,
+          "end": 508.43399999999997,
+          "text": "what to check."
+        }
+      ]
+    },
+    {
+      "id": "call",
+      "start": 515.4167,
+      "end": 518.5167,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 515.6667,
+      "voice": 2.4,
+      "step": "Keep",
+      "chapter": null,
+      "lower": null,
+      "kinetic": {
+        "text": "Your code. Your call."
+      },
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": []
+    },
+    {
+      "id": "website",
+      "start": 518.5167,
+      "end": 547.1167,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 518.7667,
+      "voice": 13.322,
+      "step": "Wrap",
+      "chapter": {
+        "n": 11,
+        "title": "Wrap"
+      },
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": {
+        "kind": "facts",
+        "title": "A mobile performance pass on variantly.style",
+        "rows": [
+          {
+            "label": "Transfer",
+            "note": "emulated phone",
+            "before": "1.5 MB",
+            "after": "~400 KB",
+            "on": "transfer",
+            "at": 527.776
+          },
+          {
+            "label": "Font requests",
+            "note": "first load",
+            "before": "68",
+            "after": "~18",
+            "on": "font",
+            "at": 528.717
+          },
+          {
+            "label": "Blocking time",
+            "note": "Amber Terminal concept, 4× CPU throttle",
+            "before": "3,790 ms",
+            "after": "2,291 ms",
+            "on": "blocking",
+            "at": 530.029
+          }
+        ],
+        "source": "Mobile performance pass, PR #83, prompted by an iPhone screen recording of the lag.",
+        "fromOn": "mobile",
+        "fromAt": 525.907
+      },
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 518.7667,
+          "end": 521.6347000000001,
+          "text": "The website got the same care: twenty"
+        },
+        {
+          "start": 521.6347000000001,
+          "end": 524.7347,
+          "text": "title concepts, thirty redesigns of one"
+        },
+        {
+          "start": 524.7347,
+          "end": 527.7757,
+          "text": "shop, and a mobile pass that cut its"
+        },
+        {
+          "start": 527.7757,
+          "end": 530.8067,
+          "text": "transfer, font requests and blocking time"
+        },
+        {
+          "start": 530.8067,
+          "end": 532.2987,
+          "text": "on phones."
+        }
+      ]
+    },
+    {
+      "id": "recap",
+      "start": 547.1167,
+      "end": 563.5167,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 547.3667,
+      "voice": 15.7,
+      "step": "Wrap",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": {
+        "kind": "recap",
+        "title": "Recap",
+        "items": [
+          {
+            "text": "Each variant is an isolated copy",
+            "on": "isolated",
+            "at": 549.666
+          },
+          {
+            "text": "Pin a direction per variant, or mix agents",
+            "on": "direction,",
+            "at": 553.869
+          },
+          {
+            "text": "Compare on your real site, with real scores",
+            "on": "compare",
+            "at": 557.143
+          },
+          {
+            "text": "Keep one, and it rolls out site-wide",
+            "on": "keep",
+            "at": 560.579
+          }
+        ]
+      },
+      "terminal": null,
+      "cta": null,
+      "montage": false,
+      "captions": [
+        {
+          "start": 547.3667,
+          "end": 550.4437,
+          "text": "To recap: each variant is an isolated"
+        },
+        {
+          "start": 550.4437,
+          "end": 553.0437000000001,
+          "text": "copy, its own branch of your site."
+        },
+        {
+          "start": 553.0437000000001,
+          "end": 555.5287000000001,
+          "text": "You can pin a direction per variant, and"
+        },
+        {
+          "start": 555.5287000000001,
+          "end": 556.9337,
+          "text": "mix agents."
+        },
+        {
+          "start": 556.9337,
+          "end": 559.4067,
+          "text": "You compare on your real site, with real"
+        },
+        {
+          "start": 559.4067,
+          "end": 560.1957,
+          "text": "scores."
+        },
+        {
+          "start": 560.1957,
+          "end": 562.2037,
+          "text": "And you keep one, and it rolls out"
+        },
+        {
+          "start": 562.2037,
+          "end": 563.2667,
+          "text": "site-wide."
+        }
+      ]
+    },
+    {
+      "id": "wrap",
+      "start": 563.5167,
+      "end": 588.0167,
+      "speed": 1,
+      "fastAt": null,
+      "clock": null,
+      "voiceAt": 563.7667,
+      "voice": 23.771,
+      "step": "Try it",
+      "chapter": null,
+      "lower": null,
+      "kinetic": null,
+      "diagram": null,
+      "card": null,
+      "terminal": null,
+      "cta": {
+        "command": "npx variantly",
+        "url": "variantly.style",
+        "credit": "Free & open source (MIT) · Designs by Impeccable",
+        "fromOn": "try",
+        "stamp": "Variant record VY-001 · kept",
+        "fromAt": 579.487
+      },
+      "montage": false,
+      "captions": [
+        {
+          "start": 563.7667,
+          "end": 566.6687000000001,
+          "text": "I designed and directed Variantly with"
+        },
+        {
+          "start": 566.6687000000001,
+          "end": 569.2927,
+          "text": "Claude Code and Impeccable: I set the"
+        },
+        {
+          "start": 569.2927,
+          "end": 572.0447,
+          "text": "direction, made the calls, and tested it"
+        },
+        {
+          "start": 572.0447,
+          "end": 573.3567,
+          "text": "on a real iPhone."
+        },
+        {
+          "start": 573.3567,
+          "end": 575.9457,
+          "text": "It's free and open source, and it runs on"
+        },
+        {
+          "start": 575.9457,
+          "end": 576.9097,
+          "text": "your machine."
+        },
+        {
+          "start": 576.9097,
+          "end": 579.2777,
+          "text": "No account, no server of ours."
+        },
+        {
+          "start": 579.2777,
+          "end": 582.9117,
+          "text": "To try it, run npx variantly in your"
+        },
+        {
+          "start": 582.9117,
+          "end": 583.7597000000001,
+          "text": "project."
+        },
+        {
+          "start": 583.7597000000001,
+          "end": 586.1397000000001,
+          "text": "Docs at variantly.style."
+        },
+        {
+          "start": 586.1397000000001,
+          "end": 587.7477,
+          "text": "Thanks for watching."
+        }
+      ]
+    }
+  ],
+  "clicks": [
+    {
+      "t": 121.6763,
+      "x": 955,
+      "y": 539.734375,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 138.847,
+      "x": 960,
+      "y": 536.140625,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 160.275,
+      "x": 960,
+      "y": 536.140625,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 161.592,
+      "x": 1190.796875,
+      "y": 594.234375,
+      "zoom": true,
+      "sound": "tick"
+    },
+    {
+      "t": 177.9553,
+      "x": 754.125,
+      "y": 481.640625,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 180.2773,
+      "x": 960,
+      "y": 879.921875,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 181.9123,
+      "x": 799.796875,
+      "y": 559.359375,
+      "zoom": true,
+      "sound": "tick"
+    },
+    {
+      "t": 183.4733,
+      "x": 799.796875,
+      "y": 606.25,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 184.73729999999998,
+      "x": 799.796875,
+      "y": 606.25,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 186.22129999999999,
+      "x": 799.796875,
+      "y": 653.140625,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 190.40929999999997,
+      "x": 1021.796875,
+      "y": 653.140625,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 191.8183,
+      "x": 1021.796875,
+      "y": 653.140625,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 193.0023,
+      "x": 1021.796875,
+      "y": 653.140625,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 203.62830000000002,
+      "x": 817.5,
+      "y": 336.1484375,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 209.0773,
+      "x": 1146.5,
+      "y": 336.1484375,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 217.06130000000002,
+      "x": 817.5,
+      "y": 383.0390625,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 219.57930000000002,
+      "x": 1146.5,
+      "y": 383.0390625,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 222.10530000000003,
+      "x": 817.5,
+      "y": 429.9296875,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 224.44230000000002,
+      "x": 1146.5,
+      "y": 429.9296875,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 226.8153,
+      "x": 817.5,
+      "y": 476.8203125,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 229.1963,
+      "x": 1146.5,
+      "y": 476.8203125,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 231.40630000000002,
+      "x": 817.5,
+      "y": 523.7109375,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 233.5953,
+      "x": 1146.5,
+      "y": 523.7109375,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 238.74730000000002,
+      "x": 960,
+      "y": 180.921875,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 240.2623,
+      "x": 1186.5390625,
+      "y": 938.015625,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 241.7203,
+      "x": 960,
+      "y": 561.140625,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 243.5653,
+      "x": 960,
+      "y": 666.734375,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 245.2113,
+      "x": 960,
+      "y": 772.328125,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 250.0053,
+      "x": 1199.3125,
+      "y": 959.421875,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 256.8833,
+      "x": 1198.15625,
+      "y": 826.046875,
+      "zoom": true,
+      "sound": "whoosh"
+    },
+    {
+      "t": 294.8513,
+      "x": 271.140625,
+      "y": 279.3203125,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 318.2547000000002,
+      "x": 1392.9609375,
+      "y": 1042,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 328.1147000000003,
+      "x": 1607.1796875,
+      "y": 114.296875,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 337.4060000000001,
+      "x": 960,
+      "y": 540,
+      "zoom": true,
+      "sound": "tick"
+    },
+    {
+      "t": 405.3826999999997,
+      "x": 970.9609375,
+      "y": 1042,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 461.46399999999994,
+      "x": 1554.046875,
+      "y": 1042,
+      "zoom": true,
+      "sound": "tick"
+    },
+    {
+      "t": 467.00199999999995,
+      "x": 1372.65625,
+      "y": 1025.5,
+      "zoom": false,
+      "sound": "stamp"
+    },
+    {
+      "t": 506.53200000000004,
+      "x": 592.640625,
+      "y": 271.6875,
+      "zoom": true,
+      "sound": "tick"
+    },
+    {
+      "t": 511.7449999999998,
+      "x": 825,
+      "y": 553.375,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 526.0197000000002,
+      "x": 1073.4921875,
+      "y": 1035,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 529.8396999999999,
+      "x": 1094.09375,
+      "y": 1035,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 533.3506999999998,
+      "x": 1081.2265625,
+      "y": 1035,
+      "zoom": false,
+      "sound": "tick"
+    },
+    {
+      "t": 544.9736999999999,
+      "x": 929.171875,
+      "y": 539.90625,
+      "zoom": false,
+      "sound": "tick"
+    }
+  ],
+  "captions": [
+    {
+      "start": 9.25,
+      "end": 10.875,
+      "text": "This is Variantly."
+    },
+    {
+      "start": 10.875,
+      "end": 13.267,
+      "text": "In the next ten minutes, I'll show you one"
+    },
+    {
+      "start": 13.267,
+      "end": 15.891,
+      "text": "whole run, including what it costs and how"
+    },
+    {
+      "start": 15.891,
+      "end": 16.68,
+      "text": "to undo it."
+    },
+    {
+      "start": 16.68,
+      "end": 20.047,
+      "text": "I'm Joaquin, and I built Variantly because"
+    },
+    {
+      "start": 20.047,
+      "end": 22.752000000000002,
+      "text": "redesigning a site usually means betting"
+    },
+    {
+      "start": 22.752000000000002,
+      "end": 24.204,
+      "text": "on one direction."
+    },
+    {
+      "start": 24.204,
+      "end": 26.143,
+      "text": "If it's wrong, you start over."
+    },
+    {
+      "start": 26.143,
+      "end": 29.242,
+      "text": "Here, your agent builds several complete"
+    },
+    {
+      "start": 29.242,
+      "end": 31.982,
+      "text": "redesigns at once, each one running as"
+    },
+    {
+      "start": 31.982,
+      "end": 34.025999999999996,
+      "text": "your real site, and you keep the one you"
+    },
+    {
+      "start": 34.025999999999996,
+      "end": 34.7667,
+      "text": "like."
+    },
+    {
+      "start": 34.7667,
+      "end": 37.5647,
+      "text": "Here's what we'll cover: setting up a run,"
+    },
+    {
+      "start": 37.5647,
+      "end": 40.2817,
+      "text": "giving each variant its own direction,"
+    },
+    {
+      "start": 40.2817,
+      "end": 42.5687,
+      "text": "comparing them on your real site, and"
+    },
+    {
+      "start": 42.5687,
+      "end": 43.8407,
+      "text": "keeping one."
+    },
+    {
+      "start": 44.3333,
+      "end": 45.9473,
+      "text": "First, the mental model."
+    },
+    {
+      "start": 45.9473,
+      "end": 47.9673,
+      "text": "Your project stays where it is."
+    },
+    {
+      "start": 47.9673,
+      "end": 50.8233,
+      "text": "Each variant is its own copy: a git"
+    },
+    {
+      "start": 50.8233,
+      "end": 53.3663,
+      "text": "worktree on its own branch, a little"
+    },
+    {
+      "start": 53.3663,
+      "end": 56.106300000000005,
+      "text": "timeline of your site, with a preview."
+    },
+    {
+      "start": 56.106300000000005,
+      "end": 58.8223,
+      "text": "You compare them side by side, keep one,"
+    },
+    {
+      "start": 58.8223,
+      "end": 61.1903,
+      "text": "and a last pass rolls it out to the whole"
+    },
+    {
+      "start": 61.1903,
+      "end": 61.9513,
+      "text": "site."
+    },
+    {
+      "start": 62.4333,
+      "end": 65.1033,
+      "text": "You need two things: Node, and a coding"
+    },
+    {
+      "start": 65.1033,
+      "end": 66.85130000000001,
+      "text": "agent you already use."
+    },
+    {
+      "start": 67.1353,
+      "end": 71.7793,
+      "text": "In your project folder, run npx variantly,"
+    },
+    {
+      "start": 71.7793,
+      "end": 74.57730000000001,
+      "text": "and a wizard opens in your browser."
+    },
+    {
+      "start": 74.57730000000001,
+      "end": 77.6893,
+      "text": "The design work is done by Impeccable, an"
+    },
+    {
+      "start": 77.6893,
+      "end": 79.8713,
+      "text": "open-source design skill."
+    },
+    {
+      "start": 79.8713,
+      "end": 82.6693,
+      "text": "One catch: it has to be the command-line"
+    },
+    {
+      "start": 82.6693,
+      "end": 85.2823,
+      "text": "agent, not a browser builder like Lovable"
+    },
+    {
+      "start": 85.2823,
+      "end": 86.32130000000001,
+      "text": "or Bolt."
+    },
+    {
+      "start": 86.8167,
+      "end": 88.3377,
+      "text": "Will it work on yours?"
+    },
+    {
+      "start": 88.3377,
+      "end": 91.66969999999999,
+      "text": "Here's variantly doctor on a Next.js app,"
+    },
+    {
+      "start": 91.66969999999999,
+      "end": 95.0017,
+      "text": "a Django site, and plain HTML."
+    },
+    {
+      "start": 95.0017,
+      "end": 97.5207,
+      "text": "It finds the stack, and the command that"
+    },
+    {
+      "start": 97.5207,
+      "end": 98.85669999999999,
+      "text": "serves it, every time."
+    },
+    {
+      "start": 98.85669999999999,
+      "end": 101.1377,
+      "text": "And you can always type your own."
+    },
+    {
+      "start": 101.6333,
+      "end": 104.17630000000001,
+      "text": "Here's a rough edge, on purpose."
+    },
+    {
+      "start": 104.17630000000001,
+      "end": 107.0323,
+      "text": "This folder has no commit yet, so doctor"
+    },
+    {
+      "start": 107.0323,
+      "end": 108.8083,
+      "text": "marks it with a cross."
+    },
+    {
+      "start": 108.8083,
+      "end": 111.2933,
+      "text": "Variantly can make that first commit for"
+    },
+    {
+      "start": 111.2933,
+      "end": 114.9333,
+      "text": "you, or you fix it and run doctor again."
+    },
+    {
+      "start": 115.4333,
+      "end": 116.68730000000001,
+      "text": "Not a developer?"
+    },
+    {
+      "start": 116.68730000000001,
+      "end": 119.4503,
+      "text": "If you can paste a command, you're set."
+    },
+    {
+      "start": 119.4503,
+      "end": 121.6683,
+      "text": "On variantly.style, there's a"
+    },
+    {
+      "start": 121.6683,
+      "end": 122.9213,
+      "text": "walk-me-through prompt."
+    },
+    {
+      "start": 122.9213,
+      "end": 125.6033,
+      "text": "Paste it into any AI chat, and it takes"
+    },
+    {
+      "start": 125.6033,
+      "end": 128.5003,
+      "text": "you through it one small step at a time."
+    },
+    {
+      "start": 132.5,
+      "end": 134.532,
+      "text": "Setup finds your app and checks your"
+    },
+    {
+      "start": 134.532,
+      "end": 135.217,
+      "text": "agent."
+    },
+    {
+      "start": 135.217,
+      "end": 137.98,
+      "text": "Each card says if it's ready, and if not,"
+    },
+    {
+      "start": 137.98,
+      "end": 140.041,
+      "text": "the fix is right on the card."
+    },
+    {
+      "start": 140.197,
+      "end": 141.904,
+      "text": "I'm using Claude Code."
+    },
+    {
+      "start": 141.904,
+      "end": 144.923,
+      "text": "You could pick Codex, Copilot, Gemini,"
+    },
+    {
+      "start": 144.923,
+      "end": 149.149,
+      "text": "Cursor, OpenCode, Grok Build, Antigravity,"
+    },
+    {
+      "start": 149.149,
+      "end": 152.702,
+      "text": "Pi, Hermes Agent, or any OpenRouter model,"
+    },
+    {
+      "start": 152.702,
+      "end": 154.763,
+      "text": "and mix them in one run."
+    },
+    {
+      "start": 155.25,
+      "end": 156.423,
+      "text": "Why mix them?"
+    },
+    {
+      "start": 156.423,
+      "end": 159.766,
+      "text": "Each model has its own design instincts."
+    },
+    {
+      "start": 159.766,
+      "end": 162.68,
+      "text": "So you get more varied directions, you see"
+    },
+    {
+      "start": 162.68,
+      "end": 165.653,
+      "text": "which model designs best for your site,"
+    },
+    {
+      "start": 165.653,
+      "end": 167.858,
+      "text": "and you spread the work across accounts"
+    },
+    {
+      "start": 167.858,
+      "end": 169.391,
+      "text": "you already pay for."
+    },
+    {
+      "start": 169.391,
+      "end": 172.119,
+      "text": "Add --blind, and you won't see who made"
+    },
+    {
+      "start": 172.119,
+      "end": 174.308,
+      "text": "each one until you've kept it."
+    },
+    {
+      "start": 174.7833,
+      "end": 176.1763,
+      "text": "Next, what to make."
+    },
+    {
+      "start": 176.1763,
+      "end": 179.3233,
+      "text": "The quick picks are two, four or six."
+    },
+    {
+      "start": 179.3233,
+      "end": 181.92329999999998,
+      "text": "I'll pick six, then step it up to ten"
+    },
+    {
+      "start": 181.92329999999998,
+      "end": 185.1743,
+      "text": "under More settings, with five agents at a"
+    },
+    {
+      "start": 185.1743,
+      "end": 187.3683,
+      "text": "time, so it runs in two waves."
+    },
+    {
+      "start": 187.3683,
+      "end": 189.6443,
+      "text": "The rarer settings stay back there."
+    },
+    {
+      "start": 189.6443,
+      "end": 192.1173,
+      "text": "That's progressive disclosure: the common"
+    },
+    {
+      "start": 192.1173,
+      "end": 193.8883,
+      "text": "path stays short."
+    },
+    {
+      "start": 195.8333,
+      "end": 197.3313,
+      "text": "Now, your own directions."
+    },
+    {
+      "start": 197.3313,
+      "end": 199.8043,
+      "text": "Every slot starts blank, and blank means"
+    },
+    {
+      "start": 199.8043,
+      "end": 201.0463,
+      "text": "Impeccable picks."
+    },
+    {
+      "start": 201.0463,
+      "end": 203.6473,
+      "text": "To pin one, type it in your own words."
+    },
+    {
+      "start": 203.6473,
+      "end": 206.06130000000002,
+      "text": "Tactile imperfection: raw paper,"
+    },
+    {
+      "start": 206.06130000000002,
+      "end": 207.5353,
+      "text": "brushstrokes, stitching."
+    },
+    {
+      "start": 207.5353,
+      "end": 209.6023,
+      "text": "Surreal distortion: impossible"
+    },
+    {
+      "start": 209.6023,
+      "end": 211.68630000000002,
+      "text": "proportions, dreamlike light."
+    },
+    {
+      "start": 211.8433,
+      "end": 213.75830000000002,
+      "text": "These are the trends I'm watching this"
+    },
+    {
+      "start": 213.75830000000002,
+      "end": 216.82330000000002,
+      "text": "winter: human-made texture meeting digital"
+    },
+    {
+      "start": 216.82330000000002,
+      "end": 218.1013,
+      "text": "surrealism."
+    },
+    {
+      "start": 218.1013,
+      "end": 220.6903,
+      "text": "One per variant, and any slot you leave"
+    },
+    {
+      "start": 220.6903,
+      "end": 223.1113,
+      "text": "blank, Impeccable picks."
+    },
+    {
+      "start": 240.7833,
+      "end": 243.6393,
+      "text": "A few words about your site, and what must"
+    },
+    {
+      "start": 243.6393,
+      "end": 247.3543,
+      "text": "stay: here, the prices, the sign-up button"
+    },
+    {
+      "start": 247.3543,
+      "end": 248.9563,
+      "text": "and the FAQ."
+    },
+    {
+      "start": 248.9563,
+      "end": 250.2223,
+      "text": "Then the review."
+    },
+    {
+      "start": 250.2223,
+      "end": 252.4863,
+      "text": "I designed this screen to show exactly"
+    },
+    {
+      "start": 252.4863,
+      "end": 254.7903,
+      "text": "what will run, and what it costs."
+    },
+    {
+      "start": 254.94729999999998,
+      "end": 258.33729999999997,
+      "text": "Variantly is free and open source; each"
+    },
+    {
+      "start": 258.33729999999997,
+      "end": 261.4953,
+      "text": "variant is one session on your own plan,"
+    },
+    {
+      "start": 261.4953,
+      "end": 263.5733,
+      "text": "plus one for its review."
+    },
+    {
+      "start": 263.5733,
+      "end": 266.0923,
+      "text": "Ten variants, twenty sessions."
+    },
+    {
+      "start": 266.0923,
+      "end": 267.2883,
+      "text": "Trying it out?"
+    },
+    {
+      "start": 267.2883,
+      "end": 268.8963,
+      "text": "Start with four."
+    },
+    {
+      "start": 269.4,
+      "end": 271.28099999999995,
+      "text": "Can this break your site?"
+    },
+    {
+      "start": 271.28099999999995,
+      "end": 271.84999999999997,
+      "text": "No."
+    },
+    {
+      "start": 271.84999999999997,
+      "end": 274.63599999999997,
+      "text": "Each variant runs in an isolated git"
+    },
+    {
+      "start": 274.63599999999997,
+      "end": 276.94599999999997,
+      "text": "worktree, outside your project, so your"
+    },
+    {
+      "start": 276.94599999999997,
+      "end": 278.938,
+      "text": "main branch is never touched."
+    },
+    {
+      "start": 279.152,
+      "end": 281.683,
+      "text": "And agents change presentation, never"
+    },
+    {
+      "start": 281.683,
+      "end": 282.618,
+      "text": "behaviour."
+    },
+    {
+      "start": 282.774,
+      "end": 286.00199999999995,
+      "text": "Ten worktrees, ten dev servers, five"
+    },
+    {
+      "start": 286.00199999999995,
+      "end": 287.854,
+      "text": "agents at a time."
+    },
+    {
+      "start": 288.3333,
+      "end": 291.1193,
+      "text": "The board shows each variant's direction,"
+    },
+    {
+      "start": 291.1193,
+      "end": 293.3833,
+      "text": "progress and time, live."
+    },
+    {
+      "start": 293.3833,
+      "end": 294.8113,
+      "text": "Let's follow one."
+    },
+    {
+      "start": 294.8113,
+      "end": 297.2383,
+      "text": "It reads your site, builds its direction,"
+    },
+    {
+      "start": 297.2383,
+      "end": 299.87330000000003,
+      "text": "then opens it in a real browser, at"
+    },
+    {
+      "start": 299.87330000000003,
+      "end": 302.7063,
+      "text": "desktop and phone width, and fixes what it"
+    },
+    {
+      "start": 302.7063,
+      "end": 303.5073,
+      "text": "sees."
+    },
+    {
+      "start": 303.5073,
+      "end": 306.2713,
+      "text": "A second pass critiques and audits it,"
+    },
+    {
+      "start": 306.2713,
+      "end": 308.32030000000003,
+      "text": "keeping the direction."
+    },
+    {
+      "start": 308.81669999999997,
+      "end": 311.6957,
+      "text": "Real time, for the record: the whole run"
+    },
+    {
+      "start": 311.6957,
+      "end": 315.0277,
+      "text": "took about 60 minutes, start to finish, so"
+    },
+    {
+      "start": 315.0277,
+      "end": 317.1937,
+      "text": "here's the rest, sped up."
+    },
+    {
+      "start": 317.4167,
+      "end": 320.7607,
+      "text": "If a variant fails, the board says why, in"
+    },
+    {
+      "start": 320.7607,
+      "end": 323.6747,
+      "text": "the agent's own words, and you retry just"
+    },
+    {
+      "start": 323.6747,
+      "end": 324.66769999999997,
+      "text": "that one."
+    },
+    {
+      "start": 324.8237,
+      "end": 328.0047,
+      "text": "And if one comes out broken, like a layout"
+    },
+    {
+      "start": 328.0047,
+      "end": 330.8377,
+      "text": "that falls apart on a phone, tell the"
+    },
+    {
+      "start": 330.8377,
+      "end": 333.7167,
+      "text": "agent to fix it, retry it, or just don't"
+    },
+    {
+      "start": 333.7167,
+      "end": 334.7097,
+      "text": "keep it."
+    },
+    {
+      "start": 335.2,
+      "end": 336.257,
+      "text": "Then, compare."
+    },
+    {
+      "start": 336.257,
+      "end": 338.161,
+      "text": "This is your real site running, not"
+    },
+    {
+      "start": 338.161,
+      "end": 340.192,
+      "text": "screenshots, so you're judging the real"
+    },
+    {
+      "start": 340.192,
+      "end": 342.584,
+      "text": "thing: real type, real layout, real"
+    },
+    {
+      "start": 342.584,
+      "end": 343.582,
+      "text": "interactions."
+    },
+    {
+      "start": 343.582,
+      "end": 346.5833,
+      "text": "Drag the divider for a before and after."
+    },
+    {
+      "start": 346.5833,
+      "end": 350.0543,
+      "text": "One: tactile imperfection, paper grain and"
+    },
+    {
+      "start": 350.0543,
+      "end": 351.3553,
+      "text": "stitched rules."
+    },
+    {
+      "start": 351.3553,
+      "end": 354.7333,
+      "text": "Two: surreal distortion, cold light and"
+    },
+    {
+      "start": 354.7333,
+      "end": 356.2663,
+      "text": "impossible scale."
+    },
+    {
+      "start": 356.2663,
+      "end": 359.2613,
+      "text": "Three: cinematic drama, deep shadow and"
+    },
+    {
+      "start": 359.2613,
+      "end": 360.2543,
+      "text": "oxblood."
+    },
+    {
+      "start": 360.3993,
+      "end": 363.6613,
+      "text": "Four: maximalist collage, cut-outs that"
+    },
+    {
+      "start": 363.6613,
+      "end": 364.5203,
+      "text": "still read."
+    },
+    {
+      "start": 364.5203,
+      "end": 367.4113,
+      "text": "Five: retro-tech, an early desktop with"
+    },
+    {
+      "start": 367.4113,
+      "end": 368.61830000000003,
+      "text": "modern type."
+    },
+    {
+      "start": 368.61830000000003,
+      "end": 371.4863,
+      "text": "Six: expressive typography, where the type"
+    },
+    {
+      "start": 371.4863,
+      "end": 372.7233,
+      "text": "is the event."
+    },
+    {
+      "start": 372.9373,
+      "end": 375.8633,
+      "text": "Seven: warm eclecticism, wood and mixed"
+    },
+    {
+      "start": 375.8633,
+      "end": 376.7283,
+      "text": "eras."
+    },
+    {
+      "start": 376.9433,
+      "end": 379.3923,
+      "text": "Eight: neo-folk craft, one named"
+    },
+    {
+      "start": 379.3923,
+      "end": 380.4323,
+      "text": "tradition."
+    },
+    {
+      "start": 380.6463,
+      "end": 383.18330000000003,
+      "text": "Nine: soft chrome and glass."
+    },
+    {
+      "start": 383.3393,
+      "end": 386.8463,
+      "text": "Ten: quiet organic minimalism, space and"
+    },
+    {
+      "start": 386.8463,
+      "end": 388.0253,
+      "text": "earth tones."
+    },
+    {
+      "start": 388.2393,
+      "end": 390.90930000000003,
+      "text": "S puts them side by side, both panes"
+    },
+    {
+      "start": 390.90930000000003,
+      "end": 393.1913,
+      "text": "labelled, on one scrollbar."
+    },
+    {
+      "start": 393.3473,
+      "end": 395.4553,
+      "text": "M is the phone layout."
+    },
+    {
+      "start": 395.9667,
+      "end": 397.9407,
+      "text": "Or press L for the lens."
+    },
+    {
+      "start": 397.9407,
+      "end": 400.3207,
+      "text": "One design fills the screen, and the next"
+    },
+    {
+      "start": 400.3207,
+      "end": 402.7237,
+      "text": "one shows through a door that follows your"
+    },
+    {
+      "start": 402.7237,
+      "end": 403.4547,
+      "text": "mouse."
+    },
+    {
+      "start": 403.4547,
+      "end": 405.9687,
+      "text": "Click, and you keep the one in the door."
+    },
+    {
+      "start": 406.7333,
+      "end": 409.29929999999996,
+      "text": "Pause the video for a moment, and think:"
+    },
+    {
+      "start": 409.29929999999996,
+      "end": 411.5053,
+      "text": "which of these ten would you keep for your"
+    },
+    {
+      "start": 411.5053,
+      "end": 412.6493,
+      "text": "own site?"
+    },
+    {
+      "start": 418.1333,
+      "end": 419.7473,
+      "text": "Here's how I decide."
+    },
+    {
+      "start": 419.7473,
+      "end": 422.18530000000004,
+      "text": "First, does it still read clearly?"
+    },
+    {
+      "start": 422.18530000000004,
+      "end": 424.6003,
+      "text": "Second, does it fit the people who use the"
+    },
+    {
+      "start": 424.6003,
+      "end": 425.02930000000003,
+      "text": "site?"
+    },
+    {
+      "start": 425.02930000000003,
+      "end": 427.6073,
+      "text": "And third, would it hold up on every other"
+    },
+    {
+      "start": 427.6073,
+      "end": 428.2343,
+      "text": "page?"
+    },
+    {
+      "start": 428.2343,
+      "end": 431.6653,
+      "text": "Today, I'm keeping tactile imperfection."
+    },
+    {
+      "start": 432.15,
+      "end": 434.669,
+      "text": "Every variant is scored against your"
+    },
+    {
+      "start": 434.669,
+      "end": 437.049,
+      "text": "original, right on your machine, with"
+    },
+    {
+      "start": 437.049,
+      "end": 438.582,
+      "text": "axe-core and Lighthouse."
+    },
+    {
+      "start": 438.582,
+      "end": 440.741,
+      "text": "You only see the change: how many"
+    },
+    {
+      "start": 440.741,
+      "end": 443.36499999999995,
+      "text": "accessibility points it gained, and how"
+    },
+    {
+      "start": 443.36499999999995,
+      "end": 445.48999999999995,
+      "text": "many axe issues it fixed."
+    },
+    {
+      "start": 445.48999999999995,
+      "end": 447.957,
+      "text": "So it's evidence, not just a look."
+    },
+    {
+      "start": 448.45,
+      "end": 450.203,
+      "text": "And if you hate all ten?"
+    },
+    {
+      "start": 450.203,
+      "end": 452.281,
+      "text": "Run it again with a sharper brief."
+    },
+    {
+      "start": 452.281,
+      "end": 454.94,
+      "text": "Nothing is kept unless you press Keep, and"
+    },
+    {
+      "start": 454.94,
+      "end": 458.887,
+      "text": "npx variantly clean removes every worktree"
+    },
+    {
+      "start": 458.887,
+      "end": 460.264,
+      "text": "and branch it made."
+    },
+    {
+      "start": 460.75,
+      "end": 462.155,
+      "text": "Keep the one you like."
+    },
+    {
+      "start": 462.155,
+      "end": 465.092,
+      "text": "Notice this checkbox: one last agent pass"
+    },
+    {
+      "start": 465.092,
+      "end": 467.379,
+      "text": "carries the look to every other page."
+    },
+    {
+      "start": 467.379,
+      "end": 469.307,
+      "text": "That's why we only previewed the home"
+    },
+    {
+      "start": 469.307,
+      "end": 469.957,
+      "text": "page."
+    },
+    {
+      "start": 469.957,
+      "end": 472.139,
+      "text": "You judge one page, and the rest of the"
+    },
+    {
+      "start": 472.139,
+      "end": 473.539,
+      "text": "site follows."
+    },
+    {
+      "start": 479.7167,
+      "end": 482.2017,
+      "text": "It lands in your working tree, merged with"
+    },
+    {
+      "start": 482.2017,
+      "end": 484.1117,
+      "text": "anything you've changed since."
+    },
+    {
+      "start": 484.2677,
+      "end": 487.0887,
+      "text": "The last commit is still yours: nothing is"
+    },
+    {
+      "start": 487.0887,
+      "end": 487.9427,
+      "text": "committed."
+    },
+    {
+      "start": 488.0987,
+      "end": 490.5717,
+      "text": "So you review it like any other change,"
+    },
+    {
+      "start": 490.5717,
+      "end": 492.4997,
+      "text": "and undo it the same way."
+    },
+    {
+      "start": 492.4997,
+      "end": 495.2627,
+      "text": "You keep one timeline; the others stay as"
+    },
+    {
+      "start": 495.2627,
+      "end": 498.5947,
+      "text": "branches until you run npx variantly"
+    },
+    {
+      "start": 498.5947,
+      "end": 499.6577,
+      "text": "clean."
+    },
+    {
+      "start": 500.15,
+      "end": 502.37899999999996,
+      "text": "Then hand off to your own agent."
+    },
+    {
+      "start": 502.37899999999996,
+      "end": 504.77099999999996,
+      "text": "Open your site, and this prompt gives it"
+    },
+    {
+      "start": 504.77099999999996,
+      "end": 507.116,
+      "text": "the local address, the design notes, and"
+    },
+    {
+      "start": 507.116,
+      "end": 508.43399999999997,
+      "text": "what to check."
+    },
+    {
+      "start": 518.7667,
+      "end": 521.6347000000001,
+      "text": "The website got the same care: twenty"
+    },
+    {
+      "start": 521.6347000000001,
+      "end": 524.7347,
+      "text": "title concepts, thirty redesigns of one"
+    },
+    {
+      "start": 524.7347,
+      "end": 527.7757,
+      "text": "shop, and a mobile pass that cut its"
+    },
+    {
+      "start": 527.7757,
+      "end": 530.8067,
+      "text": "transfer, font requests and blocking time"
+    },
+    {
+      "start": 530.8067,
+      "end": 532.2987,
+      "text": "on phones."
+    },
+    {
+      "start": 547.3667,
+      "end": 550.4437,
+      "text": "To recap: each variant is an isolated"
+    },
+    {
+      "start": 550.4437,
+      "end": 553.0437000000001,
+      "text": "copy, its own branch of your site."
+    },
+    {
+      "start": 553.0437000000001,
+      "end": 555.5287000000001,
+      "text": "You can pin a direction per variant, and"
+    },
+    {
+      "start": 555.5287000000001,
+      "end": 556.9337,
+      "text": "mix agents."
+    },
+    {
+      "start": 556.9337,
+      "end": 559.4067,
+      "text": "You compare on your real site, with real"
+    },
+    {
+      "start": 559.4067,
+      "end": 560.1957,
+      "text": "scores."
+    },
+    {
+      "start": 560.1957,
+      "end": 562.2037,
+      "text": "And you keep one, and it rolls out"
+    },
+    {
+      "start": 562.2037,
+      "end": 563.2667,
+      "text": "site-wide."
+    },
+    {
+      "start": 563.7667,
+      "end": 566.6687000000001,
+      "text": "I designed and directed Variantly with"
+    },
+    {
+      "start": 566.6687000000001,
+      "end": 569.2927,
+      "text": "Claude Code and Impeccable: I set the"
+    },
+    {
+      "start": 569.2927,
+      "end": 572.0447,
+      "text": "direction, made the calls, and tested it"
+    },
+    {
+      "start": 572.0447,
+      "end": 573.3567,
+      "text": "on a real iPhone."
+    },
+    {
+      "start": 573.3567,
+      "end": 575.9457,
+      "text": "It's free and open source, and it runs on"
+    },
+    {
+      "start": 575.9457,
+      "end": 576.9097,
+      "text": "your machine."
+    },
+    {
+      "start": 576.9097,
+      "end": 579.2777,
+      "text": "No account, no server of ours."
+    },
+    {
+      "start": 579.2777,
+      "end": 582.9117,
+      "text": "To try it, run npx variantly in your"
+    },
+    {
+      "start": 582.9117,
+      "end": 583.7597000000001,
+      "text": "project."
+    },
+    {
+      "start": 583.7597000000001,
+      "end": 586.1397000000001,
+      "text": "Docs at variantly.style."
+    },
+    {
+      "start": 586.1397000000001,
+      "end": 587.7477,
+      "text": "Thanks for watching."
+    }
+  ],
+  "cursor": {
+    "path": [
+      [
+        9.19,
+        1190,
+        648
+      ],
+      [
+        70.247,
+        1190,
+        648
+      ],
+      [
+        115.672,
+        1190,
+        648
+      ],
+      [
+        120.757,
+        1190,
+        648
+      ],
+      [
+        120.902,
+        1180,
+        643
+      ],
+      [
+        120.983,
+        1151,
+        630
+      ],
+      [
+        121.062,
+        1093,
+        603
+      ],
+      [
+        121.141,
+        1020,
+        569
+      ],
+      [
+        121.314,
+        958,
+        541
+      ],
+      [
+        121.394,
+        955,
+        540
+      ],
+      [
+        121.487,
+        955,
+        540
+      ],
+      [
+        122.136,
+        955,
+        540
+      ],
+      [
+        122.215,
+        952,
+        541
+      ],
+      [
+        122.293,
+        935,
+        553
+      ],
+      [
+        122.37,
+        887,
+        584
+      ],
+      [
+        122.514,
+        727,
+        689
+      ],
+      [
+        122.609,
+        680,
+        720
+      ],
+      [
+        122.671,
+        670,
+        726
+      ],
+      [
+        122.764,
+        669,
+        727
+      ],
+      [
+        128.362,
+        669,
+        727
+      ],
+      [
+        132.449,
+        669,
+        727
+      ],
+      [
+        132.544,
+        669,
+        722
+      ],
+      [
+        132.632,
+        669,
+        695
+      ],
+      [
+        132.719,
+        670,
+        624
+      ],
+      [
+        132.806,
+        670,
+        519
+      ],
+      [
+        132.893,
+        671,
+        464
+      ],
+      [
+        132.981,
+        671,
+        446
+      ],
+      [
+        133.156,
+        671,
+        444
+      ],
+      [
+        135.371,
+        671,
+        444
+      ],
+      [
+        135.463,
+        671,
+        445
+      ],
+      [
+        135.546,
+        671,
+        449
+      ],
+      [
+        135.629,
+        671,
+        459
+      ],
+      [
+        135.71,
+        671,
+        475
+      ],
+      [
+        135.795,
+        671,
+        485
+      ],
+      [
+        135.877,
+        671,
+        489
+      ],
+      [
+        135.97,
+        671,
+        490
+      ],
+      [
+        136.058,
+        671,
+        490
+      ],
+      [
+        137.957,
+        671,
+        490
+      ],
+      [
+        138.047,
+        674,
+        490
+      ],
+      [
+        138.133,
+        694,
+        493
+      ],
+      [
+        138.222,
+        749,
+        502
+      ],
+      [
+        138.304,
+        843,
+        517
+      ],
+      [
+        138.391,
+        918,
+        529
+      ],
+      [
+        138.478,
+        951,
+        535
+      ],
+      [
+        138.565,
+        960,
+        536
+      ],
+      [
+        138.649,
+        960,
+        536
+      ],
+      [
+        139.347,
+        960,
+        536
+      ],
+      [
+        139.459,
+        952,
+        544
+      ],
+      [
+        139.561,
+        905,
+        589
+      ],
+      [
+        139.664,
+        785,
+        706
+      ],
+      [
+        139.774,
+        688,
+        801
+      ],
+      [
+        139.881,
+        661,
+        828
+      ],
+      [
+        139.988,
+        659,
+        829
+      ],
+      [
+        159.289,
+        659,
+        829
+      ],
+      [
+        159.404,
+        666,
+        823
+      ],
+      [
+        159.506,
+        704,
+        786
+      ],
+      [
+        159.611,
+        805,
+        687
+      ],
+      [
+        159.713,
+        909,
+        585
+      ],
+      [
+        159.817,
+        952,
+        544
+      ],
+      [
+        160.044,
+        960,
+        536
+      ],
+      [
+        160.71,
+        960,
+        536
+      ],
+      [
+        160.811,
+        963,
+        537
+      ],
+      [
+        160.903,
+        984,
+        542
+      ],
+      [
+        161.04,
+        1081,
+        567
+      ],
+      [
+        161.224,
+        1182,
+        592
+      ],
+      [
+        161.322,
+        1191,
+        594
+      ],
+      [
+        161.399,
+        1191,
+        594
+      ],
+      [
+        176.999,
+        1191,
+        594
+      ],
+      [
+        177.115,
+        1181,
+        592
+      ],
+      [
+        177.225,
+        1117,
+        575
+      ],
+      [
+        177.381,
+        877,
+        513
+      ],
+      [
+        177.439,
+        813,
+        497
+      ],
+      [
+        177.542,
+        762,
+        484
+      ],
+      [
+        177.637,
+        754,
+        482
+      ],
+      [
+        177.742,
+        754,
+        482
+      ],
+      [
+        179.316,
+        754,
+        482
+      ],
+      [
+        179.485,
+        769,
+        510
+      ],
+      [
+        179.599,
+        822,
+        613
+      ],
+      [
+        179.693,
+        899,
+        762
+      ],
+      [
+        179.851,
+        955,
+        871
+      ],
+      [
+        179.96,
+        960,
+        880
+      ],
+      [
+        180.067,
+        960,
+        880
+      ],
+      [
+        180.734,
+        960,
+        880
+      ],
+      [
+        180.854,
+        958,
+        876
+      ],
+      [
+        180.955,
+        946,
+        853
+      ],
+      [
+        181.086,
+        905,
+        771
+      ],
+      [
+        181.226,
+        836,
+        633
+      ],
+      [
+        181.437,
+        801,
+        562
+      ],
+      [
+        181.511,
+        800,
+        559
+      ],
+      [
+        181.657,
+        800,
+        559
+      ],
+      [
+        182.714,
+        800,
+        559
+      ],
+      [
+        182.935,
+        800,
+        589
+      ],
+      [
+        183.081,
+        800,
+        606
+      ],
+      [
+        183.218,
+        800,
+        606
+      ],
+      [
+        183.99,
+        800,
+        606
+      ],
+      [
+        184.139,
+        800,
+        606
+      ],
+      [
+        184.276,
+        800,
+        606
+      ],
+      [
+        184.484,
+        800,
+        606
+      ],
+      [
+        185.54,
+        800,
+        606
+      ],
+      [
+        185.691,
+        800,
+        616
+      ],
+      [
+        185.828,
+        800,
+        649
+      ],
+      [
+        185.966,
+        800,
+        653
+      ],
+      [
+        189.248,
+        800,
+        653
+      ],
+      [
+        189.532,
+        840,
+        653
+      ],
+      [
+        189.682,
+        937,
+        653
+      ],
+      [
+        189.808,
+        998,
+        653
+      ],
+      [
+        190.021,
+        1022,
+        653
+      ],
+      [
+        190.172,
+        1022,
+        653
+      ],
+      [
+        190.871,
+        1022,
+        653
+      ],
+      [
+        191.02,
+        1022,
+        653
+      ],
+      [
+        191.158,
+        1022,
+        653
+      ],
+      [
+        191.433,
+        1022,
+        653
+      ],
+      [
+        192.335,
+        1022,
+        653
+      ],
+      [
+        192.48,
+        1022,
+        653
+      ],
+      [
+        192.618,
+        1022,
+        653
+      ],
+      [
+        192.755,
+        1022,
+        653
+      ],
+      [
+        198.923,
+        1022,
+        653
+      ],
+      [
+        199.073,
+        1002,
+        633
+      ],
+      [
+        199.215,
+        875,
+        507
+      ],
+      [
+        199.358,
+        730,
+        363
+      ],
+      [
+        199.504,
+        704,
+        336
+      ],
+      [
+        199.647,
+        704,
+        336
+      ],
+      [
+        202.712,
+        704,
+        336
+      ],
+      [
+        202.863,
+        710,
+        336
+      ],
+      [
+        203.004,
+        745,
+        336
+      ],
+      [
+        203.147,
+        801,
+        336
+      ],
+      [
+        203.359,
+        817,
+        336
+      ],
+      [
+        203.501,
+        818,
+        336
+      ],
+      [
+        208.229,
+        818,
+        336
+      ],
+      [
+        208.41,
+        846,
+        336
+      ],
+      [
+        208.582,
+        1021,
+        336
+      ],
+      [
+        208.741,
+        1134,
+        336
+      ],
+      [
+        208.923,
+        1147,
+        336
+      ],
+      [
+        216.185,
+        1147,
+        336
+      ],
+      [
+        216.336,
+        1130,
+        338
+      ],
+      [
+        216.486,
+        1016,
+        355
+      ],
+      [
+        216.642,
+        852,
+        378
+      ],
+      [
+        216.793,
+        818,
+        383
+      ],
+      [
+        216.933,
+        818,
+        383
+      ],
+      [
+        218.67,
+        818,
+        383
+      ],
+      [
+        218.89,
+        869,
+        383
+      ],
+      [
+        219.041,
+        1042,
+        383
+      ],
+      [
+        219.175,
+        1132,
+        383
+      ],
+      [
+        219.456,
+        1147,
+        383
+      ],
+      [
+        221.19,
+        1147,
+        383
+      ],
+      [
+        221.338,
+        1131,
+        385
+      ],
+      [
+        221.475,
+        1036,
+        399
+      ],
+      [
+        221.616,
+        871,
+        422
+      ],
+      [
+        221.765,
+        820,
+        430
+      ],
+      [
+        221.969,
+        818,
+        430
+      ],
+      [
+        223.581,
+        818,
+        430
+      ],
+      [
+        223.741,
+        837,
+        430
+      ],
+      [
+        223.882,
+        948,
+        430
+      ],
+      [
+        224.032,
+        1109,
+        430
+      ],
+      [
+        224.173,
+        1146,
+        430
+      ],
+      [
+        224.314,
+        1147,
+        430
+      ],
+      [
+        225.988,
+        1147,
+        430
+      ],
+      [
+        226.145,
+        1128,
+        433
+      ],
+      [
+        226.302,
+        998,
+        451
+      ],
+      [
+        226.447,
+        851,
+        472
+      ],
+      [
+        226.68,
+        818,
+        477
+      ],
+      [
+        228.282,
+        818,
+        477
+      ],
+      [
+        228.439,
+        836,
+        477
+      ],
+      [
+        228.576,
+        939,
+        477
+      ],
+      [
+        228.715,
+        1098,
+        477
+      ],
+      [
+        228.858,
+        1144,
+        477
+      ],
+      [
+        228.999,
+        1147,
+        477
+      ],
+      [
+        230.491,
+        1147,
+        477
+      ],
+      [
+        230.637,
+        1132,
+        479
+      ],
+      [
+        230.78,
+        1031,
+        493
+      ],
+      [
+        230.926,
+        865,
+        517
+      ],
+      [
+        231.065,
+        820,
+        523
+      ],
+      [
+        231.273,
+        818,
+        524
+      ],
+      [
+        232.713,
+        818,
+        524
+      ],
+      [
+        232.88,
+        840,
+        524
+      ],
+      [
+        233.039,
+        984,
+        524
+      ],
+      [
+        233.18,
+        1117,
+        524
+      ],
+      [
+        233.335,
+        1146,
+        524
+      ],
+      [
+        233.474,
+        1147,
+        524
+      ],
+      [
+        237.689,
+        1147,
+        524
+      ],
+      [
+        237.844,
+        1136,
+        505
+      ],
+      [
+        238.116,
+        990,
+        236
+      ],
+      [
+        238.288,
+        960,
+        182
+      ],
+      [
+        238.494,
+        960,
+        181
+      ],
+      [
+        239.351,
+        960,
+        181
+      ],
+      [
+        239.517,
+        975,
+        231
+      ],
+      [
+        239.63,
+        1032,
+        420
+      ],
+      [
+        239.724,
+        1116,
+        704
+      ],
+      [
+        239.836,
+        1172,
+        888
+      ],
+      [
+        239.939,
+        1186,
+        935
+      ],
+      [
+        240.04,
+        1187,
+        938
+      ],
+      [
+        240.96,
+        1187,
+        938
+      ],
+      [
+        241.075,
+        1182,
+        930
+      ],
+      [
+        241.202,
+        1140,
+        860
+      ],
+      [
+        241.308,
+        1051,
+        712
+      ],
+      [
+        241.412,
+        986,
+        604
+      ],
+      [
+        241.63,
+        960,
+        561
+      ],
+      [
+        242.782,
+        960,
+        561
+      ],
+      [
+        242.89,
+        960,
+        563
+      ],
+      [
+        242.992,
+        960,
+        575
+      ],
+      [
+        243.127,
+        960,
+        623
+      ],
+      [
+        243.262,
+        960,
+        659
+      ],
+      [
+        243.371,
+        960,
+        666
+      ],
+      [
+        243.474,
+        960,
+        667
+      ],
+      [
+        244.434,
+        960,
+        667
+      ],
+      [
+        244.543,
+        960,
+        669
+      ],
+      [
+        244.644,
+        960,
+        681
+      ],
+      [
+        244.744,
+        960,
+        713
+      ],
+      [
+        244.846,
+        960,
+        752
+      ],
+      [
+        244.967,
+        960,
+        770
+      ],
+      [
+        245.177,
+        960,
+        772
+      ],
+      [
+        249.03,
+        960,
+        772
+      ],
+      [
+        249.142,
+        965,
+        776
+      ],
+      [
+        249.243,
+        994,
+        799
+      ],
+      [
+        249.346,
+        1070,
+        858
+      ],
+      [
+        249.552,
+        1192,
+        954
+      ],
+      [
+        249.67,
+        1199,
+        959
+      ],
+      [
+        249.785,
+        1199,
+        959
+      ],
+      [
+        255.991,
+        1199,
+        959
+      ],
+      [
+        256.096,
+        1199,
+        957
+      ],
+      [
+        256.195,
+        1199,
+        943
+      ],
+      [
+        256.293,
+        1199,
+        906
+      ],
+      [
+        256.391,
+        1198,
+        856
+      ],
+      [
+        256.485,
+        1198,
+        833
+      ],
+      [
+        256.58,
+        1198,
+        827
+      ],
+      [
+        256.676,
+        1198,
+        826
+      ],
+      [
+        293.907,
+        1198,
+        826
+      ],
+      [
+        294.002,
+        1187,
+        819
+      ],
+      [
+        294.091,
+        1114,
+        776
+      ],
+      [
+        294.182,
+        920,
+        662
+      ],
+      [
+        294.273,
+        580,
+        462
+      ],
+      [
+        294.445,
+        290,
+        291
+      ],
+      [
+        294.571,
+        271,
+        279
+      ],
+      [
+        317.323,
+        271,
+        279
+      ],
+      [
+        317.447,
+        302,
+        301
+      ],
+      [
+        317.524,
+        404,
+        370
+      ],
+      [
+        317.63,
+        744,
+        601
+      ],
+      [
+        317.71,
+        1096,
+        840
+      ],
+      [
+        317.866,
+        1373,
+        1028
+      ],
+      [
+        317.959,
+        1393,
+        1042
+      ],
+      [
+        318.068,
+        1393,
+        1042
+      ],
+      [
+        327.269,
+        1393,
+        1042
+      ],
+      [
+        327.355,
+        1395,
+        1033
+      ],
+      [
+        327.481,
+        1423,
+        913
+      ],
+      [
+        327.559,
+        1469,
+        712
+      ],
+      [
+        327.652,
+        1548,
+        371
+      ],
+      [
+        327.747,
+        1591,
+        183
+      ],
+      [
+        327.837,
+        1605,
+        122
+      ],
+      [
+        327.925,
+        1607,
+        114
+      ],
+      [
+        336.63,
+        1607,
+        114
+      ],
+      [
+        336.705,
+        1603,
+        117
+      ],
+      [
+        336.792,
+        1567,
+        141
+      ],
+      [
+        336.844,
+        1515,
+        175
+      ],
+      [
+        336.95,
+        1298,
+        317
+      ],
+      [
+        337.018,
+        1130,
+        428
+      ],
+      [
+        337.082,
+        1033,
+        492
+      ],
+      [
+        337.145,
+        983,
+        525
+      ],
+      [
+        337.208,
+        964,
+        538
+      ],
+      [
+        337.332,
+        960,
+        540
+      ],
+      [
+        337.432,
+        960,
+        540
+      ],
+      [
+        337.58,
+        800,
+        540
+      ],
+      [
+        337.663,
+        587,
+        540
+      ],
+      [
+        337.788,
+        397,
+        540
+      ],
+      [
+        337.977,
+        384,
+        540
+      ],
+      [
+        338.356,
+        384,
+        540
+      ],
+      [
+        338.421,
+        445,
+        540
+      ],
+      [
+        338.559,
+        977,
+        540
+      ],
+      [
+        338.685,
+        1463,
+        540
+      ],
+      [
+        338.86,
+        1536,
+        540
+      ],
+      [
+        339.236,
+        1536,
+        540
+      ],
+      [
+        339.3,
+        1507,
+        540
+      ],
+      [
+        339.475,
+        1147,
+        540
+      ],
+      [
+        339.599,
+        970,
+        540
+      ],
+      [
+        339.754,
+        960,
+        540
+      ],
+      [
+        397.202,
+        960,
+        540
+      ],
+      [
+        397.321,
+        960,
+        540
+      ],
+      [
+        397.396,
+        960,
+        538
+      ],
+      [
+        397.461,
+        960,
+        535
+      ],
+      [
+        397.517,
+        960,
+        531
+      ],
+      [
+        397.606,
+        960,
+        520
+      ],
+      [
+        397.665,
+        960,
+        511
+      ],
+      [
+        397.722,
+        960,
+        502
+      ],
+      [
+        397.775,
+        960,
+        496
+      ],
+      [
+        397.835,
+        960,
+        492
+      ],
+      [
+        397.979,
+        960,
+        487
+      ],
+      [
+        398.056,
+        960,
+        486
+      ],
+      [
+        398.119,
+        960,
+        486
+      ],
+      [
+        398.416,
+        960,
+        486
+      ],
+      [
+        398.464,
+        960,
+        486
+      ],
+      [
+        398.591,
+        948,
+        483
+      ],
+      [
+        398.644,
+        933,
+        479
+      ],
+      [
+        398.712,
+        900,
+        471
+      ],
+      [
+        398.774,
+        854,
+        459
+      ],
+      [
+        398.855,
+        764,
+        436
+      ],
+      [
+        398.933,
+        668,
+        411
+      ],
+      [
+        399.01,
+        604,
+        395
+      ],
+      [
+        399.076,
+        570,
+        386
+      ],
+      [
+        399.138,
+        551,
+        381
+      ],
+      [
+        399.203,
+        541,
+        379
+      ],
+      [
+        399.327,
+        538,
+        378
+      ],
+      [
+        399.622,
+        538,
+        378
+      ],
+      [
+        399.682,
+        539,
+        378
+      ],
+      [
+        399.747,
+        546,
+        381
+      ],
+      [
+        399.808,
+        565,
+        387
+      ],
+      [
+        399.866,
+        599,
+        398
+      ],
+      [
+        399.949,
+        685,
+        426
+      ],
+      [
+        400.035,
+        834,
+        474
+      ],
+      [
+        400.121,
+        1034,
+        539
+      ],
+      [
+        400.183,
+        1141,
+        573
+      ],
+      [
+        400.245,
+        1216,
+        597
+      ],
+      [
+        400.387,
+        1295,
+        623
+      ],
+      [
+        400.51,
+        1306,
+        626
+      ],
+      [
+        400.573,
+        1306,
+        626
+      ],
+      [
+        400.874,
+        1306,
+        626
+      ],
+      [
+        401.013,
+        1299,
+        625
+      ],
+      [
+        401.074,
+        1286,
+        623
+      ],
+      [
+        401.132,
+        1264,
+        618
+      ],
+      [
+        401.194,
+        1226,
+        611
+      ],
+      [
+        401.243,
+        1184,
+        603
+      ],
+      [
+        401.337,
+        1066,
+        580
+      ],
+      [
+        401.431,
+        962,
+        559
+      ],
+      [
+        401.52,
+        904,
+        548
+      ],
+      [
+        401.655,
+        868,
+        541
+      ],
+      [
+        401.712,
+        865,
+        540
+      ],
+      [
+        401.769,
+        864,
+        540
+      ],
+      [
+        401.824,
+        864,
+        540
+      ],
+      [
+        404.554,
+        864,
+        540
+      ],
+      [
+        404.63,
+        865,
+        543
+      ],
+      [
+        404.686,
+        868,
+        557
+      ],
+      [
+        404.769,
+        879,
+        613
+      ],
+      [
+        404.831,
+        897,
+        695
+      ],
+      [
+        404.894,
+        925,
+        824
+      ],
+      [
+        404.96,
+        948,
+        936
+      ],
+      [
+        405.02,
+        961,
+        996
+      ],
+      [
+        405.162,
+        971,
+        1041
+      ],
+      [
+        405.224,
+        971,
+        1042
+      ],
+      [
+        460.642,
+        971,
+        1042
+      ],
+      [
+        460.694,
+        972,
+        1042
+      ],
+      [
+        460.752,
+        982,
+        1042
+      ],
+      [
+        460.827,
+        1025,
+        1042
+      ],
+      [
+        460.895,
+        1108,
+        1042
+      ],
+      [
+        460.957,
+        1236,
+        1042
+      ],
+      [
+        461.018,
+        1379,
+        1042
+      ],
+      [
+        461.113,
+        1505,
+        1042
+      ],
+      [
+        461.172,
+        1539,
+        1042
+      ],
+      [
+        461.234,
+        1552,
+        1042
+      ],
+      [
+        461.298,
+        1554,
+        1042
+      ],
+      [
+        461.917,
+        1554,
+        1042
+      ],
+      [
+        461.965,
+        1552,
+        1042
+      ],
+      [
+        462.028,
+        1528,
+        1042
+      ],
+      [
+        462.092,
+        1451,
+        1043
+      ],
+      [
+        462.2,
+        1120,
+        1045
+      ],
+      [
+        462.264,
+        830,
+        1047
+      ],
+      [
+        462.327,
+        651,
+        1049
+      ],
+      [
+        462.389,
+        560,
+        1049
+      ],
+      [
+        462.435,
+        531,
+        1049
+      ],
+      [
+        462.497,
+        520,
+        1049
+      ],
+      [
+        462.552,
+        520,
+        1050
+      ],
+      [
+        466.046,
+        520,
+        1050
+      ],
+      [
+        466.143,
+        531,
+        1049
+      ],
+      [
+        466.206,
+        571,
+        1048
+      ],
+      [
+        466.269,
+        658,
+        1046
+      ],
+      [
+        466.332,
+        811,
+        1041
+      ],
+      [
+        466.393,
+        1027,
+        1035
+      ],
+      [
+        466.458,
+        1205,
+        1030
+      ],
+      [
+        466.52,
+        1305,
+        1027
+      ],
+      [
+        466.614,
+        1366,
+        1026
+      ],
+      [
+        466.786,
+        1373,
+        1026
+      ],
+      [
+        483.32,
+        1373,
+        1026
+      ],
+      [
+        488.362,
+        1373,
+        1026
+      ],
+      [
+        500.702,
+        1373,
+        1026
+      ],
+      [
+        502.518,
+        1373,
+        1026
+      ],
+      [
+        502.68,
+        1306,
+        975
+      ],
+      [
+        502.756,
+        1160,
+        866
+      ],
+      [
+        502.825,
+        918,
+        685
+      ],
+      [
+        502.907,
+        669,
+        499
+      ],
+      [
+        502.985,
+        558,
+        415
+      ],
+      [
+        503.058,
+        524,
+        390
+      ],
+      [
+        503.135,
+        521,
+        388
+      ],
+      [
+        505.654,
+        521,
+        388
+      ],
+      [
+        505.74,
+        522,
+        387
+      ],
+      [
+        505.795,
+        524,
+        383
+      ],
+      [
+        505.86,
+        530,
+        373
+      ],
+      [
+        505.927,
+        542,
+        353
+      ],
+      [
+        505.99,
+        560,
+        324
+      ],
+      [
+        506.055,
+        577,
+        298
+      ],
+      [
+        506.158,
+        589,
+        277
+      ],
+      [
+        506.228,
+        592,
+        272
+      ],
+      [
+        506.292,
+        593,
+        272
+      ],
+      [
+        506.356,
+        593,
+        272
+      ],
+      [
+        510.816,
+        593,
+        272
+      ],
+      [
+        510.9,
+        595,
+        274
+      ],
+      [
+        511.059,
+        641,
+        331
+      ],
+      [
+        511.095,
+        666,
+        361
+      ],
+      [
+        511.167,
+        735,
+        444
+      ],
+      [
+        511.245,
+        788,
+        509
+      ],
+      [
+        511.323,
+        815,
+        541
+      ],
+      [
+        511.406,
+        824,
+        552
+      ],
+      [
+        511.556,
+        825,
+        553
+      ],
+      [
+        519.004,
+        825,
+        553
+      ],
+      [
+        524.597,
+        825,
+        553
+      ],
+      [
+        524.878,
+        868,
+        637
+      ],
+      [
+        525.348,
+        1073,
+        1035
+      ],
+      [
+        525.554,
+        1073,
+        1035
+      ],
+      [
+        529.162,
+        1073,
+        1035
+      ],
+      [
+        529.322,
+        1079,
+        1035
+      ],
+      [
+        529.464,
+        1093,
+        1035
+      ],
+      [
+        529.605,
+        1094,
+        1035
+      ],
+      [
+        532.683,
+        1094,
+        1035
+      ],
+      [
+        532.792,
+        1093,
+        1035
+      ],
+      [
+        532.9,
+        1086,
+        1035
+      ],
+      [
+        533.024,
+        1081,
+        1035
+      ],
+      [
+        533.133,
+        1081,
+        1035
+      ],
+      [
+        544.091,
+        1081,
+        1035
+      ],
+      [
+        544.168,
+        1080,
+        1032
+      ],
+      [
+        544.324,
+        1053,
+        944
+      ],
+      [
+        544.373,
+        1032,
+        873
+      ],
+      [
+        544.434,
+        993,
+        749
+      ],
+      [
+        544.497,
+        961,
+        645
+      ],
+      [
+        544.672,
+        930,
+        542
+      ],
+      [
+        544.778,
+        929,
+        540
+      ],
+      [
+        564.014,
+        929,
+        540
+      ]
+    ],
+    "presses": [
+      {
+        "t": 121.6763,
+        "x": 955,
+        "y": 540,
+        "hold": 0
+      },
+      {
+        "t": 138.847,
+        "x": 960,
+        "y": 536,
+        "hold": 0
+      },
+      {
+        "t": 160.275,
+        "x": 960,
+        "y": 536,
+        "hold": 0
+      },
+      {
+        "t": 161.592,
+        "x": 1191,
+        "y": 594,
+        "hold": 0
+      },
+      {
+        "t": 177.9553,
+        "x": 754,
+        "y": 482,
+        "hold": 0
+      },
+      {
+        "t": 180.2773,
+        "x": 960,
+        "y": 880,
+        "hold": 0
+      },
+      {
+        "t": 181.9123,
+        "x": 800,
+        "y": 559,
+        "hold": 0
+      },
+      {
+        "t": 183.4733,
+        "x": 800,
+        "y": 606,
+        "hold": 0
+      },
+      {
+        "t": 184.73729999999998,
+        "x": 800,
+        "y": 606,
+        "hold": 0
+      },
+      {
+        "t": 186.22129999999999,
+        "x": 800,
+        "y": 653,
+        "hold": 0
+      },
+      {
+        "t": 190.40929999999997,
+        "x": 1022,
+        "y": 653,
+        "hold": 0
+      },
+      {
+        "t": 191.8183,
+        "x": 1022,
+        "y": 653,
+        "hold": 0
+      },
+      {
+        "t": 193.0023,
+        "x": 1022,
+        "y": 653,
+        "hold": 0
+      },
+      {
+        "t": 203.62830000000002,
+        "x": 818,
+        "y": 336,
+        "hold": 0
+      },
+      {
+        "t": 209.0773,
+        "x": 1147,
+        "y": 336,
+        "hold": 0
+      },
+      {
+        "t": 217.06130000000002,
+        "x": 818,
+        "y": 383,
+        "hold": 0
+      },
+      {
+        "t": 219.57930000000002,
+        "x": 1147,
+        "y": 383,
+        "hold": 0
+      },
+      {
+        "t": 222.10530000000003,
+        "x": 818,
+        "y": 430,
+        "hold": 0
+      },
+      {
+        "t": 224.44230000000002,
+        "x": 1147,
+        "y": 430,
+        "hold": 0
+      },
+      {
+        "t": 226.8153,
+        "x": 818,
+        "y": 477,
+        "hold": 0
+      },
+      {
+        "t": 229.1963,
+        "x": 1147,
+        "y": 477,
+        "hold": 0
+      },
+      {
+        "t": 231.40630000000002,
+        "x": 818,
+        "y": 524,
+        "hold": 0
+      },
+      {
+        "t": 233.5953,
+        "x": 1147,
+        "y": 524,
+        "hold": 0
+      },
+      {
+        "t": 238.74730000000002,
+        "x": 960,
+        "y": 181,
+        "hold": 0
+      },
+      {
+        "t": 240.2623,
+        "x": 1187,
+        "y": 938,
+        "hold": 0
+      },
+      {
+        "t": 241.7203,
+        "x": 960,
+        "y": 561,
+        "hold": 0
+      },
+      {
+        "t": 243.5653,
+        "x": 960,
+        "y": 667,
+        "hold": 0
+      },
+      {
+        "t": 245.2113,
+        "x": 960,
+        "y": 772,
+        "hold": 0
+      },
+      {
+        "t": 250.0053,
+        "x": 1199,
+        "y": 959,
+        "hold": 0
+      },
+      {
+        "t": 256.8833,
+        "x": 1198,
+        "y": 826,
+        "hold": 0
+      },
+      {
+        "t": 294.8513,
+        "x": 271,
+        "y": 279,
+        "hold": 0
+      },
+      {
+        "t": 318.2547000000002,
+        "x": 1393,
+        "y": 1042,
+        "hold": 0
+      },
+      {
+        "t": 328.11570000000006,
+        "x": 1607,
+        "y": 114,
+        "hold": 0
+      },
+      {
+        "t": 337.4060000000001,
+        "x": 960,
+        "y": 540,
+        "hold": 2.661
+      },
+      {
+        "t": 405.3826999999997,
+        "x": 971,
+        "y": 1042,
+        "hold": 0
+      },
+      {
+        "t": 461.46399999999994,
+        "x": 1554,
+        "y": 1042,
+        "hold": 0
+      },
+      {
+        "t": 467.00199999999995,
+        "x": 1373,
+        "y": 1026,
+        "hold": 0
+      },
+      {
+        "t": 506.53200000000004,
+        "x": 593,
+        "y": 272,
+        "hold": 0
+      },
+      {
+        "t": 511.7449999999998,
+        "x": 825,
+        "y": 553,
+        "hold": 0
+      },
+      {
+        "t": 526.0197000000002,
+        "x": 1073,
+        "y": 1035,
+        "hold": 0
+      },
+      {
+        "t": 529.8396999999999,
+        "x": 1094,
+        "y": 1035,
+        "hold": 0
+      },
+      {
+        "t": 533.3506999999998,
+        "x": 1081,
+        "y": 1035,
+        "hold": 0
+      },
+      {
+        "t": 544.9736999999999,
+        "x": 929,
+        "y": 540,
+        "hold": 0
+      }
+    ]
+  },
+  "spotlights": [
+    {
+      "t0": 75.0943,
+      "t1": 77.69830000000002,
+      "box": [
+        573,
+        345,
+        774,
+        101
+      ],
+      "callout": null,
+      "zoom": true
+    },
+    {
+      "t0": 122.8223,
+      "t1": 126.0253,
+      "box": [
+        621,
+        687,
+        276,
+        80
+      ],
+      "callout": "Paste into any AI chat.",
+      "zoom": true
+    },
+    {
+      "t0": 133.232,
+      "t1": 134.938,
+      "box": [
+        635,
+        422,
+        187,
+        44
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 136.138,
+      "t1": 137.54,
+      "box": [
+        635,
+        468,
+        156,
+        44
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 140.079,
+      "t1": 144.083,
+      "box": [
+        611,
+        555,
+        698,
+        548
+      ],
+      "callout": "Ready, or the fix right on the card.",
+      "zoom": false
+    },
+    {
+      "t0": 155.20700000000002,
+      "t1": 156.80800000000002,
+      "box": [
+        575,
+        280,
+        437,
+        133
+      ],
+      "callout": "A static site: nothing to set up.",
+      "zoom": false
+    },
+    {
+      "t0": 157.27100000000002,
+      "t1": 158.875,
+      "box": [
+        928,
+        780,
+        397,
+        93
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 174.7513,
+      "t1": 176.5623,
+      "box": [
+        541,
+        379,
+        286,
+        157
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 186.7953,
+      "t1": 188.60829999999999,
+      "box": [
+        603,
+        591,
+        270,
+        125
+      ],
+      "callout": "Up to ten variants.",
+      "zoom": false
+    },
+    {
+      "t0": 193.51229999999998,
+      "t1": 195.31629999999998,
+      "box": [
+        825,
+        591,
+        270,
+        125
+      ],
+      "callout": "Five agents at a time: two waves.",
+      "zoom": false
+    },
+    {
+      "t0": 195.93930000000003,
+      "t1": 198.34730000000002,
+      "box": [
+        571,
+        234,
+        778,
+        141
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 199.77330000000003,
+      "t1": 202.18630000000002,
+      "box": [
+        656,
+        294,
+        323,
+        85
+      ],
+      "callout": "Blank means Impeccable picks.",
+      "zoom": false
+    },
+    {
+      "t0": 235.12030000000001,
+      "t1": 237.1313,
+      "box": [
+        571,
+        234,
+        778,
+        141
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 246.2473,
+      "t1": 248.6533,
+      "box": [
+        583,
+        712,
+        754,
+        125
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 251.3483,
+      "t1": 255.5513,
+      "box": [
+        593,
+        712,
+        531,
+        79
+      ],
+      "callout": "The cost, before anything runs.",
+      "zoom": true
+    },
+    {
+      "t0": 288.35429999999997,
+      "t1": 289.85429999999997,
+      "box": [
+        342,
+        128,
+        1028,
+        91
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 290.3123,
+      "t1": 291.8153,
+      "box": [
+        1311,
+        128,
+        336,
+        91
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 292.2623,
+      "t1": 293.47729999999996,
+      "box": [
+        1586,
+        128,
+        130,
+        91
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 295.30629999999996,
+      "t1": 299.80629999999996,
+      "box": [
+        218,
+        867,
+        1484,
+        204
+      ],
+      "callout": "Its current step, beside the agent's log.",
+      "zoom": true
+    },
+    {
+      "t0": 324.1727000000003,
+      "t1": 326.77470000000017,
+      "box": [
+        1347,
+        128,
+        291,
+        91
+      ],
+      "callout": "A failure reads “Failed:” and why.",
+      "zoom": false
+    },
+    {
+      "t0": 372.90930000000003,
+      "t1": 374.7222999999997,
+      "box": [
+        -4,
+        -4,
+        1928,
+        54
+      ],
+      "callout": "Each pane labelled: original, and who made the variant.",
+      "zoom": false
+    },
+    {
+      "t0": 402.5587000000001,
+      "t1": 404.16069999999996,
+      "box": [
+        0,
+        0,
+        1920,
+        46
+      ],
+      "callout": "The next design, through the door.",
+      "zoom": false
+    },
+    {
+      "t0": 433.6160000000003,
+      "t1": 436.01599999999996,
+      "box": [
+        1426,
+        232,
+        584,
+        265
+      ],
+      "callout": null,
+      "zoom": true
+    },
+    {
+      "t0": 436.43700000000024,
+      "t1": 439.05000000000007,
+      "box": [
+        1762,
+        420,
+        188,
+        136
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 439.4260000000003,
+      "t1": 440.9260000000003,
+      "box": [
+        1486,
+        562,
+        464,
+        133
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 462.6489999999999,
+      "t1": 465.65300000000025,
+      "box": [
+        466,
+        1009,
+        782,
+        81
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 479.65270000000015,
+      "t1": 482.25270000000006,
+      "box": [
+        437,
+        532,
+        611,
+        159
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 503.19399999999985,
+      "t1": 505.2089999999997,
+      "box": [
+        457,
+        336,
+        736,
+        104
+      ],
+      "callout": null,
+      "zoom": false
+    },
+    {
+      "t0": 508.9140000000001,
+      "t1": 510.32299999999975,
+      "box": [
+        663,
+        236,
+        164,
+        72
+      ],
+      "callout": "Or open the project folder.",
+      "zoom": false
+    },
+    {
+      "t0": 512.166,
+      "t1": 515.168,
+      "box": [
+        477,
+        405,
+        696,
+        509
+      ],
+      "callout": "Names the URL once your site runs.",
+      "zoom": false
+    }
+  ],
+  "keys": [
+    {
+      "t": 334.7250000000001,
+      "key": "1"
+    },
+    {
+      "t": 346.3400000000003,
+      "key": "2"
+    },
+    {
+      "t": 348.79229999999984,
+      "key": "3"
+    },
+    {
+      "t": 351.25929999999994,
+      "key": "4"
+    },
+    {
+      "t": 353.8232999999998,
+      "key": "5"
+    },
+    {
+      "t": 356.32629999999995,
+      "key": "6"
+    },
+    {
+      "t": 358.93029999999976,
+      "key": "7"
+    },
+    {
+      "t": 361.38729999999964,
+      "key": "8"
+    },
+    {
+      "t": 363.85529999999994,
+      "key": "9"
+    },
+    {
+      "t": 366.31029999999987,
+      "key": "0"
+    },
+    {
+      "t": 368.78430000000003,
+      "key": "s"
+    },
+    {
+      "t": 370.74729999999977,
+      "key": "s"
+    },
+    {
+      "t": 371.4572999999998,
+      "key": "s"
+    },
+    {
+      "t": 375.7452999999998,
+      "key": "m"
+    },
+    {
+      "t": 377.80029999999965,
+      "key": "m"
+    },
+    {
+      "t": 378.42629999999986,
+      "key": "s"
+    },
+    {
+      "t": 395.71769999999975,
+      "key": "l"
+    },
+    {
+      "t": 406.4786999999997,
+      "key": "1"
+    },
+    {
+      "t": 431.90829999999966,
+      "key": "i"
+    },
+    {
+      "t": 441.18200000000013,
+      "key": "Escape"
+    }
+  ],
+  "chapters": [
+    {
+      "t": 0,
+      "title": "Intro"
+    },
+    {
+      "t": 9,
+      "title": "Why"
+    },
+    {
+      "t": 62.1833,
+      "title": "What you need"
+    },
+    {
+      "t": 86.5667,
+      "title": "Will it work on yours?"
+    },
+    {
+      "t": 132.25,
+      "title": "Setup"
+    },
+    {
+      "t": 174.5333,
+      "title": "What to make"
+    },
+    {
+      "t": 195.5833,
+      "title": "Your own directions"
+    },
+    {
+      "t": 240.5333,
+      "title": "Review and go"
+    },
+    {
+      "t": 269.15,
+      "title": "The run"
+    },
+    {
+      "t": 334.95,
+      "title": "Compare"
+    },
+    {
+      "t": 460.5,
+      "title": "Keep"
+    },
+    {
+      "t": 518.5167,
+      "title": "Wrap"
+    }
+  ],
+  "prompt": "~/tallyboard $",
+  "diffstat": " about.html |  64 +++--\n index.html | 234 ++++++++++-----\n style.css  | 954 ++++++++++++++++++++++++++++++++++++++++++++++++++++---------\n 3 files changed, 1016 insertions(+), 236 deletions(-)",
+  "branches": [
+    "variantly/202610181417/v1",
+    "variantly/202610181417/v10",
+    "variantly/202610181417/v2",
+    "variantly/202610181417/v3",
+    "variantly/202610181417/v4",
+    "variantly/202610181417/v5",
+    "variantly/202610181417/v6",
+    "variantly/202610181417/v7",
+    "variantly/202610181417/v8",
+    "variantly/202610181417/v9"
+  ],
+  "lastCommit": "0d70170 before"
+}

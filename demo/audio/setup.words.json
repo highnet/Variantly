@@ -1,0 +1,262 @@
+[
+  {
+    "word": "Setup",
+    "start": 0,
+    "end": 0.418
+  },
+  {
+    "word": "finds",
+    "start": 0.488,
+    "end": 0.778
+  },
+  {
+    "word": "your",
+    "start": 0.824,
+    "end": 0.975
+  },
+  {
+    "word": "app",
+    "start": 1.045,
+    "end": 1.265
+  },
+  {
+    "word": "and",
+    "start": 1.335,
+    "end": 1.463
+  },
+  {
+    "word": "checks",
+    "start": 1.509,
+    "end": 1.788
+  },
+  {
+    "word": "your",
+    "start": 1.823,
+    "end": 1.962
+  },
+  {
+    "word": "agent.",
+    "start": 2.032,
+    "end": 2.531
+  },
+  {
+    "word": "Each",
+    "start": 2.717,
+    "end": 2.949
+  },
+  {
+    "word": "card",
+    "start": 3.007,
+    "end": 3.332
+  },
+  {
+    "word": "says",
+    "start": 3.39,
+    "end": 3.785
+  },
+  {
+    "word": "if",
+    "start": 3.878,
+    "end": 4.017
+  },
+  {
+    "word": "it's",
+    "start": 4.098,
+    "end": 4.272
+  },
+  {
+    "word": "ready,",
+    "start": 4.342,
+    "end": 4.737
+  },
+  {
+    "word": "and",
+    "start": 4.76,
+    "end": 4.934
+  },
+  {
+    "word": "if",
+    "start": 5.004,
+    "end": 5.097
+  },
+  {
+    "word": "not,",
+    "start": 5.19,
+    "end": 5.457
+  },
+  {
+    "word": "the",
+    "start": 5.48,
+    "end": 5.573
+  },
+  {
+    "word": "fix",
+    "start": 5.642,
+    "end": 5.944
+  },
+  {
+    "word": "is",
+    "start": 6.026,
+    "end": 6.153
+  },
+  {
+    "word": "right",
+    "start": 6.246,
+    "end": 6.478
+  },
+  {
+    "word": "on",
+    "start": 6.536,
+    "end": 6.653
+  },
+  {
+    "word": "the",
+    "start": 6.699,
+    "end": 6.769
+  },
+  {
+    "word": "card.",
+    "start": 6.838,
+    "end": 7.291
+  },
+  {
+    "word": "I'm",
+    "start": 7.697,
+    "end": 7.895
+  },
+  {
+    "word": "using",
+    "start": 7.964,
+    "end": 8.266
+  },
+  {
+    "word": "Claude",
+    "start": 8.324,
+    "end": 8.661
+  },
+  {
+    "word": "Code.",
+    "start": 8.707,
+    "end": 9.183
+  },
+  {
+    "word": "You",
+    "start": 9.404,
+    "end": 9.532
+  },
+  {
+    "word": "could",
+    "start": 9.601,
+    "end": 9.776
+  },
+  {
+    "word": "pick",
+    "start": 9.834,
+    "end": 10.043
+  },
+  {
+    "word": "Codex,",
+    "start": 10.101,
+    "end": 10.658
+  },
+  {
+    "word": "Copilot,",
+    "start": 10.704,
+    "end": 11.459
+  },
+  {
+    "word": "Gemini,",
+    "start": 11.505,
+    "end": 12.365
+  },
+  {
+    "word": "Cursor,",
+    "start": 12.423,
+    "end": 13.178
+  },
+  {
+    "word": "OpenCode,",
+    "start": 13.514,
+    "end": 14.362
+  },
+  {
+    "word": "Grok",
+    "start": 14.455,
+    "end": 14.756
+  },
+  {
+    "word": "Build,",
+    "start": 14.849,
+    "end": 15.279
+  },
+  {
+    "word": "Antigravity,",
+    "start": 15.349,
+    "end": 16.521
+  },
+  {
+    "word": "Pi,",
+    "start": 16.649,
+    "end": 17.16
+  },
+  {
+    "word": "Hermes",
+    "start": 17.253,
+    "end": 17.729
+  },
+  {
+    "word": "Agent,",
+    "start": 17.81,
+    "end": 18.298
+  },
+  {
+    "word": "or",
+    "start": 18.356,
+    "end": 18.565
+  },
+  {
+    "word": "any",
+    "start": 18.646,
+    "end": 18.855
+  },
+  {
+    "word": "OpenRouter",
+    "start": 18.936,
+    "end": 19.679
+  },
+  {
+    "word": "model,",
+    "start": 19.749,
+    "end": 20.178
+  },
+  {
+    "word": "and",
+    "start": 20.202,
+    "end": 20.364
+  },
+  {
+    "word": "mix",
+    "start": 20.434,
+    "end": 20.678
+  },
+  {
+    "word": "them",
+    "start": 20.759,
+    "end": 20.956
+  },
+  {
+    "word": "in",
+    "start": 21.037,
+    "end": 21.142
+  },
+  {
+    "word": "one",
+    "start": 21.235,
+    "end": 21.49
+  },
+  {
+    "word": "run.",
+    "start": 21.537,
+    "end": 22.013
+  }
+]

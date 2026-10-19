@@ -1,0 +1,11 @@
+{
+  "name": "variantly-demo-light-thumbnail",
+  "stage": "stage/thumb-light.html",
+  "duration": 1,
+  "fps": 1,
+  "width": 1280,
+  "height": 720,
+  "out": "build/light/frames-thumb",
+  "probe": "build/light/thumb",
+  "deliver": "out"
+}

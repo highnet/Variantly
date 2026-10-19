@@ -23,9 +23,11 @@
     "voice:local": "node voice.mjs --voice local",
     "voice:lint": "node voice.mjs --lint",
     "voice:dict": "node --env-file-if-exists=.env voice.mjs --dict",
-    "thumbnail": "node --env-file-if-exists=.env build.mjs thumbnail"
+    "thumbnail": "node --env-file-if-exists=.env build.mjs thumbnail",
+    "cuts": "node --env-file-if-exists=.env cuts.mjs"
   },
   "devDependencies": {
+    "@strudel/web": "^1.3.0",
     "ffmpeg-static": "^5.2.0",
     "ffprobe-static": "^3.1.0",
     "playwright": "1.63.0"

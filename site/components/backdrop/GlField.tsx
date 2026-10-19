@@ -14,6 +14,7 @@ import { compilesInParallel, firstDraw } from '@/lib/glWarm';
 import { afterFrame, whenIdle } from '@/lib/idle';
 import { perfTier } from '@/lib/perfTier';
 import { releaseStudio, sceneBsdf, studioFor } from '@/lib/sceneBsdf';
+import { keepSceneElapsed, sceneElapsed } from '@/lib/sceneClock';
 import { onSwapWarm } from '@/lib/swapWarm';
 
 type GlFieldProps = {
@@ -672,11 +673,13 @@ const run = (
     // layer behind scrolling content is the costliest thing on the page there.
     // The scene's clock runs only while the loop does: paused (the title
     // morphing, a swap, scrolled away) it holds, so resuming carries on from the
-    // same frame instead of jumping ahead by the pause.
-    let t0 = performance.now();
+    // same frame instead of jumping ahead by the pause. It starts where the
+    // last page's scene left off, so the drift carries across routes.
+    let t0 = performance.now() - sceneElapsed() * 1000;
     let pausedAt = 0;
+    const elapsed = () => ((pausedAt || performance.now()) - t0) / 1000;
     const draw = () => {
-      update(seek ?? (still ? 6 : ((pausedAt || performance.now()) - t0) / 1000), 0);
+      update(seek ?? (still ? 6 : elapsed()), 0);
       renderer.render(scene, camera);
       if (film) {
         renderer.autoClear = false;
@@ -809,7 +812,11 @@ const run = (
       mo.observe(html, { attributes: true, attributeFilter: ['data-scrolled', 'data-swapping'] });
     }
     if (seek !== null) releaseFrame('gl');
+    const keep = () => !still && seek === null && keepSceneElapsed(elapsed());
+    addEventListener('pagehide', keep);
     teardown = () => {
+      keep();
+      removeEventListener('pagehide', keep);
       cancelAnimationFrame(raf);
       cancelAnimationFrame(pending);
       cancelAnimationFrame(fading);

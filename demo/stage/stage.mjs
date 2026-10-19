@@ -266,7 +266,10 @@ export async function mount(layout, theme = 'light') {
   // ---------------------------------------------------------------- captions
   // On by default; `build.mjs --no-captions` renders a picture without them.
   const cue = tl.burnCaptions === false ? null : captionAt(tl.captions, t);
-  if (cue && !scene.cta) document.body.append(el('div', 'caption', `<span>${esc(cue.text)}</span>`));
+  // The end card replaces the captions, but only once it is up: the closing
+  // line starts well before it.
+  const carded = scene.cta && t >= (scene.cta.fromAt ?? scene.start + 6);
+  if (cue && !carded) document.body.append(el('div', 'caption', `<span>${esc(cue.text)}</span>`));
 
   // ---------------------------------------------------------------- lower thirds
   for (const s of tl.scenes) {
