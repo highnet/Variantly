@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.10.0](https://github.com/highnet/Variantly/compare/variantly-v0.9.0...variantly-v0.10.0) (2026-10-19)
+
+
+### Features
+
+* **demo:** 90 s and 60 s cuts with their own voice and captions (cuts.mjs) ([1241f8d](https://github.com/highnet/Variantly/commit/1241f8d56d8934a5e267ed5d294b89f321d189e3))
+* **demo:** fit each scene to its line both ways ([a4db587](https://github.com/highnet/Variantly/commit/a4db58723c6163e091946bfdbc270efdc0ae9200))
+* **demo:** plain-English narration and Strudel music under the voice ([584fb95](https://github.com/highnet/Variantly/commit/584fb9543596581b1a958f15621baad802ed2dda))
+* **demo:** speed up a scene's overrun past its line (dead air), up to 3x ([1d34fd0](https://github.com/highnet/Variantly/commit/1d34fd0c332145ca8cac69ace7c0f07e1c3ce35d))
+* **demo:** sync the walk-through keys to the words; caption the closing line ([ee8e7b4](https://github.com/highnet/Variantly/commit/ee8e7b4aa91a69645311a9b980f68da7d3d23b75))
+
+
+### Bug Fixes
+
+* **demo:** stop the robotic rehearsal voice from reaching a published film ([#218](https://github.com/highnet/Variantly/issues/218)) ([ad202cd](https://github.com/highnet/Variantly/commit/ad202cdb517a8c13b1e0bd3ba37a1e62a84b40c4))
+* **demo:** the short cuts hide the full film's chapter label ([e789a78](https://github.com/highnet/Variantly/commit/e789a788b487c30e1b69f8488d29e2535a0002ae))
+* **demo:** voice silent scenes locally; eleven_v3 and later reject empty text ([068d5a8](https://github.com/highnet/Variantly/commit/068d5a8e14f84fbf41baa0056e76f9e142a38c98))
+* **site:** soft Lens glow, no stage gap, background synced across routes ([29b140f](https://github.com/highnet/Variantly/commit/29b140f24c0d12245631d0b8ca4697f7e16c7fa3))
+
 ## [0.9.0](https://github.com/highnet/Variantly/compare/variantly-v0.8.1...variantly-v0.9.0) (2026-10-18)
 
 
