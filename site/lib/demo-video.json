@@ -1,20 +1,24 @@
 {
   "light": {
     "mp4": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-light-9MrwKoiFwlVOYTgr4OR99aHCkiGInB.mp4",
-    "poster": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-light-poster-yZK611VaHpDBAImHgePDd8yATccy1D.png"
+    "poster": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-light-poster-yZK611VaHpDBAImHgePDd8yATccy1D.png",
+    "playbackId": "VGzKZsh5g8YPHlpHeu1Gabmo82BgWo4P402025601B5cjg"
   },
   "dark": {
     "mp4": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-dark-qlRetyrbBOGDqjg0uX1N8qGGBp6zVJ.mp4",
-    "poster": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-dark-poster-y8Yatwt19675RslG9mjKmQ3LWnIl6r.png"
+    "poster": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-dark-poster-y8Yatwt19675RslG9mjKmQ3LWnIl6r.png",
+    "playbackId": "KtZOHVJA96AR6BaZRvHuKVsw02REp1Vh4B9Osxkasyh8"
   },
   "short": {
     "light": {
       "mp4": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-light-90s-lSomwVBPCK4Ki9baLPSfF1nqizMJtF.mp4",
-      "poster": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-light-90s-poster-8mSCxXBBTEEXP13MB5qnMQkSQHnbfH.png"
+      "poster": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-light-90s-poster-8mSCxXBBTEEXP13MB5qnMQkSQHnbfH.png",
+      "playbackId": "V8Qwz5FnTUh9ZCKj602ZpSUo4baUsL6yYW25mek1dItc"
     },
     "dark": {
       "mp4": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-dark-90s-hNSFkaLOxfidkAkca1AEzmTokdtzwm.mp4",
-      "poster": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-dark-90s-poster-mqNshVyS7luEJJxKLp0LoGAoAsqAsZ.png"
+      "poster": "https://bgxbzqj3csz0iuok.public.blob.vercel-storage.com/demo/variantly-demo-dark-90s-poster-mqNshVyS7luEJJxKLp0LoGAoAsqAsZ.png",
+      "playbackId": "n2zuNIYG5CwBgYX8Gub8pcCDrFa2a8DiIkS38XZaq9Y"
     }
   }
 }

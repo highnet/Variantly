@@ -1,7 +1,10 @@
 'use client';
 
+import type MuxPlayerElement from '@mux/mux-player';
+import MuxPlayer from '@mux/mux-player-react/lazy';
+import { Play } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
 import { CommandCopy } from '@/components/CommandCopy';
 import { LiquidNumeral } from '@/components/LiquidNumeral';
@@ -9,6 +12,7 @@ import { Typography } from '@/components/ui/Typography';
 import { Button, buttonVariants } from '@/components/ui/Button';
 import { Rich } from '@/components/ui/Rich';
 import { DEMO_STEPS } from '@/lib/content';
+import { cn } from '@/lib/utils';
 import {
   DEMO_BOOKING_URL,
   DEMO_VIDEO_DARK,
@@ -30,6 +34,26 @@ const LENGTHS: readonly (readonly [Length, string, string])[] = [
   ['full', 'Whole run', '9:11'],
 ];
 
+// The whole run's chapters, from demo/out/youtube-description-<theme>.txt
+// (the same in both themes). Update with a re-cut.
+const CHAPTERS: readonly (readonly [string, string])[] = [
+  ['0:00', 'Intro'],
+  ['0:09', 'Why'],
+  ['1:02', 'What you need'],
+  ['1:26', 'Will it work on yours?'],
+  ['2:12', 'Setup'],
+  ['2:54', 'What to make'],
+  ['3:15', 'Your own directions'],
+  ['4:00', 'Review and go'],
+  ['4:29', 'The run'],
+  ['5:34', 'Compare'],
+  ['7:40', 'Keep'],
+  ['8:38', 'Wrap'],
+];
+const seconds = (time: string) => time.split(':').reduce((sum, part) => sum * 60 + Number(part), 0);
+
+const RATES = [1, 1.25, 1.5, 1.75, 2];
+
 // The site theme (html[data-theme], set before paint by the boot script).
 const subscribeTheme = (onChange: () => void) => {
   const mo = new MutationObserver(onChange);
@@ -41,43 +65,102 @@ const serverTheme = () => 'light' as const;
 
 const pick = (light: DemoVideoCut | null, dark: DemoVideoCut | null, theme: 'light' | 'dark') =>
   theme === 'dark' ? (dark ?? light) : (light ?? dark);
+const cutFor = (length: Length, theme: 'light' | 'dark') =>
+  length === 'short'
+    ? pick(DEMO_VIDEO_SHORT_LIGHT, DEMO_VIDEO_SHORT_DARK, theme)
+    : pick(DEMO_VIDEO_LIGHT, DEMO_VIDEO_DARK, theme);
+
+// Points the player at a film: the Mux stream when the cut has one, else the
+// MP4 on Blob. `at` is where to start, in seconds.
+const load = (el: MuxPlayerElement, cut: DemoVideoCut, at: number) => {
+  el.startTime = at;
+  if (cut.playbackId) el.playbackId = cut.playbackId;
+  else el.src = cut.mp4;
+};
+
+// Plays, once more if the call lands before the player has applied a new
+// source (the load aborts it). The first call, made in a click, is what lets
+// the browser play with sound.
+const play = (el: MuxPlayerElement) =>
+  void el.play().catch((error: unknown) => {
+    if (error instanceof DOMException && error.name === 'AbortError')
+      void el.play().catch(() => {});
+  });
 
 /*
  * The narrated live demo, straight after the showcase: people who just saw
  * the result watch it happen. The 90-second cut plays first, with a switch to
- * the whole run. A 16:9 frame holds the space either way, so the page doesn't
- * shift when the video lands. The films are served from Vercel Blob, so
- * nothing loads from a third party; with preload="none" only the poster loads
- * until play is pressed. The light or dark film follows the site theme, and
- * switching theme mid-play carries on from the same moment; switching length
- * starts the other film from the top. Captions are burned in.
+ * the whole run, both on the poster and above the player. A 16:9 frame holds
+ * the space either way, so the page doesn't shift when the video lands.
+ *
+ * Films stream from Mux (adaptive HLS: a slow connection gets a lower
+ * resolution instead of a stall), or play the MP4 on Vercel Blob for a cut
+ * not yet copied to Mux. The player's script loads once the section nears
+ * the viewport, and nothing of the film loads until play is pressed. The
+ * light or dark film follows the site theme, and switching theme mid-play
+ * carries on from the same moment; switching length starts the other film
+ * from the top. Captions are burned in.
  */
 const DemoVideo = () => {
   const theme = useSyncExternalStore(subscribeTheme, readTheme, serverTheme);
   const [length, setLength] = useState<Length>(HAS_SHORT ? 'short' : 'full');
-  const cut =
-    length === 'short'
-      ? pick(DEMO_VIDEO_SHORT_LIGHT, DEMO_VIDEO_SHORT_DARK, theme)
-      : pick(DEMO_VIDEO_LIGHT, DEMO_VIDEO_DARK, theme);
-  const mp4 = cut?.mp4;
-  const video = useRef<HTMLVideoElement>(null);
-  const shown = useRef<Length>(length);
+  const [started, setStarted] = useState(false);
+  const [player, setPlayer] = useState<MuxPlayerElement | null>(null);
+  // The lazy player can mount before <mux-player> is defined, when it has no
+  // play() yet and a property set on it would be lost; hold it until then.
+  const attach = useCallback((el: MuxPlayerElement | null) => {
+    if (!el) return setPlayer(null);
+    void customElements.whenDefined('mux-player').then(() => setPlayer(el));
+  }, []);
+  const cut = cutFor(length, theme);
+  const source = cut ? (cut.playbackId ?? cut.mp4) : null;
+  // What the player holds: which length, from which source.
+  const shown = useRef<{ length: Length; source: string } | null>(null);
 
-  // src is set here rather than as a prop so a theme switch can keep the
-  // place: a new src resets the element, so note the time and state first.
-  // A length switch is a different film, so it starts from the top.
+  // The source is set here rather than as a prop so a theme switch can keep
+  // the place: a new source resets the player, so note the time and state
+  // first. A length switch is a different film, so it starts from the top.
   useEffect(() => {
-    const el = video.current;
-    if (!el || !mp4 || el.src === mp4) return;
-    const at = shown.current === length ? el.currentTime : 0;
-    const playing = !el.paused && !el.ended;
-    shown.current = length;
-    el.src = mp4;
-    if (at > 0) el.currentTime = at;
-    if (playing) void el.play().catch(() => {});
-  }, [mp4, length]);
+    if (!player || !cut || !source || shown.current?.source === source) return;
+    const same = shown.current?.length === length;
+    const at = same ? player.currentTime : 0;
+    const playing = same && !player.paused && !player.ended;
+    shown.current = { length, source };
+    load(player, cut, at);
+    if (playing) play(player);
+  }, [player, cut, source, length]);
+
+  // Pressed on the poster: load the chosen film and play it inside the click,
+  // so browsers count it as the visitor's own play.
+  const start = (value: Length) => {
+    const chosen = cutFor(value, theme);
+    if (!player || !chosen) return;
+    const chosenSource = chosen.playbackId ?? chosen.mp4;
+    if (shown.current?.source !== chosenSource) {
+      shown.current = { length: value, source: chosenSource };
+      load(player, chosen, 0);
+    }
+    setLength(value);
+    setStarted(true);
+    play(player);
+  };
+
+  // The whole run gets its chapters on the timeline each time it loads.
+  const addChapters = () => {
+    if (!player || shown.current?.length !== 'full') return;
+    const starts = CHAPTERS.map(([time]) => seconds(time));
+    void player.addChapters(
+      CHAPTERS.map(([, value], i) => ({
+        startTime: starts[i],
+        endTime: starts[i + 1] ?? player.duration,
+        value,
+      })),
+    );
+  };
 
   if (!HAS_FULL && !HAS_SHORT) return null;
+
+  const choices = LENGTHS.filter(([value]) => (value === 'short' ? HAS_SHORT : HAS_FULL));
 
   return (
     <section id="watch" aria-labelledby="demo-title" className="grid scroll-mt-28 gap-9">
@@ -91,13 +174,13 @@ const DemoVideo = () => {
             keep.
           </p>
         </div>
-        {HAS_SHORT && HAS_FULL && (
+        {choices.length > 1 && (
           <div role="group" aria-labelledby="demo-length" className="grid w-full gap-2 sm:w-auto">
             <Typography variant="label" id="demo-length" className="text-steel">
               Length
             </Typography>
             <div className="border-ink rounded-control grid grid-cols-2 overflow-hidden border">
-              {LENGTHS.map(([value, label, time]) => (
+              {choices.map(([value, label, time]) => (
                 <Button
                   key={value}
                   variant="segment-ink"
@@ -117,19 +200,45 @@ const DemoVideo = () => {
       </div>
       <div className="border-ink bg-slate relative aspect-video w-full max-w-[1100px] overflow-hidden rounded-md border-2">
         {/* Captions are burned into the film, so there is no caption track. */}
-        <video
-          ref={video}
-          className="absolute inset-0 size-full"
+        <MuxPlayer
+          ref={attach}
+          loading="viewport"
+          className={cn(
+            'vy-demo-player absolute inset-0 size-full',
+            !started && 'vy-demo-player-idle',
+          )}
           poster={cut?.poster ?? undefined}
+          // The lazy player shows only its placeholder until its script loads.
+          placeholder={cut?.poster ?? undefined}
           preload="none"
-          controls
           playsInline
-          aria-label={
-            length === 'short'
-              ? 'variantly in 90 seconds, narrated, with burned-in captions'
-              : 'variantly live demo, the whole run, narrated, with burned-in captions'
-          }
+          playbackRates={RATES}
+          streamType="on-demand"
+          disableCookies
+          disableTracking={!cut?.playbackId}
+          title={length === 'short' ? 'variantly in 90 seconds' : 'variantly: the whole run'}
+          metadataVideoTitle={`variantly demo, ${length === 'short' ? 'quick look' : 'whole run'} (${theme})`}
+          onPlay={() => setStarted(true)}
+          onLoadedMetadata={addChapters}
         />
+        {!started && (
+          <div className="from-ink/70 absolute inset-0 grid place-content-center justify-items-center gap-4 bg-linear-to-t to-transparent p-4">
+            {choices.map(([value, label, time], i) => (
+              <Button
+                key={value}
+                variant={i === 0 ? 'primary' : 'ink'}
+                size={i === 0 ? 'big' : 'default'}
+                disabled={!player}
+                onClick={() => start(value)}
+                aria-label={`Play ${label.toLowerCase()}, ${time}`}
+              >
+                <Play aria-hidden="true" />
+                {label}
+                <span className="tabular-nums opacity-70">{time}</span>
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
         <Link href="/start" className={buttonVariants({ variant: 'primary', size: 'big' })}>

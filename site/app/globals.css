@@ -2690,3 +2690,19 @@ main > div p {
 :root[data-theme='dark'] .vy-shot-dark {
   display: block;
 }
+
+/* The homepage demo film (components/DemoVideo.tsx): Mux Player's controls in
+   the site's colours. The progress bar fills in the alert yellow. */
+.vy-demo-player {
+  --media-primary-color: #ffffff;
+  --media-secondary-color: rgb(13 13 16 / 0.72);
+  --media-accent-color: var(--alert);
+  --media-font-family: var(--font-mono);
+  --media-control-hover-background: rgb(255 255 255 / 0.12);
+  --media-object-fit: contain;
+  aspect-ratio: 16 / 9;
+}
+/* Until the first play the poster's own buttons stand in for the controls. */
+.vy-demo-player-idle {
+  --controls: none;
+}

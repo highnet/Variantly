@@ -20,7 +20,9 @@
  *
  * Every upload gets a fresh URL (random suffix), so a re-cut film is never
  * hidden behind a cached old one. Old files stay in the store until deleted
- * in the dashboard. Commit lib/demo-video.json and deploy to publish.
+ * in the dashboard. A replaced film loses its Mux playbackId, so the site
+ * plays the new MP4 until `npm run mux-demo-video` streams it from Mux again.
+ * Commit lib/demo-video.json and deploy to publish.
  */
 import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';

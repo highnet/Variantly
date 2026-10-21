@@ -10,9 +10,11 @@
     "score-demo": "node scripts/score-demo.mjs",
     "demo-posters": "node scripts/demo-posters.mjs",
     "perf-budget": "node scripts/perf-budget.mjs",
-    "upload-demo-video": "node scripts/upload-demo-video.mjs"
+    "upload-demo-video": "node scripts/upload-demo-video.mjs",
+    "mux-demo-video": "node scripts/mux-demo-video.mjs"
   },
   "dependencies": {
+    "@mux/mux-player-react": "^3.14.0",
     "@types/three": "^0.186.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
