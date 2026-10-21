@@ -208,6 +208,8 @@ const DemoVideo = () => {
             !started && 'vy-demo-player-idle',
           )}
           poster={cut?.poster ?? undefined}
+          // The lazy player shows only its placeholder until its script loads.
+          placeholder={cut?.poster ?? undefined}
           preload="none"
           playsInline
           playbackRates={RATES}
