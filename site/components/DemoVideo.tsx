@@ -2,7 +2,7 @@
 
 import type MuxPlayerElement from '@mux/mux-player';
 import MuxPlayer from '@mux/mux-player-react/lazy';
-import { Play } from 'lucide-react';
+import { Play, Volume2 } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 
@@ -78,6 +78,13 @@ const load = (el: MuxPlayerElement, cut: DemoVideoCut, at: number) => {
   else el.src = cut.mp4;
 };
 
+const setMuted = (el: MuxPlayerElement, muted: boolean) => {
+  el.muted = muted;
+};
+const rewind = (el: MuxPlayerElement) => {
+  el.currentTime = 0;
+};
+
 // Plays, once more if the call lands before the player has applied a new
 // source (the load aborts it). The first call, made in a click, is what lets
 // the browser play with sound.
@@ -87,16 +94,29 @@ const play = (el: MuxPlayerElement) =>
       void el.play().catch(() => {});
   });
 
+// Whether the film may start on its own, muted: not for visitors who ask for
+// less motion or less data, nor on a page running in its low tier.
+const mayPreview = () =>
+  !matchMedia('(prefers-reduced-motion: reduce)').matches &&
+  !(navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData &&
+  document.documentElement.dataset.perf !== 'low';
+
 /*
  * The narrated live demo, straight after the showcase: people who just saw
  * the result watch it happen. The 90-second cut plays first, with a switch to
  * the whole run, both on the poster and above the player. A 16:9 frame holds
  * the space either way, so the page doesn't shift when the video lands.
  *
+ * While at least half of it is on screen the film plays on its own, muted
+ * and looping (the captions carry it), and pauses when scrolled away; a
+ * click starts it over from the top with sound and controls. Visitors who
+ * ask for less motion or data, or a page in its low tier, get the poster
+ * with play buttons instead, and nothing of the film loads until pressed.
+ *
  * Films stream from Mux (adaptive HLS: a slow connection gets a lower
  * resolution instead of a stall), or play the MP4 on Vercel Blob for a cut
  * not yet copied to Mux. The player's script loads once the section nears
- * the viewport, and nothing of the film loads until play is pressed. The
+ * the viewport. The
  * light or dark film follows the site theme, and switching theme mid-play
  * carries on from the same moment; switching length starts the other film
  * from the top. Captions are burned in.
@@ -104,7 +124,11 @@ const play = (el: MuxPlayerElement) =>
 const DemoVideo = () => {
   const theme = useSyncExternalStore(subscribeTheme, readTheme, serverTheme);
   const [length, setLength] = useState<Length>(HAS_SHORT ? 'short' : 'full');
-  const [started, setStarted] = useState(false);
+  // idle: the poster. preview: playing muted on its own. watching: started
+  // by the visitor, with sound and controls.
+  const [mode, setMode] = useState<'idle' | 'preview' | 'watching'>('idle');
+  const watching = mode === 'watching';
+  const frame = useRef<HTMLDivElement>(null);
   const [player, setPlayer] = useState<MuxPlayerElement | null>(null);
   // The lazy player can mount before <mux-player> is defined, when it has no
   // play() yet and a property set on it would be lost; hold it until then.
@@ -119,19 +143,37 @@ const DemoVideo = () => {
 
   // The source is set here rather than as a prop so a theme switch can keep
   // the place: a new source resets the player, so note the time and state
-  // first. A length switch is a different film, so it starts from the top.
+  // first. A length switch is a different film, so it starts from the top
+  // (still playing, if it was).
   useEffect(() => {
     if (!player || !cut || !source || shown.current?.source === source) return;
     const same = shown.current?.length === length;
     const at = same ? player.currentTime : 0;
-    const playing = same && !player.paused && !player.ended;
+    const playing = !player.paused && !player.ended;
     shown.current = { length, source };
     load(player, cut, at);
     if (playing) play(player);
   }, [player, cut, source, length]);
 
-  // Pressed on the poster: load the chosen film and play it inside the click,
-  // so browsers count it as the visitor's own play.
+  // The muted preview runs while the frame is at least half on screen.
+  useEffect(() => {
+    const el = frame.current;
+    if (!player || !el || watching || !mayPreview()) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return player.pause();
+        setMuted(player, true);
+        setMode('preview');
+        play(player);
+      },
+      { threshold: 0.5 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [player, watching]);
+
+  // Pressed on the poster or the preview: the chosen film from the top, with
+  // sound, played inside the click so browsers count it as the visitor's own.
   const start = (value: Length) => {
     const chosen = cutFor(value, theme);
     if (!player || !chosen) return;
@@ -139,9 +181,10 @@ const DemoVideo = () => {
     if (shown.current?.source !== chosenSource) {
       shown.current = { length: value, source: chosenSource };
       load(player, chosen, 0);
-    }
+    } else rewind(player);
+    setMuted(player, false);
     setLength(value);
-    setStarted(true);
+    setMode('watching');
     play(player);
   };
 
@@ -198,30 +241,35 @@ const DemoVideo = () => {
           </div>
         )}
       </div>
-      <div className="border-ink bg-slate relative aspect-video w-full max-w-[1100px] overflow-hidden rounded-md border-2">
+      <div
+        ref={frame}
+        className="border-ink bg-slate relative aspect-video w-full max-w-[1100px] overflow-hidden rounded-md border-2"
+      >
         {/* Captions are burned into the film, so there is no caption track. */}
         <MuxPlayer
           ref={attach}
           loading="viewport"
           className={cn(
             'vy-demo-player absolute inset-0 size-full',
-            !started && 'vy-demo-player-idle',
+            !watching && 'vy-demo-player-idle',
           )}
           poster={cut?.poster ?? undefined}
           // The lazy player shows only its placeholder until its script loads.
           placeholder={cut?.poster ?? undefined}
           preload="none"
           playsInline
+          loop={mode === 'preview'}
+          // The preview's mute is not the visitor's choice; don't remember it.
+          noMutedPref
           playbackRates={RATES}
           streamType="on-demand"
           disableCookies
           disableTracking={!cut?.playbackId}
           title={length === 'short' ? 'variantly in 90 seconds' : 'variantly: the whole run'}
           metadataVideoTitle={`variantly demo, ${length === 'short' ? 'quick look' : 'whole run'} (${theme})`}
-          onPlay={() => setStarted(true)}
           onLoadedMetadata={addChapters}
         />
-        {!started && (
+        {mode === 'idle' && (
           <div className="from-ink/70 absolute inset-0 grid place-content-center justify-items-center gap-4 bg-linear-to-t to-transparent p-4">
             {choices.map(([value, label, time], i) => (
               <Button
@@ -237,6 +285,33 @@ const DemoVideo = () => {
                 <span className="tabular-nums opacity-70">{time}</span>
               </Button>
             ))}
+          </div>
+        )}
+        {mode === 'preview' && (
+          <div className="absolute inset-0 grid content-end">
+            {/* The whole frame starts the film too; the buttons are the keyboard's way in. */}
+            <Button
+              variant="text"
+              size="none"
+              tabIndex={-1}
+              aria-hidden="true"
+              className="absolute inset-0 cursor-pointer"
+              onClick={() => start(length)}
+            />
+            <div className="from-ink/70 pointer-events-none relative flex flex-wrap items-center gap-3 bg-linear-to-t to-transparent p-4 pt-12 [&>*]:pointer-events-auto">
+              {choices.map(([value, label, time], i) => (
+                <Button
+                  key={value}
+                  variant={i === 0 ? 'primary' : 'ink'}
+                  onClick={() => start(value)}
+                  aria-label={`Play ${label.toLowerCase()} with sound, ${time}`}
+                >
+                  <Volume2 aria-hidden="true" />
+                  {label}
+                  <span className="tabular-nums opacity-70">{time}</span>
+                </Button>
+              ))}
+            </div>
           </div>
         )}
       </div>
