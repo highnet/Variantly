@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Noisy Gradient Balls</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#fff3ea; --card:#ffe9dc; --ink:#2a1530; --muted:#6b4a5a; --hot:#c8441c; --amber:#ffb84d; --line:#f3cdb8; }
+  * { box-sizing:border-box; margin:0; }
+  body { width:1080px; height:1350px; background:var(--bg); color:var(--ink);
+    font-family:'Bricolage Grotesque',system-ui,sans-serif; padding:56px 60px 40px; overflow:hidden; }
+  .kicker { font:700 18px 'JetBrains Mono',monospace; letter-spacing:.14em; color:var(--hot); text-transform:uppercase; }
+  h1 { font-weight:800; font-size:62px; line-height:1; letter-spacing:-.03em; margin:14px 0 14px; }
+  h1 em { font-style:normal; color:var(--hot); }
+  .sub { font-size:23px; color:var(--muted); line-height:1.35; max-width:900px; }
+  .grid { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:22px; margin-top:30px; }
+  .card { background:var(--card); border:2px solid var(--line); border-radius:26px; padding:20px 22px 22px; display:grid; grid-template-columns:170px minmax(0,1fr); column-gap:18px; align-items:center; }
+  .card canvas { width:170px; height:170px; border-radius:16px; background:var(--bg); }
+  .card > div { display:contents; }
+  .card .hd { grid-column:2; grid-row:1; }
+  .card p, .card code { grid-column:1 / -1; }
+  .card p { margin-top:14px; }
+  .n { font:700 15px 'JetBrains Mono',monospace; color:#fff; background:var(--ink); border-radius:99px; padding:4px 11px; display:inline-block; }
+  .card h2 { font-size:31px; font-weight:800; letter-spacing:-.02em; line-height:1.05; margin:10px 0 0; }
+  .card p { font-size:17px; line-height:1.32; color:var(--muted); }
+  code, .code { font-family:'JetBrains Mono',monospace; }
+  .card code { font-size:14px; display:block; margin-top:9px; background:var(--ink); color:#ffd9c4; border-radius:10px; padding:8px 10px; line-height:1.4; white-space:pre; }
+  .tips { margin-top:22px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .tip { border:2px dashed var(--hot); border-radius:20px; padding:16px 18px; }
+  .tip b { display:block; font-size:20px; letter-spacing:-.01em; margin-bottom:5px; }
+  .tip span { font-size:16px; color:var(--muted); line-height:1.3; display:block; }
+  .foot { margin-top:22px; display:flex; justify-content:space-between; align-items:center; font:500 17px 'JetBrains Mono',monospace; color:var(--muted); }
+  .foot b { color:var(--ink); font-size:22px; }
+</style>
+</head>
+<body>
+  <div class="kicker">Frontend tutorial · WebGL + GLSL</div>
+  <h1>The noisy gradient balls<br>on <em>variantly.style</em></h1>
+  <p class="sub">A smooth 3D shaded sphere, then one full-screen post pass that adds film grain, stipples the edges and paints a grainy halo. Four steps:</p>
+
+  <div class="grid">
+    <div class="card"><canvas id="c1" width="380" height="380"></canvas><div>
+      <div class="hd"><span class="n">01</span><h2>Shade a blob</h2></div>
+      <p>Icosphere, vertices pushed out by 3D value noise. Diffuse + specular + rim light is the gradient.</p>
+      <code>p = position + normal * n(normal*1.6 + t)*.45;
+col = c*dif + spec + rim;</code></div></div>
+
+    <div class="card"><canvas id="c2" width="380" height="380"></canvas><div>
+      <div class="hd"><span class="n">02</span><h2>Grain, by luminance</h2></div>
+      <p>Copy the frame to a texture, redraw it. Two hashes summed = film-like noise, strongest in midtones.</p>
+      <code>w = .5 + 2.*l*(1.-l);
+n = hash(p,1u)+hash(p,2u)-1.;
+rgb += amt * w * (n + chroma*ch);</code></div></div>
+
+    <div class="card"><canvas id="c3" width="380" height="380"></canvas><div>
+      <div class="hd"><span class="n">03</span><h2>Stipple the edges</h2></div>
+      <p>Dither alpha with the same noise where the edge fades. Soft edges break into dots, like print.</p>
+      <code>edge = 4.*a*(1.-a);
+a += 2.5*amt*edge*(hash(p,6u)-.5);</code></div></div>
+
+    <div class="card"><canvas id="c4" width="380" height="380"></canvas><div>
+      <div class="hd"><span class="n">04</span><h2>Grainy halo</h2></div>
+      <p>12 blur taps on a golden-angle spiral, turned by a random angle per pixel. The blur is grainy by design.</p>
+      <code>a = turn + i * 2.3999632;
+r = R * sqrt((i + jitter) / 12.);
+glow += tex(uv + r*vec2(cos a, sin a));</code></div></div>
+  </div>
+
+  <div class="tips">
+    <div class="tip"><b>Use a PCG hash</b><span>fract(sin(dot())) drew repeating diagonal worms on some GPUs. An integer hash never tiles.</span></div>
+    <div class="tip"><b>No clock in the noise</b><span>Keyed to pixels only, so the grain never shimmers while the balls drift.</span></div>
+    <div class="tip"><b>Phones get SVG</b><span>Shapes drawn twice, filled with a grain PNG tile at two sizes, one turned 37°. No WebGL, no filters.</span></div>
+  </div>
+
+  <div class="foot"><b>variantly.style</b><span>one website · many redesigns · you pick</span></div>
+
+<script>
+// A CPU port of the real shaders, so each panel shows the actual step.
+const pcg = (v) => { let s = (Math.imul(v>>>0, 747796405) + 2891336453) >>> 0;
+  let w = Math.imul(((s >>> ((s >>> 28) + 4)) ^ s) >>> 0, 277803737) >>> 0; return ((w >>> 22) ^ w) >>> 0; };
+const hash = (x, y, k) => pcg((x + pcg((y + pcg(k)) >>> 0)) >>> 0) / 4294967295;
+const S = 380, sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16) / 255);
+const BALL = hex('#e5532c');
+
+// Step 1: the blob, as RGBA floats (straight alpha). Soft edge so 3 and 4 have something to work on.
+const shade = () => {
+  const f = new Float32Array(S * S * 4), cx = S / 2, cy = S / 2 + 6, R = 118;
+  const L = [-0.4, 0.8, 0.6], ll = Math.hypot(...L); L.forEach((v, i) => (L[i] = v / ll));
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const dx = x - cx, dy = cy - y, ang = Math.atan2(dy, dx);
+    const r = R * (1 + 0.07 * Math.sin(ang * 3 + 1) + 0.04 * Math.sin(ang * 5 - 2));
+    const d = Math.hypot(dx, dy) / r, i = (y * S + x) * 4;
+    const a = 1 - sm(0.9, 1.04, d); if (a <= 0) continue;
+    const dd = Math.min(d, 0.999), nx = dx / r, ny = dy / r, nz = Math.sqrt(1 - dd * dd);
+    const dif = Math.max(nx * L[0] + ny * L[1] + nz * L[2], 0) * 0.6 + 0.5;
+    const ndl = nx * L[0] + ny * L[1] + nz * L[2], rz = 2 * ndl * nz - L[2];
+    const spec = Math.pow(Math.max(rz, 0), 24) * 0.6, rim = Math.pow(1 - nz, 2.5) * 0.35;
+    for (let c = 0; c < 3; c++) f[i + c] = Math.min(1, BALL[c] * dif + spec + rim);
+    f[i + 3] = a;
+  }
+  return f;
+};
+
+const AMT = 0.2, CHROMA = 0.35;
+const post = (src, { grain, stipple, halo }) => {
+  const out = new Float32Array(src.length), Rh = 34 * 2;
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const i = (y * S + x) * 4, gy = S - 1 - y; let a = src[i + 3];
+    let hr = [0, 0, 0], ha = 0;
+    if (halo) {
+      let g = [0, 0, 0, 0]; const turn = hash(x, gy, 7) * 6.2831853, jit = hash(x, gy, 8);
+      for (let k = 0; k < 12; k++) {
+        const an = turn + k * 2.3999632, r = Rh * Math.sqrt((k + jit) / 12);
+        const sx = Math.round(x + r * Math.cos(an)), sy = Math.round(y - r * Math.sin(an));
+        if (sx < 0 || sy < 0 || sx >= S || sy >= S) continue;
+        const j = (sy * S + sx) * 4, sa = src[j + 3];
+        g[0] += src[j] * sa; g[1] += src[j + 1] * sa; g[2] += src[j + 2] * sa; g[3] += sa;
+      }
+      g = g.map((v) => v / 12);
+      ha = g[3] * 0.8 * (1 - a);
+      ha *= sm(0, 1, 0.35 + 1.3 * hash(x, gy, 9) - 0.6 * (1 - g[3]));
+      ha = Math.min(1, Math.max(0, ha));
+      if (g[3] > 0.004) hr = [g[0] / g[3], g[1] / g[3], g[2] / g[3]];
+    }
+    let rgb = [src[i], src[i + 1], src[i + 2]];
+    if (a > 0.004) {
+      if (grain) {
+        const l = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+        const w = (0.5 + 2 * l * (1 - l)) * sm(0, 0.12, l + 0.03);
+        const n = hash(x, gy, 1) + hash(x, gy, 2) - 1;
+        rgb = rgb.map((v, c) => Math.min(1, Math.max(0, v + AMT * w * (n + CHROMA * (hash(x, gy, 3 + c) - 0.5)))));
+      }
+      if (stipple) a = Math.min(1, Math.max(0, a + 2.5 * AMT * 4 * a * (1 - a) * (hash(x, gy, 6) - 0.5)));
+    } else a = 0;
+    // premultiplied out, like gl_FragColor in the pass
+    for (let c = 0; c < 3; c++) out[i + c] = rgb[c] * a + hr[c] * ha;
+    out[i + 3] = a + ha;
+  }
+  return out;
+};
+
+const paint = (id, f, premul) => {
+  const ctx = document.getElementById(id).getContext('2d'), img = ctx.createImageData(S, S), bg = hex('#fff3ea');
+  for (let i = 0; i < f.length; i += 4) {
+    const a = Math.min(1, f[i + 3]);
+    for (let c = 0; c < 3; c++) { const col = premul ? f[i + c] : f[i + c] * a; img.data[i + c] = Math.round(255 * Math.min(1, col + bg[c] * (1 - a))); }
+    img.data[i + 3] = 255;
+  }
+  ctx.putImageData(img, 0, 0);
+};
+
+const base = shade();
+paint('c1', base, false);
+paint('c2', post(base, { grain: true }), true);
+paint('c3', post(base, { grain: true, stipple: true }), true);
+paint('c4', post(base, { grain: true, stipple: true, halo: true }), true);
+document.body.dataset.ready = '1';
+</script>
+</body>
+</html>
