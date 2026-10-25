@@ -25,7 +25,9 @@
 /* The one clean zone: the wordmark on a plain white die-cut sticker. */
 :root[data-variant='q'] [data-hero-title] { background: transparent; isolation: isolate; }
 :root[data-variant='q'] [data-hero-title]::before {
-  --fs: clamp(2.5rem, 16vw, 11rem); content: ''; position: absolute; left: 50%; top: 50%;
+  --fs: clamp(2.5rem, 16vw, 11rem); content: ''; position: absolute; left: 50%;
+  /* Centred on the word, not the box: phones pad the bottom more (Lens tab). */
+  top: calc(50% + (var(--title-pad, 0px) - var(--title-pad-end, 0px)) / 2);
   z-index: 0; width: min(calc(100% - 20px), calc(var(--fs) * 5.7 + 3rem)); height: calc(var(--fs) * 1.5); translate: -50% -50%; rotate: -1.6deg;
   border-radius: calc(var(--fs) * 0.32); background: #ffffff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.06), 0 2px 3px rgb(0 0 0 / 0.08), 0 22px 36px -18px rgb(0 0 0 / 0.45);
 }
@@ -75,7 +77,7 @@
 :root[data-variant='q'] .vy-loadbar { height: 8px; inset: 6px 12px auto; }
 :root[data-variant='q'] .vy-loadbar-fill { border-radius: 99px; background: linear-gradient(90deg, #ff3ea5, #00c2ff, #c4f000, #ff3ea5); box-shadow: 0 0 0 2px #fff; }
 @media (max-width: 639px) {
-:root[data-variant='q'] [data-hero-title]::before { height: calc(var(--fs) * 1.7); rotate: -2.4deg; }
+:root[data-variant='q'] [data-hero-title]::before { height: calc(var(--fs) * 1.6); rotate: -2.4deg; }
 }
 /* Backdrop stickers: a few peel up and slap back down, 24s. */
 .vy-q-peel { transform-origin: 20% 90%; animation: vy-q-peel 24s cubic-bezier(0.3, 0.7, 0.3, 1) infinite; }
